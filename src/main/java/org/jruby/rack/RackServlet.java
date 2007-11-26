@@ -55,7 +55,7 @@ public class RackServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        this.loader = getServletContext().getInitParameter("rack.loader");
+        this.loader = getServletContext().getInitParameter("rackup");
     }
     
     @Override

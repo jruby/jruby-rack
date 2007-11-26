@@ -44,7 +44,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public RackApplication newApplication(String loader) throws RackInitializationException {
         Ruby runtime = newRuntime();
-        IRubyObject app = runtime.evalScriptlet(loader);
+        IRubyObject app = runtime.evalScriptlet("Rack::Builder.new {( " + loader + "\n )}.to_app");
         app = runtime.evalScriptlet("Rack::Handler::Servlet")
             .callMethod(runtime.getCurrentContext(), "new", new IRubyObject[] {app});
         return new DefaultRackApplication(app);

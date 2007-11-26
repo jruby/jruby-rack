@@ -30,7 +30,7 @@
 
 require File.dirname(__FILE__) + '/../spec_helper'
 
-import org.jruby.rack.RackServlet unless defined?(RackServlet)
+import org.jruby.rack.RackServlet
 
 describe RackServlet, "service" do
   before :each do
