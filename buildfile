@@ -28,7 +28,7 @@
 # **** END LICENSE BLOCK ****
 #++
 
-repositories.remote << 'http://repo1.maven.org/maven2'
+repositories.remote << "http://repo1.maven.org/maven2" << "http://snapshots.repository.codehaus.org"
 
 JRUBY = 'org.jruby:jruby-complete:jar:1.1-SNAPSHOT'
 
