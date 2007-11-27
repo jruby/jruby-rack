@@ -29,11 +29,14 @@
 
 package org.jruby.rack;
 
+import javax.servlet.ServletContext;
+
 /**
  *
  * @author nicksieger
  */
 public interface RackApplicationFactory {
-    RackApplication newApplication(String loader) throws RackInitializationException;
+    void init(ServletContext servletContext);
+    RackApplication newApplication() throws RackInitializationException;
     void finishedWithApplication(RackApplication app);
 }

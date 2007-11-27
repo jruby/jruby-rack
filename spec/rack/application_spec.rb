@@ -49,15 +49,24 @@ import org.jruby.rack.DefaultRackApplicationFactory
 
 describe DefaultRackApplicationFactory, "newRuntime" do
   it "should create a new Ruby runtime with the rack environment pre-loaded" do
-    runtime = DefaultRackApplicationFactory.new.newRuntime
-    lambda { runtime.evalScriptlet("Rack") }.should_not raise_error
-    lambda { runtime.evalScriptlet("Rack::Servlet") }.should_not raise_error
+    app_factory = DefaultRackApplicationFactory.new
+    runtime = app_factory.newRuntime
+    lazy_string = proc {|v| "(begin; #{v}; rescue Exception => e; e.class; end).name"}
+    app_factory.verify(runtime, lazy_string.call("Rack")).should == "Rack"
+    app_factory.verify(runtime, lazy_string.call("Rack::Handler::Servlet")
+      ).should == "Rack::Handler::Servlet"
+    app_factory.verify(runtime, lazy_string.call("Rack::Handler::Bogus")
+      ).should_not == "Rack::Handler::Bogus"
   end
 end
 
 describe DefaultRackApplicationFactory, "newApplication" do
   it "should create a Ruby object from the script snippet given" do
-    object = DefaultRackApplicationFactory.new.newApplication("require 'rack/lobster'; Rack::Lobster.new")
+    servlet_context = mock("servlet context")
+    servlet_context.stub!(:getInitParameter).and_return("require 'rack/lobster'; Rack::Lobster.new")
+    app_factory = DefaultRackApplicationFactory.new
+    app_factory.init(servlet_context)
+    object = app_factory.newApplication
     object.respond_to?(:call).should == true
   end
 end

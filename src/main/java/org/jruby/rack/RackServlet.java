@@ -43,7 +43,6 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class RackServlet extends HttpServlet {
     private RackApplicationFactory rackFactory;
-    private String loader;
 
     public RackServlet() {
         this(new DefaultRackApplicationFactory());
@@ -55,7 +54,7 @@ public class RackServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        this.loader = getServletContext().getInitParameter("rackup");
+        this.rackFactory.init(getServletContext());
     }
     
     @Override
@@ -68,7 +67,7 @@ public class RackServlet extends HttpServlet {
         throws ServletException, IOException {
         RackApplication app = null;
         try {
-            app = rackFactory.newApplication(loader);
+            app = rackFactory.newApplication();
             RackResult result = app.call(request);
             result.writeStatus(response);
             result.writeHeaders(response);

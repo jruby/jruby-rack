@@ -32,10 +32,20 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 import org.jruby.rack.RackServlet
 
+describe RackServlet, "init" do
+  before :each do
+    @rack_factory = mock("rack factory")
+    @servlet = RackServlet.new(@rack_factory)
+  end
+
+  it "should call initialize on the application factory, providing the servlet context" do
+    @rack_factory.should_receive(:init).with(@servlet_context)
+    @servlet.init(@servlet_config)
+  end
+end
+
 describe RackServlet, "service" do
   before :each do
-    @servlet_context.stub!(:getInitParameter).and_return(
-      "require 'rack/lobster'; Rack::Lobster.new")
     @rack_factory = mock("rack factory")
     @servlet = RackServlet.new(@rack_factory)
   end
@@ -56,9 +66,8 @@ end
 
 describe RackServlet, "process" do
   before :each do
-    @servlet_context.stub!(:getInitParameter).and_return(
-      "require 'rack/lobster'; Rack::Lobster.new")
     @rack_factory = mock("rack factory")
+    @rack_factory.stub!(:init)
     @servlet = RackServlet.new(@rack_factory)
   end
 
@@ -69,8 +78,7 @@ describe RackServlet, "process" do
     result = mock("rack result")
 
     @servlet.init(@servlet_config)
-    @rack_factory.should_receive(:newApplication).with(
-      /Rack::Lobster\.new/).and_return(application)
+    @rack_factory.should_receive(:newApplication).and_return(application)
     @rack_factory.should_receive(:finishedWithApplication).with(application)
     application.should_receive(:call).with(request).and_return result
     result.should_receive(:writeStatus)

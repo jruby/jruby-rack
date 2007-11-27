@@ -30,6 +30,7 @@
 package org.jruby.rack;
 
 import java.util.ArrayList;
+import javax.servlet.ServletContext;
 import org.jruby.Ruby;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -39,10 +40,16 @@ import org.jruby.runtime.builtin.IRubyObject;
  * @author nicksieger
  */
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
+    private String loader;
+
     public DefaultRackApplicationFactory() {
     }
 
-    public RackApplication newApplication(String loader) throws RackInitializationException {
+    public void init(ServletContext servletContext) {
+        this.loader = servletContext.getInitParameter("rackup");
+    }
+    
+    public RackApplication newApplication() throws RackInitializationException {
         Ruby runtime = newRuntime();
         IRubyObject app = runtime.evalScriptlet("Rack::Builder.new {( " + loader + "\n )}.to_app");
         app = runtime.evalScriptlet("Rack::Handler::Servlet")
@@ -60,6 +67,14 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             return runtime;
         } catch (Exception e) {
             throw new RackInitializationException(e);
+        }
+    }
+
+    public String verify(Ruby runtime, String script) {
+        try {
+            return runtime.evalScriptlet(script).toString();
+        } catch (Exception e) {
+            return e.getMessage();
         }
     }
 }
