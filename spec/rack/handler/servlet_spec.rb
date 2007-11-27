@@ -197,7 +197,7 @@ describe Rack::Handler::Servlet::Result do
     end
     stream = mock "output stream"
     @servlet_response.stub!(:getOutputStream).and_return stream
-    stream.should_receive(:print).exactly(2).times
+    stream.should_receive(:write).exactly(2).times
     
     @result.writeBody(@servlet_response)
   end

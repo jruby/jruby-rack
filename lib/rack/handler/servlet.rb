@@ -57,7 +57,7 @@ module Rack
         def writeBody(response)
           stream = response.getOutputStream
           @body.each do |el|
-            stream.print(el)
+            stream.write(el.to_java_bytes)
           end
         end
       end

@@ -40,20 +40,26 @@ import org.jruby.runtime.builtin.IRubyObject;
  * @author nicksieger
  */
 public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
+    private String publicRoot;
     private String railsEnv;
     private String railsRoot;
 
     @Override
     public void init(ServletContext servletContext) {
-        this.railsRoot = servletContext.getInitParameter("rails.root");
-        if (this.railsRoot == null) {
-            this.railsRoot = "/WEB-INF";
+        railsRoot = servletContext.getInitParameter("rails.root");
+        if (railsRoot == null) {
+            railsRoot = "/WEB-INF";
         }
-        this.railsRoot = servletContext.getRealPath(this.railsRoot);
-        this.railsEnv = servletContext.getInitParameter("rails.env");
-        if (this.railsEnv == null) {
-            this.railsEnv = "production";
+        railsRoot = servletContext.getRealPath(railsRoot);
+        railsEnv = servletContext.getInitParameter("rails.env");
+        if (railsEnv == null) {
+            railsEnv = "production";
         }
+        publicRoot = servletContext.getInitParameter("public.root");
+        if (publicRoot == null) {
+            publicRoot = "/WEB-INF/public";
+        }
+        publicRoot = servletContext.getRealPath(publicRoot);
     }
 
     @Override
@@ -69,7 +75,11 @@ public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
     @Override
     public IRubyObject createApplicationObject(Ruby runtime) {
         return createRackServletWrapper(runtime,
-                "require 'rack/adapter/rails_bootstrap'; use Rack::Adapter::Rails.new");
+                "require 'rack/adapter/rails_bootstrap'\n" +
+                "app = Rack::Adapter::Rails.new\n" +
+                "file = Rack::File.new(%{" + publicRoot + "})\n" +
+                "app = Rack::Cascade.new([file, app])\n" +
+                "run app\n");
     }
 
     public String getRailsEnv() {
@@ -78,5 +88,9 @@ public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
 
     public String getRailsRoot() {
         return railsRoot;
+    }
+
+    public String getPublicRoot() {
+        return publicRoot;
     }
 }

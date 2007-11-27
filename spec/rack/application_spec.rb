@@ -104,6 +104,19 @@ describe RailsRackApplicationFactory, "init" do
     @app_factory.init(@servlet_context)    
     @app_factory.rails_env.should == "production"
   end
+
+  it "should determine the public html root from the 'public.root' init parameter" do
+    @servlet_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
+    @servlet_context.should_receive(:getRealPath).with("/blah").and_return "."
+    @app_factory.init(@servlet_context)    
+    @app_factory.public_root.should == "."
+  end
+
+  it "should default public root to '/WEB-INF/public'" do
+    @servlet_context.should_receive(:getRealPath).with("/WEB-INF/public").and_return "."
+    @app_factory.init(@servlet_context)    
+    @app_factory.public_root.should == "."
+  end
 end
 
 describe RailsRackApplicationFactory, "newRuntime" do
