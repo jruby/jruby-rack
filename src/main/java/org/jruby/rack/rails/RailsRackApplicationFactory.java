@@ -27,57 +27,29 @@
  * the terms of any one of the CPL, the GPL or the LGPL.
  ***** END LICENSE BLOCK *****/
 
-package org.jruby.rack;
+package org.jruby.rack.rails;
 
-import java.util.ArrayList;
 import javax.servlet.ServletContext;
-import org.jruby.Ruby;
-import org.jruby.javasupport.JavaEmbedUtils;
-import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.rack.DefaultRackApplication;
+import org.jruby.rack.DefaultRackApplicationFactory;
+import org.jruby.rack.RackApplication;
+import org.jruby.rack.RackInitializationException;
 
 /**
  *
  * @author nicksieger
  */
-public class DefaultRackApplicationFactory implements RackApplicationFactory {
-    private String loader;
-
-    public DefaultRackApplicationFactory() {
-    }
+public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
 
     public void init(ServletContext servletContext) {
-        this.loader = servletContext.getInitParameter("rackup");
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     public RackApplication newApplication() throws RackInitializationException {
-        Ruby runtime = newRuntime();
-        IRubyObject app = createApplicationObject(runtime);
-        return new DefaultRackApplication(app);
+        return new DefaultRackApplication(null);
     }
 
     public void finishedWithApplication(RackApplication app) {
-    }
-
-    public Ruby newRuntime() throws RackInitializationException {
-        try {
-            Ruby runtime = JavaEmbedUtils.initialize(new ArrayList());
-            runtime.evalScriptlet("require 'rack/handler/servlet_bootstrap'");
-            return runtime;
-        } catch (Exception e) {
-            throw new RackInitializationException(e);
-        }
-    }
-
-    public String verify(Ruby runtime, String script) {
-        try {
-            return runtime.evalScriptlet(script).toString();
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-
-    public IRubyObject createApplicationObject(Ruby runtime) {
-        return runtime.evalScriptlet(
-                "Rack::Handler::Servlet.new(Rack::Builder.new {( " + loader + "\n )}.to_app)");
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
