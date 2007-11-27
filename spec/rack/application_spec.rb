@@ -70,3 +70,55 @@ describe DefaultRackApplicationFactory, "newApplication" do
     object.respond_to?(:call).should == true
   end
 end
+
+import org.jruby.rack.rails.RailsRackApplicationFactory
+
+describe RailsRackApplicationFactory, "init" do
+  before :each do
+    @servlet_context = mock("servlet context")
+    @servlet_context.stub!(:getInitParameter).and_return nil
+    @servlet_context.stub!(:getRealPath).and_return "/"
+    @app_factory = RailsRackApplicationFactory.new
+  end
+  
+  it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
+    @servlet_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
+    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
+    @app_factory.init(@servlet_context)
+    @app_factory.rails_root.should == "./WEB-INF"
+  end
+
+  it "should default RAILS_ROOT to /WEB-INF" do
+    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
+    @app_factory.init(@servlet_context)
+    @app_factory.rails_root.should == "./WEB-INF"
+  end
+
+  it "should determine RAILS_ENV from the 'rails.env' init parameter" do
+    @servlet_context.should_receive(:getInitParameter).with("rails.env").and_return "test"
+    @app_factory.init(@servlet_context)    
+    @app_factory.rails_env.should == "test"
+  end
+
+  it "should default RAILS_ENV to 'production'" do
+    @app_factory.init(@servlet_context)    
+    @app_factory.rails_env.should == "production"
+  end
+end
+
+describe RailsRackApplicationFactory, "newRuntime" do
+  before :each do
+    @servlet_context = mock("servlet context")
+    @servlet_context.stub!(:getInitParameter).and_return nil
+    @servlet_context.stub!(:getRealPath).and_return "/"
+    @app_factory = RailsRackApplicationFactory.new
+    @app_factory.init(@servlet_context)
+  end
+
+  it "should initialize ENV['RAILS_ENV'] and ENV['RAILS_ROOT']" do
+    runtime = @app_factory.newRuntime
+    lazy_env = proc {|v| "ENV['#{v}']"}
+    @app_factory.verify(runtime, lazy_env.call("RAILS_ENV")).should == "production"
+    @app_factory.verify(runtime, lazy_env.call("RAILS_ROOT")).should == "/"
+  end
+end

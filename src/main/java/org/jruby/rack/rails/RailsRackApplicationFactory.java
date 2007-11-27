@@ -30,26 +30,54 @@
 package org.jruby.rack.rails;
 
 import javax.servlet.ServletContext;
+import org.jruby.Ruby;
 import org.jruby.rack.DefaultRackApplication;
 import org.jruby.rack.DefaultRackApplicationFactory;
 import org.jruby.rack.RackApplication;
 import org.jruby.rack.RackInitializationException;
+import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  *
  * @author nicksieger
  */
 public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
+    private String railsEnv;
+    private String railsRoot;
 
+    @Override
     public void init(ServletContext servletContext) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.railsRoot = servletContext.getInitParameter("rails.root");
+        if (this.railsRoot == null) {
+            this.railsRoot = "/WEB-INF";
+        }
+        this.railsRoot = servletContext.getRealPath(this.railsRoot);
+        this.railsEnv = servletContext.getInitParameter("rails.env");
+        if (this.railsEnv == null) {
+            this.railsEnv = "production";
+        }
     }
 
+    @Override
     public RackApplication newApplication() throws RackInitializationException {
         return new DefaultRackApplication(null);
     }
 
-    public void finishedWithApplication(RackApplication app) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public Ruby newRuntime() throws RackInitializationException {
+        Ruby runtime = super.newRuntime();
+        runtime.evalScriptlet("ENV").callMethod(runtime.getCurrentContext(), "[]=",
+                new IRubyObject[] {runtime.newString("RAILS_ENV"), runtime.newString(railsEnv)});
+        runtime.evalScriptlet("ENV").callMethod(runtime.getCurrentContext(), "[]=",
+                new IRubyObject[] {runtime.newString("RAILS_ROOT"), runtime.newString(railsRoot)});
+        return runtime;
+    }
+
+    public String getRailsEnv() {
+        return railsEnv;
+    }
+
+    public String getRailsRoot() {
+        return railsRoot;
     }
 }
