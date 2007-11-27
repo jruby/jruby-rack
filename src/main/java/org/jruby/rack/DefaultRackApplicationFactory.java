@@ -40,13 +40,13 @@ import org.jruby.runtime.builtin.IRubyObject;
  * @author nicksieger
  */
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
-    private String loader;
+    private String rackupScript;
 
     public DefaultRackApplicationFactory() {
     }
 
     public void init(ServletContext servletContext) {
-        this.loader = servletContext.getInitParameter("rackup");
+        this.rackupScript = servletContext.getInitParameter("rackup");
     }
     
     public RackApplication newApplication() throws RackInitializationException {
@@ -77,7 +77,12 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public IRubyObject createApplicationObject(Ruby runtime) {
+        return createRackServletWrapper(runtime, rackupScript);
+    }
+
+    protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup) {
         return runtime.evalScriptlet(
-                "Rack::Handler::Servlet.new(Rack::Builder.new {( " + loader + "\n )}.to_app)");
+                "Rack::Handler::Servlet.new(Rack::Builder.new {( " 
+                + rackup + "\n )}.to_app)");
     }
 }

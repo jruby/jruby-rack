@@ -31,9 +31,7 @@ package org.jruby.rack.rails;
 
 import javax.servlet.ServletContext;
 import org.jruby.Ruby;
-import org.jruby.rack.DefaultRackApplication;
 import org.jruby.rack.DefaultRackApplicationFactory;
-import org.jruby.rack.RackApplication;
 import org.jruby.rack.RackInitializationException;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -59,11 +57,6 @@ public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
     }
 
     @Override
-    public RackApplication newApplication() throws RackInitializationException {
-        return new DefaultRackApplication(null);
-    }
-
-    @Override
     public Ruby newRuntime() throws RackInitializationException {
         Ruby runtime = super.newRuntime();
         runtime.evalScriptlet("ENV").callMethod(runtime.getCurrentContext(), "[]=",
@@ -71,6 +64,12 @@ public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
         runtime.evalScriptlet("ENV").callMethod(runtime.getCurrentContext(), "[]=",
                 new IRubyObject[] {runtime.newString("RAILS_ROOT"), runtime.newString(railsRoot)});
         return runtime;
+    }
+
+    @Override
+    public IRubyObject createApplicationObject(Ruby runtime) {
+        return createRackServletWrapper(runtime,
+                "require 'rack/adapter/rails_bootstrap'; use Rack::Adapter::Rails.new");
     }
 
     public String getRailsEnv() {
