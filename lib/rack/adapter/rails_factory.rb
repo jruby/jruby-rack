@@ -28,9 +28,40 @@
 # **** END LICENSE BLOCK ****
 #++
 
-require 'rack/adapter/rails_servlet_helper'
-ENV['RAILS_ROOT'] = Rack::Adapter::RailsServletHelper.instance.rails_root
-ENV['RAILS_ENV'] = Rack::Adapter::RailsServletHelper.instance.rails_env
-RAILS_DEFAULT_LOGGER = Rack::Adapter::RailsServletHelper.instance.logger
-load File.join(ENV['RAILS_ROOT'], 'config', 'environment.rb')
-require 'rack/adapter/rails_factory'
+require 'rack/adapter/rails'
+
+module Rack
+  module Adapter
+    class IndexHtmlFile < Rack::File
+      def initialize(app, root)
+        @app = app
+	@file_server = Rack::File.new(root)
+      end
+      def call(env)
+        result = if env["PATH_INFO"] =~ %r{/$}
+          env = env.dup
+          env["PATH_INFO"] = env["PATH_INFO"] + 'index.html'
+          @file_server.call(env)
+        end
+
+        if result.nil? || result[0] == 404
+          @app.call(env) 
+        else
+          result
+        end
+      end
+    end
+
+    class RailsFactory
+      def self.new
+        servlet_helper = RailsServletHelper.instance
+        Rack::Builder.new {
+          use Rack::Static, :urls => servlet_helper.static_uris, 
+            :root => servlet_helper.public_root
+          use Rack::Adapter::IndexHtmlFile, servlet_helper.public_root
+          run Rack::Adapter::Rails.new
+        }.to_app
+      end
+    end
+  end
+end

@@ -31,6 +31,7 @@ package org.jruby.rack.rails;
 
 import javax.servlet.ServletContext;
 import org.jruby.Ruby;
+import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.DefaultRackApplicationFactory;
 import org.jruby.rack.RackInitializationException;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -40,35 +41,18 @@ import org.jruby.runtime.builtin.IRubyObject;
  * @author nicksieger
  */
 public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
-    private String publicRoot;
-    private String railsEnv;
-    private String railsRoot;
+    private ServletContext servletContext;
 
     @Override
     public void init(ServletContext servletContext) {
-        railsRoot = servletContext.getInitParameter("rails.root");
-        if (railsRoot == null) {
-            railsRoot = "/WEB-INF";
-        }
-        railsRoot = servletContext.getRealPath(railsRoot);
-        railsEnv = servletContext.getInitParameter("rails.env");
-        if (railsEnv == null) {
-            railsEnv = "production";
-        }
-        publicRoot = servletContext.getInitParameter("public.root");
-        if (publicRoot == null) {
-            publicRoot = "/WEB-INF/public";
-        }
-        publicRoot = servletContext.getRealPath(publicRoot);
+        this.servletContext = servletContext;
     }
 
     @Override
     public Ruby newRuntime() throws RackInitializationException {
         Ruby runtime = super.newRuntime();
-        runtime.evalScriptlet("ENV").callMethod(runtime.getCurrentContext(), "[]=",
-                new IRubyObject[] {runtime.newString("RAILS_ENV"), runtime.newString(railsEnv)});
-        runtime.evalScriptlet("ENV").callMethod(runtime.getCurrentContext(), "[]=",
-                new IRubyObject[] {runtime.newString("RAILS_ROOT"), runtime.newString(railsRoot)});
+        runtime.getGlobalVariables().set("$servlet_context",
+                JavaEmbedUtils.javaToRuby(runtime, servletContext));
         return runtime;
     }
 
@@ -76,21 +60,6 @@ public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
     public IRubyObject createApplicationObject(Ruby runtime) {
         return createRackServletWrapper(runtime,
                 "require 'rack/adapter/rails_bootstrap'\n" +
-                "app = Rack::Adapter::Rails.new\n" +
-                "file = Rack::File.new(%{" + publicRoot + "})\n" +
-                "app = Rack::Cascade.new([file, app])\n" +
-                "run app\n");
-    }
-
-    public String getRailsEnv() {
-        return railsEnv;
-    }
-
-    public String getRailsRoot() {
-        return railsRoot;
-    }
-
-    public String getPublicRoot() {
-        return publicRoot;
+                "run Rack::Adapter::RailsFactory.new\n");
     }
 }

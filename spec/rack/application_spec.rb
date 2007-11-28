@@ -73,65 +73,47 @@ end
 
 import org.jruby.rack.rails.RailsRackApplicationFactory
 
-describe RailsRackApplicationFactory, "init" do
-  before :each do
-    @servlet_context = mock("servlet context")
-    @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.stub!(:getRealPath).and_return "/"
-    @app_factory = RailsRackApplicationFactory.new
-  end
-  
-  it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
-    @servlet_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
-    @app_factory.init(@servlet_context)
-    @app_factory.rails_root.should == "./WEB-INF"
-  end
-
-  it "should default RAILS_ROOT to /WEB-INF" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
-    @app_factory.init(@servlet_context)
-    @app_factory.rails_root.should == "./WEB-INF"
-  end
-
-  it "should determine RAILS_ENV from the 'rails.env' init parameter" do
-    @servlet_context.should_receive(:getInitParameter).with("rails.env").and_return "test"
-    @app_factory.init(@servlet_context)    
-    @app_factory.rails_env.should == "test"
-  end
-
-  it "should default RAILS_ENV to 'production'" do
-    @app_factory.init(@servlet_context)    
-    @app_factory.rails_env.should == "production"
-  end
-
-  it "should determine the public html root from the 'public.root' init parameter" do
-    @servlet_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
-    @servlet_context.should_receive(:getRealPath).with("/blah").and_return "."
-    @app_factory.init(@servlet_context)    
-    @app_factory.public_root.should == "."
-  end
-
-  it "should default public root to '/WEB-INF/public'" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF/public").and_return "."
-    @app_factory.init(@servlet_context)    
-    @app_factory.public_root.should == "."
-  end
-end
-
 describe RailsRackApplicationFactory, "newRuntime" do
   before :each do
     @servlet_context = mock("servlet context")
-    @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.stub!(:getRealPath).and_return "/"
     @app_factory = RailsRackApplicationFactory.new
     @app_factory.init(@servlet_context)
   end
 
-  it "should initialize ENV['RAILS_ENV'] and ENV['RAILS_ROOT']" do
+  it "should initialize $servlet_context" do
     runtime = @app_factory.newRuntime
-    lazy_env = proc {|v| "ENV['#{v}']"}
-    @app_factory.verify(runtime, lazy_env.call("RAILS_ENV")).should == "production"
-    @app_factory.verify(runtime, lazy_env.call("RAILS_ROOT")).should == "/"
+    @app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
+  end
+end
+
+import org.jruby.rack.PoolingRackApplicationFactory
+
+describe PoolingRackApplicationFactory do
+  before :each do
+    @factory = mock "factory"
+    @pool = PoolingRackApplicationFactory.new @factory
+  end
+
+  it "should initialize the delegate factory when initialized" do
+    context = mock("servlet context")
+    @factory.should_receive(:init).with(context)
+    @pool.init(context)
+  end
+
+  it "should start out empty" do
+    @pool.getApplicationPool.should be_empty
+  end
+
+  it "should create a new application when empty" do
+    app = mock "app"
+    @factory.should_receive(:newApplication).and_return app
+    @pool.newApplication.should == app
+  end
+
+  it "should return an existing application when not empty" do
+    app = mock "app"
+    @pool.finishedWithApplication app
+    @pool.getApplicationPool.should_not be_empty
+    @pool.newApplication.should == app
   end
 end

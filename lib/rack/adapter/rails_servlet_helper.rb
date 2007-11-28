@@ -28,9 +28,39 @@
 # **** END LICENSE BLOCK ****
 #++
 
-require 'rack/adapter/rails_servlet_helper'
-ENV['RAILS_ROOT'] = Rack::Adapter::RailsServletHelper.instance.rails_root
-ENV['RAILS_ENV'] = Rack::Adapter::RailsServletHelper.instance.rails_env
-RAILS_DEFAULT_LOGGER = Rack::Adapter::RailsServletHelper.instance.logger
-load File.join(ENV['RAILS_ROOT'], 'config', 'environment.rb')
-require 'rack/adapter/rails_factory'
+module Rack
+  module Adapter
+    ServletContext = $servlet_context
+
+    class RailsServletHelper
+      attr_reader :rails_env, :rails_root, :public_root, :static_uris
+      
+      def initialize(servlet_context = nil)
+        @servlet_context = servlet_context || ServletContext
+        @rails_root = @servlet_context.getInitParameter 'rails.root'
+        @rails_root ||= '/WEB-INF'
+        @rails_root = @servlet_context.getRealPath @rails_root
+        @rails_env = @servlet_context.getInitParameter 'rails.env'
+        @rails_env ||= 'production'
+        @public_root = @servlet_context.getInitParameter 'public.root'
+        @public_root ||= '/WEB-INF/public'
+        @public_root = @servlet_context.getRealPath @public_root
+        @static_uris = @servlet_context.getInitParameter 'static.uris'
+        @static_uris = @static_uris.split(/\s/m) if @static_uris
+        @static_uris ||= ["/index.html", "/images", "/javascripts", "/stylesheets"]
+      end
+      
+      def logger
+        require 'logger'
+	logdev = Proc.new {|msg| @servlet_context.log msg }
+        def logdev.write(msg); call(msg); end
+        def logdev.close; end
+        Logger.new(logdev)
+      end
+
+      def self.instance
+        @instance ||= self.new
+      end
+    end
+  end
+end

@@ -27,18 +27,42 @@
  * the terms of any one of the CPL, the GPL or the LGPL.
  ***** END LICENSE BLOCK *****/
 
-package org.jruby.rack.rails;
+package org.jruby.rack;
 
-import org.jruby.rack.PoolingRackApplicationFactory;
-import org.jruby.rack.RackServlet;
+import java.util.LinkedList;
+import java.util.Queue;
+import javax.servlet.ServletContext;
 
 /**
  *
  * @author nicksieger
  */
-public class RailsServlet extends RackServlet {
-    public RailsServlet() {
-        super(new PoolingRackApplicationFactory(
-                new RailsRackApplicationFactory()));
+public class PoolingRackApplicationFactory implements RackApplicationFactory {
+    private RackApplicationFactory realFactory;
+    private Queue<RackApplication> applicationPool;
+
+    public PoolingRackApplicationFactory(RackApplicationFactory factory) {
+        realFactory = factory;
+        applicationPool = new LinkedList<RackApplication>();
+    }
+
+    public void init(ServletContext servletContext) {
+        realFactory.init(servletContext);
+    }
+
+    public synchronized RackApplication newApplication() throws RackInitializationException {
+        if (applicationPool.isEmpty()) {
+            return realFactory.newApplication();
+        } else {
+            return applicationPool.remove();
+        }
+    }
+
+    public synchronized void finishedWithApplication(RackApplication app) {
+        applicationPool.add(app);
+    }
+
+    public Queue<RackApplication> getApplicationPool() {
+        return applicationPool;
     }
 }
