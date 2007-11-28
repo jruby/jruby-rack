@@ -62,6 +62,7 @@ describe Rack::Handler::Servlet, "add_input_errors_scheme" do
     [:gets, :read, :each].each {|sym| input.respond_to?(sym).should == true }
     (errors = env['rack.errors']).should_not be_nil
     [:puts, :write, :flush].each {|sym| errors.respond_to?(sym).should == true }
+    env['java.servlet_request'].should_not be_nil
   end
 end
 
@@ -70,7 +71,7 @@ describe Rack::Handler::Servlet, "add_variables" do
     @servlet = Rack::Handler::Servlet.new(nil)
   end
 
-  it "should add REQUEST_METHOD, SCRIPT_NAME, PATH_INFO, QUERY_STRING, SERVER_NAME, and SERVER_PORT" do
+  it "should add cgi variables" do
     servlet_env = mock "servlet request"
     servlet_env.stub!(:getMethod).and_return "GET"
     servlet_env.stub!(:getServletPath).and_return "/path/info/script_name"
@@ -78,6 +79,9 @@ describe Rack::Handler::Servlet, "add_variables" do
     servlet_env.stub!(:getQueryString).and_return "hello=there"
     servlet_env.stub!(:getServerName).and_return "localhost"
     servlet_env.stub!(:getServerPort).and_return 80
+    servlet_env.stub!(:getRemoteHost).and_return "localhost"
+    servlet_env.stub!(:getRemoteAddr).and_return "127.0.0.1"
+    servlet_env.stub!(:getRemoteUser).and_return "admin"
     env = {}
     @servlet.add_variables(servlet_env, env)
     env["REQUEST_METHOD"].should == "GET"
@@ -86,6 +90,9 @@ describe Rack::Handler::Servlet, "add_variables" do
     env["QUERY_STRING"].should == "hello=there"
     env["SERVER_NAME"].should == "localhost"
     env["SERVER_PORT"].should == "80"
+    env["REMOTE_HOST"].should == "localhost"
+    env["REMOTE_ADDR"].should == "127.0.0.1"
+    env["REMOTE_USER"].should == "admin"
   end
 
   it "should not add environment variables if their value is nil" do
@@ -95,6 +102,9 @@ describe Rack::Handler::Servlet, "add_variables" do
     servlet_env.stub!(:getPathInfo).and_return nil
     servlet_env.stub!(:getQueryString).and_return nil
     servlet_env.stub!(:getServerName).and_return nil
+    servlet_env.stub!(:getRemoteHost).and_return nil
+    servlet_env.stub!(:getRemoteAddr).and_return nil
+    servlet_env.stub!(:getRemoteUser).and_return nil
     servlet_env.stub!(:getServerPort).and_return 80
     env = {}
     @servlet.add_variables(servlet_env, env)
@@ -103,6 +113,9 @@ describe Rack::Handler::Servlet, "add_variables" do
     env.should have_key("PATH_INFO")
     env.should have_key("QUERY_STRING")
     env.should have_key("SERVER_NAME")
+    env.should have_key("REMOTE_HOST")
+    env.should have_key("REMOTE_ADDR")
+    env.should have_key("REMOTE_USER")
   end
 end
 

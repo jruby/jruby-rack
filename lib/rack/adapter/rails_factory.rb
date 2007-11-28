@@ -54,8 +54,8 @@ module Rack
 
     class RailsFactory
       def self.new
-        servlet_helper = RailsServletHelper.instance
         Rack::Builder.new {
+          servlet_helper = RailsServletHelper.instance
           use Rack::Static, :urls => servlet_helper.static_uris, 
             :root => servlet_helper.public_root
           use Rack::Adapter::IndexHtmlFile, servlet_helper.public_root

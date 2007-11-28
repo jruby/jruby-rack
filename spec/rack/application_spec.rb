@@ -48,15 +48,26 @@ end
 import org.jruby.rack.DefaultRackApplicationFactory
 
 describe DefaultRackApplicationFactory, "newRuntime" do
+  before :each do
+    @servlet_context = mock("servlet context")
+    @servlet_context.stub!(:getInitParameter).and_return nil
+    @app_factory = DefaultRackApplicationFactory.new
+    @app_factory.init(@servlet_context)
+  end
+
   it "should create a new Ruby runtime with the rack environment pre-loaded" do
-    app_factory = DefaultRackApplicationFactory.new
-    runtime = app_factory.newRuntime
+    runtime = @app_factory.newRuntime
     lazy_string = proc {|v| "(begin; #{v}; rescue Exception => e; e.class; end).name"}
-    app_factory.verify(runtime, lazy_string.call("Rack")).should == "Rack"
-    app_factory.verify(runtime, lazy_string.call("Rack::Handler::Servlet")
+    @app_factory.verify(runtime, lazy_string.call("Rack")).should == "Rack"
+    @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Servlet")
       ).should == "Rack::Handler::Servlet"
-    app_factory.verify(runtime, lazy_string.call("Rack::Handler::Bogus")
+    @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Bogus")
       ).should_not == "Rack::Handler::Bogus"
+  end
+
+  it "should initialize the $servlet_context global variable" do
+    runtime = @app_factory.newRuntime
+    @app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
   end
 end
 
@@ -68,21 +79,6 @@ describe DefaultRackApplicationFactory, "newApplication" do
     app_factory.init(servlet_context)
     object = app_factory.newApplication
     object.respond_to?(:call).should == true
-  end
-end
-
-import org.jruby.rack.rails.RailsRackApplicationFactory
-
-describe RailsRackApplicationFactory, "newRuntime" do
-  before :each do
-    @servlet_context = mock("servlet context")
-    @app_factory = RailsRackApplicationFactory.new
-    @app_factory.init(@servlet_context)
-  end
-
-  it "should initialize $servlet_context" do
-    runtime = @app_factory.newRuntime
-    @app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
   end
 end
 

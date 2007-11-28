@@ -29,11 +29,8 @@
 
 package org.jruby.rack.rails;
 
-import javax.servlet.ServletContext;
 import org.jruby.Ruby;
-import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.DefaultRackApplicationFactory;
-import org.jruby.rack.RackInitializationException;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -41,21 +38,6 @@ import org.jruby.runtime.builtin.IRubyObject;
  * @author nicksieger
  */
 public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
-    private ServletContext servletContext;
-
-    @Override
-    public void init(ServletContext servletContext) {
-        this.servletContext = servletContext;
-    }
-
-    @Override
-    public Ruby newRuntime() throws RackInitializationException {
-        Ruby runtime = super.newRuntime();
-        runtime.getGlobalVariables().set("$servlet_context",
-                JavaEmbedUtils.javaToRuby(runtime, servletContext));
-        return runtime;
-    }
-
     @Override
     public IRubyObject createApplicationObject(Ruby runtime) {
         return createRackServletWrapper(runtime,

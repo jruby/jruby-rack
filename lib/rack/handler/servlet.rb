@@ -62,6 +62,16 @@ module Rack
         end
       end
 
+      class ServletLog
+        def puts(msg)
+          write msg.to_s
+        end
+        def write(msg)
+          $servlet_context.log(msg)
+        end
+        def flush; end
+        def close; end
+      end
       def initialize(rack_app)
         @rack_app = rack_app
       end
@@ -81,8 +91,10 @@ module Rack
 
       def add_input_errors_scheme(servlet_env, env)
         env['rack.input'] = servlet_env.to_io
-        env['rack.errors'] = $stderr
+        env['rack.errors'] = ServletLog.new
         env['rack.url_scheme'] = servlet_env.getScheme
+        env['java.servlet_request'] = servlet_env
+        env['java.servlet_context'] = $servlet_context
       end
 
       def add_variables(servlet_env, env)
@@ -96,6 +108,12 @@ module Rack
         env["QUERY_STRING"] ||= ""
         env["SERVER_NAME"] = servlet_env.getServerName
         env["SERVER_NAME"] ||= ""
+        env["REMOTE_HOST"] = servlet_env.getRemoteHost
+        env["REMOTE_HOST"] ||= ""
+        env["REMOTE_ADDR"] = servlet_env.getRemoteAddr
+        env["REMOTE_ADDR"] ||= ""
+        env["REMOTE_USER"] = servlet_env.getRemoteUser
+        env["REMOTE_USER"] ||= ""
         env["SERVER_PORT"] = servlet_env.getServerPort.to_s
       end
 

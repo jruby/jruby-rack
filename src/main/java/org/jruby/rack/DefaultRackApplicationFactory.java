@@ -41,11 +41,13 @@ import org.jruby.runtime.builtin.IRubyObject;
  */
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private String rackupScript;
+    private ServletContext servletContext;
 
     public DefaultRackApplicationFactory() {
     }
 
     public void init(ServletContext servletContext) {
+        this.servletContext = servletContext;
         this.rackupScript = servletContext.getInitParameter("rackup");
     }
     
@@ -62,6 +64,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         try {
             Ruby runtime = JavaEmbedUtils.initialize(new ArrayList());
             runtime.evalScriptlet("require 'rack/handler/servlet_bootstrap'");
+            runtime.getGlobalVariables().set("$servlet_context",
+                    JavaEmbedUtils.javaToRuby(runtime, servletContext));
             return runtime;
         } catch (Exception e) {
             throw new RackInitializationException(e);
