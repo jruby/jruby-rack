@@ -28,23 +28,13 @@
 # **** END LICENSE BLOCK ****
 #++
 
-# Load required parameters for Rails initialization
 require 'rack/adapter/rails_servlet_helper'
 ENV['RAILS_ROOT'] = Rack::Adapter::RailsServletHelper.instance.rails_root
 ENV['RAILS_ENV'] = Rack::Adapter::RailsServletHelper.instance.rails_env
 RAILS_DEFAULT_LOGGER = Rack::Adapter::RailsServletHelper.instance.logger
 
-# Load Rails
 load File.join(ENV['RAILS_ROOT'], 'config', 'environment.rb')
 
-# Set up Java sessions (either if default is PStore or explicitly stated)
-session_options = ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
-if session_options["database_manager"] == CGI::Session::PStore
-  require 'cgi/session/java_servlet_store'
-  session_options["database_manager"] = CGI::Session::JavaServletStore
-end
-if session_options["database_manager"] == CGI::Session::JavaServletStore
-  session_options["no_cookies"] = true
-end
+Rack::Adapter::RailsServletHelper.instance.setup_sessions
 
 require 'rack/adapter/rails_factory'

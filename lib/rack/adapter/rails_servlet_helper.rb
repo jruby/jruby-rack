@@ -58,6 +58,18 @@ module Rack
         Logger.new(logdev)
       end
 
+      def setup_sessions
+        session_options = ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
+        if session_options["database_manager"] == CGI::Session::PStore
+          require 'cgi/session/java_servlet_store'
+          session_options["database_manager"] = CGI::Session::JavaServletStore
+        end
+        # Turn off default cookies when using Java sessions
+        if session_options["database_manager"] == CGI::Session::JavaServletStore
+          session_options["no_cookies"] = true
+        end
+      end
+
       def self.instance
         @instance ||= self.new
       end
