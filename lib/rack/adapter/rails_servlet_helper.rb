@@ -28,6 +28,8 @@
 # **** END LICENSE BLOCK ****
 #++
 
+require 'cgi/session/java_servlet_store'
+        
 module Rack
   module Adapter
     ServletContext = $servlet_context
@@ -62,7 +64,6 @@ module Rack
       end
 
       def setup_sessions
-        require 'cgi/session/java_servlet_store'
         if default_sessions?
           session_options[:database_manager] = CGI::Session::JavaServletStore
         end
@@ -70,7 +71,6 @@ module Rack
         if java_sessions?
           session_options[:no_cookies] = true
         end
-        logdev.write "session database manager is #{session_database_manager}"
       end
 
       def session_options
@@ -125,7 +125,7 @@ module Rack
       end
 
       def call(env)
-        env['rails.session_options'] = servlet_helper.session_options_for_request(env)
+        env['rails.session_options'] = @servlet_helper.session_options_for_request(env)
         @app.call(env)
       end
     end

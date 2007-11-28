@@ -35,6 +35,6 @@ RAILS_DEFAULT_LOGGER = Rack::Adapter::RailsServletHelper.instance.logger
 
 load File.join(ENV['RAILS_ROOT'], 'config', 'environment.rb')
 
-Rack::Adapter::RailsServletHelper.instance.setup_sessions
+#Rack::Adapter::RailsServletHelper.instance.setup_sessions
 
 require 'rack/adapter/rails_factory'
