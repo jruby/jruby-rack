@@ -79,16 +79,6 @@ describe Rack::Adapter::RailsServletHelper do
     @helper.public_root.should == "."
   end
 
-  it "should determine the static uris from the 'static.uris' init parameter" do
-    @servlet_context.should_receive(:getInitParameter).with("static.uris").and_return "/static"
-    create_helper
-    @helper.static_uris.should == ["/static"]
-  end
-
-  it "should default the status uris appropriately" do
-    create_helper
-    @helper.static_uris.should include("/images", "/stylesheets", "/javascripts")
-  end
   it "should create a Logger that writes messages to the servlet context" do
     create_helper
     @servlet_context.should_receive(:log).with(/hello/)

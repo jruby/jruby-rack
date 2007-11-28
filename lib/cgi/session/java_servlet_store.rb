@@ -2,7 +2,7 @@ class CGI #:nodoc:all
   class Session
     class JavaServletStore
       def initialize(session, option=nil)
-      	@java_request = option['java_request'] if option
+      	@java_request = option["java_servlet_request"] if option
       	unless @java_request
           raise 'JavaServletStore requires that HttpServletRequest is made available to the session'
       	end

@@ -50,12 +50,15 @@ module Rack
 
         cgi = CGIStub.new(request, response)
 
-        Dispatcher.dispatch(cgi, ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS, response)
+        Dispatcher.dispatch(cgi, session_options, response)
 
         response.finish
       end
 
       protected
+      def session_options
+	env['rails.session_options'] || ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
+      end
 
       class CGIStub < ::CGI
 

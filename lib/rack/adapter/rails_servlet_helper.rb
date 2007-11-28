@@ -45,33 +45,88 @@ module Rack
         @public_root = @servlet_context.getInitParameter 'public.root'
         @public_root ||= '/WEB-INF/public'
         @public_root = @servlet_context.getRealPath @public_root
-        @static_uris = @servlet_context.getInitParameter 'static.uris'
-        @static_uris = @static_uris.split(/\s/m) if @static_uris
-        @static_uris ||= ["/index.html", "/images", "/javascripts", "/stylesheets"]
       end
       
+      def logdev
+        unless @logdev
+          @logdev = Proc.new {|msg| @servlet_context.log msg }
+          def @logdev.write(msg); call(msg); end
+          def @logdev.close; end
+        end
+        @logdev
+      end
+
       def logger
         require 'logger'
-	logdev = Proc.new {|msg| @servlet_context.log msg }
-        def logdev.write(msg); call(msg); end
-        def logdev.close; end
         Logger.new(logdev)
       end
 
       def setup_sessions
-        session_options = ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
-        if session_options["database_manager"] == CGI::Session::PStore
-          require 'cgi/session/java_servlet_store'
-          session_options["database_manager"] = CGI::Session::JavaServletStore
+        require 'cgi/session/java_servlet_store'
+        if default_sessions?
+          session_options[:database_manager] = CGI::Session::JavaServletStore
         end
         # Turn off default cookies when using Java sessions
-        if session_options["database_manager"] == CGI::Session::JavaServletStore
-          session_options["no_cookies"] = true
+        if java_sessions?
+          session_options[:no_cookies] = true
         end
+        logdev.write "session database manager is #{session_database_manager}"
+      end
+
+      def session_options
+        ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
+      end
+
+      def session_options_for_request(env)
+        options = session_options.dup
+        options[:java_servlet_request] = env['java.servlet_request'] if java_sessions?
+        options
+      end
+      
+      def java_sessions?
+        session_options[:database_manager] == CGI::Session::JavaServletStore
+      end
+
+      def default_sessions?
+        session_options[:database_manager] == CGI::Session::PStore
       end
 
       def self.instance
         @instance ||= self.new
+      end
+    end
+
+    class StaticFiles
+      def initialize(app, root)
+        @app = app
+        @file_server = Rack::File.new(root)
+      end
+      def call(env)
+        if env["PATH_INFO"] =~ %r{/$}
+          file_env = env.dup
+          file_env["PATH_INFO"] = env["PATH_INFO"] + 'index.html'
+        else
+          file_env = env
+        end
+
+        result = @file_server.call(file_env)
+        if result[0] == 404
+          @app.call(env) 
+        else
+          result
+        end
+      end
+    end
+
+    class RailsSessions
+      def initialize(app, servlet_helper)
+        @app = app
+        @servlet_helper = servlet_helper
+      end
+
+      def call(env)
+        env['rails.session_options'] = servlet_helper.session_options_for_request(env)
+        @app.call(env)
       end
     end
   end
