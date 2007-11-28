@@ -52,6 +52,19 @@ module Rack
       end
     end
 
+    class JavaSessions
+      def initialize(app)
+	@app = app
+        @session_options = ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
+      end
+      def call(env)
+        @session_options['java_request'] = env['java.servlet_request']
+	@app.call(env)
+      ensure
+        @session_options.delete('java_request')
+      end
+    end
+    
     class RailsFactory
       def self.new
         Rack::Builder.new {
@@ -59,6 +72,9 @@ module Rack
           use Rack::Static, :urls => servlet_helper.static_uris, 
             :root => servlet_helper.public_root
           use Rack::Adapter::IndexHtmlFile, servlet_helper.public_root
+          if ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS["database_manager"] == CGI::Session::JavaServletStore
+            use JavaSessions
+          end
           run Rack::Adapter::Rails.new
         }.to_app
       end
