@@ -28,19 +28,13 @@
 # **** END LICENSE BLOCK ****
 #++
 
-require 'rack/adapter/rails'
+require 'rack/adapter/rails/servlet_helper'
+ENV['RAILS_ROOT'] = Rack::Adapter::Rails::ServletHelper.instance.rails_root
+ENV['RAILS_ENV'] = Rack::Adapter::Rails::ServletHelper.instance.rails_env
+RAILS_DEFAULT_LOGGER = Rack::Adapter::Rails::ServletHelper.instance.logger
 
-module Rack
-  module Adapter
-    class RailsFactory
-      def self.new
-        Rack::Builder.new {
-          servlet_helper = RailsServletHelper.instance
-          use StaticFiles, servlet_helper.public_root
-          use RailsSessions, servlet_helper
-          run Rails.new
-        }.to_app
-      end
-    end
-  end
-end
+load File.join(ENV['RAILS_ROOT'], 'config', 'environment.rb')
+
+#Rack::Adapter::Rails::ServletHelper.instance.setup_sessions
+
+require 'rack/adapter/rails/factory'
