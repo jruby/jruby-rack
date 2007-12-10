@@ -40,8 +40,8 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
     @Override
     public IRubyObject createApplicationObject(Ruby runtime) {
+        runtime.evalScriptlet("require 'rack/adapter/rails/bootstrap'");
         return createRackServletWrapper(runtime,
-                "require 'rack/adapter/rails_bootstrap'\n" +
                 "run Rack::Adapter::RailsFactory.new\n");
     }
 }

@@ -29,8 +29,25 @@
 
 package org.jruby.rack;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import org.jruby.exceptions.RaiseException;
+
 public class RackInitializationException extends Exception {
-    public RackInitializationException(Exception e) {
-        super(e);
+    public RackInitializationException(RaiseException re) {
+        super(exceptionMessage(re), re);
+    }
+
+    private static String exceptionMessage(RaiseException re) {
+        if (re != null) {
+            StringBuilder st = new StringBuilder();
+            st.append(re.getException().toString()).append("\n");
+            ByteArrayOutputStream b = new ByteArrayOutputStream();
+            re.getException().printBacktrace(new PrintStream(b));
+            st.append(b.toString());
+            return st.toString();
+        } else {
+            return null;
+        }
     }
 }

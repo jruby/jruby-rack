@@ -28,19 +28,24 @@
 # **** END LICENSE BLOCK ****
 #++
 
-require 'rack/adapter/rails'
+require File.dirname(__FILE__) + '/../../spec_helper'
 
-module Rack
-  module Adapter
-    class RailsFactory
-      def self.new
-        Rack::Builder.new {
-          servlet_helper = RailsServletHelper.instance
-          use StaticFiles, servlet_helper.public_root
-          use RailsSessions, servlet_helper
-          run Rails.new
-        }.to_app
-      end
-    end
+import org.jruby.rack.rails.RailsRackApplicationFactory
+
+describe RailsRackApplicationFactory, "newApplication" do
+  before :each do
+    @app_factory = RailsRackApplicationFactory.new
+    @servlet_context.stub!(:getInitParameter).and_return nil
+    @servlet_context.stub!(:getRealPath).and_return Dir.pwd
+    @app_factory.init(@servlet_context)
+  end
+  
+  it "should load the Rails environment and return an application" do
+    @servlet_context.should_receive(:getInitParameter).with("rails.root").and_return(
+      "rails/root")
+    @servlet_context.should_receive(:getRealPath).with("rails/root").and_return(
+      File.dirname(__FILE__) + '/../../../src/test/resources')
+    app = @app_factory.newApplication
+#    app.should respond_to(:call)
   end
 end

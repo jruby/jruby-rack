@@ -29,9 +29,9 @@
 #++
 
 require 'rack/adapter/rails/servlet_helper'
-ENV['RAILS_ROOT'] = Rack::Adapter::Rails::ServletHelper.instance.rails_root
-ENV['RAILS_ENV'] = Rack::Adapter::Rails::ServletHelper.instance.rails_env
-RAILS_DEFAULT_LOGGER = Rack::Adapter::Rails::ServletHelper.instance.logger
+ENV['RAILS_ROOT'] = Rack::Adapter::RailsServletHelper.instance.rails_root
+ENV['RAILS_ENV'] = Rack::Adapter::RailsServletHelper.instance.rails_env
+RAILS_DEFAULT_LOGGER = Rack::Adapter::RailsServletHelper.instance.logger
 
 load File.join(ENV['RAILS_ROOT'], 'config', 'environment.rb')
 

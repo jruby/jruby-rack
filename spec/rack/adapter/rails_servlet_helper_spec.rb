@@ -29,11 +29,10 @@
 #++
 
 require File.dirname(__FILE__) + '/../../spec_helper'
-require 'rack/adapter/rails_servlet_helper'
+require 'rack/adapter/rails/servlet_helper'
 
 describe Rack::Adapter::RailsServletHelper do
   before :each do
-    @servlet_context = mock("servlet context")
     @servlet_context.stub!(:getInitParameter).and_return nil
     @servlet_context.stub!(:getRealPath).and_return "/"
   end

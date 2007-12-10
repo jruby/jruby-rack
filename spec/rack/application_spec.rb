@@ -49,7 +49,6 @@ import org.jruby.rack.DefaultRackApplicationFactory
 
 describe DefaultRackApplicationFactory, "newRuntime" do
   before :each do
-    @servlet_context = mock("servlet context")
     @servlet_context.stub!(:getInitParameter).and_return nil
     @app_factory = DefaultRackApplicationFactory.new
     @app_factory.init(@servlet_context)
@@ -73,10 +72,9 @@ end
 
 describe DefaultRackApplicationFactory, "newApplication" do
   it "should create a Ruby object from the script snippet given" do
-    servlet_context = mock("servlet context")
-    servlet_context.stub!(:getInitParameter).and_return("require 'rack/lobster'; Rack::Lobster.new")
+    @servlet_context.stub!(:getInitParameter).and_return("require 'rack/lobster'; Rack::Lobster.new")
     app_factory = DefaultRackApplicationFactory.new
-    app_factory.init(servlet_context)
+    app_factory.init(@servlet_context)
     object = app_factory.newApplication
     object.respond_to?(:call).should == true
   end

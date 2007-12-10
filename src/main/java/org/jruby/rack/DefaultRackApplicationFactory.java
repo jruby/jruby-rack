@@ -32,6 +32,7 @@ package org.jruby.rack;
 import java.util.ArrayList;
 import javax.servlet.ServletContext;
 import org.jruby.Ruby;
+import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -52,9 +53,15 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
     
     public RackApplication newApplication() throws RackInitializationException {
-        Ruby runtime = newRuntime();
-        IRubyObject app = createApplicationObject(runtime);
-        return new DefaultRackApplication(app);
+        try {
+            Ruby runtime = newRuntime();
+            IRubyObject app = createApplicationObject(runtime);
+            return new DefaultRackApplication(app);
+        } catch (RackInitializationException rie) {
+            throw rie;
+        } catch (RaiseException re) {
+            throw new RackInitializationException(re);
+        }
     }
 
     public void finishedWithApplication(RackApplication app) {
@@ -63,20 +70,12 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     public Ruby newRuntime() throws RackInitializationException {
         try {
             Ruby runtime = JavaEmbedUtils.initialize(new ArrayList());
-            runtime.evalScriptlet("require 'rack/handler/servlet_bootstrap'");
+            runtime.evalScriptlet("require 'rack/handler/servlet/bootstrap'");
             runtime.getGlobalVariables().set("$servlet_context",
                     JavaEmbedUtils.javaToRuby(runtime, servletContext));
             return runtime;
-        } catch (Exception e) {
-            throw new RackInitializationException(e);
-        }
-    }
-
-    public String verify(Ruby runtime, String script) {
-        try {
-            return runtime.evalScriptlet(script).toString();
-        } catch (Exception e) {
-            return e.getMessage();
+        } catch (RaiseException re) {
+            throw new RackInitializationException(re);
         }
     }
 
@@ -88,5 +87,14 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return runtime.evalScriptlet(
                 "Rack::Handler::Servlet.new(Rack::Builder.new {( " 
                 + rackup + "\n )}.to_app)");
+    }
+
+    /** Used only for testing; not part of the public API. */
+    public String verify(Ruby runtime, String script) {
+        try {
+            return runtime.evalScriptlet(script).toString();
+        } catch (Exception e) {
+            return e.getMessage();
+        }
     }
 }
