@@ -46,6 +46,6 @@ describe RailsRackApplicationFactory, "newApplication" do
     @servlet_context.should_receive(:getRealPath).with("rails/root").and_return(
       File.dirname(__FILE__) + '/../../../src/test/resources')
     app = @app_factory.newApplication
-#    app.should respond_to(:call)
+    app.should respond_to(:call)
   end
 end

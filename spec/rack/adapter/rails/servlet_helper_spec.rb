@@ -28,7 +28,7 @@
 # **** END LICENSE BLOCK ****
 #++
 
-require File.dirname(__FILE__) + '/../../spec_helper'
+require File.dirname(__FILE__) + '/../../../spec_helper'
 require 'rack/adapter/rails/servlet_helper'
 
 describe Rack::Adapter::RailsServletHelper do
@@ -82,5 +82,19 @@ describe Rack::Adapter::RailsServletHelper do
     create_helper
     @servlet_context.should_receive(:log).with(/hello/)
     @helper.logger.info "hello"
+  end
+end
+
+describe Rack::Adapter::RailsSessions do
+  it "should description" do
+    app = mock "app"
+    helper = mock "servlet helper"
+    rs = Rack::Adapter::RailsSessions.new app, helper
+    options = mock "options"
+    env = {}
+    app.should_receive(:call).with(env)
+    helper.should_receive(:session_options_for_request).and_return options
+    rs.call(env)
+    env['rails.session_options'].should == options
   end
 end
