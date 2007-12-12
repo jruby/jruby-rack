@@ -76,6 +76,7 @@ describe Rack::Handler::Servlet, "add_variables" do
     servlet_env.stub!(:getMethod).and_return "GET"
     servlet_env.stub!(:getServletPath).and_return "/path/info/script_name"
     servlet_env.stub!(:getPathInfo).and_return "/path/info"
+    servlet_env.stub!(:getRequestURI).and_return "/request/uri"
     servlet_env.stub!(:getQueryString).and_return "hello=there"
     servlet_env.stub!(:getServerName).and_return "localhost"
     servlet_env.stub!(:getServerPort).and_return 80
@@ -87,6 +88,7 @@ describe Rack::Handler::Servlet, "add_variables" do
     env["REQUEST_METHOD"].should == "GET"
     env["SCRIPT_NAME"].should == "/path/info/script_name"
     env["PATH_INFO"].should == "/path/info"
+    env["REQUEST_URI"].should == "/request/uri"
     env["QUERY_STRING"].should == "hello=there"
     env["SERVER_NAME"].should == "localhost"
     env["SERVER_PORT"].should == "80"
@@ -100,6 +102,7 @@ describe Rack::Handler::Servlet, "add_variables" do
     servlet_env.stub!(:getMethod).and_return nil
     servlet_env.stub!(:getServletPath).and_return nil
     servlet_env.stub!(:getPathInfo).and_return nil
+    servlet_env.stub!(:getRequestURI).and_return nil    
     servlet_env.stub!(:getQueryString).and_return nil
     servlet_env.stub!(:getServerName).and_return nil
     servlet_env.stub!(:getRemoteHost).and_return nil
@@ -111,6 +114,7 @@ describe Rack::Handler::Servlet, "add_variables" do
     env.should have_key("REQUEST_METHOD")
     env.should have_key("SCRIPT_NAME")
     env.should have_key("PATH_INFO")
+    env.should have_key("REQUEST_URI")
     env.should have_key("QUERY_STRING")
     env.should have_key("SERVER_NAME")
     env.should have_key("REMOTE_HOST")

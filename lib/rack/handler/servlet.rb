@@ -104,6 +104,8 @@ module Rack
         env["SCRIPT_NAME"] ||= ""
         env["PATH_INFO"] = servlet_env.getPathInfo
         env["PATH_INFO"] ||= ""
+        env["REQUEST_URI"] = servlet_env.getRequestURI
+        env["REQUEST_URI"] ||= ""
         env["QUERY_STRING"] = servlet_env.getQueryString
         env["QUERY_STRING"] ||= ""
         env["SERVER_NAME"] = servlet_env.getServerName
