@@ -29,8 +29,6 @@
 
 package org.jruby.rack;
 
-import java.util.LinkedList;
-import java.util.Queue;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
@@ -38,32 +36,28 @@ import javax.servlet.ServletException;
  *
  * @author nicksieger
  */
-public class PoolingRackApplicationFactory implements RackApplicationFactory {
+public class SharedRackApplicationFactory implements RackApplicationFactory {
     private RackApplicationFactory realFactory;
-    private Queue<RackApplication> applicationPool;
+    private RackApplication application;
 
-    public PoolingRackApplicationFactory(RackApplicationFactory factory) {
+    public SharedRackApplicationFactory(RackApplicationFactory factory) {
         realFactory = factory;
-        applicationPool = new LinkedList<RackApplication>();
     }
 
     public void init(ServletContext servletContext) throws ServletException {
-        realFactory.init(servletContext);
-    }
-
-    public synchronized RackApplication newApplication() throws RackInitializationException {
-        if (applicationPool.isEmpty()) {
-            return realFactory.newApplication();
-        } else {
-            return applicationPool.remove();
+        try {
+            realFactory.init(servletContext);
+            application = realFactory.newApplication();
+        } catch (RackInitializationException ex) {
+            servletContext.log("unable to create shared application instance", ex);
+            throw new ServletException(ex);
         }
     }
 
-    public synchronized void finishedWithApplication(RackApplication app) {
-        applicationPool.add(app);
+    public RackApplication newApplication() throws RackInitializationException {
+        return application;
     }
 
-    public Queue<RackApplication> getApplicationPool() {
-        return applicationPool;
+    public void finishedWithApplication(RackApplication app) {
     }
 }

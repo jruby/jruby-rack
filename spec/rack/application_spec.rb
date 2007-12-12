@@ -89,9 +89,8 @@ describe PoolingRackApplicationFactory do
   end
 
   it "should initialize the delegate factory when initialized" do
-    context = mock("servlet context")
-    @factory.should_receive(:init).with(context)
-    @pool.init(context)
+    @factory.should_receive(:init).with(@servlet_context)
+    @pool.init(@servlet_context)
   end
 
   it "should start out empty" do
@@ -109,5 +108,41 @@ describe PoolingRackApplicationFactory do
     @pool.finishedWithApplication app
     @pool.getApplicationPool.should_not be_empty
     @pool.newApplication.should == app
+  end
+end
+
+import org.jruby.rack.SharedRackApplicationFactory
+
+describe SharedRackApplicationFactory do
+  before :each do
+    @factory = mock "factory"
+    @shared = SharedRackApplicationFactory.new @factory
+  end
+
+  it "should initialize the delegate factory and create the shared application when initialized" do
+    @factory.should_receive(:init).with(@servlet_context)
+    app = mock "application"
+    @factory.should_receive(:newApplication).and_return app
+    @shared.init(@servlet_context)
+  end
+
+  it "should throw a servlet exception if the shared application cannot be initialized" do
+    @factory.should_receive(:init).with(@servlet_context)
+    app = mock "application"
+    @factory.should_receive(:newApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
+    lambda {
+      @shared.init(@servlet_context)
+    }.should raise_error # TODO: doesn't work w/ raise_error(javax.servlet.ServletException)
+  end
+
+  it "should return the same application for any newApplication call" do
+    @factory.should_receive(:init).with(@servlet_context)
+    app = mock "application"
+    @factory.should_receive(:newApplication).and_return app
+    @shared.init(@servlet_context)
+    1.upto(5) do
+      @shared.newApplication.should == app
+      @shared.finishedWithApplication app
+    end
   end
 end

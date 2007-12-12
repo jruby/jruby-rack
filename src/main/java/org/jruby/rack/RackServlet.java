@@ -45,7 +45,7 @@ public class RackServlet extends HttpServlet {
     private RackApplicationFactory rackFactory;
 
     public RackServlet() {
-        this(new DefaultRackApplicationFactory());
+        this(new SharedRackApplicationFactory(new DefaultRackApplicationFactory()));
     }
 
     public RackServlet(RackApplicationFactory rackFactory) {
