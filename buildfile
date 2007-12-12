@@ -40,7 +40,17 @@ define 'jruby-rack' do
   project.version = '1.0-SNAPSHOT'
   compile.with 'javax.servlet:servlet-api:jar:2.3', JRUBY
   resources.from _('lib')
+  resources.from FileList['target/rack*/lib']
+  
   test.using(:rspec, :required_gems => ["rack"])
+
+  directory _("target")
+  task :unpack_gems => _("target") do |t|
+    Dir.chdir(t.prerequisites.first) do
+      ruby "-S", "gem", "unpack", "rack"
+    end
+  end
+  task :resources => :unpack_gems
 
   package :jar, :id => 'jruby-rack'
 end
