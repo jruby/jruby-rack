@@ -2,13 +2,17 @@ module Rack
   module Adapter
     ServletContext = $servlet_context
     class ServletHelper
-      attr_reader :public_root
+      attr_reader :public_root, :gem_path
 
       def initialize(servlet_context = nil)
         @servlet_context = servlet_context || ServletContext
         @public_root = @servlet_context.getInitParameter 'public.root'
         @public_root ||= '/WEB-INF/public'
         @public_root = @servlet_context.getRealPath @public_root
+        @gem_path = @servlet_context.getInitParameter 'gem.path'
+        @gem_path ||= '/WEB-INF/gems'
+        @gem_path = @servlet_context.getRealPath @gem_path
+        setup_gems
       end
       
       def logdev
@@ -23,6 +27,17 @@ module Rack
       def logger
         require 'logger'
         Logger.new(logdev)
+      end
+
+      def setup_gems
+        begin
+          require 'rubygems'
+        rescue LoadError
+          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
+          require 'rubygems'
+        end
+        Gem.clear_paths
+        Gem.path << @gem_path
       end
 
       def self.instance
