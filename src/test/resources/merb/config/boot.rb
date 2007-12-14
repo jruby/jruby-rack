@@ -7,5 +7,6 @@ module Merb
   
   class Server
     def self.initialize_merb; end
+    def self.config; {} end
   end
 end

@@ -53,4 +53,11 @@ describe Rack::Adapter::MerbServletHelper do
     @servlet_context.should_receive(:log).with(/hello/)
     @helper.logger.info "hello"
   end
+  
+  it "should determine path_prefix from the 'path.prefix' init parameter" do
+    @servlet_context.should_receive(:getInitParameter).with("path.prefix").and_return "/blah"
+    create_helper
+    @helper.path_prefix.should == "/blah"
+  end
+    
 end
