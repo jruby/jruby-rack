@@ -60,4 +60,10 @@ describe Rack::Adapter::MerbServletHelper do
     @helper.path_prefix.should == "/blah"
   end
     
+  it "should determine the session store from the 'session.store' init parameter" do
+    @servlet_context.should_receive(:getInitParameter).with("session.store").and_return "blah"
+    create_helper
+    @helper.session_store.should == "blah"
+  end
+  
 end

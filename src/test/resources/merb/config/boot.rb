@@ -8,5 +8,6 @@ module Merb
   class Server
     def self.initialize_merb; end
     def self.config; {} end
+    def self.register_session_type(*args); end
   end
 end
