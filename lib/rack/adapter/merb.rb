@@ -13,7 +13,7 @@ module Rack
         response = StringIO.new
         MERB_LOGGER.info("\nRequest: REQUEST_URI: #{request.params['REQUEST_URI']}  (#{Time.now.strftime("%Y-%m-%d %H:%M:%S")})")
         MERB_LOGGER.info("\nRequest: PATH_INFO: #{request.params['PATH_INFO']}  (#{Time.now.strftime("%Y-%m-%d %H:%M:%S")})")
-        
+
         if @path_prefix
           if request.params['REQUEST_URI'] =~ @path_prefix
             request.params['PATH_INFO'].sub!(@path_prefix, '')
@@ -29,16 +29,24 @@ module Rack
         rescue Object => e
           return [500, {'Content-Type'=>'text/html'}, 'Internal Server Error: ' + e.to_s]
         end
-        
+
         [controller.status, controller.headers, controller.body || '']
       end
     end
-    
+
     class RequestWrapper
-      def initialize(env); @env = env; end
-      def params; @env; end
-      def body; @env['rack.input']; end
+      def initialize(env)
+        @env = env
+      end
+
+      def params
+        @env
+      end
+
+      def body
+        @body ||= StringIO.new(@env['rack.input'].read)
+      end
     end
-    
+
   end
 end
