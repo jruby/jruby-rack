@@ -17,6 +17,8 @@ options[:environment] = servlet_helper.merb_env if servlet_helper.merb_env
 options[:path_prefix] = servlet_helper.path_prefix if servlet_helper.path_prefix
 options[:session_store] = servlet_helper.session_store if servlet_helper.session_store
 
+Object.const_set('MERB_ENV', servlet_helper.merb_env)
+
 if options[:environment].to_s == 'production'
   options[:exception_details] = options.fetch(:exception_details, false)
   options[:cache_templates] = true
@@ -25,7 +27,6 @@ else
 end
 
 Merb::Server.send :class_variable_set, :@@merb_opts, options
-puts Merb::Server.instance_methods(false)
 Merb::Server.register_session_type('java', 'rack/adapter/merb/java_session', 'Using Java Servlet sessions')
 Merb::Server.initialize_merb
 Object.const_set('MERB_LOGGER', servlet_helper.logger)
