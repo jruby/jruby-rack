@@ -18,6 +18,7 @@ module Rack
           if request.params['REQUEST_URI'] =~ @path_prefix
             request.params['PATH_INFO'].sub!(@path_prefix, '')
             request.params['REQUEST_URI'].sub!(@path_prefix, '')
+            request.params['REQUEST_URI'] = '/' if request.params['REQUEST_URI'].empty?
           else
             raise "path.prefix is set to '#{@path_prefix.inspect}', but that's not in the REQUEST_URI. "
           end
@@ -29,7 +30,7 @@ module Rack
           return [500, {'Content-Type'=>'text/html'}, 'Internal Server Error: ' + e.to_s]
         end
         
-        [controller.status, controller.headers, controller.body]
+        [controller.status, controller.headers, controller.body || '']
       end
     end
     
