@@ -41,7 +41,10 @@ require "rack/request"
 require "rack/response"
 require "dispatcher"
 
-class ActionController::CgiRequest
+class ActionController::CgiRequest #:nodoc:
+  # Replace session_options writer to merge session options
+  # With ones passed into request (so we can preserve the
+  # java servlet request)
   def session_options=(opts)
     if opts == false
       @session_options = false

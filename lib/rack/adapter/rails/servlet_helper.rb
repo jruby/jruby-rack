@@ -56,9 +56,7 @@ module Rack
       end
 
       def session_options
-        @session_options ||= 
-          defined?(::ActionController) &&
-            ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS || {}
+        @session_options ||= {} 
       end
 
       def session_options_for_request(env)
