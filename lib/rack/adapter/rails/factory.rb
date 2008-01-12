@@ -37,7 +37,7 @@ module Rack
         Rack::Builder.new {
           servlet_helper = RailsServletHelper.instance
           use StaticFiles, servlet_helper.public_root
-          use RailsSessions, servlet_helper
+          use RailsSetup, servlet_helper
           run Rails.new
         }.to_app
       end

@@ -47,7 +47,7 @@ module Rack
       
       def setup_sessions
         if default_sessions?
-          session_options[:database_manager] = CGI::Session::JavaServletStore
+          session_options[:database_manager] = java_servlet_store
         end
         # Turn off default cookies when using Java sessions
         if java_sessions?
@@ -56,7 +56,9 @@ module Rack
       end
 
       def session_options
-        ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
+        @session_options ||= 
+          defined?(::ActionController) &&
+            ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS || {}
       end
 
       def session_options_for_request(env)
@@ -66,15 +68,23 @@ module Rack
       end
       
       def java_sessions?
-        session_options[:database_manager] == CGI::Session::JavaServletStore
+        session_options[:database_manager] == java_servlet_store
       end
 
       def default_sessions?
-        session_options[:database_manager] == CGI::Session::PStore
+        session_options[:database_manager] == default_store
+      end
+
+      def default_store
+	defined?(::CGI::Session::PStore) && CGI::Session::PStore
+      end
+
+      def java_servlet_store
+	CGI::Session::JavaServletStore
       end
     end
 
-    class RailsSessions
+    class RailsSetup
       def initialize(app, servlet_helper)
         @app = app
         @servlet_helper = servlet_helper
@@ -82,6 +92,7 @@ module Rack
 
       def call(env)
         env['rails.session_options'] = @servlet_helper.session_options_for_request(env)
+        env["RAILS_RELATIVE_URL_ROOT"] = env['java.servlet_request'].getContextPath
         @app.call(env)
       end
     end

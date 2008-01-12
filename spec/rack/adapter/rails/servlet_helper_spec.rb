@@ -31,6 +31,8 @@
 require File.dirname(__FILE__) + '/../../../spec_helper'
 require 'rack/adapter/rails/servlet_helper'
 
+class ::CGI::Session::PStore; end
+
 describe Rack::Adapter::RailsServletHelper do
   before :each do
     @servlet_context.stub!(:getInitParameter).and_return nil
@@ -83,17 +85,42 @@ describe Rack::Adapter::RailsServletHelper do
     @servlet_context.should_receive(:log).with(/hello/)
     @helper.logger.info "hello"
   end
+
+  it "should setup java servlet-based sessions if the session store is the default" do
+    create_helper
+    @helper.session_options[:database_manager] = ::CGI::Session::PStore
+    @helper.setup_sessions
+    @helper.session_options[:database_manager].should == ::CGI::Session::JavaServletStore
+  end
+
+  it "should turn off Ruby CGI cookies if the java servlet store is used" do
+    create_helper
+    @helper.session_options[:database_manager] = ::CGI::Session::JavaServletStore
+    @helper.setup_sessions
+    @helper.session_options[:no_cookies].should == true
+  end
+
+  it "should provide the servlet request in the session options if the java servlet store is used" do
+    create_helper
+    @helper.session_options[:database_manager] = ::CGI::Session::JavaServletStore
+    @helper.setup_sessions
+    env = {"java.servlet_request" => mock("servlet request")}
+    @helper.session_options_for_request(env).should have_key(:java_servlet_request)
+    @helper.session_options_for_request(env)[:java_servlet_request].should == env["java.servlet_request"]
+  end
 end
 
-describe Rack::Adapter::RailsSessions do
-  it "should description" do
+describe Rack::Adapter::RailsSetup do
+  it "should set up the env hash for Rails" do
     app = mock "app"
     helper = mock "servlet helper"
-    rs = Rack::Adapter::RailsSessions.new app, helper
+    rs = Rack::Adapter::RailsSetup.new app, helper
     options = mock "options"
     env = {}
     app.should_receive(:call).with(env)
     helper.should_receive(:session_options_for_request).and_return options
+    env['java.servlet_request'] = mock "servlet request"
+    env['java.servlet_request'].should_receive(:getContextPath).and_return "/blah"
     rs.call(env)
     env['rails.session_options'].should == options
   end

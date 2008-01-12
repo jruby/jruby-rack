@@ -41,6 +41,18 @@ require "rack/request"
 require "rack/response"
 require "dispatcher"
 
+class ActionController::CgiRequest
+  def session_options=(opts)
+    if opts == false
+      @session_options = false
+    elsif @session_options
+      @session_options.update(opts)
+    else
+      @session_options = opts
+    end
+  end
+end if defined?(::ActionController)
+
 module Rack
   module Adapter
     class Rails
