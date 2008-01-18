@@ -24,8 +24,8 @@ describe Rack::Adapter::MerbServletHelper do
     @helper.merb_root.should == "./WEB-INF"
   end
 
-  it "should determine merb_env from the 'merb.env' init parameter" do
-    @servlet_context.should_receive(:getInitParameter).with("merb.env").and_return "test"
+  it "should determine merb_environment from the 'merb.environment' init parameter" do
+    @servlet_context.should_receive(:getInitParameter).with("merb.environment").and_return "test"
     create_helper
     @helper.merb_env.should == "test"
   end

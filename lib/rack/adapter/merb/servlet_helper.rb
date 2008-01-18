@@ -10,7 +10,7 @@ module Rack
         @merb_root = @servlet_context.getInitParameter 'merb.root'
         @merb_root ||= '/WEB-INF'
         @merb_root = @servlet_context.getRealPath @merb_root
-        @merb_env = @servlet_context.getInitParameter 'merb.env'
+        @merb_env = @servlet_context.getInitParameter 'merb.environment'
         @merb_env ||= 'production'
         @path_prefix = @servlet_context.getInitParameter 'path.prefix'
         @session_store = @servlet_context.getInitParameter 'session.store'

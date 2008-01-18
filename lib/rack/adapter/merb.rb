@@ -3,7 +3,7 @@ module Rack
 
     class Merb
       def initialize
-        if p = ::Merb::Server.config[:path_prefix]
+        if p = ::Merb::Config[:path_prefix]
           @path_prefix = /^#{Regexp.escape(p)}/
         end
       end
@@ -11,8 +11,8 @@ module Rack
       def call(env)
         request = RequestWrapper.new(env)
         response = StringIO.new
-        MERB_LOGGER.info("\nRequest: REQUEST_URI: #{request.params['REQUEST_URI']}  (#{Time.now.strftime("%Y-%m-%d %H:%M:%S")})")
-        MERB_LOGGER.info("\nRequest: PATH_INFO: #{request.params['PATH_INFO']}  (#{Time.now.strftime("%Y-%m-%d %H:%M:%S")})")
+        ::Merb.logger.info("\nRequest: REQUEST_URI: #{request.params['REQUEST_URI']}  (#{Time.now.strftime("%Y-%m-%d %H:%M:%S")})")
+        ::Merb.logger.info("\nRequest: PATH_INFO: #{request.params['PATH_INFO']}  (#{Time.now.strftime("%Y-%m-%d %H:%M:%S")})")
 
         if @path_prefix
           if request.params['REQUEST_URI'] =~ @path_prefix

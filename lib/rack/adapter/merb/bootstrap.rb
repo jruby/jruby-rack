@@ -3,32 +3,13 @@ require 'rack/adapter/merb/servlet_helper'
 servlet_helper = Rack::Adapter::MerbServletHelper.instance
 
 load File.join(servlet_helper.merb_root, 'config', 'boot.rb')
-
-merb_yml = File.join(servlet_helper.merb_root, 'config', 'merb.yml')
-options = if File.exists?(merb_yml)
-            require 'merb/erubis_ext'
-            Merb::Config.defaults.merge(Erubis.load_yaml_file(merb_yml))
-          else
-            Merb::Config.defaults
-          end
-
-options[:merb_root] = servlet_helper.merb_root if servlet_helper.merb_root
-options[:environment] = servlet_helper.merb_env if servlet_helper.merb_env
-options[:path_prefix] = servlet_helper.path_prefix if servlet_helper.path_prefix
-options[:session_store] = servlet_helper.session_store if servlet_helper.session_store
-
-Object.const_set('MERB_ENV', servlet_helper.merb_env)
-
-if options[:environment].to_s == 'production'
-  options[:exception_details] = options.fetch(:exception_details, false)
-  options[:cache_templates] = true
-else
-  options[:exception_details] = options.fetch(:exception_details, true)
-end
-
-Merb::Server.send :class_variable_set, :@@merb_opts, options
-Merb::Server.register_session_type('java', 'rack/adapter/merb/java_session', 'Using Java Servlet sessions')
-Merb::Server.initialize_merb
-Object.const_set('MERB_LOGGER', servlet_helper.logger)
+Merb::Config.setup(File.join(servlet_helper.merb_root, 'config', 'merb.yml'))
+Merb::Config[:merb_root] = servlet_helper.merb_root if servlet_helper.merb_root
+Merb::Config[:environment] = servlet_helper.merb_env if servlet_helper.merb_env
+Merb::Config[:path_prefix] = servlet_helper.path_prefix if servlet_helper.path_prefix
+Merb::Config[:session_store] = servlet_helper.session_store if servlet_helper.session_store
+Merb::BootLoader.register_session_type('java', 'rack/adapter/merb/java_session', 'Using Java Servlet sessions')
+Merb::BootLoader.initialize_merb
+Merb.logger = servlet_helper.logger
 
 require 'rack/adapter/merb/factory'

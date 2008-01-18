@@ -1,7 +1,7 @@
 module Merb
   module SessionMixin
     def setup_session
-      MERB_LOGGER.info("Setting Up Java Session")
+      Merb.logger.info("Setting Up Java Session")
       request.session = {}
       java_session = request.env['java.servlet_request'].getSession(false)
       if java_session
@@ -14,7 +14,7 @@ module Merb
     end
 
     def finalize_session
-      MERB_LOGGER.info("Finalizing Java Session")
+      Merb.logger.info("Finalizing Java Session")
       java_session = request.env['java.servlet_request'].getSession(true)
       marshalled_string = Marshal.dump(request.session)
       marshalled_bytes = marshalled_string.to_java_bytes
