@@ -58,24 +58,18 @@ if defined?(Buildr)
         ["ci_reporter", options[:required_gems]].flatten.compact
       end
 
-      if RUBY_PLATFORM =~ /java/
-        def jruby(name, *args)
-          # TODO
-        end
-      else
-        def jruby(*args)
-          java_args = ["org.jruby.Main", *args]
-          java_args << {} unless Hash === args.last
-          cmd_options = java_args.last
-          project = cmd_options.delete(:project)
-          cmd_options[:java_args] ||= []
-          cmd_options[:java_args] << "-Xmx512m" unless cmd_options[:java_args].detect {|a| a =~ /^-Xmx/}
-          cmd_options[:properties] ||= {}
-          cmd_options[:properties]["jruby.home"] = jruby_home(project)
-          Java::Commands.java(*java_args)
-        end
+      def jruby(*args)
+        java_args = ["org.jruby.Main", *args]
+        java_args << {} unless Hash === args.last
+        cmd_options = java_args.last
+        project = cmd_options.delete(:project)
+        cmd_options[:java_args] ||= []
+        cmd_options[:java_args] << "-Xmx512m" unless cmd_options[:java_args].detect {|a| a =~ /^-Xmx/}
+        cmd_options[:properties] ||= {}
+        cmd_options[:properties]["jruby.home"] = jruby_home(project)
+        Java::Commands.java(*java_args)
       end
-      
+
       def install_gems(options)
         unless required_gems(options).all? {|g| gem_path(options[:project], g)}
           args = ["-S", "maybe_install_gems", *required_gems]
