@@ -1,101 +1,90 @@
-#--
-# **** BEGIN LICENSE BLOCK *****
-# Version: CPL 1.0/GPL 2.0/LGPL 2.1
-#
-# The contents of this file are subject to the Common Public
-# License Version 1.0 (the "License"); you may not use this file
-# except in compliance with the License. You may obtain a copy of
-# the License at http://www.eclipse.org/legal/cpl-v10.html
-#
-# Software distributed under the License is distributed on an "AS
-# IS" basis, WITHOUT WARRANTY OF ANY KIND, either express or
-# implied. See the License for the specific language governing
-# rights and limitations under the License.
-#
-# Copyright (C) 2007 Sun Microsystems, Inc.
-#
-# Alternatively, the contents of this file may be used under the terms of
-# either of the GNU General Public License Version 2 or later (the "GPL"),
-# or the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-# in which case the provisions of the GPL or the LGPL are applicable instead
-# of those above. If you wish to allow use of your version of this file only
-# under the terms of either the GPL or the LGPL, and not to allow others to
-# use your version of this file under the terms of the CPL, indicate your
-# decision by deleting the provisions above and replace them with the notice
-# and other provisions required by the GPL or the LGPL. If you do not delete
-# the provisions above, a recipient may use your version of this file under
-# the terms of any one of the CPL, the GPL or the LGPL.
-# **** END LICENSE BLOCK ****
-#++
-
 if defined?(Buildr)
-require 'rexml/document'
+  require 'rexml/document'
+  require 'rbconfig'
+  
+  module Buildr
+    class RSpec < TestFramework::Base
+      REQUIRES = [(defined?(JRUBY) ? JRUBY : "org.jruby:jruby-complete:jar:1.1RC1")]
 
-module RSpec
-  RSPEC_REQUIRES = [(defined?(JRUBY) ? JRUBY : "org.jruby:jruby-complete:jar:1.1b1"),
-    Buildr::Java::TestTask::JUNIT_REQUIRES]
-  RSPEC_TESTS_PATTERN = "*"
-
-  class << self
-    def included(mod)
-      mod::TEST_FRAMEWORKS << :rspec
-    end
-    private :included
-  end
-
-  private
-  def jruby_home
-    @project._(".jruby")
-  end
-
-  def gem_path(gem_name, *additional)
-    dir = Dir["#{jruby_home}/lib/ruby/gems/1.8/gems/#{gem_name}*"].to_a.first
-    dir = File.join(dir, *additional) unless additional.empty?
-    dir
-  end
-
-  def required_gems
-    ["ci_reporter", options[:required_gems]].flatten.compact
-  end
-
-  def rspec_run(args)
-    cmd_options = args.only(:classpath, :properties, :java_args)
-    cmd_options[:java_args] ||= []
-    cmd_options[:java_args] << "-Xmx512m" unless cmd_options[:java_args].detect {|a| a =~ /^-Xmx/}
-    cmd_options[:properties] ||= {}
-    cmd_options[:properties]["jruby.home"] = jruby_home
-
-    unless required_gems.all? {|g| gem_path(g)}
-      java_args = ["org.jruby.Main", "-S", "maybe_install_gems", *required_gems]
-      java_args << cmd_options.merge({:name => "JRuby Setup"})
-      Buildr.java *java_args
-    end
-
-    begin
-      failed_examples = []
-      report_dir = report_to.to_s
-      FileUtils.rm_rf report_dir
-      ENV['CI_REPORTS'] = report_dir
-
-      java_args = ["org.jruby.Main", "-Ilib", "-S", "spec",
-        "--require", gem_path("ci_reporter", "lib/ci/reporter/rake/rspec_loader"),
-        "--format", "CI::Reporter::RSpec", @project._("spec"),
-        cmd_options.merge({:name => "RSpec"}) ]
-      Buildr.java *java_args
-    rescue
-      Dir["#{report_dir}/**/*.xml"].each do |xmlf|
-        doc = File.open(xmlf) {|f| REXML::Document.new(f)}
-        doc.root.elements.to_a("/testsuite/testcase/failure/..").each do |el|
-          failed_examples << el.parent.attributes["name"] + " " + el.attributes["name"]
+      class << self
+        def applies_to?(project) #:nodoc:
+          File.directory?(project._("spec"))
         end
       end
-      raise if failed_examples.empty?
-    end
-    failed_examples
-  end
-end
+      
+      def tests(project) #:nodoc:
+        FileList["#{project._('spec')}/**/*_spec.rb"]
+      end
+  
+      def run(tests, task, dependencies) #:nodoc:
+        class << task; public :project; end # project should probably be public on task
+        cmd_options = task.options.only(:properties, :java_args)
+        cmd_options.update :classpath => dependencies, :project => task.project
+        install_gems(cmd_options)
 
-class Buildr::Java::TestTask
-  include RSpec
-end
+        report_dir = task.report_to.to_s
+        FileUtils.rm_rf report_dir
+        ENV['CI_REPORTS'] = report_dir
+        
+        jruby("-Ilib", "-S", "spec",
+          "--require", gem_path(task.project, "ci_reporter", "lib/ci/reporter/rake/rspec_loader"),
+          "--format", "CI::Reporter::RSpecDoc", tests,
+          cmd_options.merge({:name => "RSpec"}))
+
+        passed_examples = []
+        Dir["#{report_dir}/**/*.xml"].each do |xmlf|
+          doc = File.open(xmlf) {|f| REXML::Document.new(f)}
+          doc.root.elements.to_a("/testsuite/testcase").each do |el|
+            if el.elements.to_a("failure").empty?
+              passed_examples << el.parent.attributes["name"] + " " + el.attributes["name"]
+            end
+          end
+        end
+        passed_examples
+      end
+
+      private
+      def jruby_home(project)
+        @jruby_home ||= RUBY_PLATFORM =~ /java/ ? Config::CONFIG['prefix'] : project._(".jruby")
+      end
+
+      def gem_path(project, gem_name, *additional)
+        dir = Dir["#{jruby_home(project)}/lib/ruby/gems/1.8/gems/#{gem_name}*"].to_a.first
+        dir = File.join(dir, *additional) unless additional.empty?
+        dir
+      end
+
+      def required_gems(options)
+        ["ci_reporter", options[:required_gems]].flatten.compact
+      end
+
+      if RUBY_PLATFORM =~ /java/
+        def jruby(name, *args)
+          # TODO
+        end
+      else
+        def jruby(*args)
+          java_args = ["org.jruby.Main", *args]
+          java_args << {} unless Hash === args.last
+          cmd_options = java_args.last
+          project = cmd_options.delete(:project)
+          cmd_options[:java_args] ||= []
+          cmd_options[:java_args] << "-Xmx512m" unless cmd_options[:java_args].detect {|a| a =~ /^-Xmx/}
+          cmd_options[:properties] ||= {}
+          cmd_options[:properties]["jruby.home"] = jruby_home(project)
+          Java::Commands.java(*java_args)
+        end
+      end
+      
+      def install_gems(options)
+        unless required_gems(options).all? {|g| gem_path(options[:project], g)}
+          args = ["-S", "maybe_install_gems", *required_gems]
+          args << {:name => "JRuby Setup"}.merge(options)
+          jruby(*args)
+        end
+      end
+    end
+  end
+
+  Buildr::TestFramework << Buildr::RSpec
 end
