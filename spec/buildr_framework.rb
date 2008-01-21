@@ -25,22 +25,12 @@ if defined?(Buildr)
         report_dir = task.report_to.to_s
         FileUtils.rm_rf report_dir
         ENV['CI_REPORTS'] = report_dir
-        
+
         jruby("-Ilib", "-S", "spec",
           "--require", gem_path(task.project, "ci_reporter", "lib/ci/reporter/rake/rspec_loader"),
           "--format", "CI::Reporter::RSpecDoc", tests,
           cmd_options.merge({:name => "RSpec"}))
-
-        passed_examples = []
-        Dir["#{report_dir}/**/*.xml"].each do |xmlf|
-          doc = File.open(xmlf) {|f| REXML::Document.new(f)}
-          doc.root.elements.to_a("/testsuite/testcase").each do |el|
-            if el.elements.to_a("failure").empty?
-              passed_examples << el.parent.attributes["name"] + " " + el.attributes["name"]
-            end
-          end
-        end
-        passed_examples
+        tests
       end
 
       private

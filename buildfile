@@ -43,13 +43,15 @@ define 'jruby-rack' do
   directory _("target")
   task :unpack_gems => _("target") do |t|
     Dir.chdir(t.prerequisites.first) do
-      ruby "-S", "gem", "unpack", "rack"
-      mv FileList["rack-*"].first, "rack"
+      unless File.directory?(_("target/rack"))
+        ruby "-S", "gem", "unpack", "rack"
+        mv FileList["rack-*"].first, "rack"
+      end
     end
   end
 
   resources.from _('lib'), _('target/rack/lib')
-  task :resources => :unpack_gems
+  task :resources => task('unpack_gems')
 
   test.using :rspec
 
