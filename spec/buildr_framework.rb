@@ -51,6 +51,12 @@ module Buildr
       java_args << {} unless Hash === args.last
       cmd_options = java_args.last
       project = cmd_options.delete(:project)
+      if RUBY_PLATFORM =~ /java/
+        # when run from within JRuby, use jars in launched-JRuby's classpath rather than the
+        # stated dependency
+        cmd_options[:classpath].delete_if {|e| File.basename(e) =~ /^jruby-complete-.*\.jar$/ }
+        cmd_options[:classpath].unshift *(java.lang.System.getProperty("java.class.path").split(File::PATH_SEPARATOR))
+      end
       cmd_options[:java_args] ||= []
       cmd_options[:java_args] << "-Xmx512m" unless cmd_options[:java_args].detect {|a| a =~ /^-Xmx/}
       cmd_options[:properties] ||= {}
