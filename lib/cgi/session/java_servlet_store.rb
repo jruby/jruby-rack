@@ -2,7 +2,7 @@ class CGI #:nodoc:all
   class Session
     class JavaServletStore
       RAILS_SESSION_KEY = "__current_rails_session"
-      
+
       def initialize(session, option=nil)
         @java_request = option["java_servlet_request"] if option
         unless @java_request
@@ -28,9 +28,28 @@ class CGI #:nodoc:all
       # Save session state to the Java session
       def update
         java_session = @java_request.getSession(true)
-        marshalled_string = Marshal.dump(@session_data)
-        marshalled_bytes = marshalled_string.to_java_bytes
-        java_session.setAttribute(RAILS_SESSION_KEY, marshalled_bytes)
+        hash = @session_data.dup
+        hash.delete_if do |k,v|
+          if String === k
+            case v
+            when String, Numeric, true, false, nil
+              java_session.setAttribute k, v
+              true
+            else
+              if v.respond_to?(:java_object)
+                java_session.setAttribute k, v
+                true
+              else
+                false
+              end
+            end
+          end
+        end
+        unless hash.empty?
+          marshalled_string = Marshal.dump(hash)
+          marshalled_bytes = marshalled_string.to_java_bytes
+          java_session.setAttribute(RAILS_SESSION_KEY, marshalled_bytes)
+        end
       end
 
       # Update and close the Java session entry
