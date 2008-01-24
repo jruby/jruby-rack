@@ -72,6 +72,22 @@ describe CGI::Session::JavaServletStore do
         CGI::Session::JavaServletStore::RAILS_SESSION_KEY).and_return marshal_data.to_java_bytes
       session_store.restore.should == hash
     end
+
+    it "should retrieve values from other keys in the session" do
+      hash = {"foo" => 1, "bar" => true}
+      @request.should_receive(:getSession).with(false).and_return @session
+      @session.should_receive(:getAttributeNames).and_return ["foo", "bar"]
+      @session.should_receive(:getAttribute).with("foo").and_return hash["foo"]
+      @session.should_receive(:getAttribute).with("bar").and_return hash["bar"]
+      session_store.restore.should == hash
+    end
+
+    it "should retrieve java objects in the session" do
+      @request.should_receive(:getSession).with(false).and_return @session
+      @session.should_receive(:getAttributeNames).and_return ["foo"]
+      @session.should_receive(:getAttribute).with("foo").and_return java.lang.Object.new
+      session_store.restore["foo"].should be_instance_of(java.lang.Object)
+    end
   end
 
   describe "#update" do
