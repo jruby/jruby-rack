@@ -16,10 +16,16 @@ class CGI #:nodoc:all
         @session_data = {}
         java_session = @java_request.getSession(false)
         if java_session
-          marshalled_bytes = java_session.getAttribute(RAILS_SESSION_KEY)
-          if marshalled_bytes
-            marshalled_string = String.from_java_bytes(marshalled_bytes)
-            @session_data = Marshal.load(marshalled_string)
+          java_session.getAttributeNames.each do |k|
+            if k == RAILS_SESSION_KEY
+              marshalled_bytes = java_session.getAttribute(RAILS_SESSION_KEY)
+              if marshalled_bytes
+                data = Marshal.load(String.from_java_bytes(marshalled_bytes))
+                @session_data.update data if Hash === data
+              end
+            else
+              @session_data[k] = java_session.getAttribute(k)
+            end
           end
         end
         @session_data
