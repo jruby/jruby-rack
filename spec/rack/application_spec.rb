@@ -39,7 +39,7 @@ describe DefaultRackApplication, "call" do
 
     ruby_object = mock "application"
     ruby_object.should_receive(:call).with(servlet_request).and_return rack_result
-    
+
     application = DefaultRackApplication.new(ruby_object)
     application.call(servlet_request).should == rack_result
   end
@@ -47,36 +47,46 @@ end
 
 import org.jruby.rack.DefaultRackApplicationFactory
 
-describe DefaultRackApplicationFactory, "newRuntime" do
+describe DefaultRackApplicationFactory do
   before :each do
-    @servlet_context.stub!(:getInitParameter).and_return nil
     @app_factory = DefaultRackApplicationFactory.new
-    @app_factory.init(@servlet_context)
   end
 
-  it "should create a new Ruby runtime with the rack environment pre-loaded" do
-    runtime = @app_factory.newRuntime
-    lazy_string = proc {|v| "(begin; #{v}; rescue Exception => e; e.class; end).name"}
-    @app_factory.verify(runtime, lazy_string.call("Rack")).should == "Rack"
-    @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Servlet")
-      ).should == "Rack::Handler::Servlet"
-    @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Bogus")
-      ).should_not == "Rack::Handler::Bogus"
+  describe "newRuntime" do
+    before :each do
+      @servlet_context.stub!(:getInitParameter).and_return nil
+      @app_factory.init @servlet_context
+    end
+
+    it "should create a new Ruby runtime with the rack environment pre-loaded" do
+      runtime = @app_factory.newRuntime
+      lazy_string = proc {|v| "(begin; #{v}; rescue Exception => e; e.class; end).name"}
+      @app_factory.verify(runtime, lazy_string.call("Rack")).should == "Rack"
+      @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Servlet")
+        ).should == "Rack::Handler::Servlet"
+      @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Bogus")
+        ).should_not == "Rack::Handler::Bogus"
+    end
+
+    it "should initialize the $servlet_context global variable" do
+      runtime = @app_factory.newRuntime
+      @app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
+    end
   end
 
-  it "should initialize the $servlet_context global variable" do
-    runtime = @app_factory.newRuntime
-    @app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
+  describe "newApplication" do
+    it "should create a Ruby object from the script snippet given" do
+      @servlet_context.stub!(:getInitParameter).and_return("require 'rack/lobster'; Rack::Lobster.new")
+      @app_factory.init @servlet_context
+      object = @app_factory.newApplication
+      object.respond_to?(:call).should == true
+    end
   end
-end
 
-describe DefaultRackApplicationFactory, "newApplication" do
-  it "should create a Ruby object from the script snippet given" do
-    @servlet_context.stub!(:getInitParameter).and_return("require 'rack/lobster'; Rack::Lobster.new")
-    app_factory = DefaultRackApplicationFactory.new
-    app_factory.init(@servlet_context)
-    object = app_factory.newApplication
-    object.respond_to?(:call).should == true
+  describe "destroy" do
+    it "should do nothing, since it does not cache runtimes" do
+      @app_factory.destroy
+    end
   end
 end
 
@@ -108,6 +118,16 @@ describe PoolingRackApplicationFactory do
     @pool.finishedWithApplication app
     @pool.getApplicationPool.should_not be_empty
     @pool.newApplication.should == app
+  end
+
+  it "should call destroy on all cached applications when destroyed" do
+    app1 = mock "app1"
+    app2 = mock "app2"
+    @pool.finishedWithApplication app1
+    @pool.finishedWithApplication app2
+    app1.should_receive(:destroy)
+    app2.should_receive(:destroy)
+    @pool.destroy
   end
 end
 
@@ -144,5 +164,14 @@ describe SharedRackApplicationFactory do
       @shared.newApplication.should == app
       @shared.finishedWithApplication app
     end
+  end
+
+  it "should call destroy on the shared application when destroyed" do
+    @factory.should_receive(:init).with(@servlet_context)
+    app = mock "application"
+    @factory.should_receive(:newApplication).and_return app
+    app.should_receive(:destroy)
+    @shared.init(@servlet_context)
+    @shared.destroy
   end
 end

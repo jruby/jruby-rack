@@ -67,6 +67,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     public void finishedWithApplication(RackApplication app) {
     }
 
+    public void destroy() {
+    }
+
     public Ruby newRuntime() throws RackInitializationException {
         try {
             Ruby runtime = JavaEmbedUtils.initialize(new ArrayList());

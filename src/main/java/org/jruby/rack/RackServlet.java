@@ -30,6 +30,8 @@
 package org.jruby.rack;
 
 import java.io.IOException;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -42,19 +44,14 @@ import javax.servlet.http.HttpServletResponse;
  * @author nicksieger
  */
 public class RackServlet extends HttpServlet {
-    private RackApplicationFactory rackFactory;
+    private ServletContext servletContext;
 
     public RackServlet() {
-        this(new SharedRackApplicationFactory(new DefaultRackApplicationFactory()));
-    }
-
-    public RackServlet(RackApplicationFactory rackFactory) {
-        this.rackFactory = rackFactory;
     }
 
     @Override
-    public void init() throws ServletException {
-        this.rackFactory.init(getServletContext());
+    public void init(ServletConfig config) {
+        this.servletContext = config.getServletContext();
     }
     
     @Override
@@ -65,6 +62,7 @@ public class RackServlet extends HttpServlet {
 
     public void process(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
+        final RackApplicationFactory rackFactory = getRackFactory();
         RackApplication app = null;
         try {
             app = rackFactory.newApplication();
@@ -79,5 +77,10 @@ public class RackServlet extends HttpServlet {
                 rackFactory.finishedWithApplication(app);
             }
         }
+    }
+
+    private RackApplicationFactory getRackFactory() {
+        return (RackApplicationFactory)
+            servletContext.getAttribute(RackServletContextListener.FACTORY_KEY);
     }
 }

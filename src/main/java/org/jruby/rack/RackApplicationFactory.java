@@ -40,4 +40,5 @@ public interface RackApplicationFactory {
     void init(ServletContext servletContext) throws ServletException;
     RackApplication newApplication() throws RackInitializationException;
     void finishedWithApplication(RackApplication app);
+    void destroy();
 }

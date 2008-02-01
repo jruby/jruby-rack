@@ -63,6 +63,12 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         applicationPool.add(app);
     }
 
+    public void destroy() {
+        for (RackApplication app : applicationPool) {
+            app.destroy();
+        }
+    }
+
     public Queue<RackApplication> getApplicationPool() {
         return applicationPool;
     }

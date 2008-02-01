@@ -37,4 +37,5 @@ import javax.servlet.ServletRequest;
  */
 public interface RackApplication {
     RackResult call(ServletRequest env);
+    void destroy();
 }

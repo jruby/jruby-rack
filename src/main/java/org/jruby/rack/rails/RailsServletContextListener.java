@@ -30,15 +30,17 @@
 package org.jruby.rack.rails;
 
 import org.jruby.rack.PoolingRackApplicationFactory;
-import org.jruby.rack.RackServlet;
+import org.jruby.rack.RackApplicationFactory;
+import org.jruby.rack.RackServletContextListener;
 
 /**
  *
  * @author nicksieger
  */
-public class RailsServlet extends RackServlet {
-    public RailsServlet() {
-        super(new PoolingRackApplicationFactory(
-                new RailsRackApplicationFactory()));
+public class RailsServletContextListener extends RackServletContextListener {
+    @Override
+    protected RackApplicationFactory newApplicationFactory() {
+        return new PoolingRackApplicationFactory(
+                new RailsRackApplicationFactory());
     }
 }

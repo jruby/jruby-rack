@@ -52,7 +52,7 @@ public class DefaultRackApplication implements RackApplication {
     }
 
     public RackResult call(final ServletRequest env) {
-        Ruby runtime = this.application.getRuntime();
+        Ruby runtime = application.getRuntime();
         IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
         servlet_env.getMetaClass().defineMethod("to_io", new Callback() {
             public IRubyObject execute(IRubyObject recv, IRubyObject[] args, Block block) {
@@ -66,8 +66,12 @@ public class DefaultRackApplication implements RackApplication {
                 return Arity.NO_ARGUMENTS;
             }
         });
-        IRubyObject result = this.application.callMethod(runtime.getCurrentContext(),
+        IRubyObject result = application.callMethod(runtime.getCurrentContext(),
                 "call", new IRubyObject[] { servlet_env });
         return (RackResult) JavaEmbedUtils.rubyToJava(runtime, result, RackResult.class);
+    }
+
+    public void destroy() {
+        JavaEmbedUtils.terminate(application.getRuntime());
     }
 }

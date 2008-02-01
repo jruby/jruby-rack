@@ -60,4 +60,8 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
 
     public void finishedWithApplication(RackApplication app) {
     }
+
+    public void destroy() {
+        application.destroy();
+    }
 }
