@@ -55,7 +55,8 @@ module Buildr
         # when run from within JRuby, use jars in launched-JRuby's classpath rather than the
         # stated dependency
         cmd_options[:classpath].delete_if {|e| File.basename(e) =~ /^jruby-complete-.*\.jar$/ }
-        cmd_options[:classpath].unshift *(java.lang.System.getProperty("java.class.path").split(File::PATH_SEPARATOR))
+        cmd_options[:classpath].unshift(
+          *(java.lang.System.getProperty("java.class.path").split(File::PATH_SEPARATOR)))
       end
       cmd_options[:java_args] ||= []
       cmd_options[:java_args] << "-Xmx512m" unless cmd_options[:java_args].detect {|a| a =~ /^-Xmx/}
@@ -66,7 +67,7 @@ module Buildr
 
     def install_gems(options)
       unless required_gems(options).all? {|g| gem_path(options[:project], g)}
-        args = ["-S", "maybe_install_gems", *required_gems]
+        args = ["-S", "maybe_install_gems", *required_gems(options)]
         args << {:name => "JRuby Setup"}.merge(options)
         jruby(*args)
       end
