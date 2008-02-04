@@ -1,36 +1,11 @@
 #--
-# Copyright (c) 2007,2008, Dave Fayram, Tom Preston-Werner
-#
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the following disclaimer.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the following disclaimer in the documentation
-#   and/or other materials provided with the distribution.
-#
-# * Neither the name of the <ORGANIZATION> nor the names of its contributors
-#   may be used to endorse or promote products derived from this software
-#   without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-# Snapshot retrieved from:
+# Based on the fuzed adapter -- snapshot retrieved from:
 # http://repo.or.cz/w/fuzed.git?a=blob_plain;f=bin/fuzed-adapter;h=7bdfbf15afa27fdad31b24fe719712c51f693809
+# 
+# Also based on the thin adapter:
+# http://github.com/macournoyer/thin/tree/master/lib/rack/adapter/rails.rb
+#
+# Perhaps this will show up in Rack someday and this won't be needed
 #++
 
 unless defined? RAILS_ROOT
@@ -85,44 +60,41 @@ module Rack
           super(*args)
         end
 
-        IGNORED_HEADERS = [ "Status" ]
-
         def header(options = "text/html")
-          # puts 'header---------------'
-          # p options
-          # puts '---------------------'
-
-          if options.instance_of?(String)
-            @response['Content-Type'] = options unless @response['Content-Type']
+          if options.is_a?(String)
+            @response['Content-Type']     = options unless @response['Content-Type']
           else
-            @response['Content-Length'] = options.delete('Content-Length').to_s if options['Content-Length']
-
-            @response['Content-Type'] = options.delete('type') || "text/html"
-            @response['Content-Type'] += "; charset=" + options.delete('charset') if options['charset']
-
-            @response['Status'] = options.delete('Status') if options['Status']
+            @response['Content-Length']   = options.delete('Content-Length').to_s if options['Content-Length']
+            
+            @response['Content-Type']     = options.delete('type') || "text/html"
+            @response['Content-Type']    += "; charset=" + options.delete('charset') if options['charset']
+            
             @response['Content-Language'] = options.delete('language') if options['language']
-            @response['Expires'] = options.delete('expires') if options['expires']
-
-            IGNORED_HEADERS.each {|k| options.delete(k) }
-
-            options.each{|k,v| @response[k] = v}
-
-            # convert 'cookie' header to 'Set-Cookie' headers
-            if cookie = @response['cookie']
+            @response['Expires']          = options.delete('expires') if options['expires']
+            
+            @response.status              = options.delete('Status') if options['Status']
+            
+            # Convert 'cookie' header to 'Set-Cookie' headers.
+            # Because Set-Cookie header can appear more the once in the response body, 
+            # we store it in a line break seperated string that will be translated to
+            # multiple Set-Cookie header by the handler.
+            if cookie = options.delete('cookie')
+              cookies = []
+              
               case cookie
-                when Array
-                  cookie.each {|c| @response['Set-Cookie'] = c.to_s }
-                when Hash
-                  cookie.each_value {|c| @response['Set-Cookie'] = c.to_s}
-                else
-                  @response['Set-Cookie'] = options['cookie'].to_s
+              when Array then cookie.each { |c| cookies << c.to_s }
+              when Hash  then cookie.each { |_, c| cookies << c.to_s }
+              else            cookies << cookie.to_s
               end
-
-              @output_cookies.each { |c| @response['Set-Cookie'] = c.to_s } if @output_cookies
+              
+              @output_cookies.each { |c| cookies << c.to_s } if @output_cookies
+              
+              @response['Set-Cookie'] = [@response['Set-Cookie'], cookies].compact.join("\n")
             end
+            
+            options.each { |k,v| @response[k] = v }
           end
-
+          
           ""
         end
 
