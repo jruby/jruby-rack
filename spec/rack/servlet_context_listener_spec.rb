@@ -64,12 +64,9 @@ describe RackServletContextListener do
   end
 
   describe "contextDestroyed" do
-    before :each do
+    it "should remove the application factory from the servlet context" do
       @servlet_context.should_receive(:getAttribute).with(
         RackServletContextListener::FACTORY_KEY).and_return @factory
-    end
-
-    it "should remove the application factory from the servlet context" do
       @servlet_context.should_receive(:removeAttribute).with(
         RackServletContextListener::FACTORY_KEY)
       @factory.stub!(:destroy)
@@ -77,8 +74,16 @@ describe RackServletContextListener do
     end
 
     it "should destroy it" do
+      @servlet_context.should_receive(:getAttribute).with(
+        RackServletContextListener::FACTORY_KEY).and_return @factory
       @servlet_context.stub!(:removeAttribute)
       @factory.should_receive(:destroy)
+      @listener.contextDestroyed @servlet_context_event
+    end
+
+    it "should do nothing if no application is found in the context" do
+      @servlet_context.should_receive(:getAttribute).with(
+        RackServletContextListener::FACTORY_KEY).and_return nil
       @listener.contextDestroyed @servlet_context_event
     end
   end

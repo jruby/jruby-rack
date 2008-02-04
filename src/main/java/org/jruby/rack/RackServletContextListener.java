@@ -45,8 +45,10 @@ public class RackServletContextListener implements ServletContextListener {
         ServletContext ctx = ctxEvent.getServletContext();
         final RackApplicationFactory fac =
                 (RackApplicationFactory) ctx.getAttribute(FACTORY_KEY);
-        fac.destroy();
-        ctx.removeAttribute(FACTORY_KEY);
+        if (fac != null) {
+            fac.destroy();
+            ctx.removeAttribute(FACTORY_KEY);
+        }
     }
 
     protected RackApplicationFactory newApplicationFactory() {
