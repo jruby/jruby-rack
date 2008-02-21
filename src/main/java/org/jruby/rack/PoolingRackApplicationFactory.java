@@ -86,19 +86,21 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         }
 
         synchronized (applicationPool) {
-            if (applicationPool.isEmpty()) {
-                return realFactory.newApplication();
-            } else {
+            if (!applicationPool.isEmpty()) {
                 return applicationPool.remove();
             }
         }
+
+        return realFactory.newApplication();
     }
 
     public synchronized void finishedWithApplication(RackApplication app) {
         if (maximum != null && applicationPool.size() >= maximum) {
             return;
         }
+
         applicationPool.add(app);
+
         if (permits != null) {
             permits.release();
         }
