@@ -100,6 +100,7 @@ describe PoolingRackApplicationFactory do
 
   it "should initialize the delegate factory when initialized" do
     @factory.should_receive(:init).with(@servlet_context)
+    @servlet_context.stub!(:getInitParameter).and_return nil
     @pool.init(@servlet_context)
   end
 
@@ -128,6 +129,51 @@ describe PoolingRackApplicationFactory do
     app1.should_receive(:destroy)
     app2.should_receive(:destroy)
     @pool.destroy
+  end
+
+  it "should create enough applications during initialization to satisfy the minimum 
+  specified by the jruby.min.runtimes context parameter" do
+    @factory.should_receive(:init).with(@servlet_context)
+    @factory.stub!(:newApplication).and_return { mock "app" }
+    @servlet_context.stub!(:getInitParameter).and_return nil
+    @servlet_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "2"
+    @pool.init(@servlet_context)
+    @pool.getApplicationPool.size.should == 2
+  end
+
+  it "should not create any new applications beyond the maximum specified
+  by the jruby.max.runtimes context parameter" do
+    @factory.should_receive(:init).with(@servlet_context)
+    @servlet_context.stub!(:getInitParameter).and_return nil
+    @servlet_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "1"
+    @pool.init(@servlet_context)
+    @pool.finishedWithApplication mock("app1")
+    @pool.finishedWithApplication mock("app2")
+    @pool.getApplicationPool.size.should == 1
+  end
+
+  it "should also recognize the jruby.pool.minIdle and jruby.pool.maxActive parameters from Goldspike" do
+    @factory.should_receive(:init).with(@servlet_context)
+    @factory.stub!(:newApplication).and_return { mock "app" }
+    @servlet_context.stub!(:getInitParameter).and_return nil
+    @servlet_context.should_receive(:getInitParameter).with("jruby.pool.minIdle").and_return "2"
+    @servlet_context.should_receive(:getInitParameter).with("jruby.pool.maxActive").and_return "2"
+    @pool.init(@servlet_context)
+    @pool.getApplicationPool.size.should == 2
+    @pool.finishedWithApplication mock("app")
+    @pool.getApplicationPool.size.should == 2
+  end
+
+  it "should force the maximum size to be greater or equal to the minimum size" do
+    @factory.should_receive(:init).with(@servlet_context)
+    @factory.stub!(:newApplication).and_return { mock "app" }
+    @servlet_context.stub!(:getInitParameter).and_return nil
+    @servlet_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "2"
+    @servlet_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "1"
+    @pool.init(@servlet_context)
+    @pool.getApplicationPool.size.should == 2
+    @pool.finishedWithApplication mock("app")
+    @pool.getApplicationPool.size.should == 2
   end
 end
 

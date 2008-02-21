@@ -31,6 +31,8 @@ package org.jruby.rack;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
@@ -39,28 +41,67 @@ import javax.servlet.ServletException;
  * @author nicksieger
  */
 public class PoolingRackApplicationFactory implements RackApplicationFactory {
+    static final int DEFAULT_TIMEOUT = 30;
     private RackApplicationFactory realFactory;
-    private Queue<RackApplication> applicationPool;
-
+    private Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
+    private Integer minimum, maximum;
+    private long timeout = DEFAULT_TIMEOUT;
+    private Semaphore permits;
+    
     public PoolingRackApplicationFactory(RackApplicationFactory factory) {
         realFactory = factory;
-        applicationPool = new LinkedList<RackApplication>();
     }
 
     public void init(ServletContext servletContext) throws ServletException {
         realFactory.init(servletContext);
+        timeout = DEFAULT_TIMEOUT;
+        Integer specifiedTimeout = getPositiveInteger(servletContext, "jruby.runtime.timeout.sec");
+        if (specifiedTimeout != null) {
+            timeout = specifiedTimeout.longValue();
+        }
+        minimum = getMinimum(servletContext);
+        maximum = getMaximum(servletContext);
+        if (minimum != null) {
+            for (int i = 0; i < minimum; i++) {
+                try {
+                    applicationPool.add(realFactory.newApplication());
+                } catch (RackInitializationException ex) {
+                    throw new ServletException("unable to pre-populate pool", ex);
+                }
+            }
+        }
+        if (maximum != null) {
+            permits = new Semaphore(maximum);
+        }
     }
 
-    public synchronized RackApplication newApplication() throws RackInitializationException {
-        if (applicationPool.isEmpty()) {
-            return realFactory.newApplication();
-        } else {
-            return applicationPool.remove();
+    public RackApplication newApplication() throws RackInitializationException {
+        if (permits != null) {
+            try {
+                permits.tryAcquire(timeout, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                throw new RackInitializationException("timeout: all listeners busy", ex);
+            }
+
+        }
+
+        synchronized (applicationPool) {
+            if (applicationPool.isEmpty()) {
+                return realFactory.newApplication();
+            } else {
+                return applicationPool.remove();
+            }
         }
     }
 
     public synchronized void finishedWithApplication(RackApplication app) {
+        if (maximum != null && applicationPool.size() >= maximum) {
+            return;
+        }
         applicationPool.add(app);
+        if (permits != null) {
+            permits.release();
+        }
     }
 
     public void destroy() {
@@ -69,7 +110,38 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
+    /** Used only by unit tests */
     public Queue<RackApplication> getApplicationPool() {
         return applicationPool;
+    }
+
+    private Integer getMaximum(ServletContext servletContext) {
+        Integer v = getPositiveInteger(servletContext, "jruby.max.runtimes");
+        if (v == null) {
+            v = getPositiveInteger(servletContext, "jruby.pool.maxActive");
+        }
+        return v;
+    }
+
+    private Integer getMinimum(ServletContext servletContext) {
+        Integer v = getPositiveInteger(servletContext, "jruby.min.runtimes");
+        if (v == null) {
+            v = getPositiveInteger(servletContext, "jruby.pool.minIdle");
+        }
+        return v;
+    }
+
+    private Integer getPositiveInteger(ServletContext servletContext, String string) {
+        try {
+            String v = servletContext.getInitParameter(string);
+            if (v != null) {
+                int i = Integer.parseInt(v);
+                if (i > 0) {
+                    return new Integer(i);
+                }
+            }
+        } catch (Exception e) {
+        }
+        return null;
     }
 }

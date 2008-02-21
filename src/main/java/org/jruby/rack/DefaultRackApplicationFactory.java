@@ -35,6 +35,7 @@ import org.jruby.Ruby;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ClassCache;
 
 /**
  *
@@ -43,6 +44,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private String rackupScript;
     private ServletContext servletContext;
+    private ClassCache classCache;
 
     public DefaultRackApplicationFactory() {
     }
@@ -50,6 +52,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     public void init(ServletContext servletContext) {
         this.servletContext = servletContext;
         this.rackupScript = servletContext.getInitParameter("rackup");
+        this.classCache = JavaEmbedUtils.createClassCache(
+                Thread.currentThread().getContextClassLoader());
     }
     
     public RackApplication newApplication() throws RackInitializationException {
@@ -72,7 +76,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public Ruby newRuntime() throws RackInitializationException {
         try {
-            Ruby runtime = JavaEmbedUtils.initialize(new ArrayList());
+            Ruby runtime = JavaEmbedUtils.initialize(new ArrayList(), classCache);
             runtime.evalScriptlet("require 'rack/handler/servlet/bootstrap'");
             runtime.getGlobalVariables().set("$servlet_context",
                     JavaEmbedUtils.javaToRuby(runtime, servletContext));

@@ -50,4 +50,8 @@ public class RackInitializationException extends Exception {
             return null;
         }
     }
+
+    public RackInitializationException(String msg, Throwable ex) {
+        super(msg, ex);
+    }
 }
