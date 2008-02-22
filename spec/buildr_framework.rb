@@ -10,8 +10,8 @@ module Buildr
       end
     end
 
-    def tests(project) #:nodoc:
-      FileList[ENV["SPEC"] || "#{project._('spec')}/**/*_spec.rb"]
+    def tests(task, dependencies) #:nodoc:      
+      FileList[ENV["SPEC"] || "#{task.project._('spec')}/**/*_spec.rb"]
     end
 
     def run(tests, task, dependencies) #:nodoc:
@@ -26,7 +26,8 @@ module Buildr
 
       jruby("-Ilib", "-S", "spec",
       "--require", gem_path(task.project, "ci_reporter", "lib/ci/reporter/rake/rspec_loader"),
-      "--format", "CI::Reporter::RSpecDoc", tests,
+      "--format", "CI::Reporter::RSpecDoc", tests,   
+      "--colour",
       cmd_options.merge({:name => "RSpec"}))
       tests
     end
