@@ -65,6 +65,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         if (specifiedTimeout != null) {
             timeout = specifiedTimeout.longValue();
         }
+        servletContext.log("Using runtime pool timeout of " + timeout + " seconds");
 
         minimum = getMinimum(servletContext);
         maximum = getMaximum(servletContext);
