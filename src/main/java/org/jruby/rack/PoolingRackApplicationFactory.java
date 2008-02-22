@@ -29,7 +29,9 @@
 
 package org.jruby.rack;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +44,8 @@ import javax.servlet.ServletException;
  */
 public class PoolingRackApplicationFactory implements RackApplicationFactory {
     static final int DEFAULT_TIMEOUT = 30;
+
+    private ServletContext servletContext;
     private RackApplicationFactory realFactory;
     private Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
     private Integer minimum, maximum;
@@ -52,26 +56,54 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         realFactory = factory;
     }
 
-    public void init(ServletContext servletContext) throws ServletException {
+    public void init(final ServletContext servletContext) throws ServletException {
         realFactory.init(servletContext);
+        this.servletContext = servletContext;
+
         timeout = DEFAULT_TIMEOUT;
         Integer specifiedTimeout = getPositiveInteger(servletContext, "jruby.runtime.timeout.sec");
         if (specifiedTimeout != null) {
             timeout = specifiedTimeout.longValue();
         }
+
         minimum = getMinimum(servletContext);
         maximum = getMaximum(servletContext);
+
         if (minimum != null) {
+            List<Thread> threads = new ArrayList<Thread>();
             for (int i = 0; i < minimum; i++) {
+                Thread t = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            final RackApplication app = realFactory.newApplication();
+                            synchronized (applicationPool) {
+                                applicationPool.add(app);
+                                servletContext.log("add application to the pool. size now = " + applicationPool.size());
+                            }
+                        } catch (RackInitializationException ex) {
+                            servletContext.log("unable to pre-populate pool", ex);
+                        }
+                    }
+                });
+                t.start();
+                threads.add(t);
+            }
+
+            for (Thread t : threads) {
                 try {
-                    applicationPool.add(realFactory.newApplication());
-                } catch (RackInitializationException ex) {
-                    throw new ServletException("unable to pre-populate pool", ex);
+                    t.join(DEFAULT_TIMEOUT);
+                } catch (InterruptedException ex) {
+                    break;
                 }
             }
         }
+
+
         if (maximum != null) {
-            permits = new Semaphore(maximum);
+            if (minimum != null && minimum > maximum) {
+                maximum = minimum;
+            }
+            permits = new Semaphore(maximum, true); // does fairness matter?
         }
     }
 
@@ -118,29 +150,31 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     }
 
     private Integer getMaximum(ServletContext servletContext) {
-        Integer v = getPositiveInteger(servletContext, "jruby.max.runtimes");
-        if (v == null) {
-            v = getPositiveInteger(servletContext, "jruby.pool.maxActive");
-        }
-        return v;
+        return getRangeValue(servletContext, "max", "maxActive");
     }
 
     private Integer getMinimum(ServletContext servletContext) {
-        Integer v = getPositiveInteger(servletContext, "jruby.min.runtimes");
+        return getRangeValue(servletContext, "min", "minIdle");
+    }
+
+    private Integer getRangeValue(ServletContext servletContext, String end, String gsValue) {
+        Integer v = getPositiveInteger(servletContext, "jruby." + end + ".runtimes");
         if (v == null) {
-            v = getPositiveInteger(servletContext, "jruby.pool.minIdle");
+            v = getPositiveInteger(servletContext, "jruby.pool." + gsValue);
+        }
+        if (v == null) {
+            servletContext.log("warning: no " + end + " runtimes specified.");
+        } else {
+            servletContext.log("received " + end + " runtimes = " + v);
         }
         return v;
     }
 
     private Integer getPositiveInteger(ServletContext servletContext, String string) {
         try {
-            String v = servletContext.getInitParameter(string);
-            if (v != null) {
-                int i = Integer.parseInt(v);
-                if (i > 0) {
-                    return new Integer(i);
-                }
+            int i = Integer.parseInt(servletContext.getInitParameter(string));
+            if (i > 0) {
+                return new Integer(i);
             }
         } catch (Exception e) {
         }
