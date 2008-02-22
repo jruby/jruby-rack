@@ -46,7 +46,7 @@ module Merb
       java_session = servlet_request.getSession(true) 
       marshalled_string = Marshal.dump(@data)
       marshalled_bytes = marshalled_string.to_java_bytes
-      java_session.setAttribute(MERB_SESSION_KEY)
+      java_session.setAttribute(MERB_SESSION_KEY, marshalled_bytes)
     end
     
     def []=(k, v)
@@ -64,6 +64,13 @@ module Merb
     def delete
       @data = {}
     end
+    
+    private
+
+      # Attempts to redirect any messages to the data object.
+      def method_missing(name, *args, &block)
+        @data.send(name, *args, &block)
+      end                              
 
   end
 end
