@@ -11,6 +11,8 @@ import org.jruby.rack.SharedRackApplicationFactory;
 public class MerbServletContextListener extends RackServletContextListener {
     @Override
     protected RackApplicationFactory newApplicationFactory() {
-        return new SharedRackApplicationFactory(new MerbRackApplicationFactory());
+        return new SharedRackApplicationFactory(
+            new MerbRackApplicationFactory()
+        );
     }
 }

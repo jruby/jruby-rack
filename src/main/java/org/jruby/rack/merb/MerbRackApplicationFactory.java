@@ -11,8 +11,9 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class MerbRackApplicationFactory extends DefaultRackApplicationFactory {
     @Override
     public IRubyObject createApplicationObject(Ruby runtime) {
-        runtime.evalScriptlet("require 'rack/adapter/merb/bootstrap'");
-        return createRackServletWrapper(runtime,
-                "run Rack::Adapter::MerbFactory.new\n");
+        runtime.evalScriptlet("require 'merb/rack/bootstrap'"); 
+        return runtime.evalScriptlet(
+            "Rack::Handler::Servlet.new(Merb::Config[:app])"
+        );
     }
 }
