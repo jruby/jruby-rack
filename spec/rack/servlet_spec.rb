@@ -35,12 +35,9 @@ import org.jruby.rack.RackServlet
 describe RackServlet do
   before :each do
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
-    @servlet_context = mock("servlet context")
     @servlet_context.should_receive(:getAttribute).with("rack.factory").and_return @rack_factory
-    servlet_config = mock "servlet config"
-    servlet_config.stub!(:getServletContext).and_return @servlet_context
     @servlet = RackServlet.new
-    @servlet.init(servlet_config)
+    @servlet.init(@servlet_config)
   end
 
   describe "service" do
@@ -48,7 +45,7 @@ describe RackServlet do
       request = javax.servlet.http.HttpServletRequest.impl {}
       response = javax.servlet.http.HttpServletResponse.impl {}
       application = mock("application")
-      @rack_factory.stub!(:newApplication).and_return application
+      @rack_factory.stub!(:getApplication).and_return application
       @rack_factory.stub!(:finishedWithApplication)
       application.stub!(:call).and_raise "error"
 
@@ -59,13 +56,13 @@ describe RackServlet do
   end
 
   describe "process" do
-    it "should construct a RackApplication and call it" do
+    it "should retrieve a RackApplication and call it" do
       application = mock("application")
       request = mock("request")
       response = mock("response")
       result = mock("rack result")
 
-      @rack_factory.should_receive(:newApplication).and_return(application)
+      @rack_factory.should_receive(:getApplication).and_return(application)
       @rack_factory.should_receive(:finishedWithApplication).with(application)
       application.should_receive(:call).with(request).and_return result
       result.should_receive(:writeStatus)
@@ -76,7 +73,7 @@ describe RackServlet do
     end
 
     it "should raise a servlet exception if the application could not be initialized" do
-      @rack_factory.stub!(:newApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
+      @rack_factory.stub!(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
       lambda {
         @servlet.process(mock("request"), mock("response"))
       }.should raise_error(javax.servlet.ServletException)
@@ -84,7 +81,7 @@ describe RackServlet do
 
     it "should raise a servlet exception if an unexpected exception leaks out" do
       application = mock("application")
-      @rack_factory.stub!(:newApplication).and_return application
+      @rack_factory.stub!(:getApplication).and_return application
       @rack_factory.stub!(:finishedWithApplication)
       application.stub!(:call).and_raise "error"
 

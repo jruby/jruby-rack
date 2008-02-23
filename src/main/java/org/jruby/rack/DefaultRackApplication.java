@@ -47,10 +47,6 @@ import org.jruby.runtime.callback.Callback;
 public class DefaultRackApplication implements RackApplication {
     private IRubyObject application;
 
-    public DefaultRackApplication(IRubyObject application) {
-        this.application = application;
-    }
-
     public RackResult call(final ServletRequest env) {
         Ruby runtime = application.getRuntime();
         IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
@@ -71,7 +67,14 @@ public class DefaultRackApplication implements RackApplication {
         return (RackResult) JavaEmbedUtils.rubyToJava(runtime, result, RackResult.class);
     }
 
+    public void init() throws RackInitializationException {
+    }
+
     public void destroy() {
         JavaEmbedUtils.terminate(application.getRuntime());
+    }
+
+    public void setApplication(IRubyObject application) {
+        this.application = application;
     }
 }

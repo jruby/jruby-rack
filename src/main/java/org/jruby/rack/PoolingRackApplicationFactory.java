@@ -29,9 +29,7 @@
 
 package org.jruby.rack;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +37,21 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 /**
+ * A pooling application factory that creates runtimes and manages a fixed- or
+ * unlimited-size pool.
+ * <p>
+ * It has several context init parameters to control behavior:
+ * <ul>
+ * <li> jruby.initial.runtimes: Initial number of runtimes to create and put in
+ *  the pool. Default is none.
+ * <li> jruby.max.runtimes: Maximum size of the pool. Default is unlimited, in
+ *  which case new requests for an application object will create one if none
+ *  are available.
+ * <li> jruby.runtime.timeout.sec: Value (in seconds) indicating when
+ *  a thread will timeout when no runtimes are available. Default is 30.
+ * <li> jruby.runtime.initializer.threads: Number of threads to use at startup to
+ *  intialize and fill the pool. Default is 4.
+ * </ul>
  *
  * @author nicksieger
  */
@@ -48,7 +61,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     private ServletContext servletContext;
     private RackApplicationFactory realFactory;
     private Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
-    private Integer minimum, maximum;
+    private Integer initial, maximum;
     private long timeout = DEFAULT_TIMEOUT;
     private Semaphore permits;
     
@@ -57,65 +70,43 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     }
 
     public void init(final ServletContext servletContext) throws ServletException {
-        realFactory.init(servletContext);
         this.servletContext = servletContext;
+        realFactory.init(servletContext);
 
         timeout = DEFAULT_TIMEOUT;
-        Integer specifiedTimeout = getPositiveInteger(servletContext, "jruby.runtime.timeout.sec");
+        Integer specifiedTimeout = getPositiveInteger(servletContext, 
+                "jruby.runtime.timeout.sec");
         if (specifiedTimeout != null) {
             timeout = specifiedTimeout.longValue();
         }
         servletContext.log("Using runtime pool timeout of " + timeout + " seconds");
 
-        minimum = getMinimum(servletContext);
+        initial = getInitial(servletContext);
         maximum = getMaximum(servletContext);
 
-        if (minimum != null) {
-            List<Thread> threads = new ArrayList<Thread>();
-            for (int i = 0; i < minimum; i++) {
-                Thread t = new Thread(new Runnable() {
-                    public void run() {
-                        try {
-                            final RackApplication app = realFactory.newApplication();
-                            synchronized (applicationPool) {
-                                applicationPool.add(app);
-                                servletContext.log("add application to the pool. size now = " + applicationPool.size());
-                            }
-                        } catch (RackInitializationException ex) {
-                            servletContext.log("unable to pre-populate pool", ex);
-                        }
-                    }
-                });
-                t.start();
-                threads.add(t);
-            }
-
-            for (Thread t : threads) {
-                try {
-                    t.join(DEFAULT_TIMEOUT);
-                } catch (InterruptedException ex) {
-                    break;
-                }
-            }
+        if (initial != null) {
+            fillInitialPool(servletContext);
         }
 
-
         if (maximum != null) {
-            if (minimum != null && minimum > maximum) {
-                maximum = minimum;
+            if (initial != null && initial > maximum) {
+                maximum = initial;
             }
             permits = new Semaphore(maximum, true); // does fairness matter?
         }
     }
 
     public RackApplication newApplication() throws RackInitializationException {
+        return getApplication();
+    }
+
+    public RackApplication getApplication() throws RackInitializationException {
         if (permits != null) {
             try {
                 permits.tryAcquire(timeout, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 throw new RackInitializationException("timeout: all listeners busy", ex);
             }
-
         }
 
         synchronized (applicationPool) {
@@ -124,7 +115,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             }
         }
 
-        return realFactory.newApplication();
+        return realFactory.getApplication();
     }
 
     public synchronized void finishedWithApplication(RackApplication app) {
@@ -150,12 +141,66 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         return applicationPool;
     }
 
+    private void fillInitialPool(final ServletContext servletContext) throws ServletException {
+        final Queue<RackApplication> apps = new LinkedList<RackApplication>();
+        for (int i = 0; i < initial; i++) {
+            try {
+                apps.add(realFactory.newApplication());
+            } catch (RackInitializationException ex) {
+                throw new ServletException("unable to create application for pool", ex);
+            }
+        }
+
+        Integer numThreads = getPositiveInteger(servletContext,
+                "jruby.runtime.initializer.threads");
+        if (numThreads == null) {
+            numThreads = 4;
+        }
+
+        for (int i = 0; i < numThreads; i++) {
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        while (true) {
+                            RackApplication app = null;
+                            synchronized (apps) {
+                                if (apps.isEmpty()) {
+                                    break;
+                                }
+                                app = apps.remove();
+                            }
+                            app.init();
+                            synchronized (applicationPool) {
+                                applicationPool.add(app);
+                                applicationPool.notifyAll();
+                                servletContext.log("add application to the pool. size now = "
+                                        + applicationPool.size());
+                            }
+                        }
+                    } catch (RackInitializationException ex) {
+                        servletContext.log("unable to initialize application", ex);
+                    }
+                }
+            }, "JRuby-Rack-App-Init-" + i).start();
+        }
+
+        try {
+            synchronized (applicationPool) {
+                if (applicationPool.isEmpty()) {
+                    // Wait 30 seconds or until first runtime is available
+                    applicationPool.wait(DEFAULT_TIMEOUT * 1000);
+                }
+            }
+        } catch (InterruptedException ex) {
+        }
+    }
+
     private Integer getMaximum(ServletContext servletContext) {
         return getRangeValue(servletContext, "max", "maxActive");
     }
 
-    private Integer getMinimum(ServletContext servletContext) {
-        return getRangeValue(servletContext, "min", "minIdle");
+    private Integer getInitial(ServletContext servletContext) {
+        return getRangeValue(servletContext, "initial", "minIdle");
     }
 
     private Integer getRangeValue(ServletContext servletContext, String end, String gsValue) {

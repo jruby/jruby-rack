@@ -40,7 +40,8 @@ describe DefaultRackApplication, "call" do
     ruby_object = mock "application"
     ruby_object.should_receive(:call).with(servlet_request).and_return rack_result
 
-    application = DefaultRackApplication.new(ruby_object)
+    application = DefaultRackApplication.new
+    application.setApplication(ruby_object)
     application.call(servlet_request).should == rack_result
   end
 end
@@ -81,6 +82,21 @@ describe DefaultRackApplicationFactory do
       object = @app_factory.newApplication
       object.respond_to?(:call).should == true
     end
+
+    it "should raise an exception if initialization failed" do
+      @servlet_context.stub!(:getInitParameter).and_return("raise 'something went wrong'")
+      @app_factory.init @servlet_context
+      object = @app_factory.newApplication
+      lambda { object.init }.should raise_error
+    end
+  end
+
+  describe "getApplication" do
+    it "should create an application and initialize it" do
+      @servlet_context.stub!(:getInitParameter).and_return("raise 'init was called'")
+      @app_factory.init @servlet_context
+      lambda { @app_factory.getApplication }.should raise_error
+    end
   end
 
   describe "destroy" do
@@ -110,15 +126,15 @@ describe PoolingRackApplicationFactory do
 
   it "should create a new application when empty" do
     app = mock "app"
-    @factory.should_receive(:newApplication).and_return app
-    @pool.newApplication.should == app
+    @factory.should_receive(:getApplication).and_return app
+    @pool.getApplication.should == app
   end
 
   it "should return an existing application when not empty" do
     app = mock "app"
     @pool.finishedWithApplication app
     @pool.getApplicationPool.should_not be_empty
-    @pool.newApplication.should == app
+    @pool.getApplication.should == app
   end
 
   it "should call destroy on all cached applications when destroyed" do
@@ -131,14 +147,18 @@ describe PoolingRackApplicationFactory do
     @pool.destroy
   end
 
-  it "should create enough applications during initialization to satisfy the minimum 
-  specified by the jruby.min.runtimes context parameter" do
+  it "should create applications during initialization according 
+  to the jruby.initial.runtimes context parameter" do
     @factory.should_receive(:init).with(@servlet_context)
-    @factory.stub!(:newApplication).and_return { mock "app" }
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.should_receive(:init)
+      app
+    end
     @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "2"
+    @servlet_context.should_receive(:getInitParameter).with("jruby.initial.runtimes").and_return "1"
     @pool.init(@servlet_context)
-    @pool.getApplicationPool.size.should == 2
+    @pool.getApplicationPool.size.should == 1
   end
 
   it "should not create any new applications beyond the maximum specified
@@ -154,24 +174,32 @@ describe PoolingRackApplicationFactory do
 
   it "should also recognize the jruby.pool.minIdle and jruby.pool.maxActive parameters from Goldspike" do
     @factory.should_receive(:init).with(@servlet_context)
-    @factory.stub!(:newApplication).and_return { mock "app" }
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.should_receive(:init)
+      app
+    end
     @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("jruby.pool.minIdle").and_return "2"
+    @servlet_context.should_receive(:getInitParameter).with("jruby.pool.minIdle").and_return "1"
     @servlet_context.should_receive(:getInitParameter).with("jruby.pool.maxActive").and_return "2"
     @pool.init(@servlet_context)
-    @pool.getApplicationPool.size.should == 2
+    @pool.getApplicationPool.size.should == 1
     @pool.finishedWithApplication mock("app")
     @pool.getApplicationPool.size.should == 2
   end
 
-  it "should force the maximum size to be greater or equal to the minimum size" do
+  it "should force the maximum size to be greater or equal to the initial size" do
     @factory.should_receive(:init).with(@servlet_context)
-    @factory.stub!(:newApplication).and_return { mock "app" }
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.should_receive(:init)
+      app
+    end
     @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "2"
+    @servlet_context.should_receive(:getInitParameter).with("jruby.initial.runtimes").and_return "2"
     @servlet_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "1"
     @pool.init(@servlet_context)
-    @pool.getApplicationPool.size.should == 2
+    @pool.getApplicationPool.size.should >= 1
     @pool.finishedWithApplication mock("app")
     @pool.getApplicationPool.size.should == 2
   end
@@ -188,26 +216,27 @@ describe SharedRackApplicationFactory do
   it "should initialize the delegate factory and create the shared application when initialized" do
     @factory.should_receive(:init).with(@servlet_context)
     app = mock "application"
-    @factory.should_receive(:newApplication).and_return app
+    @factory.should_receive(:getApplication).and_return app
     @shared.init(@servlet_context)
   end
 
   it "should throw a servlet exception if the shared application cannot be initialized" do
     @factory.should_receive(:init).with(@servlet_context)
     app = mock "application"
-    @factory.should_receive(:newApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
+    @factory.should_receive(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
     lambda {
       @shared.init(@servlet_context)
     }.should raise_error # TODO: doesn't work w/ raise_error(javax.servlet.ServletException)
   end
 
-  it "should return the same application for any newApplication call" do
+  it "should return the same application for any newApplication or getApplication call" do
     @factory.should_receive(:init).with(@servlet_context)
     app = mock "application"
-    @factory.should_receive(:newApplication).and_return app
+    @factory.should_receive(:getApplication).and_return app
     @shared.init(@servlet_context)
     1.upto(5) do
       @shared.newApplication.should == app
+      @shared.getApplication.should == app
       @shared.finishedWithApplication app
     end
   end
@@ -215,7 +244,7 @@ describe SharedRackApplicationFactory do
   it "should call destroy on the shared application when destroyed" do
     @factory.should_receive(:init).with(@servlet_context)
     app = mock "application"
-    @factory.should_receive(:newApplication).and_return app
+    @factory.should_receive(:getApplication).and_return app
     app.should_receive(:destroy)
     @shared.init(@servlet_context)
     @shared.destroy

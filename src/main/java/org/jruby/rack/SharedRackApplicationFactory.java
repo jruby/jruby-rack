@@ -47,7 +47,7 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
     public void init(ServletContext servletContext) throws ServletException {
         try {
             realFactory.init(servletContext);
-            application = realFactory.newApplication();
+            application = realFactory.getApplication();
         } catch (RackInitializationException ex) {
             servletContext.log("unable to create shared application instance", ex);
             throw new ServletException(ex);
@@ -55,6 +55,10 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
     }
 
     public RackApplication newApplication() throws RackInitializationException {
+        return getApplication();
+    }
+
+    public RackApplication getApplication() throws RackInitializationException {
         return application;
     }
 

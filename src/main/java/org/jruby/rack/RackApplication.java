@@ -36,6 +36,7 @@ import javax.servlet.ServletRequest;
  * @author nicksieger
  */
 public interface RackApplication {
+    void init() throws RackInitializationException;
     RackResult call(ServletRequest env);
     void destroy();
 }

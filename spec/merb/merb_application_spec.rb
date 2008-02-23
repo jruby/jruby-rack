@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 import org.jruby.rack.merb.MerbRackApplicationFactory
 
-describe MerbRackApplicationFactory, "newApplication" do
+describe MerbRackApplicationFactory, "getApplication" do
   before :each do
     @app_factory = MerbRackApplicationFactory.new
     @servlet_context.stub!(:getInitParameter).and_return nil
@@ -16,7 +16,7 @@ describe MerbRackApplicationFactory, "newApplication" do
       with("merb.root").and_return("merb/root")
     @servlet_context.should_receive(:getRealPath).
       with("merb/root").and_return(@merb_root)
-    app = @app_factory.newApplication
+    app = @app_factory.getApplication
     app.should respond_to(:call)
   end  
 end

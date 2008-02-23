@@ -55,17 +55,30 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         this.classCache = JavaEmbedUtils.createClassCache(
                 Thread.currentThread().getContextClassLoader());
     }
-    
+
     public RackApplication newApplication() throws RackInitializationException {
         try {
-            Ruby runtime = newRuntime();
-            IRubyObject app = createApplicationObject(runtime);
-            return new DefaultRackApplication(app);
+            final Ruby runtime = newRuntime();
+            return new DefaultRackApplication() {
+                public void init() throws RackInitializationException {
+                    try {
+                        setApplication(createApplicationObject(runtime));
+                    } catch (RaiseException re) {
+                        throw new RackInitializationException(re);
+                    }
+                }
+            };
         } catch (RackInitializationException rie) {
             throw rie;
         } catch (RaiseException re) {
             throw new RackInitializationException(re);
         }
+    }
+
+    public RackApplication getApplication() throws RackInitializationException {
+        RackApplication app = newApplication();
+        app.init();
+        return app;
     }
 
     public void finishedWithApplication(RackApplication app) {

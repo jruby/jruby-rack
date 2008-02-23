@@ -32,7 +32,7 @@ require File.dirname(__FILE__) + '/../../spec_helper'
 
 import org.jruby.rack.rails.RailsRackApplicationFactory
 
-describe RailsRackApplicationFactory, "newApplication" do
+describe RailsRackApplicationFactory, "getApplication" do
   before :each do
     @app_factory = RailsRackApplicationFactory.new
     @servlet_context.stub!(:getInitParameter).and_return nil
@@ -45,7 +45,7 @@ describe RailsRackApplicationFactory, "newApplication" do
       "rails/root")
     @servlet_context.should_receive(:getRealPath).with("rails/root").and_return(
       File.dirname(__FILE__) + '/../../../src/test/resources/rails')
-    app = @app_factory.newApplication
+    app = @app_factory.getApplication
     app.should respond_to(:call)
   end
 end

@@ -65,7 +65,7 @@ public class RackServlet extends HttpServlet {
         final RackApplicationFactory rackFactory = getRackFactory();
         RackApplication app = null;
         try {
-            app = rackFactory.newApplication();
+            app = rackFactory.getApplication();
             RackResult result = app.call(request);
             result.writeStatus(response);
             result.writeHeaders(response);
