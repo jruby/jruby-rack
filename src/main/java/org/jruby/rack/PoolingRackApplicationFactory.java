@@ -118,21 +118,25 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         return realFactory.getApplication();
     }
 
-    public synchronized void finishedWithApplication(RackApplication app) {
-        if (maximum != null && applicationPool.size() >= maximum) {
-            return;
-        }
+    public void finishedWithApplication(RackApplication app) {
+        synchronized (applicationPool) {
+            if (maximum != null && applicationPool.size() >= maximum) {
+                return;
+            }
 
-        applicationPool.add(app);
+            applicationPool.add(app);
 
-        if (permits != null) {
-            permits.release();
+            if (permits != null) {
+                permits.release();
+            }
         }
     }
 
     public void destroy() {
-        for (RackApplication app : applicationPool) {
-            app.destroy();
+        synchronized (applicationPool) {
+            for (RackApplication app : applicationPool) {
+                app.destroy();
+            }
         }
     }
 
