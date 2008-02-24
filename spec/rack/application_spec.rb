@@ -83,7 +83,7 @@ describe DefaultRackApplicationFactory do
       object.respond_to?(:call).should == true
     end
 
-    it "should raise an exception if initialization failed" do
+    it "should raise an exception if creation failed" do
       @servlet_context.stub!(:getInitParameter).and_return("raise 'something went wrong'")
       @app_factory.init @servlet_context
       object = @app_factory.newApplication
@@ -130,8 +130,9 @@ describe PoolingRackApplicationFactory do
     @pool.getApplication.should == app
   end
 
-  it "should return an existing application when not empty" do
+  it "should accept an existing application and put it back in the pool" do
     app = mock "app"
+    @pool.getApplicationPool.should be_empty
     @pool.finishedWithApplication app
     @pool.getApplicationPool.should_not be_empty
     @pool.getApplication.should == app
