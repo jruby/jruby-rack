@@ -73,7 +73,6 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         this.servletContext = servletContext;
         realFactory.init(servletContext);
 
-        timeout = DEFAULT_TIMEOUT;
         Integer specifiedTimeout = getPositiveInteger(servletContext, 
                 "jruby.runtime.timeout.sec");
         if (specifiedTimeout != null) {
@@ -145,6 +144,8 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         return applicationPool;
     }
 
+    /** This creates the application objects in the foreground thread to avoid
+     * leakage when the web application is undeployed from the application server. */
     private void fillInitialPool(final ServletContext servletContext) throws ServletException {
         final Queue<RackApplication> apps = new LinkedList<RackApplication>();
         for (int i = 0; i < initial; i++) {
@@ -176,9 +177,9 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
                             app.init();
                             synchronized (applicationPool) {
                                 applicationPool.add(app);
-                                applicationPool.notifyAll();
                                 servletContext.log("add application to the pool. size now = "
                                         + applicationPool.size());
+                                applicationPool.notifyAll();
                             }
                         }
                     } catch (RackInitializationException ex) {
