@@ -1,4 +1,4 @@
-require 'rack/adapter/servlet_helper'
+require 'jruby/rack/servlet_helper'
 
 module Merb
   module Rack
