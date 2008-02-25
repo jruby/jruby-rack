@@ -53,25 +53,33 @@ describe DefaultRackApplicationFactory do
     @app_factory = DefaultRackApplicationFactory.new
   end
 
-  describe "newRuntime" do
+  describe do
     before :each do
       @servlet_context.stub!(:getInitParameter).and_return nil
       @app_factory.init @servlet_context
     end
 
-    it "should create a new Ruby runtime with the rack environment pre-loaded" do
-      runtime = @app_factory.newRuntime
-      lazy_string = proc {|v| "(begin; #{v}; rescue Exception => e; e.class; end).name"}
-      @app_factory.verify(runtime, lazy_string.call("Rack")).should == "Rack"
-      @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Servlet")
-        ).should == "Rack::Handler::Servlet"
-      @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Bogus")
-        ).should_not == "Rack::Handler::Bogus"
+    describe "init" do
+      it "should create an error application" do
+        @app_factory.getErrorApplication.should respond_to(:call)
+      end
     end
 
-    it "should initialize the $servlet_context global variable" do
-      runtime = @app_factory.newRuntime
-      @app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
+    describe "newRuntime" do
+      it "should create a new Ruby runtime with the rack environment pre-loaded" do
+        runtime = @app_factory.newRuntime
+        lazy_string = proc {|v| "(begin; #{v}; rescue Exception => e; e.class; end).name"}
+        @app_factory.verify(runtime, lazy_string.call("Rack")).should == "Rack"
+        @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Servlet")
+        ).should == "Rack::Handler::Servlet"
+        @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Bogus")
+        ).should_not == "Rack::Handler::Bogus"
+      end
+
+      it "should initialize the $servlet_context global variable" do
+        runtime = @app_factory.newRuntime
+        @app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
+      end
     end
   end
 
@@ -108,7 +116,10 @@ describe DefaultRackApplicationFactory do
   end
 
   describe "destroy" do
-    it "should do nothing, since it does not cache runtimes" do
+    it "should call destroy on the error application" do
+      app = mock "error app"
+      app.should_receive(:destroy)
+      @app_factory.setErrorApplication app
       @app_factory.destroy
     end
   end
