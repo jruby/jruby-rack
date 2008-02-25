@@ -4,7 +4,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby/rack/servlet_helper'
+require 'jruby/rack'
 
 module JRuby
   module Rack
@@ -43,7 +43,7 @@ module JRuby
 
       def setup_logger
         if defined?(::RAILS_DEFAULT_LOGGER)
-          class << ::RAILS_DEFAULT_LOGGER # Make these accessible to wire in the log devicea
+          class << ::RAILS_DEFAULT_LOGGER # Make these accessible to wire in the log device
             public :instance_variable_get, :instance_variable_set
           end
           
