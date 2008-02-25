@@ -1,3 +1,4 @@
 - Handle listener timeouts better -- need to return 502
 - Introduce a separate exception-handling instance to deal w/ java exceptions? Use plain Rack?
 - Figure out a better way to handle static files than Rack::File
+- Allow rackup script to be set from a file in addition to the servlet context
