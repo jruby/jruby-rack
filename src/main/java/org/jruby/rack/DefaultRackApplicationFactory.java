@@ -60,12 +60,17 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         try {
             final Ruby runtime = newRuntime();
             return new DefaultRackApplication() {
+                @Override
                 public void init() throws RackInitializationException {
                     try {
                         setApplication(createApplicationObject(runtime));
                     } catch (RaiseException re) {
                         throw new RackInitializationException(re);
                     }
+                }
+                @Override
+                public void destroy() {
+                    JavaEmbedUtils.terminate(runtime);
                 }
             };
         } catch (RackInitializationException rie) {
@@ -82,6 +87,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public void finishedWithApplication(RackApplication app) {
+        app.destroy();
     }
 
     public RackApplication getErrorApplication() {

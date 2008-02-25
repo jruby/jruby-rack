@@ -99,6 +99,14 @@ describe DefaultRackApplicationFactory do
     end
   end
 
+  describe "finishedWithApplication" do
+    it "should call destroy on the application object" do
+      app = mock "application"
+      app.should_receive(:destroy)
+      @app_factory.finishedWithApplication app
+    end
+  end
+
   describe "destroy" do
     it "should do nothing, since it does not cache runtimes" do
       @app_factory.destroy

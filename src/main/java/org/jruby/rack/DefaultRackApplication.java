@@ -71,7 +71,6 @@ public class DefaultRackApplication implements RackApplication {
     }
 
     public void destroy() {
-        JavaEmbedUtils.terminate(application.getRuntime());
     }
 
     public void setApplication(IRubyObject application) {

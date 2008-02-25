@@ -149,7 +149,11 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     private void fillInitialPool() throws ServletException {
         Queue<RackApplication> apps = createApplications();
         launchInitializerThreads(apps);
-        waitForNextAvailable(DEFAULT_TIMEOUT * 1000);
+        synchronized (applicationPool) {
+            if (applicationPool.isEmpty()) {
+                waitForNextAvailable(DEFAULT_TIMEOUT * 1000);
+            }
+        }
     }
 
     private void launchInitializerThreads(final Queue<RackApplication> apps) {
