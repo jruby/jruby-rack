@@ -67,9 +67,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     public Ruby newRuntime() throws RackInitializationException {
         try {
             Ruby runtime = JavaEmbedUtils.initialize(new ArrayList(), classCache);
-            runtime.evalScriptlet("require 'rack/handler/servlet/bootstrap'");
             runtime.getGlobalVariables().set("$servlet_context",
                     JavaEmbedUtils.javaToRuby(runtime, servletContext));
+            runtime.evalScriptlet("require 'rack/handler/servlet'");
             return runtime;
         } catch (RaiseException re) {
             throw new RackInitializationException(re);
@@ -81,9 +81,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public IRubyObject createErrorApplicationObject(Ruby runtime) {
-        runtime.evalScriptlet("require 'rack/handler/servlet/errors'");
-        return createRackServletWrapper(runtime,
-                "run Rack::Handler::Servlet::Errors");
+        return createRackServletWrapper(runtime, "run JRuby::Rack::Errors");
     }
 
     public RackApplication newErrorApplication() {

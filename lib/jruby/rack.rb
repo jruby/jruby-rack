@@ -16,4 +16,4 @@ rescue LoadError
   end
 end
 
-require 'rack/handler/servlet'
+require 'jruby/rack/servlet_helper'

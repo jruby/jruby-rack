@@ -4,19 +4,19 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.dirname(__FILE__) + '/../../../spec_helper'
-require 'rack/adapter/rails/servlet_helper'
+require File.dirname(__FILE__) + '/../../spec_helper'
+require 'jruby/rack/rails'
 
 class ::CGI::Session::PStore; end
 
-describe Rack::Adapter::RailsServletHelper do
+describe JRuby::Rack::RailsServletHelper do
   before :each do
     @servlet_context.stub!(:getInitParameter).and_return nil
     @servlet_context.stub!(:getRealPath).and_return "/"
   end
 
   def create_helper
-    @helper = Rack::Adapter::RailsServletHelper.new @servlet_context
+    @helper = JRuby::Rack::RailsServletHelper.new @servlet_context
   end
   
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
@@ -56,10 +56,10 @@ describe Rack::Adapter::RailsServletHelper do
     @helper.public_root.should == "."
   end
 
-  it "should create a Logger that writes messages to the servlet context" do
+  it "should create a log device that writes messages to the servlet context" do
     create_helper
     @servlet_context.should_receive(:log).with(/hello/)
-    @helper.logger.info "hello"
+    @helper.logdev.write "hello"
   end
 
   it "should setup java servlet-based sessions if the session store is the default" do
@@ -86,11 +86,11 @@ describe Rack::Adapter::RailsServletHelper do
   end
 end
 
-describe Rack::Adapter::RailsSetup do
+describe JRuby::Rack::RailsSetup do
   it "should set up the env hash for Rails" do
     app = mock "app"
     helper = mock "servlet helper"
-    rs = Rack::Adapter::RailsSetup.new app, helper
+    rs = JRuby::Rack::RailsSetup.new app, helper
     options = mock "options"
     env = {}
     app.should_receive(:call).with(env)

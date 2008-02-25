@@ -2,7 +2,7 @@ require 'rack/adapter/servlet_helper'
 
 module Merb
   module Rack
-    class ServletHelper < ::Rack::Adapter::ServletHelper
+    class ServletHelper < ::JRuby::Rack::ServletHelper
       attr_reader :merb_environment, :merb_root
 
       def initialize(servlet_context = nil)

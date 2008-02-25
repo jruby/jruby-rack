@@ -4,50 +4,11 @@
 # See the file LICENSE.txt for details.
 #++
 
+require 'jruby/rack'
+
 module Rack
   module Handler
     class Servlet
-      class Result
-        include org.jruby.rack.RackResult
-        def initialize(result)
-          @status, @headers, @body = *result
-        end
-
-        def writeStatus(response)
-          response.setStatus(@status.to_i)
-        end
-
-        def writeHeaders(response)
-          @headers.each do |k,v|
-            case k
-            when /^Content-Type$/i
-              response.setContentType(v.to_s)
-            when /^Content-Length$/i
-              response.setContentLength(v.to_i)
-            else
-              response.setHeader(k.to_s, v.to_s)
-            end
-          end
-        end
-
-        def writeBody(response)
-          stream = response.getOutputStream
-          @body.each do |el|
-            stream.write(el.to_java_bytes)
-          end
-        end
-      end
-
-      class ServletLog
-        def puts(msg)
-          write msg.to_s
-        end
-        def write(msg)
-          $servlet_context.log(msg)
-        end
-        def flush; end
-        def close; end
-      end
       def initialize(rack_app)
         @rack_app = rack_app
       end
@@ -57,7 +18,7 @@ module Rack
         add_input_errors_scheme(servlet_env, env)
         add_variables(servlet_env, env)
         add_headers(servlet_env, env)
-        Result.new(@rack_app.call(env))
+        JRuby::Rack::Result.new(@rack_app.call(env))
       end
      
       def env_hash
@@ -67,7 +28,7 @@ module Rack
 
       def add_input_errors_scheme(servlet_env, env)
         env['rack.input'] = servlet_env.to_io
-        env['rack.errors'] = ServletLog.new
+        env['rack.errors'] = JRuby::Rack::ServletLog.new
         env['rack.url_scheme'] = servlet_env.getScheme
         env['java.servlet_request'] = servlet_env
         env['java.servlet_context'] = $servlet_context

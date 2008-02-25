@@ -17,8 +17,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
     @Override
     public IRubyObject createApplicationObject(Ruby runtime) {
-        runtime.evalScriptlet("require 'rack/adapter/rails/bootstrap'");
-        return createRackServletWrapper(runtime,
-                "run Rack::Adapter::RailsFactory.new\n");
+        runtime.evalScriptlet("require 'rack/adapter/rails'");
+        return createRackServletWrapper(runtime, "run JRuby::Rack::RailsFactory.new");
     }
 }

@@ -4,11 +4,10 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'rack/adapter/servlet_helper'
-require 'cgi/session/java_servlet_store'
-        
-module Rack
-  module Adapter
+require 'jruby/rack/servlet_helper'
+
+module JRuby
+  module Rack
     class RailsServletHelper < ServletHelper
       attr_reader :rails_env, :rails_root
 
@@ -19,15 +18,44 @@ module Rack
         @rails_root = @servlet_context.getRealPath @rails_root
         @rails_env = @servlet_context.getInitParameter 'rails.env'
         @rails_env ||= 'production'
+        ENV['RAILS_ROOT'] = @rails_root
+        ENV['RAILS_ENV'] = @rails_env
+      end
+      
+      def load_environment
+        load File.join(rails_root, 'config', 'environment.rb')
+        require 'dispatcher'
+        require 'jruby/rack/rails_ext'
+        setup_sessions
+        setup_logger
       end
       
       def setup_sessions
+        require 'cgi/session/java_servlet_store'
         if default_sessions?
           session_options[:database_manager] = java_servlet_store
         end
         # Turn off default cookies when using Java sessions
         if java_sessions?
           session_options[:no_cookies] = true
+        end
+      end
+
+      def setup_logger
+        if defined?(::RAILS_DEFAULT_LOGGER)
+          class << ::RAILS_DEFAULT_LOGGER # Make these accessible to wire in the log devicea
+            public :instance_variable_get, :instance_variable_set
+          end
+          
+          if defined?(ActiveSupport::BufferedLogger) # Rails 2.x
+            old_device = ::RAILS_DEFAULT_LOGGER.instance_variable_get "@log"
+            old_device.close rescue nil
+            ::RAILS_DEFAULT_LOGGER.instance_variable_set "@log", logdev
+          else # Rails 1.x
+            old_device = ::RAILS_DEFAULT_LOGGER.instance_variable_get "@logdev"
+            old_device.close rescue nil
+            ::RAILS_DEFAULT_LOGGER.instance_variable_set "@logdev", Logger::LogDevice.new(device)
+          end
         end
       end
 
@@ -56,6 +84,10 @@ module Rack
       def java_servlet_store
 	CGI::Session::JavaServletStore
       end
+
+      def options
+	{:public => public_root, :root => rails_root, :environment => rails_env}
+      end
     end
 
     class RailsSetup
@@ -68,6 +100,17 @@ module Rack
         env['rails.session_options'] = @servlet_helper.session_options_for_request(env)
         env["RAILS_RELATIVE_URL_ROOT"] = env['java.servlet_request'].getContextPath
         @app.call(env)
+      end
+    end
+
+    class RailsFactory
+      def self.new
+        helper = RailsServletHelper.new
+        helper.load_environment
+        ::Rack::Builder.new {
+          use RailsSetup, helper
+          run ::Rack::Adapter::Rails.new(helper.options)
+        }.to_app
       end
     end
   end
