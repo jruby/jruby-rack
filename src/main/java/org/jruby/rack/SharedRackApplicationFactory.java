@@ -65,6 +65,10 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
     public void finishedWithApplication(RackApplication app) {
     }
 
+    public RackApplication getErrorApplication() {
+        return realFactory.getErrorApplication();
+    }
+
     public void destroy() {
         application.destroy();
     }

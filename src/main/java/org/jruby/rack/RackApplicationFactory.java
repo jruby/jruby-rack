@@ -48,6 +48,9 @@ public interface RackApplicationFactory {
     /** Return the application to the factory, allowing it to be pooled
      and/or cleaned up.*/
     void finishedWithApplication(RackApplication app);
+    /** Get the designated error application. The error application is expected
+     to be a singleton and should not be returned to the factory. */
+    RackApplication getErrorApplication();
     /** Destroy the factory. */
     void destroy();
 }

@@ -84,6 +84,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     public void finishedWithApplication(RackApplication app) {
     }
 
+    public RackApplication getErrorApplication() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     public void destroy() {
     }
 

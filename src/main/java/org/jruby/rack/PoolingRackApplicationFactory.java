@@ -29,6 +29,8 @@
 
 package org.jruby.rack;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
@@ -73,25 +75,22 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         this.servletContext = servletContext;
         realFactory.init(servletContext);
 
-        Integer specifiedTimeout = getPositiveInteger(servletContext, 
-                "jruby.runtime.timeout.sec");
+        Integer specifiedTimeout = getPositiveInteger("jruby.runtime.timeout.sec");
         if (specifiedTimeout != null) {
             timeout = specifiedTimeout.longValue();
         }
         servletContext.log("Using runtime pool timeout of " + timeout + " seconds");
 
-        initial = getInitial(servletContext);
-        maximum = getMaximum(servletContext);
-
-        if (initial != null) {
-            fillInitialPool(servletContext);
-        }
-
+        initial = getInitial();
+        maximum = getMaximum();
         if (maximum != null) {
             if (initial != null && initial > maximum) {
                 maximum = initial;
             }
             permits = new Semaphore(maximum, true); // does fairness matter?
+        }
+        if (initial != null) {
+            fillInitialPool();
         }
     }
 
@@ -107,7 +106,6 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
                 throw new RackInitializationException("timeout: all listeners busy", ex);
             }
         }
-
         synchronized (applicationPool) {
             if (!applicationPool.isEmpty()) {
                 return applicationPool.remove();
@@ -122,13 +120,15 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             if (maximum != null && applicationPool.size() >= maximum) {
                 return;
             }
-
             applicationPool.add(app);
-
             if (permits != null) {
                 permits.release();
             }
         }
+    }
+
+    public RackApplication getErrorApplication() {
+        return realFactory.getErrorApplication();
     }
 
     public void destroy() {
@@ -140,24 +140,20 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     }
 
     /** Used only by unit tests */
-    public Queue<RackApplication> getApplicationPool() {
-        return applicationPool;
+    public Collection<RackApplication> getApplicationPool() {
+        return Collections.unmodifiableCollection(applicationPool);
     }
 
     /** This creates the application objects in the foreground thread to avoid
      * leakage when the web application is undeployed from the application server. */
-    private void fillInitialPool(final ServletContext servletContext) throws ServletException {
-        final Queue<RackApplication> apps = new LinkedList<RackApplication>();
-        for (int i = 0; i < initial; i++) {
-            try {
-                apps.add(realFactory.newApplication());
-            } catch (RackInitializationException ex) {
-                throw new ServletException("unable to create application for pool", ex);
-            }
-        }
+    private void fillInitialPool() throws ServletException {
+        Queue<RackApplication> apps = createApplications();
+        launchInitializerThreads(apps);
+        waitForNextAvailable(DEFAULT_TIMEOUT * 1000);
+    }
 
-        Integer numThreads = getPositiveInteger(servletContext,
-                "jruby.runtime.initializer.threads");
+    private void launchInitializerThreads(final Queue<RackApplication> apps) {
+        Integer numThreads = getPositiveInteger("jruby.runtime.initializer.threads");
         if (numThreads == null) {
             numThreads = 4;
         }
@@ -188,30 +184,41 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
                 }
             }, "JRuby-Rack-App-Init-" + i).start();
         }
+    }
 
+    private Queue<RackApplication> createApplications() throws ServletException {
+        Queue<RackApplication> apps = new LinkedList<RackApplication>();
+        for (int i = 0; i < initial; i++) {
+            try {
+                apps.add(realFactory.newApplication());
+            } catch (RackInitializationException ex) {
+                throw new ServletException("unable to create application for pool", ex);
+            }
+        }
+        return apps;
+    }
+
+    /** Wait the specified time or until a runtime is available. */
+    public void waitForNextAvailable(long timeout) {
         try {
             synchronized (applicationPool) {
-                if (applicationPool.isEmpty()) {
-                    // Wait 30 seconds or until first runtime is available
-                    applicationPool.wait(DEFAULT_TIMEOUT * 1000);
-                }
+                applicationPool.wait(timeout);
             }
-        } catch (InterruptedException ex) {
-        }
+        } catch (InterruptedException ex) { }
     }
 
-    private Integer getMaximum(ServletContext servletContext) {
-        return getRangeValue(servletContext, "max", "maxActive");
+    private Integer getInitial() {
+        return getRangeValue("initial", "minIdle");
     }
 
-    private Integer getInitial(ServletContext servletContext) {
-        return getRangeValue(servletContext, "initial", "minIdle");
+    private Integer getMaximum() {
+        return getRangeValue("max", "maxActive");
     }
 
-    private Integer getRangeValue(ServletContext servletContext, String end, String gsValue) {
-        Integer v = getPositiveInteger(servletContext, "jruby." + end + ".runtimes");
+    private Integer getRangeValue(String end, String gsValue) {
+        Integer v = getPositiveInteger("jruby." + end + ".runtimes");
         if (v == null) {
-            v = getPositiveInteger(servletContext, "jruby.pool." + gsValue);
+            v = getPositiveInteger("jruby.pool." + gsValue);
         }
         if (v == null) {
             servletContext.log("warning: no " + end + " runtimes specified.");
@@ -221,7 +228,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         return v;
     }
 
-    private Integer getPositiveInteger(ServletContext servletContext, String string) {
+    private Integer getPositiveInteger(String string) {
         try {
             int i = Integer.parseInt(servletContext.getInitParameter(string));
             if (i > 0) {

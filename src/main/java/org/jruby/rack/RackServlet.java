@@ -44,6 +44,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author nicksieger
  */
 public class RackServlet extends HttpServlet {
+    static final String EXCEPTION = "rack.exception";
+
     private ServletContext servletContext;
 
     public RackServlet() {
@@ -66,12 +68,9 @@ public class RackServlet extends HttpServlet {
         RackApplication app = null;
         try {
             app = rackFactory.getApplication();
-            RackResult result = app.call(request);
-            result.writeStatus(response);
-            result.writeHeaders(response);
-            result.writeBody(response);
+            callApplication(app, request, response);
         } catch (Exception re) {
-            throw new ServletException("Error processing request", re);
+            handleException(re, rackFactory, request, response);
         } finally {
             if (app != null) {
                 rackFactory.finishedWithApplication(app);
@@ -79,8 +78,35 @@ public class RackServlet extends HttpServlet {
         }
     }
 
+    private void callApplication(RackApplication app, HttpServletRequest request,
+            HttpServletResponse response) {
+        RackResult result = app.call(request);
+        result.writeStatus(response);
+        result.writeHeaders(response);
+        result.writeBody(response);
+    }
+
     private RackApplicationFactory getRackFactory() {
         return (RackApplicationFactory)
             servletContext.getAttribute(RackServletContextListener.FACTORY_KEY);
+    }
+
+    private void handleException(Exception re, RackApplicationFactory rackFactory,
+            HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        if (response.isCommitted()) {
+            servletContext.log("Couldn't handle error: response committed", re);
+            return;
+        }
+        response.reset();
+
+        try {
+            RackApplication errorApp = rackFactory.getErrorApplication();
+            request.setAttribute(EXCEPTION, re);
+            callApplication(errorApp, request, response);
+        } catch (Exception e) {
+            servletContext.log("Couldn't handle error", e);
+            response.sendError(500);
+        }
     }
 }

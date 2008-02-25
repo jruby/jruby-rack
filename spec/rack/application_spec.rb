@@ -200,9 +200,16 @@ describe PoolingRackApplicationFactory do
     @servlet_context.should_receive(:getInitParameter).with("jruby.initial.runtimes").and_return "2"
     @servlet_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "1"
     @pool.init(@servlet_context)
-    @pool.getApplicationPool.size.should >= 1
+    @pool.waitForNextAvailable(30)
+    @pool.getApplicationPool.size.should == 2
     @pool.finishedWithApplication mock("app")
     @pool.getApplicationPool.size.should == 2
+  end
+
+  it "should retrieve the error application from the delegate factory" do
+    app = mock("app")
+    @factory.should_receive(:getErrorApplication).and_return app
+    @pool.getErrorApplication.should == app
   end
 end
 
@@ -249,5 +256,11 @@ describe SharedRackApplicationFactory do
     app.should_receive(:destroy)
     @shared.init(@servlet_context)
     @shared.destroy
+  end
+
+  it "should retrieve the error application from the delegate factory" do
+    app = mock("app")
+    @factory.should_receive(:getErrorApplication).and_return app
+    @shared.getErrorApplication.should == app
   end
 end
