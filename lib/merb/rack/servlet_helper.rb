@@ -16,7 +16,7 @@ module Merb
       end
 
       def load_merb
-        logger.info("Loading Merb framework")
+        logger.debug("Loading Merb framework")
 
         framework = File.join(@merb_root, 'framework')
         if File.directory?(framework)
@@ -54,6 +54,6 @@ module Merb
       end
 
     end
-
+    
   end
 end
