@@ -7,11 +7,13 @@
 package org.jruby.rack;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jruby.Ruby;
+import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -66,7 +68,14 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public Ruby newRuntime() throws RackInitializationException {
         try {
-            Ruby runtime = JavaEmbedUtils.initialize(new ArrayList(), classCache);
+            RubyInstanceConfig config = new RubyInstanceConfig();
+            config.setClassCache(classCache);
+            try { // try to set jruby home to jar file path
+                String binjruby = RubyInstanceConfig.class.getResource(
+                        "/META-INF/jruby.home/bin/jruby").getFile();
+                config.setJRubyHome(binjruby.substring(0, binjruby.length() - 10));
+            } catch (Exception e) { }
+            Ruby runtime = JavaEmbedUtils.initialize(new ArrayList(), config);
             runtime.getGlobalVariables().set("$servlet_context",
                     JavaEmbedUtils.javaToRuby(runtime, servletContext));
             runtime.evalScriptlet("require 'rack/handler/servlet'");
