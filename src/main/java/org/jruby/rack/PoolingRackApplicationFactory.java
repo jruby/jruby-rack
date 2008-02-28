@@ -56,7 +56,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         if (specifiedTimeout != null) {
             timeout = specifiedTimeout.longValue();
         }
-        servletContext.log("Using runtime pool timeout of " + timeout + " seconds");
+        servletContext.log("Info: using runtime pool timeout of " + timeout + " seconds");
 
         initial = getInitial();
         maximum = getMaximum();
@@ -154,13 +154,13 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
                             app.init();
                             synchronized (applicationPool) {
                                 applicationPool.add(app);
-                                servletContext.log("add application to the pool. size now = "
+                                servletContext.log("Info: add application to the pool. size now = "
                                         + applicationPool.size());
                                 applicationPool.notifyAll();
                             }
                         }
                     } catch (RackInitializationException ex) {
-                        servletContext.log("unable to initialize application", ex);
+                        servletContext.log("Error: unable to initialize application", ex);
                     }
                 }
             }, "JRuby-Rack-App-Init-" + i).start();
@@ -173,7 +173,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             try {
                 apps.add(realFactory.newApplication());
             } catch (RackInitializationException ex) {
-                throw new ServletException("unable to create application for pool", ex);
+                throw new ServletException("Error: unable to create application for pool", ex);
             }
         }
         return apps;
@@ -202,9 +202,9 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             v = getPositiveInteger("jruby.pool." + gsValue);
         }
         if (v == null) {
-            servletContext.log("warning: no " + end + " runtimes specified.");
+            servletContext.log("Warning: no " + end + " runtimes specified.");
         } else {
-            servletContext.log("received " + end + " runtimes = " + v);
+            servletContext.log("Info: received " + end + " runtimes = " + v);
         }
         return v;
     }

@@ -35,11 +35,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 Thread.currentThread().getContextClassLoader());
         if (errorApplication == null) {
             errorApplication = newErrorApplication();
-            try {
-                errorApplication.init();
-            } catch (RackInitializationException rie) {
-                servletContext.log("Error initializing error application", rie);
-            }
         }
     }
 
@@ -99,12 +94,17 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public RackApplication newErrorApplication() {
         try {
-            return createApplication(new ApplicationObjectFactory() {
+            RackApplication app =
+                    createApplication(new ApplicationObjectFactory() {
                 public IRubyObject create(Ruby runtime) {
                     return createErrorApplicationObject(runtime);
                 }
             });
+            app.init();
+            return app;
         } catch (final Exception e) {
+            servletContext.log(
+                "Warning: error application could not be initialized", e);
             return new RackApplication() {
                 public void init() throws RackInitializationException { }
                 public RackResult call(ServletRequest env) {

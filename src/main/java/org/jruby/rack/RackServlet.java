@@ -68,7 +68,7 @@ public class RackServlet extends HttpServlet {
             HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         if (response.isCommitted()) {
-            servletContext.log("Couldn't handle error: response committed", re);
+            servletContext.log("Error: Couldn't handle error: response committed", re);
             return;
         }
         response.reset();
@@ -78,7 +78,7 @@ public class RackServlet extends HttpServlet {
             request.setAttribute(EXCEPTION, re);
             callApplication(errorApp, request, response);
         } catch (Exception e) {
-            servletContext.log("Couldn't handle error", e);
+            servletContext.log("Error: Couldn't handle error", e);
             response.sendError(500);
         }
     }

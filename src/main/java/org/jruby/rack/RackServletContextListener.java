@@ -37,7 +37,7 @@ public class RackServletContextListener implements ServletContextListener {
         try {
             fac.init(ctx);
         } catch (Exception ex) {
-            ctx.log("Application initialization failed", ex);
+            ctx.log("Error: application initialization failed", ex);
         }
     }
 
