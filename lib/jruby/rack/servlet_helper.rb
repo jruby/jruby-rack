@@ -138,5 +138,14 @@ module JRuby
         end
       end
     end
+
+    class ErrorsApp
+      def self.new
+        ::Rack::Builder.new {
+          use ::Rack::ShowStatus
+          run Errors.new(::Rack::File.new(ServletHelper.instance.public_root))
+        }.to_app
+      end
+    end
   end
 end

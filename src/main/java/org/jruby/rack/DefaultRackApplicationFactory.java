@@ -94,9 +94,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public IRubyObject createErrorApplicationObject(Ruby runtime) {
-        return createRackServletWrapper(runtime,
-                "use ::Rack::ShowStatus; " +
-                "run JRuby::Rack::Errors.new");
+        return createRackServletWrapper(runtime, "run JRuby::Rack::ErrorsApp.new");
     }
 
     public RackApplication newErrorApplication() {
