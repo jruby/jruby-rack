@@ -37,8 +37,7 @@ module Rack
       def add_variables(servlet_env, env)
         env["REQUEST_METHOD"] = servlet_env.getMethod
         env["REQUEST_METHOD"] ||= "GET"
-        env["SCRIPT_NAME"] = servlet_env.getServletPath
-        env["SCRIPT_NAME"] ||= ""
+        env["SCRIPT_NAME"] = "#{servlet_env.getContextPath}#{servlet_env.getServletPath}"
         env["PATH_INFO"] = servlet_env.getPathInfo
         env["PATH_INFO"] ||= ""
         env["REQUEST_URI"] = servlet_env.getRequestURI

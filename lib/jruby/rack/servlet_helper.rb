@@ -92,8 +92,50 @@ module JRuby
     end
 
     class Errors
+      EXCEPTION = org.jruby.rack.RackServlet::EXCEPTION
+      def initialize(file_server)
+	@file_server = file_server
+      end
+
       def call(env)
-        [500, {}, "Internal Server Error"]
+        [code = result_code(env), *result_content(env, code)]
+      end
+
+      def result_code(env)
+        exc = env['java.servlet_request'].getAttribute(EXCEPTION)
+        if exc 
+          env['rack.showstatus.detail'] = exc.getMessage
+          if exc.getCause.kind_of?(Java::JavaLang::InterruptedException)
+            503
+          else
+            500
+          end
+        else
+          500
+        end
+      end
+
+      def result_content(env, code)
+        @results ||= Hash.new do |h,k|
+          env["PATH_INFO"] = "/#{code}.html"
+          result = @file_server.call(env)
+          body = result[2]
+          unless String === body
+            newbody = ""
+            body.each do |chunk|
+              newbody << chunk
+            end
+            result[2] = newbody
+          end
+          h[k] = result
+        end
+        result = @results[code]
+        if result[0] != 404
+          env["rack.showstatus.detail"] = nil
+          result[1..2]
+        else
+          [{}, ""]
+        end
       end
     end
   end

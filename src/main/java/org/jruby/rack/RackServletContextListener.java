@@ -32,12 +32,12 @@ public class RackServletContextListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent ctxEvent) {
         ServletContext ctx = ctxEvent.getServletContext();
+        final RackApplicationFactory fac = newApplicationFactory();
+        ctx.setAttribute(FACTORY_KEY, fac);
         try {
-            final RackApplicationFactory fac = newApplicationFactory();
             fac.init(ctx);
-            ctx.setAttribute(FACTORY_KEY, fac);
         } catch (Exception ex) {
-            ctx.log("Application initialization failed: " + ex.getMessage());
+            ctx.log("Application initialization failed", ex);
         }
     }
 

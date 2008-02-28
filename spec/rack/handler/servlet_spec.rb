@@ -32,6 +32,7 @@ describe Rack::Handler::Servlet, "add_input_errors_scheme" do
     servlet_env = mock "servlet request"
     servlet_env.stub!(:to_io).and_return StringIO.new
     servlet_env.stub!(:getScheme).and_return "http"
+    servlet_env.stub!(:getContextPath).and_return "/foo"
     env = {}
     @servlet.add_input_errors_scheme servlet_env, env
     (input = env['rack.input']).should_not be_nil
@@ -50,9 +51,10 @@ describe Rack::Handler::Servlet, "add_variables" do
   it "should add cgi variables" do
     servlet_env = mock "servlet request"
     servlet_env.stub!(:getMethod).and_return "GET"
-    servlet_env.stub!(:getServletPath).and_return "/path/info/script_name"
+    servlet_env.stub!(:getContextPath).and_return "/app"
+    servlet_env.stub!(:getServletPath).and_return "/script_name"
     servlet_env.stub!(:getPathInfo).and_return "/path/info"
-    servlet_env.stub!(:getRequestURI).and_return "/request/uri"
+    servlet_env.stub!(:getRequestURI).and_return "/app/script_name/path/info"
     servlet_env.stub!(:getQueryString).and_return "hello=there"
     servlet_env.stub!(:getServerName).and_return "localhost"
     servlet_env.stub!(:getServerPort).and_return 80
@@ -62,9 +64,9 @@ describe Rack::Handler::Servlet, "add_variables" do
     env = {}
     @servlet.add_variables(servlet_env, env)
     env["REQUEST_METHOD"].should == "GET"
-    env["SCRIPT_NAME"].should == "/path/info/script_name"
+    env["SCRIPT_NAME"].should == "/app/script_name"
     env["PATH_INFO"].should == "/path/info"
-    env["REQUEST_URI"].should == "/request/uri"
+    env["REQUEST_URI"].should == "/app/script_name/path/info"
     env["QUERY_STRING"].should == "hello=there"
     env["SERVER_NAME"].should == "localhost"
     env["SERVER_PORT"].should == "80"
@@ -75,6 +77,7 @@ describe Rack::Handler::Servlet, "add_variables" do
 
   it "should not add environment variables if their value is nil" do
     servlet_env = mock "servlet request"
+    servlet_env.stub!(:getContextPath).and_return nil
     servlet_env.stub!(:getMethod).and_return nil
     servlet_env.stub!(:getServletPath).and_return nil
     servlet_env.stub!(:getPathInfo).and_return nil

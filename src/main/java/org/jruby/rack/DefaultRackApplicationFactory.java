@@ -7,7 +7,6 @@
 package org.jruby.rack;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
@@ -36,6 +35,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 Thread.currentThread().getContextClassLoader());
         if (errorApplication == null) {
             errorApplication = newErrorApplication();
+            try {
+                errorApplication.init();
+            } catch (RackInitializationException rie) {
+                servletContext.log("Error initializing error application", rie);
+            }
         }
     }
 
@@ -90,7 +94,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public IRubyObject createErrorApplicationObject(Ruby runtime) {
-        return createRackServletWrapper(runtime, "run JRuby::Rack::Errors");
+        return createRackServletWrapper(runtime,
+                "use ::Rack::ShowStatus; " +
+                "run JRuby::Rack::Errors.new");
     }
 
     public RackApplication newErrorApplication() {

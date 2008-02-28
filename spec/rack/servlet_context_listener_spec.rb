@@ -34,7 +34,7 @@ describe RackServletContextListener do
     it "should log an error if initialize failed" do
       @servlet_context.stub!(:setAttribute)
       @factory.should_receive(:init).and_raise "help"
-      @servlet_context.should_receive(:log).with(/initialization failed/)
+      @servlet_context.should_receive(:log).with(/initialization failed/, anything())
       @listener.contextInitialized @servlet_context_event
     end
   end
