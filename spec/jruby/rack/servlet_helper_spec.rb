@@ -62,6 +62,14 @@ describe JRuby::Rack::ServletHelper do
     @helper.public_root.should == "."
   end
 
+  it "should also understand the 'files.prefix' init parameter from Goldspike" do
+    @servlet_context.should_receive(:getInitParameter).with("public.root").and_return nil
+    @servlet_context.should_receive(:getInitParameter).with("files.prefix").and_return ""
+    @servlet_context.should_receive(:getRealPath).with("/").and_return "."
+    create_helper
+    @helper.public_root.should == "."
+  end
+
   it "should default public root to '/WEB-INF/public'" do
     @servlet_context.should_receive(:getRealPath).with("/WEB-INF/public").and_return "."
     create_helper

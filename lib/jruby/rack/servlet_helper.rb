@@ -59,7 +59,9 @@ module JRuby
       def initialize(servlet_context = nil)
         @servlet_context = servlet_context || ServletContext
         @public_root = @servlet_context.getInitParameter 'public.root'
+        @public_root ||= @servlet_context.getInitParameter 'files.prefix' # Goldspike
         @public_root ||= '/WEB-INF/public'
+        @public_root = "/#{@public_root}" unless @public_root =~ %r{^/}
         @public_root = @servlet_context.getRealPath @public_root
         @gem_path = @servlet_context.getInitParameter 'gem.path'
         @gem_path ||= '/WEB-INF/gems'
