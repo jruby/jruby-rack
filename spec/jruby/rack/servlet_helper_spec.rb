@@ -110,24 +110,24 @@ describe JRuby::Rack::Errors do
 
   it "should determine the response status code based on the exception in the servlet attribute" do
     init_exception
-    @file_server.stub!(:call).and_return [404, {}, ""]
-    @errors.call(@env).should == [500, {}, ""]
+    @file_server.stub!(:call).and_return [404, {}, []]
+    @errors.call(@env).should == [500, {}, []]
     @env["rack.showstatus.detail"].should == "something went wrong"
   end
 
   it "should return 503 if there is a nested InterruptedException" do
     init_exception java.lang.InterruptedException.new
-    @file_server.stub!(:call).and_return [404, {}, ""]
-    @errors.call(@env).should == [503, {}, ""]
+    @file_server.stub!(:call).and_return [404, {}, []]
+    @errors.call(@env).should == [503, {}, []]
   end
 
   it "should invoke the file server with PATH_INFO=/500.html" do
     init_exception
     @file_server.should_receive(:call).and_return do |env|
       env["PATH_INFO"].should == "/500.html"
-      [200, {"Content-Type" => "text/html"}, "custom error page"]
+      [200, {"Content-Type" => "text/html"}, ["custom error page"]]
     end
-    @errors.call(@env).should == [500, {"Content-Type" => "text/html"}, "custom error page"]
+    @errors.call(@env).should == [500, {"Content-Type" => "text/html"}, ["custom error page"]]
     @env["rack.showstatus.detail"].should be_nil
   end
 
@@ -135,11 +135,11 @@ describe JRuby::Rack::Errors do
     init_exception
     @file_server.should_receive(:call).once.and_return do |env|
       env["PATH_INFO"].should == "/500.html"
-      [200, {"Content-Type" => "text/html"}, "custom error page"]
+      [200, {"Content-Type" => "text/html"}, ["custom error page"]]
     end
     @errors.call(@env)
     @errors.call(@env)
-    @errors.call(@env).should == [500, {"Content-Type" => "text/html"}, "custom error page"]
+    @errors.call(@env).should == [500, {"Content-Type" => "text/html"}, ["custom error page"]]
   end
 
   it "should expand and cache the body of the file" do
@@ -156,6 +156,6 @@ describe JRuby::Rack::Errors do
     end
     @errors.call(@env)
     @errors.call(@env)
-    @errors.call(@env).should == [500, {"Content-Type" => "text/html"}, "123"]
+    @errors.call(@env).should == [500, {"Content-Type" => "text/html"}, ["123"]]
   end
 end

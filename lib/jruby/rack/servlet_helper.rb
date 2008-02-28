@@ -120,12 +120,12 @@ module JRuby
           env["PATH_INFO"] = "/#{code}.html"
           result = @file_server.call(env)
           body = result[2]
-          unless String === body
+          unless Array === body
             newbody = ""
             body.each do |chunk|
               newbody << chunk
             end
-            result[2] = newbody
+            result[2] = [newbody]
           end
           h[k] = result
         end
@@ -134,7 +134,7 @@ module JRuby
           env["rack.showstatus.detail"] = nil
           result[1..2]
         else
-          [{}, ""]
+          [{}, []]
         end
       end
     end
