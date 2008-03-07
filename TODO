@@ -1,4 +1,4 @@
 - Figure out a better way to handle static files than Rack::File
 - Allow rackup script to be set from a file in addition to the servlet context
   - scan webapp for files named config.ru?
-- Rails: detect JNDI connections and auto-close connections after each request
+- Rails: detect JNDI connections and auto-close connections after each request (clear_active_connections!)

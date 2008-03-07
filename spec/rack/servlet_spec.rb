@@ -7,30 +7,24 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 import org.jruby.rack.RackServlet
+import org.jruby.rack.DefaultRackDispatcher
 
-describe RackServlet do
+describe RackServlet, "service" do
+  it "should delegate to process" do
+    request = javax.servlet.http.HttpServletRequest.impl {}
+    response = javax.servlet.http.HttpServletResponse.impl {}
+    dispatcher = mock "dispatcher"
+    dispatcher.should_receive(:process).with(request, response)
+    @servlet = RackServlet.new dispatcher
+    @servlet.service request, response
+  end
+end
+
+describe DefaultRackDispatcher do
   before :each do
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
     @servlet_context.should_receive(:getAttribute).with("rack.factory").and_return @rack_factory
-    @servlet = RackServlet.new
-    @servlet.init(@servlet_config)
-  end
-
-  describe "service" do
-    it "should delegate to process" do
-      request = javax.servlet.http.HttpServletRequest.impl {}
-      response = javax.servlet.http.HttpServletResponse.impl {}
-      application = mock("application")
-      result = mock("rack result")
-      result.stub!(:writeStatus)
-      result.stub!(:writeHeaders)
-      result.stub!(:writeBody)
-      @rack_factory.stub!(:getApplication).and_return application
-      @rack_factory.stub!(:finishedWithApplication)
-      application.stub!(:call).and_return result
-
-      @servlet.service request, response
-    end
+    @dispatcher = DefaultRackDispatcher.new @servlet_context
   end
 
   describe "process" do
@@ -47,7 +41,7 @@ describe RackServlet do
       result.should_receive(:writeHeaders)
       result.should_receive(:writeBody)
 
-      @servlet.process(request, response)
+      @dispatcher.process(request, response)
     end
 
     it "should let the error application handle the error if the application could not be initialized" do
@@ -55,7 +49,7 @@ describe RackServlet do
       error_app = mock "error application"
       @rack_factory.should_receive(:getErrorApplication).and_return error_app
       req, res = mock("request"), mock("response")
-      req.should_receive(:setAttribute).with(RackServlet::EXCEPTION, anything())
+      req.should_receive(:setAttribute).with(org.jruby.rack.RackDispatcher::EXCEPTION, anything())
       res.should_receive(:isCommitted).and_return false
       res.should_receive(:reset)
       result = mock "result"
@@ -63,7 +57,7 @@ describe RackServlet do
       result.should_receive(:writeStatus)
       result.should_receive(:writeHeaders)
       result.should_receive(:writeBody)
-      @servlet.process(req, res)
+      @dispatcher.process(req, res)
     end
 
     it "should stop processing on error if the response is already committed" do
@@ -73,7 +67,7 @@ describe RackServlet do
       application.stub!(:call).and_raise "some error"
       req, res = mock("request"), mock("response")
       res.stub!(:isCommitted).and_return true
-      @servlet.process(req, res)
+      @dispatcher.process(req, res)
     end
 
     it "should send a 500 error if the error application can't successfully handle the error" do
@@ -87,7 +81,7 @@ describe RackServlet do
       result = mock "result"
       error_app.should_receive(:call).with(req).and_raise "some error"
       res.should_receive(:sendError).with(500)
-      @servlet.process(req, res)
+      @dispatcher.process(req, res)
     end
   end
 end

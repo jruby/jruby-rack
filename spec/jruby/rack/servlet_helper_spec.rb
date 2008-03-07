@@ -113,7 +113,7 @@ describe JRuby::Rack::Errors do
   def init_exception(cause = nil)
     @exception = org.jruby.rack.RackInitializationException.new("something went wrong", cause)
     @servlet_request.should_receive(:getAttribute).any_number_of_times.with(
-      org.jruby.rack.RackServlet::EXCEPTION).and_return @exception
+      org.jruby.rack.RackDispatcher::EXCEPTION).and_return @exception
   end
 
   it "should determine the response status code based on the exception in the servlet attribute" do
