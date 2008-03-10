@@ -49,6 +49,7 @@ public class RackFilter implements Filter {
         chain.doFilter(request, capture);
         if (capture.isError()) {
             httpResponse.reset();
+            request.setAttribute(RackDispatcher.DYNAMIC_REQS_ONLY, Boolean.TRUE);
             dispatcher.process((HttpServletRequest) request, httpResponse);
         }
     }

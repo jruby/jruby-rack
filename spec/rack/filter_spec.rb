@@ -15,6 +15,7 @@ describe RackFilter do
     @chain = mock "filter chain"
     @dispatcher = mock "dispatcher"
     @filter = RackFilter.new @dispatcher
+    @request.stub!(:setAttribute)
   end
 
   it "should dispatch the filter chain and finish if the chain resulted in a successful response" do
@@ -38,6 +39,7 @@ describe RackFilter do
       resp.sendError(404)
     end
     @response.should_receive(:reset).ordered
+    @request.should_receive(:setAttribute).ordered.with(org.jruby.rack.RackDispatcher::DYNAMIC_REQS_ONLY, true)
     @dispatcher.should_receive(:process).with(@request,@response).ordered
     @filter.doFilter(@request, @response, @chain)    
   end
