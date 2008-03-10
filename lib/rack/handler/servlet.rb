@@ -16,6 +16,7 @@ module Rack
       def call(servlet_env)
         env = env_hash
         add_input_errors_scheme(servlet_env, env)
+        add_servlet_request_attributes(servlet_env, env)
         add_variables(servlet_env, env)
         add_headers(servlet_env, env)
         JRuby::Rack::Result.new(@rack_app.call(env))
@@ -34,35 +35,43 @@ module Rack
         env['java.servlet_context'] = $servlet_context
       end
 
+      def add_servlet_request_attributes(servlet_env, env)
+	servlet_env.getAttributeNames.each do |k|
+          env[k] = servlet_env.getAttribute(k)
+        end
+      end
+
       def add_variables(servlet_env, env)
-        env["REQUEST_METHOD"] = servlet_env.getMethod
+        env["REQUEST_METHOD"] ||= servlet_env.getMethod
         env["REQUEST_METHOD"] ||= "GET"
-        env["SCRIPT_NAME"] = "#{servlet_env.getContextPath}#{servlet_env.getServletPath}"
-        env["PATH_INFO"] = servlet_env.getPathInfo
-        env["PATH_INFO"] ||= ""
-        env["REQUEST_URI"] = servlet_env.getRequestURI
-        env["REQUEST_URI"] ||= ""
-        env["QUERY_STRING"] = servlet_env.getQueryString
-        env["QUERY_STRING"] ||= ""
-        env["SERVER_NAME"] = servlet_env.getServerName
-        env["SERVER_NAME"] ||= ""
-        env["REMOTE_HOST"] = servlet_env.getRemoteHost
-        env["REMOTE_HOST"] ||= ""
-        env["REMOTE_ADDR"] = servlet_env.getRemoteAddr
-        env["REMOTE_ADDR"] ||= ""
-        env["REMOTE_USER"] = servlet_env.getRemoteUser
-        env["REMOTE_USER"] ||= ""
-        env["SERVER_PORT"] = servlet_env.getServerPort.to_s
+        env["SCRIPT_NAME"]    ||= "#{servlet_env.getContextPath}#{servlet_env.getServletPath}"
+        env["PATH_INFO"]      ||= servlet_env.getPathInfo
+        env["PATH_INFO"]      ||= ""
+        env["REQUEST_URI"]    ||= servlet_env.getRequestURI
+        env["REQUEST_URI"]    ||= ""
+        env["QUERY_STRING"]   ||= servlet_env.getQueryString
+        env["QUERY_STRING"]   ||= ""
+        env["SERVER_NAME"]    ||= servlet_env.getServerName
+        env["SERVER_NAME"]    ||= ""
+        env["REMOTE_HOST"]    ||= servlet_env.getRemoteHost
+        env["REMOTE_HOST"]    ||= ""
+        env["REMOTE_ADDR"]    ||= servlet_env.getRemoteAddr
+        env["REMOTE_ADDR"]    ||= ""
+        env["REMOTE_USER"]    ||= servlet_env.getRemoteUser
+        env["REMOTE_USER"]    ||= ""
+        env["SERVER_PORT"]    ||= servlet_env.getServerPort
+        env["SERVER_PORT"]      = env["SERVER_PORT"].to_s unless String === env["SERVER_PORT"]
       end
 
       def add_headers(servlet_env, env)
-        env["CONTENT_TYPE"] = servlet_env.getContentType
+        env["CONTENT_TYPE"] ||= servlet_env.getContentType
         env.delete("CONTENT_TYPE") unless env["CONTENT_TYPE"]
-        env["CONTENT_LENGTH"] = servlet_env.getContentLength.to_s
+        env["CONTENT_LENGTH"] ||= servlet_env.getContentLength
+        env["CONTENT_LENGTH"] = env["CONTENT_LENGTH"].to_s unless String === env["CONTENT_LENGTH"]
         env.delete("CONTENT_LENGTH") unless env["CONTENT_LENGTH"] && env["CONTENT_LENGTH"].to_i >= 0
         servlet_env.getHeaderNames.each do |h|
           next if h =~ /^Content-(Type|Length)$/i
-          env["HTTP_#{h.upcase.sub(/-/, '_')}"] = servlet_env.getHeader(h)
+          env["HTTP_#{h.upcase.sub(/-/, '_')}"] ||= servlet_env.getHeader(h)
         end
       end
     end
