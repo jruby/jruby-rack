@@ -40,16 +40,20 @@ module Rack
       end
 
       def call(env)
-        path        = env['PATH_INFO'].chomp('/')
-        cached_path = (path.empty? ? 'index' : path) + ActionController::Base.page_cache_extension
-
-        if file_exist?(path)              # Serve the file if it's there
-          serve_file(env)
-        elsif file_exist?(cached_path)    # Serve the page cache if it's there
-          env['PATH_INFO'] = cached_path
-          serve_file(env)
-        else                              # No static file, let Rails handle it
+        if env['rack.dynamic.requests.only']
           serve_rails(env)
+        else
+          path        = env['PATH_INFO'].chomp('/')
+          cached_path = (path.empty? ? 'index' : path) + ActionController::Base.page_cache_extension
+
+          if file_exist?(path)              # Serve the file if it's there
+            serve_file(env)
+          elsif file_exist?(cached_path)    # Serve the page cache if it's there
+            env['PATH_INFO'] = cached_path
+            serve_file(env)
+          else                              # No static file, let Rails handle it
+            serve_rails(env)
+          end
         end
       end
 
