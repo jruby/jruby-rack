@@ -7,10 +7,6 @@
 package org.jruby.rack;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -58,7 +54,7 @@ public class RackFilter implements Filter {
     }
 
     private static class ResponseStatusCapture extends HttpServletResponseWrapper {
-        int status = 200;
+        private int status = 200;
 
         public ResponseStatusCapture(HttpServletResponse response) {
             super(response);
