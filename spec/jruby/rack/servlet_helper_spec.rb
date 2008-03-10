@@ -14,6 +14,13 @@ describe JRuby::Rack::Response do
     @response = JRuby::Rack::Response.new([@status, @headers, @body])
   end
 
+  it "should return the status, headers and body" do
+    @response.getStatus.should == @status
+    @response.getHeaders.should == @headers
+    @body.should_receive(:each).and_yield "hello"
+    @response.getBody.should == "hello"
+  end
+  
   it "should write the status to the servlet response" do
     @status.should_receive(:to_i).and_return(200)
     @servlet_response.should_receive(:setStatus).with(200)

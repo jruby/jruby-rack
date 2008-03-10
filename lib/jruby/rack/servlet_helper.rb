@@ -12,6 +12,20 @@ module JRuby
         @status, @headers, @body = *arr
       end
       
+      def getStatus
+	@status
+      end
+
+      def getHeaders
+        @headers
+      end
+
+      def getBody
+        b = ""
+	@body.each {|part| b << part }
+        b
+      end
+      
       def respond(response)
 	write_status(response)
         write_headers(response)
