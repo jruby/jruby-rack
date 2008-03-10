@@ -9,16 +9,16 @@ require File.dirname(__FILE__) + '/../spec_helper'
 import org.jruby.rack.DefaultRackApplication
 
 describe DefaultRackApplication, "call" do
-  it "should invoke the call method on the ruby object and return the rack result" do
+  it "should invoke the call method on the ruby object and return the rack response" do
     servlet_request = mock("servlet request")
-    rack_result = org.jruby.rack.RackResult.impl {}
+    rack_response = org.jruby.rack.RackResponse.impl {}
 
     ruby_object = mock "application"
-    ruby_object.should_receive(:call).with(servlet_request).and_return rack_result
+    ruby_object.should_receive(:call).with(servlet_request).and_return rack_response
 
     application = DefaultRackApplication.new
     application.setApplication(ruby_object)
-    application.call(servlet_request).should == rack_result
+    application.call(servlet_request).should == rack_response
   end
 end
 

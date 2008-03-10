@@ -32,14 +32,12 @@ describe DefaultRackDispatcher do
       application = mock("application")
       request = mock("request")
       response = mock("response")
-      result = mock("rack result")
+      rack_response = mock("rack response")
 
       @rack_factory.should_receive(:getApplication).and_return(application)
       @rack_factory.should_receive(:finishedWithApplication).with(application)
-      application.should_receive(:call).with(request).and_return result
-      result.should_receive(:writeStatus)
-      result.should_receive(:writeHeaders)
-      result.should_receive(:writeBody)
+      application.should_receive(:call).with(request).and_return rack_response
+      rack_response.should_receive(:respond)
 
       @dispatcher.process(request, response)
     end
@@ -52,11 +50,9 @@ describe DefaultRackDispatcher do
       req.should_receive(:setAttribute).with(org.jruby.rack.RackDispatcher::EXCEPTION, anything())
       res.should_receive(:isCommitted).and_return false
       res.should_receive(:reset)
-      result = mock "result"
-      error_app.should_receive(:call).with(req).and_return result
-      result.should_receive(:writeStatus)
-      result.should_receive(:writeHeaders)
-      result.should_receive(:writeBody)
+      rack_response = mock "rack response"
+      error_app.should_receive(:call).with(req).and_return rack_response
+      rack_response.should_receive(:respond)
       @dispatcher.process(req, res)
     end
 
@@ -78,7 +74,6 @@ describe DefaultRackDispatcher do
       req.stub!(:setAttribute)
       res.stub!(:isCommitted).and_return false
       res.stub!(:reset)
-      result = mock "result"
       error_app.should_receive(:call).with(req).and_raise "some error"
       res.should_receive(:sendError).with(500)
       @dispatcher.process(req, res)

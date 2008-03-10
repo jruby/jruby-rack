@@ -7,17 +7,17 @@
 require File.dirname(__FILE__) + '/../../spec_helper'
 require 'jruby/rack/servlet_helper'
 
-describe JRuby::Rack::Result do
+describe JRuby::Rack::Response do
   before :each do
     @status, @headers, @body = mock("status"), mock("headers"), mock("body")
     @servlet_response = mock "servlet response"
-    @result = JRuby::Rack::Result.new([@status, @headers, @body])
+    @response = JRuby::Rack::Response.new([@status, @headers, @body])
   end
 
   it "should write the status to the servlet response" do
     @status.should_receive(:to_i).and_return(200)
     @servlet_response.should_receive(:setStatus).with(200)
-    @result.writeStatus(@servlet_response)
+    @response.write_status(@servlet_response)
   end
 
   it "should write the headers to the servlet response" do
@@ -29,7 +29,7 @@ describe JRuby::Rack::Result do
     @servlet_response.should_receive(:setContentType).with("text/html")
     @servlet_response.should_receive(:setContentLength).with(20)
     @servlet_response.should_receive(:setHeader).with("Server", "Apache/2.2.x")
-    @result.writeHeaders(@servlet_response)
+    @response.write_headers(@servlet_response)
   end
 
   it "should write the body to the servlet response" do
@@ -41,7 +41,14 @@ describe JRuby::Rack::Result do
     @servlet_response.stub!(:getOutputStream).and_return stream
     stream.should_receive(:write).exactly(2).times
     
-    @result.writeBody(@servlet_response)
+    @response.write_body(@servlet_response)
+  end
+
+  it "should write the status first, followed by the headers, and the body last" do
+    @response.should_receive(:write_status).ordered
+    @response.should_receive(:write_headers).ordered
+    @response.should_receive(:write_body).ordered
+    @response.respond(@servlet_response)
   end
 end
 
@@ -112,8 +119,7 @@ describe JRuby::Rack::Errors do
 
   def init_exception(cause = nil)
     @exception = org.jruby.rack.RackInitializationException.new("something went wrong", cause)
-    @servlet_request.should_receive(:getAttribute).any_number_of_times.with(
-      org.jruby.rack.RackDispatcher::EXCEPTION).and_return @exception
+    @env[org.jruby.rack.RackDispatcher::EXCEPTION] = @exception
   end
 
   it "should determine the response status code based on the exception in the servlet attribute" do
@@ -139,7 +145,7 @@ describe JRuby::Rack::Errors do
     @env["rack.showstatus.detail"].should be_nil
   end
 
-  it "should cache results from the file server" do
+  it "should cache responses from the file server" do
     init_exception
     @file_server.should_receive(:call).once.and_return do |env|
       env["PATH_INFO"].should == "/500.html"

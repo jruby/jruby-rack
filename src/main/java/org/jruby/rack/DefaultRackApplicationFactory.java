@@ -8,6 +8,8 @@ package org.jruby.rack;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -107,17 +109,18 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 "Warning: error application could not be initialized", e);
             return new RackApplication() {
                 public void init() throws RackInitializationException { }
-                public RackResult call(ServletRequest env) {
-                    return new RackResult() {
-                        public void writeStatus(HttpServletResponse response) {
+                public RackResponse call(ServletRequest env) {
+                    return new RackResponse() {
+                        public int getStatus() { return 500; }
+                        public Map getHeaders() { return Collections.EMPTY_MAP; }
+                        public String getBody() { return ""; }
+                        public void respond(HttpServletResponse response) {
                             try {
                                 response.sendError(500,
                                     "Application initialization failed: "
                                     + e.getMessage());
                             } catch (IOException ex) { }
                         }
-                        public void writeHeaders(HttpServletResponse response) { }
-                        public void writeBody(HttpServletResponse response) { }
                     };
                 }
                 public void destroy() { }

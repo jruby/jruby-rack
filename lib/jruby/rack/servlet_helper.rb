@@ -6,17 +6,23 @@
 
 module JRuby
   module Rack
-    class Result
-      include org.jruby.rack.RackResult
-      def initialize(result)
-        @status, @headers, @body = *result
+    class Response
+      include org.jruby.rack.RackResponse
+      def initialize(arr)
+        @status, @headers, @body = *arr
       end
       
-      def writeStatus(response)
+      def respond(response)
+	write_status(response)
+        write_headers(response)
+        write_body(response)
+      end
+
+      def write_status(response)
         response.setStatus(@status.to_i)
       end
       
-      def writeHeaders(response)
+      def write_headers(response)
         @headers.each do |k,v|
           case k
           when /^Content-Type$/i
@@ -29,7 +35,7 @@ module JRuby
         end
       end
       
-      def writeBody(response)
+      def write_body(response)
         stream = response.getOutputStream
         @body.each do |el|
           stream.write(el.to_java_bytes)
@@ -100,11 +106,11 @@ module JRuby
       end
 
       def call(env)
-        [code = result_code(env), *result_content(env, code)]
+        [code = response_code(env), *response_content(env, code)]
       end
 
-      def result_code(env)
-        exc = env['java.servlet_request'].getAttribute(EXCEPTION)
+      def response_code(env)
+        exc = env[EXCEPTION]
         if exc 
           env['rack.showstatus.detail'] = exc.getMessage
           if exc.getCause.kind_of?(Java::JavaLang::InterruptedException)
@@ -117,24 +123,24 @@ module JRuby
         end
       end
 
-      def result_content(env, code)
-        @results ||= Hash.new do |h,k|
+      def response_content(env, code)
+        @responses ||= Hash.new do |h,k|
           env["PATH_INFO"] = "/#{code}.html"
-          result = @file_server.call(env)
-          body = result[2]
+          response = @file_server.call(env)
+          body = response[2]
           unless Array === body
             newbody = ""
             body.each do |chunk|
               newbody << chunk
             end
-            result[2] = [newbody]
+            response[2] = [newbody]
           end
-          h[k] = result
+          h[k] = response
         end
-        result = @results[code]
-        if result[0] != 404
+        response = @responses[code]
+        if response[0] != 404
           env["rack.showstatus.detail"] = nil
-          result[1..2]
+          response[1..2]
         else
           [{}, []]
         end

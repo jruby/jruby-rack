@@ -29,7 +29,7 @@ public class DefaultRackDispatcher implements RackDispatcher {
         RackApplication app = null;
         try {
             app = rackFactory.getApplication();
-            callApplication(app, request, response);
+            app.call(request).respond(response);
         } catch (Exception re) {
             handleException(re, rackFactory, request, response);
         } finally {
@@ -44,14 +44,6 @@ public class DefaultRackDispatcher implements RackDispatcher {
             servletContext.getAttribute(RackServletContextListener.FACTORY_KEY);
     }
 
-    private void callApplication(RackApplication app, HttpServletRequest request,
-            HttpServletResponse response) {
-        RackResult result = app.call(request);
-        result.writeStatus(response);
-        result.writeHeaders(response);
-        result.writeBody(response);
-    }
-
     private void handleException(Exception re, RackApplicationFactory rackFactory,
             HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -64,7 +56,7 @@ public class DefaultRackDispatcher implements RackDispatcher {
         try {
             RackApplication errorApp = rackFactory.getErrorApplication();
             request.setAttribute(EXCEPTION, re);
-            callApplication(errorApp, request, response);
+            errorApp.call(request).respond(response);
         } catch (Exception e) {
             servletContext.log("Error: Couldn't handle error", e);
             response.sendError(500);

@@ -19,7 +19,7 @@ module Rack
         add_servlet_request_attributes(servlet_env, env)
         add_variables(servlet_env, env)
         add_headers(servlet_env, env)
-        JRuby::Rack::Result.new(@rack_app.call(env))
+        JRuby::Rack::Response.new(@rack_app.call(env))
       end
      
       def env_hash

@@ -24,7 +24,7 @@ import org.jruby.runtime.callback.Callback;
 public class DefaultRackApplication implements RackApplication {
     private IRubyObject application;
 
-    public RackResult call(final ServletRequest env) {
+    public RackResponse call(final ServletRequest env) {
         Ruby runtime = application.getRuntime();
         IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
         servlet_env.getMetaClass().defineMethod("to_io", new Callback() {
@@ -39,9 +39,9 @@ public class DefaultRackApplication implements RackApplication {
                 return Arity.NO_ARGUMENTS;
             }
         });
-        IRubyObject result = application.callMethod(runtime.getCurrentContext(),
+        IRubyObject response = application.callMethod(runtime.getCurrentContext(),
                 "call", new IRubyObject[] { servlet_env });
-        return (RackResult) JavaEmbedUtils.rubyToJava(runtime, result, RackResult.class);
+        return (RackResponse) JavaEmbedUtils.rubyToJava(runtime, response, RackResponse.class);
     }
 
     public void init() throws RackInitializationException {

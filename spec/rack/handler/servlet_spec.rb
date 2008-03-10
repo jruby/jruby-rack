@@ -217,7 +217,7 @@ describe Rack::Handler::Servlet, "call" do
     servlet_env = mock("servlet request")
     @app.should_receive(:call)
     
-    result = @servlet.call(servlet_env)
-    [:writeStatus, :writeHeaders, :writeBody].each {|k| result.respond_to?(k).should == true }
+    response = @servlet.call(servlet_env)
+    response.should respond_to(:respond)
   end
 end
