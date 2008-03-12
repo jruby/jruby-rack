@@ -73,6 +73,25 @@ class CGI #:nodoc:all
       def data
         @session_data
       end
+      
+      def []=(k, v)
+        @session_data[k] = v
+      end
+    
+      def [](k)
+        @session_data[k]
+      end
+    
+      def each(&b)
+        @session_data.each(&b)
+      end
+    
+      private
+        # Attempts to redirect any messages to the data object.
+        def method_missing(name, *args, &block)
+          @session_data.send(name, *args, &block)
+        end
+      
     end
   end
 end
