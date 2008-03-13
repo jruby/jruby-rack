@@ -15,6 +15,7 @@ define 'jruby-rack' do
   project.group = 'org.jruby.rack'
   project.version = '1.0-SNAPSHOT'
   compile.with 'javax.servlet:servlet-api:jar:2.3', JRUBY
+  meta_inf << file("src/main/tld/jruby-rack.tld")
 
   directory _("target")
   task :unpack_gems => _("target") do |t|
