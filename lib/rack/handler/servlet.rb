@@ -42,13 +42,19 @@ module Rack
       end
 
       def add_variables(servlet_env, env)
+        context_path = servlet_env.getContextPath || ""
         env["REQUEST_METHOD"] ||= servlet_env.getMethod
         env["REQUEST_METHOD"] ||= "GET"
-        env["SCRIPT_NAME"]    ||= "#{servlet_env.getContextPath}#{servlet_env.getServletPath}"
-        env["PATH_INFO"]      ||= servlet_env.getPathInfo
-        env["PATH_INFO"]      ||= ""
+        env["SCRIPT_NAME"]    ||= "#{context_path}#{servlet_env.getServletPath}"
         env["REQUEST_URI"]    ||= servlet_env.getRequestURI
         env["REQUEST_URI"]    ||= ""
+        env["PATH_INFO"]      ||= servlet_env.getPathInfo
+        unless env["PATH_INFO"]
+          path = env["REQUEST_URI"]
+          path = path.sub(/^#{context_path}/, '') if context_path.length > 0
+          env["PATH_INFO"] = path
+        end
+        env["PATH_INFO"]      ||= ""
         env["QUERY_STRING"]   ||= servlet_env.getQueryString
         env["QUERY_STRING"]   ||= ""
         env["SERVER_NAME"]    ||= servlet_env.getServerName

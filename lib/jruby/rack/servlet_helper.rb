@@ -83,6 +83,7 @@ module JRuby
         @public_root ||= '/WEB-INF/public'
         @public_root = "/#{@public_root}" unless @public_root =~ %r{^/}
         @public_root = @servlet_context.getRealPath @public_root
+        @public_root = @public_root.chomp("/")
         @gem_path = @servlet_context.getInitParameter 'gem.path'
         @gem_path ||= '/WEB-INF/gems'
         @gem_path = @servlet_context.getRealPath @gem_path

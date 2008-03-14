@@ -76,6 +76,13 @@ describe JRuby::Rack::ServletHelper do
     @helper.public_root.should == "."
   end
 
+  it "should convert public.root to not have any trailing slashes" do
+    @servlet_context.should_receive(:getInitParameter).with("public.root").and_return "/blah/"
+    @servlet_context.should_receive(:getRealPath).with("/blah/").and_return "/blah/"
+    create_helper
+    @helper.public_root.should == "/blah"
+  end
+
   it "should also understand the 'files.prefix' init parameter from Goldspike" do
     @servlet_context.should_receive(:getInitParameter).with("public.root").and_return nil
     @servlet_context.should_receive(:getInitParameter).with("files.prefix").and_return ""
