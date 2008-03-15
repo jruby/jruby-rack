@@ -1,37 +1,60 @@
-JRuby-Rack is a lightweight adapter for the Java servlet environment that allows any Rack-based application to run unmodified in a Java servlet container. JRuby-Rack supports Rails, Merb, as well as any Rack-compatible Ruby web framework.
+JRuby-Rack is a lightweight adapter for the Java servlet environment that allows
+any Rack-based application to run unmodified in a Java servlet container.
+JRuby-Rack supports Rails, Merb, as well as any Rack-compatible Ruby web
+framework.
+
+For more information on Rack, visit http://rack.rubyforge.org.
+
+= Features
 
 == Servlet Filter
 
-- allows the servlet container to serve static content
+JRuby-Rack's main mode of operation is as a servlet filter. This allows requests
+for static content to pass through and be served by the application server.
+Dynamic requests only happen for URLs that don't have a corresponding file, much
+like many Ruby applications expect.
 
 == Goldspike-compatible Servlet
 
-JRuby-Rack includes a stub RailsServlet and recognizes many of Goldspikes context parameters (e.g., pool size configuration), making it interchangeable with Goldspike.
-
-- static content is served by Rack
+JRuby-Rack includes a stub RailsServlet and recognizes many of Goldspike's
+context parameters (e.g., pool size configuration), making it interchangeable
+with Goldspike, for convenience of migration. One caveat is that static content
+is served by Rack, which requires acquisition of a JRuby runtime. Your
+throughput with static files will be much lower than when JRuby-Rack is
+configured as a servlet filter. You have been warned!
 
 == Rails
 
-- The Rails controller setting ActionController::Base.relative_url_root is set for you automatically according to the context root where your webapp is deployed.
+The Rails controller setting ActionController::Base.relative_url_root is set for
+you automatically according to the context root where your webapp is deployed.
 
 == Merb
 
 == Servlet environment integration
 
-- Servlet context is accessible to any application both through the global variable $servlet_context,
-  the pre-defined constant JRuby::Rack::ServletContext, and the Rack environment variable java.servlet_context.
-- Servlet request object is available in the Rack environment via the key java.servlet_request.
+- Servlet context is accessible to any application both through the global
+  variable $servlet_context, the pre-defined constant
+  JRuby::Rack::ServletContext, and the Rack environment variable
+  java.servlet_context.
+- Servlet request object is available in the Rack environment via the key
+  java.servlet_request.
 - Servlet request attributes are passed through to the Rack environment.
-- Rack environment variables and headers can be overridden by servlet request attributes.
-- Java servlet sessions are used as the default session store for both Rails and Merb.
+- Rack environment variables and headers can be overridden by servlet request
+  attributes.
+- Java servlet sessions are used as the default session store for both Rails and
+  Merb.
 
 == JRuby Runtime Management
 
-JRuby runtime management and pooling is done automatically by the framework. In the case of Rails, runtimes are pooled. For Merb and other Rack applications, a single runtime is created and shared.
+JRuby runtime management and pooling is done automatically by the framework. In
+the case of Rails, runtimes are pooled. For Merb and other Rack applications, a
+single runtime is created and shared for every request.
 
-== Building a trunk version of JRuby Rack
+= Quick Start
 
-You need a trunk version of JRuby to complete this build so make sure you are in a shell with your $PATH environmental variable setup to include the path to $JRUBY_HOME/bin.
+At this time, you need a trunk version of JRuby to complete this build so make
+sure you are in a shell with your $PATH environmental variable setup to include
+the path to $JRUBY_HOME/bin.
 
 Install the prerequisite Gems, buildr (A Ruby replacement for Maven) and rack.
 
@@ -49,15 +72,18 @@ Resolve dependencies, compile the code, and build the jar file.
 
 The generated jar should be located here: target/jruby-rack-1.0-SNAPSHOT.jar.
 
-== Deploying a simple Rails app using the embedded Java database H2 to a WAR using Warble and JRuby Rack
+== Rails Step-by-step
 
-Install the driver and ActiveRecord adapters for the H2 database:
+This example shows how to create and deploy a simple Rails app using the
+embedded Java database H2 to a WAR using Warble and JRuby Rack.
 
-  jruby -S gem install jdbc-h2 activerecord-jdbch2-adapter
+Install Rails and the driver and ActiveRecord adapters for the H2 database:
+
+  jruby -S gem install rails activerecord-jdbch2-adapter
 
 Install Warbler:
 
-  jruby -S gem install warbler --source http://caldersphere.net
+  jruby -S gem install warbler
 
 Make the "Blog" application
 
@@ -66,17 +92,17 @@ Make the "Blog" application
 
 Copy this configuration into config/database.yml:
 
-development:
-  adapter: jdbch2 
-  database: db/development_h2_database
+  development:
+    adapter: jdbch2 
+    database: db/development_h2_database
 
-test:
-  adapter: jdbch2 
-  database: db/test_h2_database
+  test:
+    adapter: jdbch2 
+    database: db/test_h2_database
 
-production:
-  adapter: jdbch2 
-  database: db/production_h2_database
+  production:
+    adapter: jdbch2 
+    database: db/production_h2_database
 
 Generate a scaffold for a simple model of blog comments.
 
@@ -86,7 +112,8 @@ Run the database migration that was just created as part of the scaffold.
 
   jruby -S rake db:migrate
 
-Start your application on the Rails default port 3000 using Mongrel/ and make sure it works:
+Start your application on the Rails default port 3000 using Mongrel/ and make
+sure it works:
 
   jruby script/server
 
@@ -98,27 +125,18 @@ Generate a production version of the H2 database for the blog application:
 
   RAILS_ENV=production jruby -S rake db:migrate
 
-Edit this file: config/environment.rb and add the last four lines listed below:
-
-  # Bootstrap the Rails environment, frameworks, and default configuration
-  require File.join(File.dirname(__FILE__), 'boot')
-
-  if RUBY_PLATFORM =~ /java/
-    require 'rubygems'
-    RAILS_CONNECTION_ADAPTERS = %w(jdbc)
-  end
-
-This will make sure that Rails will be able to find the ActiveRecord JDBC connection adaptors. 
-
-Edit this file: config/warble.rb and add the following line after these comments:
+Edit this file: config/warble.rb and add the following line after these
+comments:
 
   # Additional files/directories to include, above those in config.dirs
   # config.includes = FileList["db"] 
   config.includes = FileList["db/production_h2*"]
 
-This will tell Warble to include the just initialized production H2 database in the WAR.
+This will tell Warble to include the just initialized production H2 database in
+the WAR.
 
-Continue editing config/warble.rb and add the following line after these comments:
+Continue editing config/warble.rb and add the following line after these
+comments:
 
   # Additional Java .jar files to include.  Note that if .jar files are placed
   # in lib (and not otherwise excluded) then they need not be mentioned here
@@ -127,27 +145,34 @@ Continue editing config/warble.rb and add the following line after these comment
   # config.java_libs += FileList["lib/java/*.jar"]
   config.java_libs = []
 
-This will tell Warble to not include the jars jruby-complete-1.1RC2, goldspike-1.5, commons-pool-1.3.jar, and activation-1.1.jar. 
+This will tell Warble to not include the jars jruby-complete-1.1RC2,
+goldspike-1.5, commons-pool-1.3.jar, and activation-1.1.jar. You will be
+replacing these with the trunk version of jruby-complete.jar and
+jruby-rack-1.0-SNAPSHOT.jar.
 
-You will be replacing these with the trunk version of jruby-complete.jar and jruby-rack-1.0-SNAPSHOT.jar.
-
-Continue editing config/warble.rb and add the following line after these comments:
+Continue editing config/warble.rb and add the following line after these
+comments:
 
   # Gems to be packaged in the webapp.  Note that Rails gems are added to this
   # list if vendor/rails is not present, so be sure to include rails if you
   # overwrite the value
   # config.gems = ["activerecord-jdbc-adapter", "jruby-openssl"]
   # config.gems << "tzinfo"
-  # config.gems["rails"] = "1.2.3" 
-  %w{jdbc-h2 activerecord-jdbch2-adapter activerecord-jdbc-adapter}.each {|g| config.gems << g}
+  # config.gems["rails"] = "1.2.3"
+  config.gems << "activerecord-jdbch2-adapter"
 
-This will tell Warble to add the JDBC driver for H2 as well as the ActiveRecord JDBC and JDBC-H2 adaptor Gems.
+This will tell Warble to add the JDBC driver for H2 as well as the ActiveRecord
+JDBC and JDBC-H2 adapter Gems.
 
-Copy the trunk version of jruby-complete.jar (created with the ant task ant jar-complete) into the {{blog/lib}} directory (replace $JRUBY_HOME with the actual path in the statement below unless $JRUBY_HOME is already defined):
+Copy the trunk version of jruby-complete.jar (created with "ant
+jar-complete") into the {{blog/lib}} directory (replace $JRUBY_HOME with the
+actual path in the statement below unless $JRUBY_HOME is already defined):
 
   cp $JRUBY_HOME/lib/jruby-complete.jar lib/
 
-Copy the snapshot version of jruby-rack-1.0-SNAPSHOT jar into the blog/lib directory (replace $JRUBY_RACK_HOME with the actual path in the statement below unless $JRUBY_RACK_HOME is already defined):
+Copy the snapshot version of jruby-rack-1.0-SNAPSHOT jar into the blog/lib
+directory (replace $JRUBY_RACK_HOME with the actual path in the statement below
+unless $JRUBY_RACK_HOME is already defined):
 
     cp $JRUBY_RACK_HOME/target/jruby-rack-1.0-SNAPSHOT.jar lib/
 
@@ -155,6 +180,7 @@ Now generate the WAR file:
 
   jruby -S warble war
 
-This task generates the file: blog.war at the top level of the application as well as an exploded version of the war located here: tmp/war.
+This task generates the file: blog.war at the top level of the application as
+well as an exploded version of the war located here: tmp/war.
 
 The war should be ready to deploy to your Java application server.
