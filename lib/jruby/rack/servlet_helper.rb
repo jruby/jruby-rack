@@ -7,7 +7,7 @@
 module JRuby
   module Rack
     class Response
-      include org.jruby.rack.RackResponse
+      include Java::org.jruby.rack.RackResponse
       def initialize(arr)
         @status, @headers, @body = *arr
       end

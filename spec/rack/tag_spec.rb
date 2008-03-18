@@ -1,7 +1,5 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
-import org.jruby.rack.RackApplicationFactory
-import org.jruby.rack.RackServletContextListener
 import org.jruby.rack.RackTag
 import org.jruby.rack.FakePageContext
 import org.jruby.rack.FakeJspWriter
