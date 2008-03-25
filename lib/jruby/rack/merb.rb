@@ -75,27 +75,10 @@ module JRuby
 
     end
   
-    class MerbSetup
-      def initialize(app)   
-        @app = app
-      end
-
-      def call(env)
-        # Read the entire request body up front. Merb expects to be able
-        # to call rewind() on the body of a request.
-        env['rack.input'] = StringIO.new(env['rack.input'].read)
-        @app.call(env)
-      end
-    end    
- 
     class MerbFactory
       def self.new
-        helper = MerbServletHelper.new
-        helper.load_environment
-        ::Rack::Builder.new {
-          use MerbSetup
-          run ::Merb::Config[:app]
-        }.to_app
+        MerbServletHelper.new.load_environment
+        ::Rack::Builder.new { run ::Merb::Config[:app] }.to_app
       end
     end 
    
