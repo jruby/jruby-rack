@@ -4,6 +4,7 @@
 # See the file LICENSE.txt for details.
 #++
 
+require 'java'
 require 'rubygems'
 gem 'rspec'
 require 'spec'

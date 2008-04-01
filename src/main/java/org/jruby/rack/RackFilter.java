@@ -14,6 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
@@ -40,9 +41,10 @@ public class RackFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
             throws IOException, ServletException {
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-        ResponseStatusCapture capture = new ResponseStatusCapture(httpResponse);
-        chain.doFilter(request, capture);
+        HttpServletRequest    httpRequest  = maybeAppendHtmlToPath(request);
+        HttpServletResponse   httpResponse = (HttpServletResponse) response;
+        ResponseStatusCapture capture      = new ResponseStatusCapture(httpResponse);
+        chain.doFilter(httpRequest, capture);
         if (capture.isError()) {
             httpResponse.reset();
             request.setAttribute(RackDispatcher.DYNAMIC_REQS_ONLY, Boolean.TRUE);
@@ -96,5 +98,34 @@ public class RackFilter implements Filter {
         private boolean isError() {
             return status >= 400;
         }
+    }
+
+    private HttpServletRequest maybeAppendHtmlToPath(ServletRequest request) {
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        String servletPath             = httpRequest.getServletPath();
+        String pathInfo                = httpRequest.getPathInfo();
+        String uri                     = servletPath;
+
+        if (pathInfo != null) {
+            uri += pathInfo;
+        }
+        if (uri.lastIndexOf('.') <= uri.lastIndexOf('/')) {
+            if (pathInfo != null) {
+                httpRequest = new HttpServletRequestWrapper(httpRequest) {
+                    @Override
+                    public String getPathInfo() {
+                        return super.getPathInfo() + ".html";
+                    }
+                };
+            } else {
+                httpRequest = new HttpServletRequestWrapper(httpRequest) {
+                    @Override
+                    public String getServletPath() {
+                        return super.getServletPath() + ".html";
+                    }
+                };
+            }
+        }
+        return httpRequest;
     }
 }

@@ -130,7 +130,7 @@ describe Rack::Handler::Servlet do
       @servlet.add_variables(@servlet_env, env)
       env["REQUEST_METHOD"].should == "GET"
       env["SCRIPT_NAME"].should == "/app/script_name"
-      env["PATH_INFO"].should == "/path/info"
+      env["PATH_INFO"].should == "/script_name/path/info"
       env["REQUEST_URI"].should == "/app/script_name/path/info"
       env["QUERY_STRING"].should == "hello=there"
       env["SERVER_NAME"].should == "localhost"
@@ -140,10 +140,10 @@ describe Rack::Handler::Servlet do
       env["REMOTE_USER"].should == "admin"
     end
 
-    it "should not add environment variables if their value is nil" do
+    it "should set environment variables to the empty string if their value is nil" do
       @servlet_env.stub!(:getContextPath).and_return nil
       @servlet_env.stub!(:getMethod).and_return nil
-      @servlet_env.stub!(:getServletPath).and_return nil
+      @servlet_env.stub!(:getServletPath).and_return ""
       @servlet_env.stub!(:getPathInfo).and_return nil
       @servlet_env.stub!(:getRequestURI).and_return nil    
       @servlet_env.stub!(:getQueryString).and_return nil
@@ -165,12 +165,12 @@ describe Rack::Handler::Servlet do
       env.should have_key("REMOTE_USER")
     end
 
-    it "should calculate path info from the request uri and context path if getPathInfo returns nil" do
+    it "should calculate path info from the servlet path and the path info" do
       @servlet_env.stub!(:getContextPath).and_return "/context"
       @servlet_env.stub!(:getMethod).and_return nil
-      @servlet_env.stub!(:getServletPath).and_return nil
+      @servlet_env.stub!(:getServletPath).and_return "/path"
       @servlet_env.stub!(:getPathInfo).and_return nil
-      @servlet_env.stub!(:getRequestURI).and_return "/context/request/uri"
+      @servlet_env.stub!(:getRequestURI).and_return nil
       @servlet_env.stub!(:getQueryString).and_return nil
       @servlet_env.stub!(:getServerName).and_return nil
       @servlet_env.stub!(:getRemoteHost).and_return nil
@@ -179,24 +179,7 @@ describe Rack::Handler::Servlet do
       @servlet_env.stub!(:getServerPort).and_return 80
       env = {}
       @servlet.add_variables(@servlet_env, env)
-      env["PATH_INFO"].should == "/request/uri"
-    end
-
-    it "should set path info to the request uri if the context path is empty" do
-      @servlet_env.stub!(:getContextPath).and_return ""
-      @servlet_env.stub!(:getMethod).and_return nil
-      @servlet_env.stub!(:getServletPath).and_return nil
-      @servlet_env.stub!(:getPathInfo).and_return nil
-      @servlet_env.stub!(:getRequestURI).and_return "/request/uri"
-      @servlet_env.stub!(:getQueryString).and_return nil
-      @servlet_env.stub!(:getServerName).and_return nil
-      @servlet_env.stub!(:getRemoteHost).and_return nil
-      @servlet_env.stub!(:getRemoteAddr).and_return nil
-      @servlet_env.stub!(:getRemoteUser).and_return nil
-      @servlet_env.stub!(:getServerPort).and_return 80
-      env = {}
-      @servlet.add_variables(@servlet_env, env)
-      env["PATH_INFO"].should == "/request/uri"
+      env["PATH_INFO"].should == "/path"
     end
   end
 

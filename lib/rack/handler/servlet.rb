@@ -48,13 +48,9 @@ module Rack
         env["SCRIPT_NAME"]    ||= "#{context_path}#{servlet_env.getServletPath}"
         env["REQUEST_URI"]    ||= servlet_env.getRequestURI
         env["REQUEST_URI"]    ||= ""
-        env["PATH_INFO"]      ||= servlet_env.getPathInfo
-        unless env["PATH_INFO"]
-          path = env["REQUEST_URI"]
-          path = path.sub(/^#{context_path}/, '') if context_path.length > 0
-          env["PATH_INFO"] = path
-        end
-        env["PATH_INFO"]      ||= ""
+        path_info = servlet_env.getServletPath || ""
+        path_info += servlet_env.getPathInfo if servlet_env.getPathInfo
+        env["PATH_INFO"]      ||= path_info
         env["QUERY_STRING"]   ||= servlet_env.getQueryString
         env["QUERY_STRING"]   ||= ""
         env["SERVER_NAME"]    ||= servlet_env.getServerName

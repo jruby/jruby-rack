@@ -10,12 +10,18 @@ import org.jruby.rack.RackFilter
 
 describe RackFilter do
   before :each do
-    @request = javax.servlet.http.HttpServletRequest.impl {}
+    stub_request("/index")
     @response = javax.servlet.http.HttpServletResponse.impl {}
     @chain = mock "filter chain"
     @dispatcher = mock "dispatcher"
     @filter = RackFilter.new @dispatcher
+  end
+
+  def stub_request(path_info)
+    @request = javax.servlet.http.HttpServletRequest.impl {}
     @request.stub!(:setAttribute)
+    @request.stub!(:getServletPath).and_return("/some/uri")
+    @request.stub!(:getPathInfo).and_return(path_info)
   end
 
   it "should dispatch the filter chain and finish if the chain resulted in a successful response" do
@@ -63,6 +69,36 @@ describe RackFilter do
     @response.should_not_receive(:flushBuffer)
     @response.should_receive(:reset).ordered
     @dispatcher.should_receive(:process).ordered.with(@request,@response)
+    @filter.doFilter(@request, @response, @chain)
+  end
+
+  it "should dispatch /some/uri/index to the filter chain as /some/uri/index.html" do
+    @chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+      req.getPathInfo.should == "/index.html"
+      resp.setStatus(200)
+    end
+    @response.should_receive(:setStatus).ordered.with(200)
+    @filter.doFilter(@request, @response, @chain)
+  end
+
+  it "should dispatch /some/uri/index.html unchanged" do
+    stub_request("/index.html")
+    @chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+      req.getPathInfo.should == "/index.html"
+      resp.setStatus(200)
+    end
+    @response.should_receive(:setStatus).ordered.with(200)
+    @filter.doFilter(@request, @response, @chain)
+  end
+
+  it "should dispatch to /some/uri.html if there is no path info" do
+    stub_request(nil)
+    @chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+      req.getServletPath.should == "/some/uri.html"
+      req.getPathInfo.should == nil
+      resp.setStatus(200)
+    end
+    @response.should_receive(:setStatus).ordered.with(200)
     @filter.doFilter(@request, @response, @chain)
   end
 end
