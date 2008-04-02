@@ -43,24 +43,17 @@ module Rack
 
       def add_variables(servlet_env, env)
         context_path = servlet_env.getContextPath || ""
-        env["REQUEST_METHOD"] ||= servlet_env.getMethod
-        env["REQUEST_METHOD"] ||= "GET"
+        env["REQUEST_METHOD"] ||= servlet_env.getMethod || "GET"
         env["SCRIPT_NAME"]    ||= "#{context_path}#{servlet_env.getServletPath}"
-        env["REQUEST_URI"]    ||= servlet_env.getRequestURI
-        env["REQUEST_URI"]    ||= ""
+        env["REQUEST_URI"]    ||= servlet_env.getRequestURI || ""
         path_info = servlet_env.getServletPath || ""
         path_info += servlet_env.getPathInfo if servlet_env.getPathInfo
         env["PATH_INFO"]      ||= path_info
-        env["QUERY_STRING"]   ||= servlet_env.getQueryString
-        env["QUERY_STRING"]   ||= ""
-        env["SERVER_NAME"]    ||= servlet_env.getServerName
-        env["SERVER_NAME"]    ||= ""
-        env["REMOTE_HOST"]    ||= servlet_env.getRemoteHost
-        env["REMOTE_HOST"]    ||= ""
-        env["REMOTE_ADDR"]    ||= servlet_env.getRemoteAddr
-        env["REMOTE_ADDR"]    ||= ""
-        env["REMOTE_USER"]    ||= servlet_env.getRemoteUser
-        env["REMOTE_USER"]    ||= ""
+        env["QUERY_STRING"]   ||= servlet_env.getQueryString || ""
+        env["SERVER_NAME"]    ||= servlet_env.getServerName || ""
+        env["REMOTE_HOST"]    ||= servlet_env.getRemoteHost || ""
+        env["REMOTE_ADDR"]    ||= servlet_env.getRemoteAddr || ""
+        env["REMOTE_USER"]    ||= servlet_env.getRemoteUser || ""
         env["SERVER_PORT"]    ||= servlet_env.getServerPort
         env["SERVER_PORT"]      = env["SERVER_PORT"].to_s unless String === env["SERVER_PORT"]
       end
