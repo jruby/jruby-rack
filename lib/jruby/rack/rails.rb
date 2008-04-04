@@ -23,6 +23,7 @@ module JRuby
       end
       
       def load_environment
+        require 'cgi/session/java_servlet_store'
         load File.join(rails_root, 'config', 'environment.rb')
         require 'dispatcher'
         require 'jruby/rack/rails_ext'
@@ -31,7 +32,6 @@ module JRuby
       end
       
       def setup_sessions
-        require 'cgi/session/java_servlet_store'
         if default_sessions?
           session_options[:database_manager] = java_servlet_store
         end
@@ -78,15 +78,15 @@ module JRuby
       end
 
       def default_store
-	defined?(::CGI::Session::PStore) && CGI::Session::PStore
+        defined?(::CGI::Session::PStore) && CGI::Session::PStore
       end
 
       def java_servlet_store
-	CGI::Session::JavaServletStore
+        CGI::Session::JavaServletStore
       end
 
       def options
-	{:public => public_root, :root => rails_root, :environment => rails_env}
+        {:public => public_root, :root => rails_root, :environment => rails_env}
       end
     end
 
