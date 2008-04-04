@@ -13,7 +13,7 @@ module JRuby
       end
       
       def getStatus
-	@status
+        @status
       end
 
       def getHeaders
@@ -22,12 +22,12 @@ module JRuby
 
       def getBody
         b = ""
-	@body.each {|part| b << part }
+        @body.each {|part| b << part }
         b
       end
       
       def respond(response)
-	write_status(response)
+        write_status(response)
         write_headers(response)
         write_body(response)
       end
@@ -44,7 +44,7 @@ module JRuby
           when /^Content-Length$/i
             response.setContentLength(v.to_i)
           else
-            response.setHeader(k.to_s, v.to_s)
+            v.each {|val| response.addHeader(k.to_s, val) }
           end
         end
       end
@@ -59,7 +59,7 @@ module JRuby
 
     class ServletLog
       def initialize(context = $servlet_context)
-	@context = context
+        @context = context
       end
       def puts(msg)
         write msg.to_s
@@ -95,7 +95,7 @@ module JRuby
       end
 
       def logger
-	@logger ||= begin; require 'logger'; Logger.new(logdev); end
+        @logger ||= begin; require 'logger'; Logger.new(logdev); end
       end
 
       def setup_gems
@@ -117,7 +117,7 @@ module JRuby
     class Errors
       EXCEPTION = org.jruby.rack.RackDispatcher::EXCEPTION
       def initialize(file_server)
-	@file_server = file_server
+        @file_server = file_server
       end
 
       def call(env)

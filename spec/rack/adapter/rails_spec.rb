@@ -58,3 +58,62 @@ describe Rack::Adapter::Rails do
     @rails.call(@env).should == [200, {}, ""]
   end
 end
+
+describe Rack::Adapter::Rails::CGIWrapper, "#header" do
+  before :each do
+    @request, @response = mock("request"), mock("response")
+    @request.stub!(:env).and_return({"REQUEST_METHOD" => "GET"})
+    @request.stub!(:body).and_return ""
+    @wrapper = Rack::Adapter::Rails::CGIWrapper.new(@request, @response)
+  end
+
+  it "should set the Content-Type from the 'type' key in the options" do
+    options = {'type' => 'text/xml'}
+    @response.should_receive(:[]=).with('Content-Type', options['type'])
+    @wrapper.header(options)
+  end
+
+  it "should set the Content-Length if present" do
+    options = {'Content-Length' => 10}
+    @response.should_receive(:[]=).with('Content-Type', 'text/html')
+    @response.should_receive(:[]=).with('Content-Length', '10')
+    @wrapper.header(options)
+  end
+
+  it "should set the Content-Language and Expires from language and expires options" do
+    options = {'language' => 'en', 'expires' => 'soon'}
+    @response.should_receive(:[]=).with('Content-Type', 'text/html')
+    @response.should_receive(:[]=).with('Content-Language', 'en')
+    @response.should_receive(:[]=).with('Expires', 'soon')
+    @wrapper.header(options)
+  end
+
+  it "should set the status from the status option" do
+    options = {'Status' => '200'}
+    @response.should_receive(:[]=).with('Content-Type', 'text/html')
+    @response.should_receive(:status=).with('200')
+    @wrapper.header(options)
+  end
+
+  it "should set cookies as an array of strings in the Set-Cookie header" do
+    options = {'cookie' => %w(a b c d)}
+    @response.should_receive(:[]=).with('Content-Type', 'text/html')
+    @response.should_receive(:[]=).with('Set-Cookie', options['cookie'])
+    @wrapper.header(options)
+  end
+
+  it "should not set the Set-Cookie header if the cookie option is an empty array" do
+    options = {'cookie' => []}
+    @response.should_receive(:[]=).with('Content-Type', 'text/html')
+    @response.should_not_receive(:[]=).with('Set-Cookie', anything())
+    @wrapper.header(options)
+  end
+
+  it "should pass any other options through as headers" do
+    options = {'blah' => '200', 'bza' => 'hey'}
+    @response.should_receive(:[]=).with('Content-Type', 'text/html')
+    @response.should_receive(:[]=).with('blah', '200')
+    @response.should_receive(:[]=).with('bza', 'hey')
+    @wrapper.header(options)
+  end
+end

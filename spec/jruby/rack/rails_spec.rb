@@ -6,6 +6,7 @@
 
 require File.dirname(__FILE__) + '/../../spec_helper'
 require 'jruby/rack/rails'
+require 'jruby/rack/rails_ext'
 
 class ::CGI::Session::PStore; end
 

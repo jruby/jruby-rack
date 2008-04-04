@@ -101,7 +101,7 @@ module Rack
 
               @output_cookies.each { |c| cookies << c.to_s } if @output_cookies
 
-              @response['Set-Cookie'] = [@response['Set-Cookie'], cookies].compact.join("\n")
+              @response['Set-Cookie'] = cookies unless cookies.empty?
             end
 
             options.each { |k,v| @response[k] = v }

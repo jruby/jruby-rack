@@ -4,17 +4,26 @@
 # See the file LICENSE.txt for details.
 #++
 
-class ActionController::CgiRequest #:nodoc:
-  # Replace session_options writer to merge session options
-  # With ones passed into request (so we can preserve the
-  # java servlet request)
-  def session_options=(opts)
-    if opts == false
-      @session_options = false
-    elsif @session_options
-      @session_options.update(opts)
-    else
-      @session_options = opts
+if defined?(::ActionController)
+  class ActionController::CgiRequest #:nodoc:
+    # Replace session_options writer to merge session options
+    # With ones passed into request (so we can preserve the
+    # java servlet request)
+    def session_options=(opts)
+      if opts == false
+        @session_options = false
+      elsif @session_options
+        @session_options.update(opts)
+      else
+        @session_options = opts
+      end
     end
   end
-end if defined?(::ActionController)
+  module JRuby::Rack
+    SESSION_OPTIONS = ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
+  end
+else
+  module JRuby::Rack
+    SESSION_OPTIONS = {}
+  end
+end

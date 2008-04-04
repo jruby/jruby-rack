@@ -35,7 +35,20 @@ describe JRuby::Rack::Response do
     end
     @servlet_response.should_receive(:setContentType).with("text/html")
     @servlet_response.should_receive(:setContentLength).with(20)
-    @servlet_response.should_receive(:setHeader).with("Server", "Apache/2.2.x")
+    @servlet_response.should_receive(:addHeader).with("Server", "Apache/2.2.x")
+    @response.write_headers(@servlet_response)
+  end
+
+  it "should write headers with multiple values multiple addHeader invocations" do
+    @headers.should_receive(:each).and_return do |block|
+      block.call "Content-Type", "text/html"
+      block.call "Content-Length", "20"
+      block.call "Set-Cookie",  %w(cookie1 cookie2)
+    end
+    @servlet_response.should_receive(:setContentType).with("text/html")
+    @servlet_response.should_receive(:setContentLength).with(20)
+    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
+    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
     @response.write_headers(@servlet_response)
   end
 

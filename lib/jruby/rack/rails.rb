@@ -60,12 +60,12 @@ module JRuby
       end
 
       def session_options
-        @session_options ||= {} 
+        @session_options ||= SESSION_OPTIONS
       end
 
       def session_options_for_request(env)
         options = session_options.dup
-        options[:java_servlet_request] = env['java.servlet_request'] if java_sessions?
+        options[:java_servlet_request] = env['java.servlet_request']
         options
       end
       
@@ -99,7 +99,9 @@ module JRuby
       def call(env)
         env['rails.session_options'] = @servlet_helper.session_options_for_request(env)
         env["RAILS_RELATIVE_URL_ROOT"] = env['java.servlet_request'].getContextPath
-        @app.call(env)
+        result = @app.call(env)
+        puts result[1].inspect if result && result[1]
+        result
       end
     end
 
