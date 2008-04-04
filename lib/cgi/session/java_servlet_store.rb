@@ -8,6 +8,7 @@ class CGI #:nodoc:all
         unless @java_request
           raise 'JavaServletStore requires that HttpServletRequest is made available to the session'
         end
+        @digest = option['digest'] || 'SHA1'
         @session_data = {}
       end
 
@@ -67,6 +68,16 @@ class CGI #:nodoc:all
       def delete
         java_session = @java_request.getSession(false)
         java_session.invalidate if java_session
+      end
+
+      def generate_digest(data)
+        java_session = @java_request.getSession(true)
+        @secret ||= java_session.getAttribute("__rails_secret")
+        unless @secret
+          @secret = java_session.getId + java_session.getLastAccessedTime.to_s
+          java_session.setAttribute("__rails_secret", @secret)
+        end
+        OpenSSL::HMAC.hexdigest(OpenSSL::Digest::Digest.new(@digest), @secret, data)
       end
 
       # The session state

@@ -7,6 +7,7 @@
 require File.dirname(__FILE__) + '/../../spec_helper'
 
 require 'cgi/session/java_servlet_store'
+require 'openssl'
 
 describe CGI::Session::JavaServletStore do
   before :each do
@@ -145,6 +146,30 @@ describe CGI::Session::JavaServletStore do
     it "should do nothing if no session is established" do
       @request.should_receive(:getSession).with(false).and_return nil
       session_store.delete
+    end
+  end
+
+  describe "#generate_digest" do
+    before :each do
+      @request.should_receive(:getSession).with(true).and_return @session
+      @dbman = session_store
+    end
+
+    def hmac(key, data)
+      OpenSSL::HMAC.hexdigest(OpenSSL::Digest::Digest.new("SHA1"), key, data)
+    end
+
+    it "should look for the secret in the java session" do
+      @session.should_receive(:getAttribute).with("__rails_secret").and_return "secret"
+      @dbman.generate_digest("key").should == hmac("secret", "key")
+    end
+
+    it "should generate a secret from the java session id and last accessed time" do
+      @session.should_receive(:getAttribute).with("__rails_secret").and_return nil
+      @session.should_receive(:getId).and_return "abc"
+      @session.should_receive(:getLastAccessedTime).and_return 123
+      @session.should_receive(:setAttribute).with("__rails_secret", "abc123")
+      @dbman.generate_digest("key").should == hmac("abc123", "key")
     end
   end
 end
