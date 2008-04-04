@@ -99,9 +99,7 @@ module JRuby
       def call(env)
         env['rails.session_options'] = @servlet_helper.session_options_for_request(env)
         env["RAILS_RELATIVE_URL_ROOT"] = env['java.servlet_request'].getContextPath
-        result = @app.call(env)
-        puts result[1].inspect if result && result[1]
-        result
+        @app.call(env)
       end
     end
 
