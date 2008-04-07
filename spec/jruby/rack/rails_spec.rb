@@ -118,6 +118,18 @@ describe JRuby::Rack::RailsServletHelper do
     it "should default the action view cache template loading to true" do
       ActionView::Base.cache_template_loading.should == true
     end
+
+    it "should set the ActionView ASSETS_DIR constant to the public root" do
+      ActionView::Helpers::AssetTagHelper::ASSETS_DIR.should == @helper.public_root
+    end
+
+    it "should set the ActionView JAVASCRIPTS_DIR constant to the public root/javascripts" do
+      ActionView::Helpers::AssetTagHelper::JAVASCRIPTS_DIR.should == @helper.public_root + "/javascripts"
+    end
+
+    it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
+      ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == @helper.public_root + "/stylesheets"
+    end
   end
 end
 

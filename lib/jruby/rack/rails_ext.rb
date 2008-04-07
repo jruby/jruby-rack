@@ -32,13 +32,16 @@ if defined?(::ActionController)
       end
     end
 
-    # Rails < 2.0 rescue files
     def rescue_action_in_public(exception) #:nodoc:
-      case exception
-      when RoutingError, UnknownAction
-        render_text(IO.read(File.join(PUBLIC_ROOT, '404.html')), "404 Not Found")
+      if respond_to?(:response_code_for_rescue)
+        render_optional_error_file response_code_for_rescue(exception)
       else
-        render_text(IO.read(File.join(PUBLIC_ROOT, '500.html')), "500 Internal Error")
+        case exception
+        when RoutingError, UnknownAction
+          render_text(IO.read(File.join(PUBLIC_ROOT, '404.html')), "404 Not Found")
+        else
+          render_text(IO.read(File.join(PUBLIC_ROOT, '500.html')), "500 Internal Error")
+        end
       end
     end
   end
@@ -59,6 +62,13 @@ else
     class Base
       class << self
         attr_accessor :cache_template_loading
+      end
+    end
+    module Helpers
+      module AssetTagHelper
+        ASSETS_DIR = "public" unless defined?(ASSETS_DIR)
+        JAVASCRIPTS_DIR = "#{ASSETS_DIR}/javascripts" unless defined?(JAVASCRIPTS_DIR)
+        STYLESHEETS_DIR = "#{ASSETS_DIR}/stylesheets" unless defined?(STYLESHEETS_DIR)
       end
     end
   end

@@ -20,9 +20,7 @@ module JRuby
         @rails_env ||= 'production'
         ENV['RAILS_ROOT'] = @rails_root
         ENV['RAILS_ENV'] = @rails_env
-        old_verbose, $VERBOSE = $VERBOSE, nil
-        Object.const_set("PUBLIC_ROOT", public_root)
-        $VERBOSE = old_verbose
+        silence_warnings { Object.const_set("PUBLIC_ROOT", public_root) }
       end
       
       def load_environment
@@ -44,6 +42,11 @@ module JRuby
         ActionController::Base.page_cache_directory = PUBLIC_ROOT
         ActionController::Base.session_store = :java_servlet_store
         ActionView::Base.cache_template_loading = true
+        silence_warnings {
+          ActionView::Helpers::AssetTagHelper.const_set("ASSETS_DIR", PUBLIC_ROOT)
+          ActionView::Helpers::AssetTagHelper.const_set("JAVASCRIPTS_DIR", "#{PUBLIC_ROOT}/javascripts")
+          ActionView::Helpers::AssetTagHelper.const_set("STYLESHEETS_DIR", "#{PUBLIC_ROOT}/stylesheets")
+        }
       end
 
       def setup_sessions
@@ -102,6 +105,15 @@ module JRuby
 
       def options
         {:public => public_root, :root => rails_root, :environment => rails_env}
+      end
+
+      def silence_warnings
+        oldv, $VERBOSE = $VERBOSE, nil
+        begin
+          yield
+        ensure
+          $VERBOSE = oldv
+        end
       end
     end
 
