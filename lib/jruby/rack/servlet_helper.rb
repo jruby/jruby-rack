@@ -71,13 +71,11 @@ module JRuby
       def close; end
     end
 
-    ServletContext = $servlet_context
-
     class ServletHelper
       attr_reader :public_root, :gem_path
 
       def initialize(servlet_context = nil)
-        @servlet_context = servlet_context || ServletContext
+        @servlet_context = servlet_context || $servlet_context
         @public_root = @servlet_context.getInitParameter 'public.root'
         @public_root ||= @servlet_context.getInitParameter 'files.prefix' # Goldspike
         @public_root ||= '/WEB-INF/public'

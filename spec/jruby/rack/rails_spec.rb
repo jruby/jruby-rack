@@ -8,12 +8,20 @@ require File.dirname(__FILE__) + '/../../spec_helper'
 require 'jruby/rack/rails'
 require 'jruby/rack/rails_ext'
 
+require 'cgi/session/java_servlet_store'
 class ::CGI::Session::PStore; end
 
 describe JRuby::Rack::RailsServletHelper do
   before :each do
     @servlet_context.stub!(:getInitParameter).and_return nil
     @servlet_context.stub!(:getRealPath).and_return "/"
+    $servlet_context = @servlet_context
+    @verbose, $VERBOSE = $VERBOSE, nil
+  end
+
+  after :each do
+    $servlet_context = nil
+    $VERBOSE = @verbose
   end
 
   def create_helper
@@ -84,6 +92,25 @@ describe JRuby::Rack::RailsServletHelper do
     env = {"java.servlet_request" => mock("servlet request")}
     @helper.session_options_for_request(env).should have_key(:java_servlet_request)
     @helper.session_options_for_request(env)[:java_servlet_request].should == env["java.servlet_request"]
+  end
+
+  it "should set the PUBLIC_ROOT constant to the location of the public root" do
+    create_helper
+    PUBLIC_ROOT.should == @helper.public_root
+  end
+
+  it "should default the page cache directory to the public root" do
+    create_helper
+    @helper.rails_root = File.dirname(__FILE__) + "/../../../src/test/resources/rails"
+    @helper.load_environment
+    ActionController::Base.page_cache_directory.should == @helper.public_root
+  end
+
+  it "should default the session store to the java servlet session store" do
+    create_helper
+    @helper.rails_root = File.dirname(__FILE__) + "/../../../src/test/resources/rails"
+    @helper.load_environment
+    ActionController::Base.session_store.should == :java_servlet_store
   end
 end
 

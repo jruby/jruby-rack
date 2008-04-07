@@ -9,7 +9,7 @@ require 'jruby/rack'
 module JRuby
   module Rack
     class RailsServletHelper < ServletHelper
-      attr_reader :rails_env, :rails_root
+      attr_accessor :rails_env, :rails_root
 
       def initialize(servlet_context = nil)
         super
@@ -20,10 +20,13 @@ module JRuby
         @rails_env ||= 'production'
         ENV['RAILS_ROOT'] = @rails_root
         ENV['RAILS_ENV'] = @rails_env
+        old_verbose, $VERBOSE = $VERBOSE, nil
+        Object.const_set("PUBLIC_ROOT", public_root)
+        $VERBOSE = old_verbose
       end
       
       def load_environment
-        require 'cgi/session/java_servlet_store'
+        require 'jruby/rack/rails_boot'
         load File.join(rails_root, 'config', 'environment.rb')
         require 'dispatcher'
         require 'jruby/rack/rails_ext'
@@ -31,6 +34,17 @@ module JRuby
         setup_logger
       end
       
+      # This hook method is called back from within the mechanism installed
+      # by rails_boot above. We're setting appropriate defaults for the
+      # servlet environment here that can still be overridden (if desired) in
+      # the application's environment files.
+      def boot_for_servlet_environment
+        require 'action_controller'
+        require 'cgi/session/java_servlet_store'
+        ActionController::Base.page_cache_directory = PUBLIC_ROOT
+        ActionController::Base.session_store = :java_servlet_store
+      end
+
       def setup_sessions
         if default_sessions?
           session_options[:database_manager] = java_servlet_store
@@ -105,7 +119,7 @@ module JRuby
 
     class RailsFactory
       def self.new
-        helper = RailsServletHelper.new
+        helper = RailsServletHelper.instance
         helper.load_environment
         ::Rack::Builder.new {
           use RailsSetup, helper

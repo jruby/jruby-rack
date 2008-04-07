@@ -19,10 +19,43 @@ if defined?(::ActionController)
       end
     end
   end
+
+  module ActionController::Rescue
+    # Rails 2.0 static rescue files
+    def render_optional_error_file(status_code) #:nodoc:
+      status = interpret_status(status_code)
+      path = "#{PUBLIC_ROOT}/#{status[0,3]}.html"
+      if File.exists?(path)
+        render :file => path, :status => status
+      else
+        head status
+      end
+    end
+
+    # Rails < 2.0 rescue files
+    def rescue_action_in_public(exception) #:nodoc:
+      case exception
+      when RoutingError, UnknownAction
+        render_text(IO.read(File.join(PUBLIC_ROOT, '404.html')), "404 Not Found")
+      else
+        render_text(IO.read(File.join(PUBLIC_ROOT, '500.html')), "500 Internal Error")
+      end
+    end
+  end
+
   module JRuby::Rack
     SESSION_OPTIONS = ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
   end
 else
+  module ActionController
+    class Base
+      class << self
+        attr_accessor :page_cache_directory
+        attr_accessor :session_store
+      end
+    end
+  end
+  
   module JRuby::Rack
     SESSION_OPTIONS = {}
   end
