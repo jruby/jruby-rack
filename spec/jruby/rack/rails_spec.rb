@@ -15,13 +15,6 @@ describe JRuby::Rack::RailsServletHelper do
   before :each do
     @servlet_context.stub!(:getInitParameter).and_return nil
     @servlet_context.stub!(:getRealPath).and_return "/"
-    $servlet_context = @servlet_context
-    @verbose, $VERBOSE = $VERBOSE, nil
-  end
-
-  after :each do
-    $servlet_context = nil
-    $VERBOSE = @verbose
   end
 
   def create_helper
@@ -99,18 +92,32 @@ describe JRuby::Rack::RailsServletHelper do
     PUBLIC_ROOT.should == @helper.public_root
   end
 
-  it "should default the page cache directory to the public root" do
-    create_helper
-    @helper.rails_root = File.dirname(__FILE__) + "/../../../src/test/resources/rails"
-    @helper.load_environment
-    ActionController::Base.page_cache_directory.should == @helper.public_root
-  end
+  describe "#load_environment" do
+    before :all do
+      mock_servlet_context
+      $servlet_context = @servlet_context
+      @servlet_context.stub!(:getInitParameter).and_return nil
+      @servlet_context.stub!(:getRealPath).and_return "/"
+      create_helper
+      @helper.rails_root = File.dirname(__FILE__) + "/../../../src/test/resources/rails"
+      @helper.load_environment
+    end
 
-  it "should default the session store to the java servlet session store" do
-    create_helper
-    @helper.rails_root = File.dirname(__FILE__) + "/../../../src/test/resources/rails"
-    @helper.load_environment
-    ActionController::Base.session_store.should == :java_servlet_store
+    after :all do
+      $servlet_context = nil
+    end
+
+    it "should default the page cache directory to the public root" do
+      ActionController::Base.page_cache_directory.should == @helper.public_root
+    end
+
+    it "should default the session store to the java servlet session store" do
+      ActionController::Base.session_store.should == :java_servlet_store
+    end
+
+    it "should default the action view cache template loading to true" do
+      ActionView::Base.cache_template_loading.should == true
+    end
   end
 end
 

@@ -43,6 +43,7 @@ module JRuby
         require 'cgi/session/java_servlet_store'
         ActionController::Base.page_cache_directory = PUBLIC_ROOT
         ActionController::Base.session_store = :java_servlet_store
+        ActionView::Base.cache_template_loading = true
       end
 
       def setup_sessions

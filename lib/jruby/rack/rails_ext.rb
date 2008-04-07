@@ -50,8 +50,15 @@ else
   module ActionController
     class Base
       class << self
-        attr_accessor :page_cache_directory
-        attr_accessor :session_store
+        attr_accessor :page_cache_directory, :session_store
+      end
+    end
+  end
+
+  module ActionView
+    class Base
+      class << self
+        attr_accessor :cache_template_loading
       end
     end
   end
