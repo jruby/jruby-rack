@@ -66,7 +66,7 @@ module Rack
         env.delete("CONTENT_LENGTH") unless env["CONTENT_LENGTH"] && env["CONTENT_LENGTH"].to_i >= 0
         servlet_env.getHeaderNames.each do |h|
           next if h =~ /^Content-(Type|Length)$/i
-          env["HTTP_#{h.upcase.sub(/-/, '_')}"] ||= servlet_env.getHeader(h)
+          env["HTTP_#{h.upcase.gsub(/-/, '_')}"] ||= servlet_env.getHeader(h)
         end
       end
     end

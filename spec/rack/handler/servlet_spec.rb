@@ -216,6 +216,22 @@ describe Rack::Handler::Servlet do
       env["HTTP_ACCEPT"].should == "text/*"
       env["HTTP_ACCEPT_ENCODING"].should == "gzip"
     end
+
+    it "should handle header names that have more than one dash in them" do
+      enum = {"X-Forwarded-Proto" => "https", "If-None-Match" => "abcdef",
+        "If-Modified-Since" => "today", "X-Some-Really-Long-Header" => "yeap"}
+      @servlet_env.stub!(:getHeaderNames).and_return enum.keys
+      @servlet_env.stub!(:getContentType).and_return nil
+      @servlet_env.stub!(:getContentLength).and_return(-1)
+      (class << @servlet_env; self; end).send(:define_method, :getHeader) {|h| enum[h] }
+
+      env = {}
+      @servlet.add_headers(@servlet_env, env)
+      env["HTTP_X_FORWARDED_PROTO"].should == "https"
+      env["HTTP_IF_NONE_MATCH"].should == "abcdef"
+      env["HTTP_IF_MODIFIED_SINCE"].should == "today"
+      env["HTTP_X_SOME_REALLY_LONG_HEADER"].should == "yeap"
+    end
   end
 end
 
