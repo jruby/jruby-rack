@@ -10,6 +10,7 @@ require 'jruby/rack/servlet_helper'
 describe JRuby::Rack::Response do
   before :each do
     @status, @headers, @body = mock("status"), mock("headers"), mock("body")
+    @headers.stub!(:[]).and_return nil
     @servlet_response = mock "servlet response"
     @response = JRuby::Rack::Response.new([@status, @headers, @body])
   end
@@ -69,6 +70,13 @@ describe JRuby::Rack::Response do
     @response.should_receive(:write_headers).ordered
     @response.should_receive(:write_body).ordered
     @response.respond(@servlet_response)
+  end
+
+  it "should forward the request if the special 'Forward' header is present" do
+    response = nil
+    @headers.should_receive(:[]).with("Forward").and_return(proc {|resp| response = resp})
+    @response.respond(@servlet_response)
+    response.should == @servlet_response
   end
 end
 

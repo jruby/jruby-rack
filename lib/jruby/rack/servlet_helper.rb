@@ -27,9 +27,13 @@ module JRuby
       end
       
       def respond(response)
-        write_status(response)
-        write_headers(response)
-        write_body(response)
+        if fwd = @headers["Forward"]
+          fwd.call(response)
+        else
+          write_status(response)
+          write_headers(response)
+          write_body(response)
+        end
       end
 
       def write_status(response)
