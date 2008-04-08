@@ -7,7 +7,6 @@
 require File.dirname(__FILE__) + '/../../spec_helper'
 require 'jruby/rack/rails'
 require 'jruby/rack/rails_ext'
-
 require 'cgi/session/java_servlet_store'
 class ::CGI::Session::PStore; end
 
@@ -112,7 +111,7 @@ describe JRuby::Rack::RailsServletHelper do
     end
 
     it "should default the session store to the java servlet session store" do
-      ActionController::Base.session_store.should == :java_servlet_store
+      ActionController::Base.session_store.should == CGI::Session::JavaServletStore
     end
 
     it "should default the action view cache template loading to true" do

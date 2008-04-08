@@ -24,10 +24,10 @@ module JRuby
       end
       
       def load_environment
+        require 'cgi/session/java_servlet_store'
         require 'jruby/rack/rails_boot'
         load File.join(rails_root, 'config', 'environment.rb')
         require 'dispatcher'
-        require 'jruby/rack/rails_ext'
         setup_sessions
         setup_logger
       end
@@ -37,16 +37,15 @@ module JRuby
       # servlet environment here that can still be overridden (if desired) in
       # the application's environment files.
       def boot_for_servlet_environment
-        require 'action_controller'
-        require 'cgi/session/java_servlet_store'
+        require 'jruby/rack/rails_ext'
         ActionController::Base.page_cache_directory = PUBLIC_ROOT
         ActionController::Base.session_store = :java_servlet_store
         ActionView::Base.cache_template_loading = true
-        silence_warnings {
+        silence_warnings do
           ActionView::Helpers::AssetTagHelper.const_set("ASSETS_DIR", PUBLIC_ROOT)
           ActionView::Helpers::AssetTagHelper.const_set("JAVASCRIPTS_DIR", "#{PUBLIC_ROOT}/javascripts")
           ActionView::Helpers::AssetTagHelper.const_set("STYLESHEETS_DIR", "#{PUBLIC_ROOT}/stylesheets")
-        }
+        end
       end
 
       def setup_sessions
