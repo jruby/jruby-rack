@@ -35,7 +35,7 @@ public class RackServlet extends HttpServlet {
     public void init(ServletConfig config) {
         this.dispatcher = new DefaultRackDispatcher(config.getServletContext());
     }
-    
+
     @Override
     public void service(ServletRequest request, ServletResponse response)
         throws ServletException, IOException {

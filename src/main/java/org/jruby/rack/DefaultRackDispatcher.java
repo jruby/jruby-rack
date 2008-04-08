@@ -22,7 +22,7 @@ public class DefaultRackDispatcher implements RackDispatcher {
     public DefaultRackDispatcher(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
-    
+
     public void process(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         final RackApplicationFactory rackFactory = getRackFactory();

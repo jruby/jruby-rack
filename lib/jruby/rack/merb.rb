@@ -53,7 +53,7 @@ module JRuby
           raise "Couldn't find a Merb framework to load at #{framework}"
         end
       end
-      
+
       def setup_adapter
         logger.debug('Registering Merb servlet adapter')
         Merb::Rack::Adapter.register %w{servlet}, :Servlet
@@ -61,33 +61,30 @@ module JRuby
 
       def setup_sessions
         logger.debug('Registering Merb servlet sessions')
-        Merb.register_session_type 'servlet', 
-          'jruby/rack/merb', 
+        Merb.register_session_type 'servlet',
+          'jruby/rack/merb',
           'Using Java servlet sessions'
       end
-      
+
       def start_merb
         logger.debug('Starting Merb')
         Merb.start :merb_root => merb_root,
                    :environment => merb_environment,
                    :adapter => 'servlet'
       end
-
     end
-  
+
     class MerbFactory
       def self.new
         MerbServletHelper.new.load_environment
         ::Rack::Builder.new { run ::Merb::Config[:app] }.to_app
       end
-    end 
-   
+    end
   end
 end
 
 # Merb likes to hardcode things into the Merb:: namespace.
 module Merb
-
   module Rack
     class Servlet
       def self.start(opts={})
@@ -114,5 +111,4 @@ module Merb
       "servlet"
     end
   end
-
 end

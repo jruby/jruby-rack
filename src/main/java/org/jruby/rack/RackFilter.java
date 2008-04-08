@@ -33,13 +33,13 @@ public class RackFilter implements Filter {
     public RackFilter(RackDispatcher disp) {
         dispatcher = disp;
     }
-    
+
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
         dispatcher = new DefaultRackDispatcher(config.getServletContext());
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest    httpRequest  = maybeAppendHtmlToPath(request);
         HttpServletResponse   httpResponse = (HttpServletResponse) response;

@@ -43,7 +43,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     private Integer initial, maximum;
     private long timeout = DEFAULT_TIMEOUT;
     private Semaphore permits;
-    
+
     public PoolingRackApplicationFactory(RackApplicationFactory factory) {
         realFactory = factory;
     }

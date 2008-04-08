@@ -22,7 +22,7 @@ module JRuby
         ENV['RAILS_ENV'] = @rails_env
         silence_warnings { Object.const_set("PUBLIC_ROOT", public_root) }
       end
-      
+
       def load_environment
         require 'cgi/session/java_servlet_store'
         require 'jruby/rack/rails_boot'
@@ -31,7 +31,7 @@ module JRuby
         setup_sessions
         setup_logger
       end
-      
+
       # This hook method is called back from within the mechanism installed
       # by rails_boot above. We're setting appropriate defaults for the
       # servlet environment here that can still be overridden (if desired) in
@@ -63,7 +63,7 @@ module JRuby
           class << ::RAILS_DEFAULT_LOGGER # Make these accessible to wire in the log device
             public :instance_variable_get, :instance_variable_set
           end
-          
+
           if defined?(ActiveSupport::BufferedLogger) # Rails 2.x
             old_device = ::RAILS_DEFAULT_LOGGER.instance_variable_get "@log"
             old_device.close rescue nil
@@ -85,7 +85,7 @@ module JRuby
         options[:java_servlet_request] = env['java.servlet_request']
         options
       end
-      
+
       def java_sessions?
         session_options[:database_manager] == java_servlet_store
       end

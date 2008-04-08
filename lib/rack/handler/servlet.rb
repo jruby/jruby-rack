@@ -21,7 +21,7 @@ module Rack
         add_headers(servlet_env, env)
         JRuby::Rack::Response.new(@rack_app.call(env))
       end
-     
+
       def env_hash
         { "rack.version" => Rack::VERSION, "rack.multithread" => true,
           "rack.multiprocess" => false, "rack.run_once" => false }
@@ -36,7 +36,7 @@ module Rack
       end
 
       def add_servlet_request_attributes(servlet_env, env)
-	servlet_env.getAttributeNames.each do |k|
+        servlet_env.getAttributeNames.each do |k|
           env[k] = servlet_env.getAttribute(k)
         end
       end
