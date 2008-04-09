@@ -56,6 +56,7 @@ public class DefaultRackDispatcher implements RackDispatcher {
         try {
             RackApplication errorApp = rackFactory.getErrorApplication();
             request.setAttribute(EXCEPTION, re);
+            servletContext.log("Exception caught", re);
             errorApp.call(request).respond(response);
         } catch (Exception e) {
             servletContext.log("Error: Couldn't handle error", e);
