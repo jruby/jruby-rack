@@ -4,17 +4,6 @@
 # See the file LICENSE.txt for details.
 #++
 
-tried_gem = false
-begin
-  require 'rack'
-rescue LoadError
-  unless tried_gem
-    tried_gem = true
-    require 'rubygems'
-    gem 'rack'
-    retry
-  end
-end
-
+require 'rack'
 require 'time' # some of rack uses Time#rfc822 but doesn't pull this in
 require 'jruby/rack/servlet_helper'

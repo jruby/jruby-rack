@@ -134,7 +134,7 @@ describe JRuby::Rack::ServletHelper do
   it "should set Gem.path to the value of gem_path" do
     @servlet_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/blah"
     create_helper
-    Gem.path.should include('/blah')
+    ENV['GEM_PATH'].should == "/blah"
   end
 
   it "should create a logger that writes messages to the servlet context" do

@@ -101,14 +101,8 @@ module JRuby
       end
 
       def setup_gems
-        begin
-          require 'rubygems'
-        rescue LoadError
-          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
-          require 'rubygems'
-        end
-        Gem.clear_paths
-        Gem.path << @gem_path
+        $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
+        ENV['GEM_PATH'] = @gem_path
       end
 
       def self.instance
