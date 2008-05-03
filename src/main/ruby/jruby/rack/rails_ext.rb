@@ -48,9 +48,9 @@ module ActionController
     end
 
     def rescue_action_in_public(exception) #:nodoc:
-      if respond_to?(:response_code_for_rescue)
+      if respond_to?(:render_optional_error_file) # Rails 2
         render_optional_error_file response_code_for_rescue(exception)
-      else
+      else # Rails 1
         case exception
         when RoutingError, UnknownAction
           render_text(IO.read(File.join(PUBLIC_ROOT, '404.html')), "404 Not Found")
