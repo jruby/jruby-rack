@@ -20,7 +20,7 @@ describe RailsRackApplicationFactory, "getApplication" do
     @servlet_context.should_receive(:getInitParameter).with("rails.root").and_return(
       "rails/root")
     @servlet_context.should_receive(:getRealPath).with("rails/root").and_return(
-      File.dirname(__FILE__) + '/../../../src/test/resources/rails')
+      File.dirname(__FILE__) + '/../../rails')
     app = @app_factory.getApplication
     app.should respond_to(:call)
   end

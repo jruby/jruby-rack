@@ -6,14 +6,14 @@
 
 repositories.remote << "http://repo1.maven.org/maven2" << "http://snapshots.repository.codehaus.org"
 
-JRUBY = 'org.jruby:jruby-complete:jar:1.1.1-SNAPSHOT'
+JRUBY = 'org.jruby:jruby-complete:jar:1.1.1'
 
-require './spec/buildr_framework'
+require './src/jruby-trunk-fix.rb'
 
 desc 'JRuby Rack adapter'
 define 'jruby-rack' do
   project.group = 'org.jruby.rack'
-  project.version = '1.0-SNAPSHOT'
+  project.version = '0.9'
   compile.with 'javax.servlet:servlet-api:jar:2.3', JRUBY
   meta_inf << file("src/main/tld/jruby-rack.tld")
 
@@ -27,7 +27,7 @@ define 'jruby-rack' do
     end
   end
 
-  resources.from _('lib'), _('target/rack/lib')
+  resources.from _('src/main/ruby'), _('target/rack/lib')
   task :resources => task('unpack_gems')
 
   test.using :rspec

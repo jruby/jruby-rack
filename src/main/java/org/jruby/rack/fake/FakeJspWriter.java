@@ -1,14 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-package org.jruby.rack;
+package org.jruby.rack.fake;
 
 import java.io.IOException;
 import javax.servlet.jsp.JspWriter;
 
 /**
+ * Currently only used as a mock for testing.
  *
  * @author tyler
  */

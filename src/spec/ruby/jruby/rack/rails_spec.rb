@@ -98,7 +98,7 @@ describe JRuby::Rack::RailsServletHelper do
       @servlet_context.stub!(:getInitParameter).and_return nil
       @servlet_context.stub!(:getRealPath).and_return "/"
       create_helper
-      @helper.rails_root = File.dirname(__FILE__) + "/../../../src/test/resources/rails"
+      @helper.rails_root = File.dirname(__FILE__) + "/../../rails"
       @helper.load_environment
     end
 

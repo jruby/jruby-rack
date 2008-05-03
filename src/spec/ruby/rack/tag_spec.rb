@@ -1,8 +1,8 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 import org.jruby.rack.RackTag
-import org.jruby.rack.FakePageContext
-import org.jruby.rack.FakeJspWriter
+import org.jruby.rack.fake.FakePageContext
+import org.jruby.rack.fake.FakeJspWriter
 import javax.servlet.ServletRequest
 
 class ExceptionThrower

@@ -1,4 +1,4 @@
-package org.jruby.rack;
+package org.jruby.rack.fake;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -14,6 +14,9 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
 
+/**
+ * Currently only used as a mock for testing.
+ */
 public class FakePageContext extends PageContext {
     private ServletContext context;
     private ServletRequest request;
