@@ -32,5 +32,6 @@ define 'jruby-rack' do
 
   test.using :rspec
 
-  package :jar, :id => 'jruby-rack'
+  # Exclude the test stubs from the final jar
+  package(:jar).exclude(_('target/classes/org/jruby/rack/fake'))
 end
