@@ -50,16 +50,11 @@ JRuby runtime management and pooling is done automatically by the framework. In
 the case of Rails, runtimes are pooled. For Merb and other Rack applications, a
 single runtime is created and shared for every request.
 
-= Quick Start
+= Building
 
-At this time, you need a trunk version of JRuby to complete this build so make
-sure you are in a shell with your $PATH environmental variable setup to include
-the path to $JRUBY_HOME/bin.
+Ensure you have JRuby with the buildr and rack gems installed.
 
-Install the prerequisite Gems, buildr (A Ruby replacement for Maven) and rack.
-
-  jruby -S gem install buildr --source http://caldersphere.net
-  jruby -S gem install rack
+  jruby -S gem install buildr rack
 
 Checkout the JRuby Rack code and cd to that directory
 
@@ -70,12 +65,13 @@ Resolve dependencies, compile the code, and build the jar file.
 
   jruby -S buildr package
 
-The generated jar should be located here: target/jruby-rack-1.0-SNAPSHOT.jar.
+The generated jar should be located here: target/jruby-rack-*.jar.
 
 == Rails Step-by-step
 
 This example shows how to create and deploy a simple Rails app using the
-embedded Java database H2 to a WAR using Warble and JRuby Rack.
+embedded Java database H2 to a WAR using Warble and JRuby Rack. JRuby Rack is now
+included in the latest release of Warbler (0.9.9), but you can build your own jar from source and substitute it if you like.
 
 Install Rails and the driver and ActiveRecord adapters for the H2 database:
 
@@ -138,21 +134,6 @@ the WAR.
 Continue editing config/warble.rb and add the following line after these
 comments:
 
-  # Additional Java .jar files to include.  Note that if .jar files are placed
-  # in lib (and not otherwise excluded) then they need not be mentioned here
-  # JRuby and Goldspike are pre-loaded in this list.  Be sure to include your
-  # own versions if you directly set the value
-  # config.java_libs += FileList["lib/java/*.jar"]
-  config.java_libs = []
-
-This will tell Warble to not include the jars jruby-complete-1.1RC2,
-goldspike-1.5, commons-pool-1.3.jar, and activation-1.1.jar. You will be
-replacing these with the trunk version of jruby-complete.jar and
-jruby-rack-1.0-SNAPSHOT.jar.
-
-Continue editing config/warble.rb and add the following line after these
-comments:
-
   # Gems to be packaged in the webapp.  Note that Rails gems are added to this
   # list if vendor/rails is not present, so be sure to include rails if you
   # overwrite the value
@@ -163,18 +144,6 @@ comments:
 
 This will tell Warble to add the JDBC driver for H2 as well as the ActiveRecord
 JDBC and JDBC-H2 adapter Gems.
-
-Copy the trunk version of jruby-complete.jar (created with "ant
-jar-complete") into the {{blog/lib}} directory (replace $JRUBY_HOME with the
-actual path in the statement below unless $JRUBY_HOME is already defined):
-
-  cp $JRUBY_HOME/lib/jruby-complete.jar lib/
-
-Copy the snapshot version of jruby-rack-1.0-SNAPSHOT jar into the blog/lib
-directory (replace $JRUBY_RACK_HOME with the actual path in the statement below
-unless $JRUBY_RACK_HOME is already defined):
-
-    cp $JRUBY_RACK_HOME/target/jruby-rack-1.0-SNAPSHOT.jar lib/
 
 Now generate the WAR file:
 
