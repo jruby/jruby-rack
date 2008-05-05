@@ -37,8 +37,12 @@ class CGI #:nodoc:all
         java_session = @java_request.getSession(true)
         hash = @session_data.dup
         hash.delete_if do |k,v|
+          k = k.to_s if Symbol === k
           if String === k
             case v
+            when Symbol
+              java_session.setAttribute k, v.to_s
+              true
             when String, Numeric, true, false, nil
               java_session.setAttribute k, v
               true
