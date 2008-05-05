@@ -24,11 +24,15 @@ public class RackTag extends TagSupport {
                 pageContext.getServletContext().getAttribute(RackServletContextListener.FACTORY_KEY);
             RackApplication app = factory.getApplication();
             try {
-                RackResponse result = app.call(new HttpServletRequestWrapper((HttpServletRequest) pageContext.getRequest()) {
-                    public String getRequestURI() { return path; }
-                    public String getQueryString() { return params; }
-                    public String getMethod() { return "GET"; }
-                });
+                final HttpServletRequest request =
+                        new HttpServletRequestWrapper((HttpServletRequest) pageContext.getRequest()) {
+                    @Override public String getMethod() { return "GET"; }
+                    @Override public String getRequestURI() { return path + "?" + params; }
+                    @Override public String getPathInfo() { return path; }
+                    @Override public String getQueryString() { return params; }
+                    @Override public String getServletPath() { return ""; }
+                };
+                RackResponse result = app.call(request);
                 pageContext.getOut().write(result.getBody());
             } finally {
               factory.finishedWithApplication(app);
