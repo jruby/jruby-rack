@@ -28,6 +28,7 @@ module JRuby
         require 'jruby/rack/rails_boot'
         load File.join(rails_root, 'config', 'environment.rb')
         require 'dispatcher'
+        require 'jruby/rack/rails_ext'
         setup_sessions
         setup_logger
       end
@@ -37,7 +38,7 @@ module JRuby
       # servlet environment here that can still be overridden (if desired) in
       # the application's environment files.
       def boot_for_servlet_environment
-        require 'jruby/rack/rails_ext'
+        require 'action_controller'
         ActionController::Base.page_cache_directory = PUBLIC_ROOT
         ActionController::Base.session_store = :java_servlet_store
         ActionView::Base.cache_template_loading = true

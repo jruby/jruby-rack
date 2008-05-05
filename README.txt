@@ -153,3 +153,11 @@ This task generates the file: blog.war at the top level of the application as
 well as an exploded version of the war located here: tmp/war.
 
 The war should be ready to deploy to your Java application server.
+
+= Thanks
+
+- Dudley Flanders, for the Merb support
+- Robert Egglestone, for the original JRuby servlet integration project, Goldspike
+- Chris Neukirchen, for Rack
+- Sun Microsystems, Nick's employer, for project support
+- Last, but not least, Flannery, Nick's wife, for patience and understanding
