@@ -17,6 +17,11 @@ describe Java::JavaxServletHttp::HttpServletRequest do
     @request["HA!"].should == "NYAH!"
   end
 
+  it "should stringify the key, allowing symbols to be used as keys" do
+    @request.should_receive(:getAttribute).with("foo").and_return "bar"
+    @request[:foo].should == "bar"
+  end
+
   it "should allow #[]= to set request attributes" do
     @request.should_receive(:setAttribute).with("HA!", "NYAH!")
     @request["HA!"] = "NYAH!"
@@ -37,6 +42,11 @@ describe Java::JavaxServletHttp::HttpSession do
   it "should allow #[] to access session attributes" do
     @session.should_receive(:getAttribute).with("HA!").and_return "NYAH!"
     @session["HA!"].should == "NYAH!"
+  end
+
+  it "should stringify the key, allowing symbols to be used as keys" do
+    @session.should_receive(:getAttribute).with("foo").and_return "bar"
+    @session[:foo].should == "bar"
   end
 
   it "should allow #[]= to set session attributes" do

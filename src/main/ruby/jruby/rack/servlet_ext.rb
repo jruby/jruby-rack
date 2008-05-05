@@ -9,11 +9,11 @@
 module Java::JavaxServletHttp::HttpServletRequest
   # Fetch an attribute from the servlet request.
   def [](key)
-    getAttribute(key)
+    getAttribute(key.to_s)
   end
   # Set an attribute in the servlet request.
   def []=(key, val)
-    setAttribute(key, val)
+    setAttribute(key.to_s, val)
   end
   # Retrieve all the attribute names (keys) from the servlet request.
   def keys
@@ -24,11 +24,11 @@ end
 module Java::JavaxServletHttp::HttpSession
   # Fetch an attribute from the session.
   def [](key)
-    getAttribute(key)
+    getAttribute(key.to_s)
   end
   # Set an attribute in the session.
   def []=(key, val)
-    setAttribute(key, val)
+    setAttribute(key.to_s, val)
   end
   # Retrieve all the attribute names (keys) from the session.
   def keys
