@@ -65,13 +65,13 @@ is divided into following sections:
         </condition>
         <condition property="have.tests">
             <or>
-                <available file="${test.src.dir}"/>
+                <available file="${test.ruby.dir}"/>
             </or>
         </condition>
         <condition property="have.sources">
             <or>
                 <available file="${src.dir}"/>
-                <available file="${lib.dir}"/>
+                <available file="${src.ruby.dir}"/>
             </or>
         </condition>
         <condition property="netbeans.home+have.tests">
@@ -126,8 +126,8 @@ is divided into following sections:
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
         <fail unless="src.dir">Must set src.dir</fail>
-        <fail unless="lib.dir">Must set lib.dir</fail>
-        <fail unless="test.src.dir">Must set test.src.dir</fail>
+        <fail unless="src.ruby.dir">Must set src.ruby.dir</fail>
+        <fail unless="test.ruby.dir">Must set test.ruby.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
         <fail unless="build.classes.dir">Must set build.classes.dir</fail>
@@ -148,7 +148,7 @@ is divided into following sections:
     </target>
     <target name="-init-macrodef-javac">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${lib.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${src.ruby.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${includes}" name="includes"/>
@@ -167,7 +167,7 @@ is divided into following sections:
             </sequential>
         </macrodef>
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.dir}:${lib.dir}" name="srcdir"/>
+            <attribute default="${src.dir}:${src.ruby.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -202,7 +202,7 @@ is divided into following sections:
             <sequential>
                 <junit dir="${work.dir}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" showoutput="true">
                     <batchtest todir="${build.test.results.dir}">
-                        <fileset dir="${test.src.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
+                        <fileset dir="${test.ruby.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="@{testincludes}"/>
                         </fileset>
                     </batchtest>
@@ -329,7 +329,7 @@ is divided into following sections:
         <j2seproject3:javac/>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${lib.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${src.ruby.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
         </copy>
     </target>
     <target name="-post-compile">
@@ -344,7 +344,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" includes="${javac.includes}" sourcepath="${src.dir}:${lib.dir}"/>
+        <j2seproject3:javac excludes="" includes="${javac.includes}" sourcepath="${src.dir}:${src.ruby.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -481,7 +481,7 @@ is divided into following sections:
             <fileset dir="${src.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${lib.dir}" excludes="${excludes}" includes="${includes}">
+            <fileset dir="${src.ruby.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
         </javadoc>
@@ -503,12 +503,12 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target if="do.depend.true" name="-compile-test-depend">
-        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}"/>
+        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.ruby.dir}"/>
     </target>
     <target depends="init,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend" if="have.tests" name="-do-compile-test">
-        <j2seproject3:javac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}"/>
+        <j2seproject3:javac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" srcdir="${test.ruby.dir}"/>
         <copy todir="${build.test.classes.dir}">
-            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.ruby.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
         </copy>
     </target>
     <target name="-post-compile-test">
@@ -523,9 +523,9 @@ is divided into following sections:
     <target depends="init,compile,-pre-pre-compile-test,-pre-compile-test-single" if="have.tests" name="-do-compile-test-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile destdir="${build.test.classes.dir}"/>
-        <j2seproject3:javac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" sourcepath="${test.src.dir}" srcdir="${test.src.dir}"/>
+        <j2seproject3:javac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" sourcepath="${test.ruby.dir}" srcdir="${test.ruby.dir}"/>
         <copy todir="${build.test.classes.dir}">
-            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.ruby.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
         </copy>
     </target>
     <target name="-post-compile-test-single">

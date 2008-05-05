@@ -7,10 +7,10 @@
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
                 <root id="src.dir"/>
-                <root id="lib.dir"/>
+                <root id="src.ruby.dir"/>
             </source-roots>
             <test-roots>
-                <root id="test.src.dir"/>
+                <root id="test.ruby.dir"/>
             </test-roots>
         </data>
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/2">
