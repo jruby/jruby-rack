@@ -72,7 +72,7 @@ module JRuby
           else # Rails 1.x
             old_device = ::RAILS_DEFAULT_LOGGER.instance_variable_get "@logdev"
             old_device.close rescue nil
-            ::RAILS_DEFAULT_LOGGER.instance_variable_set "@logdev", Logger::LogDevice.new(device)
+            ::RAILS_DEFAULT_LOGGER.instance_variable_set "@logdev", Logger::LogDevice.new(logdev)
           end
         end
       end
