@@ -25,8 +25,8 @@ module JRuby
 
       def load_merb
         framework = File.expand_path(File.join(@merb_root, 'framework'))
-        logger.debug("Trying to load Merb from #{framework}")
         if File.directory?(framework)
+          logger.debug("Trying to load Merb from #{framework}")
           core = File.join(framework, 'merb-core')
           if File.directory?(core)
             $LOAD_PATH.push File.join(core, 'lib')
@@ -45,13 +45,14 @@ module JRuby
               $LOAD_PATH.push File.join(plugins, d, 'lib')
             end
           end
-
-          require 'merb-core'
-          require 'merb-core/rack'
-          Merb.frozen!
         else
-          raise "Couldn't find a Merb framework to load at #{framework}"
+          logger.debug("Didn't find a framework/ directory, falling back to Rubygems")
+          require 'rubygems'
         end
+
+        require 'merb-core'
+        require 'merb-core/rack'
+        Merb.frozen!
       end
 
       def setup_adapter
