@@ -129,10 +129,6 @@ describe JRuby::Rack::RailsServletHelper do
     it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
       ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == @helper.public_root + "/stylesheets"
     end
-
-    it "should setup the RAILS_DEFAULT_LOGGER to the servlet helper log device" do
-      ::RAILS_DEFAULT_LOGGER.instance_variable_get("@log").should == @helper.logdev
-    end
   end
 end
 

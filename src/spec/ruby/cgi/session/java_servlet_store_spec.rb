@@ -18,7 +18,7 @@ describe CGI::Session::JavaServletStore do
 
   def session_store
     store = CGI::Session::JavaServletStore.new(nil, @options)
-    store.data[:key] = {:value1 => "foo", :value2 => "bar"}
+    store.data[:key] = :value
     store
   end
 
@@ -91,15 +91,6 @@ describe CGI::Session::JavaServletStore do
       @session.should_receive(:setAttribute).with("foo", "bar")
       store = session_store
       store.data["foo"] = "bar"
-      store.update
-    end
-
-    it "should store entries with symbol keys and values as strings in the java session" do
-      @session.should_receive(:setAttribute).with(
-        CGI::Session::JavaServletStore::RAILS_SESSION_KEY, anything)
-      @session.should_receive(:setAttribute).with("foo", "bar")
-      store = session_store
-      store.data[:foo] = :bar
       store.update
     end
 
