@@ -1,0 +1,13 @@
+<%= dl_hash @session_hash %>
+
+<form action="session_edit" method="POST">
+  <h3>Add or modify session</h3>
+  <label for="key">Key</label>
+  <input type="text" name="key"/>
+  <br/>
+  <label for="value">Value</label>
+  <input type="text" name="value"/>
+  <br/>
+  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>" />
+  <input type="submit" name="Add"/>
+</form>

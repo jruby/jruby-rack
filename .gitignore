@@ -1,2 +1,6 @@
 reports
 target
+**/*.log
+examples/*/tmp
+examples/merb/merb.war
+examples/rails/rails.war
