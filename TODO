@@ -1,3 +1,8 @@
+- Add default convenience set of load paths for vanilla rack apps
+- Dir.chdir('/WEB-INF') { ... } during Rack app initialization so that rackup scripts can "load './some/file'"
+- Allow rackup script to be set from a file in addition to the servlet context
+  - scan webapp for files named config.ru?
+- Add ability to specify custom Rack middleware for Rails
 - Get rid of RackApplicationFactory; make custom factories just a decorating RackApplication instead
   - Move JRuby runtime factory logic into separate small factory that accepts a rackup script
 - Introduce application bootstrap strategy concept
@@ -5,6 +10,4 @@
   - The default application bootstrap strategy should be a new automatic bootstrapper that attempts
     to detect the application type
 - Try to support a public root other than '/' in RackFilter
-- Allow rackup script to be set from a file in addition to the servlet context
-  - scan webapp for files named config.ru?
 - Rails: detect JNDI connections and auto-close connections after each request (clear_active_connections!)
