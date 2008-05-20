@@ -15,17 +15,9 @@
         </data>
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/2">
             <reference>
-                <foreign-project>JRuby</foreign-project>
-                <artifact-type>folder</artifact-type>
-                <script>${project.JRuby}/build.xml</script>
-                <target>jar</target>
-                <clean-target>clean</clean-target>
-                <id>jar</id>
-            </reference>
-            <reference>
-                <foreign-project>JRuby</foreign-project>
+                <foreign-project>JRuby_trunk</foreign-project>
                 <artifact-type>jar</artifact-type>
-                <script>${project.JRuby}/build.xml</script>
+                <script>${project.JRuby_trunk}/build.xml</script>
                 <target>jar</target>
                 <clean-target>clean</clean-target>
                 <id>jar2</id>
