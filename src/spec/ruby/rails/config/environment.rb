@@ -25,8 +25,12 @@ module Rails
 
   class Boot
     def run
+      require 'initializer'
+      Rails::Initializer.run(:set_load_path)
     end
   end
 end
 
 Rails.boot!
+
+Rails::Initializer.run

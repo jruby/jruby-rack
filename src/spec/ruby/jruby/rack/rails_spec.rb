@@ -114,10 +114,6 @@ describe JRuby::Rack::RailsServletHelper do
       ActionController::Base.session_store.should == CGI::Session::JavaServletStore
     end
 
-    it "should default the action view cache template loading to true" do
-      ActionView::Base.cache_template_loading.should == true
-    end
-
     it "should set the ActionView ASSETS_DIR constant to the public root" do
       ActionView::Helpers::AssetTagHelper::ASSETS_DIR.should == @helper.public_root
     end
