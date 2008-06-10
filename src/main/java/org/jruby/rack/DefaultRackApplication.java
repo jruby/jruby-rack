@@ -12,6 +12,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyIO;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.RubyObjectAdapter;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -23,6 +24,7 @@ import org.jruby.runtime.callback.Callback;
  */
 public class DefaultRackApplication implements RackApplication {
     private IRubyObject application;
+    private RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
 
     public RackResponse call(final ServletRequest env) {
         Ruby runtime = application.getRuntime();
@@ -39,8 +41,7 @@ public class DefaultRackApplication implements RackApplication {
                 return Arity.NO_ARGUMENTS;
             }
         });
-        IRubyObject response = application.callMethod(runtime.getCurrentContext(),
-                "call", new IRubyObject[] { servlet_env });
+        IRubyObject response = __call(servlet_env);
         return (RackResponse) JavaEmbedUtils.rubyToJava(runtime, response, RackResponse.class);
     }
 
@@ -52,5 +53,10 @@ public class DefaultRackApplication implements RackApplication {
 
     public void setApplication(IRubyObject application) {
         this.application = application;
+    }
+
+    /** Only used for testing. */
+    public IRubyObject __call(final IRubyObject env) {
+        return adapter.callMethod(application, "call", env);
     }
 }

@@ -39,9 +39,9 @@ module JRuby
       # the application's environment files.
       def boot_for_servlet_environment
         require 'action_controller'
-        ActionController::Base.page_cache_directory = PUBLIC_ROOT
         ActionController::Base.session_store = :java_servlet_store
         ActionView::Base.cache_template_loading = true
+        ActionController::Base.page_cache_directory = PUBLIC_ROOT
         silence_warnings do
           ActionView::Helpers::AssetTagHelper.const_set("ASSETS_DIR", PUBLIC_ROOT)
           ActionView::Helpers::AssetTagHelper.const_set("JAVASCRIPTS_DIR", "#{PUBLIC_ROOT}/javascripts")
@@ -65,6 +65,7 @@ module JRuby
             public :instance_variable_get, :instance_variable_set
           end
 
+          # use config.logger?
           if defined?(ActiveSupport::BufferedLogger) # Rails 2.x
             old_device = ::RAILS_DEFAULT_LOGGER.instance_variable_get "@log"
             old_device.close rescue nil
