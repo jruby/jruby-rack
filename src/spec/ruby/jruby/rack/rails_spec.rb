@@ -155,17 +155,28 @@ describe JRuby::Rack, "Rails controller extensions" do
 end
 
 describe JRuby::Rack::RailsSetup do
+  before :each do
+    @app = mock "app"
+    @servlet_request = mock "servlet request"
+    @servlet_request.stub!(:getContextPath).and_return "/blah"
+    @helper = mock "servlet helper"
+    @options = mock "options"
+    @helper.stub!(:session_options_for_request).and_return @options
+    @rs = JRuby::Rack::RailsSetup.new @app, @helper
+    @env = {}
+    @env['java.servlet_request'] = @servlet_request
+  end
+
   it "should set up the env hash for Rails" do
-    app = mock "app"
-    helper = mock "servlet helper"
-    rs = JRuby::Rack::RailsSetup.new app, helper
-    options = mock "options"
-    env = {}
-    app.should_receive(:call).with(env)
-    helper.should_receive(:session_options_for_request).and_return options
-    env['java.servlet_request'] = mock "servlet request"
-    env['java.servlet_request'].should_receive(:getContextPath).and_return "/blah"
-    rs.call(env)
-    env['rails.session_options'].should == options
+    @app.should_receive(:call).with(@env)
+    @rs.call(@env)
+    @env['rails.session_options'].should == @options
+  end
+
+  it "should set env['HTTPS'] == 'on' if env['rack.url_scheme] == 'https'" do
+    @app.should_receive(:call).with(@env)
+    @env['rack.url_scheme'] = 'https'
+    @rs.call(@env)
+    @env['HTTPS'].should == 'on'
   end
 end
