@@ -2,6 +2,7 @@ package org.jruby.rack.fake;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import javax.el.ELContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -13,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 import javax.servlet.jsp.PageContext;
+import javax.servlet.jsp.el.ExpressionEvaluator;
+import javax.servlet.jsp.el.VariableResolver;
 
 /**
  * Currently only used as a mock for testing.
@@ -142,6 +145,26 @@ public class FakePageContext extends PageContext {
     @Override
     public void setAttribute(String arg0, Object arg1, int arg2) {
         throw new UnsupportedOperationException("Not supported yet setAttribute");
+    }
+
+    @Override
+    public void include(String arg0, boolean arg1) throws ServletException, IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ExpressionEvaluator getExpressionEvaluator() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public VariableResolver getVariableResolver() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ELContext getELContext() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 	
 }
