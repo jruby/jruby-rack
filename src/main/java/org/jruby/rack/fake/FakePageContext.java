@@ -2,7 +2,6 @@ package org.jruby.rack.fake;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import javax.el.ELContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -161,10 +160,4 @@ public class FakePageContext extends PageContext {
     public VariableResolver getVariableResolver() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
-    @Override
-    public ELContext getELContext() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-	
 }

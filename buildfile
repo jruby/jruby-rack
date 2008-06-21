@@ -12,7 +12,10 @@ desc 'JRuby Rack adapter'
 define 'jruby-rack' do
   project.group = 'org.jruby.rack'
   project.version = '0.9.3-SNAPSHOT'
-  compile.with 'javaee:javaee:jar:5.0', JRUBY
+  compile.with JRUBY,
+    'org.apache.geronimo.specs:geronimo-servlet_2.4_spec:jar:1.1',
+    'org.apache.geronimo.specs:geronimo-jsp_2.0_spec:jar:1.1',
+    'org.apache.geronimo.specs:geronimo-jms_1.1_spec:jar:1.1'
   meta_inf << file("src/main/tld/jruby-rack.tld")
 
   directory _("target")
