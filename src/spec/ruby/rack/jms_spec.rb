@@ -21,7 +21,7 @@ describe QueueContextListener do
   it "should create a new QueueManager, initialize it and store it in the application context" do
     @qmf.should_receive(:newQueueManager).ordered.and_return @qm
     @qm.should_receive(:init).with(an_instance_of(javax.servlet.ServletContext)).ordered
-    @servlet_context.should_receive(:setAttribute).with(QueueContextListener::QUEUE_KEY, an_instance_of(QueueManager)).ordered
+    @servlet_context.should_receive(:setAttribute).with(QueueContextListener::MGR_KEY, an_instance_of(QueueManager)).ordered
     @listener.contextInitialized(@listener_event)
   end
 
@@ -33,8 +33,8 @@ describe QueueContextListener do
   
   it "should remove the QueueManager and destroy it" do
     qm = QueueManager.impl {}
-    @servlet_context.should_receive(:getAttribute).with(QueueContextListener::QUEUE_KEY).and_return qm
-    @servlet_context.should_receive(:removeAttribute).with(QueueContextListener::QUEUE_KEY)
+    @servlet_context.should_receive(:getAttribute).with(QueueContextListener::MGR_KEY).and_return qm
+    @servlet_context.should_receive(:removeAttribute).with(QueueContextListener::MGR_KEY)
     qm.should_receive(:destroy)
     @listener.contextDestroyed(@listener_event)
   end
@@ -60,6 +60,6 @@ describe DefaultQueueManager do
     session.should_receive(:createConsumer).with(dest).and_return consumer
     consumer.should_receive(:setMessageListener).with(an_instance_of(javax.jms.MessageListener))
     conn.should_receive(:start)
-    @queue_manager.listen("myqueue", "MyListener")
+    @queue_manager.listen("myqueue")
   end
 end
