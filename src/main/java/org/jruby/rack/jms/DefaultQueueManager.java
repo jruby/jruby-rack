@@ -18,7 +18,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import org.jruby.Ruby;
 import org.jruby.RubyObjectAdapter;
@@ -44,20 +43,17 @@ public class DefaultQueueManager implements QueueManager {
     public DefaultQueueManager() {
     }
 
-    public DefaultQueueManager(ConnectionFactory qcf) {
+    public DefaultQueueManager(ConnectionFactory qcf, Context ctx) {
         this.connectionFactory = qcf;
+        this.jndiContext = ctx;
     }
     
-    public void init(ServletContext context) {
+    public void init(ServletContext context) throws Exception {
         this.context = context;
-        String jndiName = context.getInitParameter("jms.jndi.connection.factory");
+        String jndiName = context.getInitParameter("jms.connection.factory");
         if (jndiName != null && connectionFactory == null) {
-            try {
-                jndiContext = new InitialContext();
-                this.connectionFactory = (ConnectionFactory) jndiContext.lookup(jndiName);
-            } catch (NamingException ex) {
-                context.log("error looking up queue connection factory '"+jndiName+"'", ex);
-            }
+            jndiContext = new InitialContext();
+            connectionFactory = (ConnectionFactory) jndiContext.lookup(jndiName);
         }
     }
 
