@@ -11,38 +11,12 @@ module JRuby
       TextMessage = javax.jms.TextMessage
       MARSHAL_PAYLOAD = "ruby.marshal.payload"
 
+      # Called into by the JRuby-Rack java code when an asynchronous message
+      # is received.
       def self.receive_message(queue_name, message)
         listener = self.listeners[queue_name]
         return unless listener
-
-        if listener.respond_to?(:on_jms_message)
-          listener.on_jms_message(message)
-          return
-        end
-
-        message = convert_message(message)
-
-        if listener.respond_to?(:call)
-          listener.call(message)
-        elsif listener.respond_to?(:on_message)
-          listener.on_message(message)
-        elsif Class === listener
-          receive_message(queue_name, listener.new)
-        end
-      end
-
-      def self.convert_message(message)
-        if message.getBooleanProperty(MARSHAL_PAYLOAD)
-          payload = ""
-          java_bytes = ("\0" * 1024).to_java_bytes
-          while (bytes_read = message.readBytes(java_bytes)) != -1
-            payload << String.from_java_bytes(java_bytes)[0..bytes_read]
-          end
-          message = Marshal.load(java_bytes)
-        elsif message.kind_of?(TextMessage)
-          message = message.getText
-        end
-        message
+        listener.dispatch(message)
       end
 
       # Sends a message to the named queue. The message is assumed to be a Ruby
@@ -67,8 +41,8 @@ module JRuby
       end
 
       # Register a Ruby listener on the given queue.
-      def self.register_listener(queue_name, listener)
-        self.listeners[queue_name] = listener
+      def self.register_listener(queue_name, listener = nil, &block)
+        self.listeners[queue_name] = MessageDispatcher.new(block.nil? ? listener : block)
         queue_manager.listen(queue_name)
       end
 
@@ -89,6 +63,46 @@ module JRuby
 
       def self.queue_manager
 	@queue_manager ||= $servlet_context.getAttribute(org.jruby.rack.jms.QueueContextListener::MGR_KEY)
+      end
+
+      class MessageDispatcher
+        def initialize(listener)
+          @listener = listener
+        end
+
+        def dispatch(message)
+          if @listener.respond_to?(:on_jms_message)
+            @listener.on_jms_message(message)
+            return
+          end
+
+          message = convert_message(message)
+
+          if @listener.respond_to?(:call)
+            @listener.call(message)
+          elsif @listener.respond_to?(:on_message)
+            @listener.on_message(message)
+          elsif Class === @listener
+            dispatch(@listener.new)
+          else
+            puts "message dropped on the floor: #{message.inspect}"
+          end
+        end
+
+        def convert_message(message)
+          if message.getBooleanProperty(MARSHAL_PAYLOAD)
+            payload = ""
+            # what's the most efficient way of doing this?
+            java_bytes = java.lang.reflect.Array.newInstance(java.lang.Byte::TYPE, 1024)
+            while (bytes_read = message.readBytes(java_bytes)) != -1
+              payload << String.from_java_bytes(java_bytes)[0..bytes_read]
+            end
+            message = Marshal.load(java_bytes)
+          elsif message.kind_of?(TextMessage)
+            message = message.getText
+          end
+          message
+        end
       end
     end
   end
