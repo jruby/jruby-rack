@@ -45,18 +45,28 @@ module JRuby
         message
       end
 
-      def self.send_message(queue_name, message)
+      # Sends a message to the named queue. The message is assumed to be a Ruby
+      # object that will be marshalled and delivered to a Ruby receiver.
+      #
+      # If a block is given, the JMS session object is yielded, and allows custom
+      # message construction. The block should return a JMS Message object.
+      def self.send_message(queue_name, message = nil, &block)
         with_jms_connection do |connection|
           queue = queue_manager.lookup(queue_name)
           session = connection.createSession(false, Session::AUTO_ACKNOWLEDGE)
           producer = session.createProducer(queue)
-          message = session.createBytesMessage
-          message.setBooleanProperty(MARSHAL_PAYLOAD, true)
-          message.writeBytes(Marshal.dump(message).to_java_bytes)
+          if block
+            message = yield session
+          else
+            message = session.createBytesMessage
+            message.setBooleanProperty(MARSHAL_PAYLOAD, true)
+            message.writeBytes(Marshal.dump(message).to_java_bytes)
+          end
           producer.send(message)
         end
       end
 
+      # Register a Ruby listener on the given queue.
       def self.register_listener(queue_name, listener)
         self.listeners[queue_name] = listener
         queue_manager.listen(queue_name)
@@ -66,6 +76,8 @@ module JRuby
 	@listeners ||= {}
       end
 
+      # Helper method that yields a JMS connection resource, closing it after
+      # the block completes.
       def self.with_jms_connection
 	conn = queue_manager.getConnectionFactory.createConnection
         begin
