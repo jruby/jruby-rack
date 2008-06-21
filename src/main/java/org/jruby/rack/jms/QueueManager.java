@@ -6,7 +6,6 @@
 
 package org.jruby.rack.jms;
 
-import javax.jms.MessageListener;
 import javax.servlet.ServletContext;
 
 /**
@@ -15,6 +14,6 @@ import javax.servlet.ServletContext;
  */
 public interface QueueManager {
     void init(ServletContext context);
-    void addListener(String queueName, MessageListener listener);
+    void listen(String queueName, String rubyClassName);
     void destroy();
 }
