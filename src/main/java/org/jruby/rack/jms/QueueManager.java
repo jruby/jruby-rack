@@ -15,7 +15,8 @@ import javax.servlet.ServletContext;
  */
 public interface QueueManager {
     void init(ServletContext context) throws Exception;
-    void listen(String queueName, String rubyClassName);
+    void listen(String queueName);
     ConnectionFactory getConnectionFactory();
+    Object lookup(String name) throws javax.naming.NamingException;
     void destroy();
 }

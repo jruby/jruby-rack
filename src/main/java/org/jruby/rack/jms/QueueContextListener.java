@@ -15,7 +15,7 @@ import javax.servlet.ServletContextListener;
  * @author nicksieger
  */
 public class QueueContextListener implements ServletContextListener {
-    public static final String QUEUE_KEY = "rack.queues";
+    public static final String MGR_KEY = "rack.queue.manager";
     private QueueManagerFactory factory;
     
     public QueueContextListener() {
@@ -31,16 +31,16 @@ public class QueueContextListener implements ServletContextListener {
         try {
             QueueManager qm = newQueueManagerFactory().newQueueManager();
             qm.init(servletContext);
-            servletContext.setAttribute(QUEUE_KEY, qm);
+            servletContext.setAttribute(MGR_KEY, qm);
         } catch (Exception e) {
             servletContext.log("Error initializing queue manager:" + e.getMessage(), e);
         }
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        QueueManager qm = (QueueManager) event.getServletContext().getAttribute(QUEUE_KEY);
+        QueueManager qm = (QueueManager) event.getServletContext().getAttribute(MGR_KEY);
         if (qm != null) {
-            event.getServletContext().removeAttribute(QUEUE_KEY);
+            event.getServletContext().removeAttribute(MGR_KEY);
             qm.destroy();
         }
     }

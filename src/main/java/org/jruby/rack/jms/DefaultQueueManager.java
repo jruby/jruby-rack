@@ -57,15 +57,15 @@ public class DefaultQueueManager implements QueueManager {
         }
     }
 
-    public synchronized void listen(String queueName, String rubyClassName) {
+    public synchronized void listen(String queueName) {
         Connection conn = queues.get(queueName);
         if (conn == null) {
             try {
                 conn = connectionFactory.createConnection();
                 Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                Destination dest = (Destination) jndiContext.lookup(queueName);
+                Destination dest = (Destination) lookup(queueName);
                 MessageConsumer consumer = session.createConsumer(dest);
-                consumer.setMessageListener(new RubyObjectMessageListener(rubyClassName));
+                consumer.setMessageListener(new RubyObjectMessageListener(queueName));
                 queues.put(queueName, conn);
                 conn.start();
             } catch (Exception e) {
@@ -79,6 +79,10 @@ public class DefaultQueueManager implements QueueManager {
         return connectionFactory;
     }
     
+    public Object lookup(String name) throws javax.naming.NamingException {
+        return jndiContext.lookup(name);
+    }
+
     public void destroy() {
         for (Iterator it = queues.entrySet().iterator(); it.hasNext();) {
             Map.Entry<String,Connection> entry = (Map.Entry<String, Connection>) it.next();
@@ -93,19 +97,20 @@ public class DefaultQueueManager implements QueueManager {
     }
 
     private class RubyObjectMessageListener implements MessageListener {
-        private String className;
-        public RubyObjectMessageListener(String rubyClassName) {
-            this.className = rubyClassName;
+        private String queueName;
+        public RubyObjectMessageListener(String name) {
+            this.queueName = name;
         }
-
         public void onMessage(Message message) {
             final RackApplicationFactory rackFactory = getRackFactory();
             RackApplication app = null;
             try {
                 app = rackFactory.getApplication();
                 Ruby runtime = app.getRuntime();
-                IRubyObject obj = rubyRuntimeAdapter.eval(runtime, className + ".new");
-                rubyObjectAdapter.callMethod(obj, "on_jms_message", JavaEmbedUtils.javaToRuby(runtime, message));
+                IRubyObject obj = rubyRuntimeAdapter.eval(runtime, "JRuby::Rack::Queues");
+                rubyObjectAdapter.callMethod(obj, "receive_message", new IRubyObject[] {
+                    JavaEmbedUtils.javaToRuby(runtime, queueName),
+                    JavaEmbedUtils.javaToRuby(runtime, message)});
             } catch (Exception e) {
                 context.log("exception during message reception: " + e.getMessage(), e);
             } finally {
