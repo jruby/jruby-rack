@@ -101,6 +101,7 @@ public class DefaultQueueManager implements QueueManager {
         public RubyObjectMessageListener(String name) {
             this.queueName = name;
         }
+
         public void onMessage(Message message) {
             final RackApplicationFactory rackFactory = getRackFactory();
             RackApplication app = null;
