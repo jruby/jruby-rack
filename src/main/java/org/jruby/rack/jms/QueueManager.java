@@ -6,6 +6,7 @@
 
 package org.jruby.rack.jms;
 
+import javax.jms.ConnectionFactory;
 import javax.servlet.ServletContext;
 
 /**
@@ -13,7 +14,8 @@ import javax.servlet.ServletContext;
  * @author nicksieger
  */
 public interface QueueManager {
-    void init(ServletContext context);
+    void init(ServletContext context) throws Exception;
     void listen(String queueName, String rubyClassName);
+    ConnectionFactory getConnectionFactory();
     void destroy();
 }
