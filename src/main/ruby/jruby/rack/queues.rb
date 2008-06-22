@@ -97,7 +97,7 @@ module JRuby
             while (bytes_read = message.readBytes(java_bytes)) != -1
               payload << String.from_java_bytes(java_bytes)[0..bytes_read]
             end
-            message = Marshal.load(java_bytes)
+            message = Marshal.load(payload)
           elsif message.kind_of?(TextMessage)
             message = message.getText
           end
