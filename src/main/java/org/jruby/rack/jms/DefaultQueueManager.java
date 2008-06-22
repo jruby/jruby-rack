@@ -98,12 +98,13 @@ public class DefaultQueueManager implements QueueManager {
 
     private class RubyObjectMessageListener implements MessageListener {
         private String queueName;
+        private RackApplicationFactory rackFactory;
         public RubyObjectMessageListener(String name) {
             this.queueName = name;
+            this.rackFactory = getRackFactory();
         }
 
         public void onMessage(Message message) {
-            final RackApplicationFactory rackFactory = getRackFactory();
             RackApplication app = null;
             try {
                 app = rackFactory.getApplication();
