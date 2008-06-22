@@ -9,6 +9,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 import org.jruby.rack.jms.QueueContextListener
 import org.jruby.rack.jms.QueueManager
 import org.jruby.rack.jms.DefaultQueueManager
+import org.jruby.rack.RackServletContextListener
 
 describe QueueContextListener do
   before :each do
@@ -50,6 +51,9 @@ describe DefaultQueueManager do
   end
 
   it "should set up a connection with a message listener" do
+    app_factory = RackApplicationFactory.impl {}
+    @servlet_context.should_receive(:getAttribute).with(
+      RackServletContextListener::FACTORY_KEY).and_return app_factory
     conn = mock "connection"
     @connection_factory.should_receive(:createConnection).and_return conn
     session = mock "session"

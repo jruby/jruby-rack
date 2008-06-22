@@ -9,7 +9,7 @@ module JRuby
     class Queues
       Session = javax.jms.Session
       TextMessage = javax.jms.TextMessage
-      MARSHAL_PAYLOAD = "ruby.marshal.payload"
+      MARSHAL_PAYLOAD = "ruby_marshal_payload"
 
       # Called into by the JRuby-Rack java code when an asynchronous message
       # is received.
@@ -24,7 +24,7 @@ module JRuby
       #
       # If a block is given, the JMS session object is yielded, and allows custom
       # message construction. The block should return a JMS Message object.
-      def self.send_message(queue_name, message = nil, &block)
+      def self.send_message(queue_name, message_data = nil, &block)
         with_jms_connection do |connection|
           queue = queue_manager.lookup(queue_name)
           session = connection.createSession(false, Session::AUTO_ACKNOWLEDGE)
@@ -34,7 +34,7 @@ module JRuby
           else
             message = session.createBytesMessage
             message.setBooleanProperty(MARSHAL_PAYLOAD, true)
-            message.writeBytes(Marshal.dump(message).to_java_bytes)
+            message.writeBytes(Marshal.dump(message_data).to_java_bytes)
           end
           producer.send(message)
         end
@@ -47,13 +47,13 @@ module JRuby
       end
 
       def self.listeners
-	@listeners ||= {}
+        @listeners ||= {}
       end
 
       # Helper method that yields a JMS connection resource, closing it after
       # the block completes.
       def self.with_jms_connection
-	conn = queue_manager.getConnectionFactory.createConnection
+        conn = queue_manager.getConnectionFactory.createConnection
         begin
           yield conn
         ensure
@@ -62,7 +62,7 @@ module JRuby
       end
 
       def self.queue_manager
-	@queue_manager ||= $servlet_context.getAttribute(org.jruby.rack.jms.QueueContextListener::MGR_KEY)
+        @queue_manager ||= $servlet_context.getAttribute(org.jruby.rack.jms.QueueContextListener::MGR_KEY)
       end
 
       class MessageDispatcher

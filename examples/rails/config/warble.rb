@@ -34,7 +34,7 @@ Warbler::Config.new do |config|
   # overwrite the value
   # config.gems = ["activerecord-jdbc-adapter", "jruby-openssl"]
   # config.gems << "tzinfo"
-  # config.gems["rails"] = "1.2.3"
+  config.gems["rails"] = "2.0.2"
 
   # Include gem dependencies not mentioned specifically
   config.gem_dependencies = true
@@ -53,14 +53,16 @@ Warbler::Config.new do |config|
   # Value of RAILS_ENV for the webapp
   config.webxml.rails.env = 'production'
 
+  config.webxml.jms.connection.factory = "jms/queues"
+
   # Application booter to use, one of :rack, :rails, or :merb. (Default :rails)
   # config.webxml.booter = :rails
 
   # Control the pool of Rails runtimes. Leaving unspecified means
   # the pool will grow as needed to service requests. It is recommended
   # that you fix these values when running a production server!
-  # config.webxml.jruby.min.runtimes = 2
-  # config.webxml.jruby.max.runtimes = 4
+  config.webxml.jruby.min.runtimes = 1
+  config.webxml.jruby.max.runtimes = 1
 
   # JNDI data source name
   # config.webxml.jndi = 'jdbc/rails'
