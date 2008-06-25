@@ -113,6 +113,8 @@ module Rack
 
       def load__REQUEST_URI(env)
         env["REQUEST_URI"] = @servlet_env.getRequestURI || ""
+        env["REQUEST_URI"] += "?#{@servlet_env.getQueryString}" if @servlet_env.getQueryString
+        env["REQUEST_URI"]
       end
 
       def load__PATH_INFO(env)
