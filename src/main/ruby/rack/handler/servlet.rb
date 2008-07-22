@@ -94,7 +94,8 @@ module Rack
       end
 
       def load__CONTENT_TYPE(env)
-        env["CONTENT_TYPE"] = @servlet_env.getContentType
+        content_type = @servlet_env.getContentType
+        env["CONTENT_TYPE"] = content_type if content_type
       end
 
       def load__CONTENT_LENGTH(env)

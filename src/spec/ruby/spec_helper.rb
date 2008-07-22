@@ -8,6 +8,8 @@ require 'java'
 require 'rubygems'
 gem 'rspec'
 require 'spec'
+# add to load path for stubbed out action_controller
+$LOAD_PATH << File.dirname(__FILE__) + '/rails'
 
 Spec::Runner.configure do |config|
   def mock_servlet_context

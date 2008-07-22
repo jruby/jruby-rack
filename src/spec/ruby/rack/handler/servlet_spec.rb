@@ -193,9 +193,9 @@ describe Rack::Handler::Servlet do
       env["CONTENT_TYPE"].should == "text/html"
       env["CONTENT_LENGTH"].should == "10"
       env["HTTP_CONTENT_TYPE"].should == nil
-      env.should_not have_key?("HTTP_CONTENT_TYPE")
+      env.should_not have_key("HTTP_CONTENT_TYPE")
       env["HTTP_CONTENT_LENGTH"].should == nil
-      env.should_not have_key?("HTTP_CONTENT_LENGTH")
+      env.should_not have_key("HTTP_CONTENT_LENGTH")
     end
 
     it "should put the other headers in the hash upcased and underscored and prefixed with HTTP_" do
@@ -206,9 +206,9 @@ describe Rack::Handler::Servlet do
 
       env = @servlet.create_env @servlet_env
       env["CONTENT_TYPE"].should == nil
-      env.should_not have_key?("CONTENT_TYPE")
+      env.should_not have_key("CONTENT_TYPE")
       env["CONTENT_LENGTH"].should == nil
-      env.should_not have_key?("CONTENT_LENGTH")
+      env.should_not have_key("CONTENT_LENGTH")
       env["HTTP_HOST"].should == "localhost"
       env["HTTP_ACCEPT"].should == "text/*"
       env["HTTP_ACCEPT_ENCODING"].should == "gzip"
