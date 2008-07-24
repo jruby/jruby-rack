@@ -52,9 +52,9 @@ describe JRuby::Rack::RailsServletHelper do
   end
 
   it "should default public root to '/WEB-INF/public'" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF/public").and_return "."
+    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     create_helper
-    @helper.public_root.should == "."
+    @helper.public_root.should == "./public"
   end
 
   it "should create a log device that writes messages to the servlet context" do

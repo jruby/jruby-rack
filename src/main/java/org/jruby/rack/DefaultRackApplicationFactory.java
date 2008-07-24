@@ -130,7 +130,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup) {
         return runtime.evalScriptlet(
-                "Dir.chdir($servlet_context.getRealPath('/WEB-INF'))\n"
+                "load 'jruby/rack/boot/rack.rb'\n"
+                +"JRuby::Rack::Bootstrap.instance.change_to_root_directory\n"
                 +"Rack::Handler::Servlet.new(Rack::Builder.new {( "
                 + rackup + "\n )}.to_app)");
     }

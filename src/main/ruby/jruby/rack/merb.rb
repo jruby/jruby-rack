@@ -10,7 +10,7 @@ module JRuby
         super
         @merb_root = @servlet_context.getInitParameter('merb.root')
         @merb_root ||= '/WEB-INF'
-        @merb_root = @servlet_context.getRealPath(@merb_root)
+        @merb_root = expand_root_path @merb_root
 
         @merb_environment = @servlet_context.getInitParameter('merb.environment')
         @merb_environment ||= 'production'
@@ -77,7 +77,7 @@ module JRuby
 
     class MerbFactory
       def self.new
-        MerbServletHelper.new.load_environment
+        MerbServletHelper.instance.load_environment
         ::Rack::Builder.new { run ::Merb::Config[:app] }.to_app
       end
     end

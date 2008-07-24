@@ -6,6 +6,15 @@
 
 module JRuby
   module Rack
+    def self.silence_warnings
+      oldv, $VERBOSE = $VERBOSE, nil
+      begin
+        yield
+      ensure
+        $VERBOSE = oldv
+      end
+    end
+
     class Response
       include Java::org.jruby.rack.RackResponse
       def initialize(arr)
@@ -84,14 +93,31 @@ module JRuby
         @public_root ||= @servlet_context.getInitParameter 'files.prefix' # Goldspike
         @public_root ||= '/WEB-INF/public'
         @public_root = "/#{@public_root}" unless @public_root =~ %r{^/}
-        @public_root = @servlet_context.getRealPath @public_root
+        @public_root = expand_root_path @public_root
         @public_root = @public_root.chomp("/")
         @gem_path = @servlet_context.getInitParameter 'gem.path'
         @gem_path ||= '/WEB-INF/gems'
-        @gem_path = @servlet_context.getRealPath @gem_path
+        @gem_path = expand_root_path @gem_path
         setup_gems
+        ServletHelper.instance = self
       end
       
+      def root_path
+        @root_path ||= real_path('/WEB-INF')
+      end
+
+      def real_path(path)
+        @servlet_context.getRealPath(path)
+      end
+
+      def expand_root_path(path)
+        if path =~ %r{^/WEB-INF}
+          path.sub(%r{^/WEB-INF}, root_path)
+        else
+          real_path path
+        end
+      end
+
       def logdev
         @logdev ||= ServletLog.new @servlet_context
       end
@@ -105,9 +131,21 @@ module JRuby
         ENV['GEM_PATH'] = @gem_path
       end
 
+      def change_to_root_directory
+        Dir.chdir(root_path)
+      end
+
+      def silence_warnings(&block)
+        JRuby::Rack.silence_warnings(&block)
+      end
+
       def self.instance
         @instance ||= self.new
-      end      
+      end
+
+      def self.instance=(inst)
+        @instance = inst
+      end
     end
 
     class Errors

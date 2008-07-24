@@ -5,7 +5,6 @@ import org.jruby.rack.merb.MerbRackApplicationFactory
 
 describe JRuby::Rack::MerbServletHelper do
   before :each do
-    @servlet_context.stub!(:getInitParameter).and_return nil
     @servlet_context.stub!(:getRealPath).and_return "/"
   end
 
@@ -45,9 +44,9 @@ describe JRuby::Rack::MerbServletHelper do
   end
 
   it "should default public root to '/WEB-INF/public'" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF/public").and_return "."
+    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     create_helper
-    @helper.public_root.should == "."
+    @helper.public_root.should == "./public"
   end
 
   it "should create a Logger that writes messages to the servlet context" do
@@ -61,13 +60,14 @@ end
 describe MerbRackApplicationFactory, "getApplication" do
   before :each do
     @app_factory = MerbRackApplicationFactory.new
-    @servlet_context.stub!(:getInitParameter).and_return nil
     @servlet_context.stub!(:getRealPath).and_return Dir.pwd
     @app_factory.init(@servlet_context)
     @merb_root = File.dirname(__FILE__) + '/../../merb'
   end
    
   it "should load the Merb environment and return an application" do
+    @servlet_context.should_receive(:getInitParameter).
+      with(/public|files|gem|merb\.env/).any_number_of_times.and_return nil
     @servlet_context.should_receive(:getInitParameter).
       with("merb.root").and_return("merb/root")
     @servlet_context.should_receive(:getRealPath).

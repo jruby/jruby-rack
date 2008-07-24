@@ -15,7 +15,7 @@ module JRuby
         super
         @rails_root = @servlet_context.getInitParameter 'rails.root'
         @rails_root ||= '/WEB-INF'
-        @rails_root = @servlet_context.getRealPath @rails_root
+        @rails_root = expand_root_path @rails_root
         @rails_env = @servlet_context.getInitParameter 'rails.env'
         @rails_env ||= 'production'
         ENV['RAILS_ROOT'] = @rails_root
@@ -118,16 +118,8 @@ module JRuby
       def options
         {:public => public_root, :root => rails_root, :environment => rails_env}
       end
-
-      def silence_warnings
-        oldv, $VERBOSE = $VERBOSE, nil
-        begin
-          yield
-        ensure
-          $VERBOSE = oldv
-        end
-      end
     end
+    Bootstrap = RailsServletHelper
 
     class RailsSetup
       def initialize(app, servlet_helper)

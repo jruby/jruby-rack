@@ -11,7 +11,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class MerbRackApplicationFactory extends DefaultRackApplicationFactory {
     @Override
     public IRubyObject createApplicationObject(Ruby runtime) {
-        runtime.evalScriptlet("require 'jruby/rack/merb'"); 
+        runtime.evalScriptlet("load 'jruby/rack/boot/merb.rb'");
         return createRackServletWrapper(runtime, "run JRuby::Rack::MerbFactory.new");
     }
 }

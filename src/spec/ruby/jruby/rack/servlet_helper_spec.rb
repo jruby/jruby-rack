@@ -113,9 +113,9 @@ describe JRuby::Rack::ServletHelper do
   end
 
   it "should default public root to '/WEB-INF/public'" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF/public").and_return "."
+    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     create_helper
-    @helper.public_root.should == "."
+    @helper.public_root.should == "./public"
   end
 
   it "should determine the gem path from the gem.path init parameter" do
@@ -126,15 +126,15 @@ describe JRuby::Rack::ServletHelper do
   end
 
   it "should default gem path to '/WEB-INF/gems'" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "."
+    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     create_helper
-    @helper.gem_path.should == "."
+    @helper.gem_path.should == "./gems"
   end
 
   it "should set Gem.path to the value of gem_path" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/blah"
+    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
     create_helper
-    ENV['GEM_PATH'].should == "/blah"
+    ENV['GEM_PATH'].should == "/blah/gems"
   end
 
   it "should create a logger that writes messages to the servlet context" do

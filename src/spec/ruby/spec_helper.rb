@@ -15,6 +15,7 @@ Spec::Runner.configure do |config|
   def mock_servlet_context
     @servlet_context = mock("servlet context")
     @servlet_context.stub!(:log)
+    @servlet_context.stub!(:getInitParameter).and_return nil
     @servlet_config = mock("servlet config")
     @servlet_config.stub!(:getServletName).and_return("A Servlet")
     @servlet_config.stub!(:getServletContext).and_return(@servlet_context)
