@@ -18,7 +18,35 @@ module Rack
       end
 
       def create_env(servlet_env)
+        Env.new(servlet_env).to_hash
+      end
+
+      def create_lazy_env(servlet_env)
         LazyEnv.new(servlet_env).to_hash
+      end
+    end
+
+    class Env
+      BUILTINS = %w(rack.version rack.multithread rack.multiprocess rack.run_once
+        rack.input rack.errors rack.url_scheme java.servlet_request java.servlet_context)
+
+      REQUEST = %w(CONTENT_TYPE CONTENT_LENGTH REQUEST_METHOD SCRIPT_NAME REQUEST_URI
+        PATH_INFO QUERY_STRING SERVER_NAME REMOTE_HOST REMOTE_ADDR REMOTE_USER SERVER_PORT)
+
+      def initialize(servlet_env)
+        @env = populate(LazyEnv.new(servlet_env).to_hash)
+      end
+
+      def populate(lazy_hash)
+        hash = {}
+        (BUILTINS + REQUEST).each {|k| lazy_hash[k]} # load builtins and request vars
+        lazy_hash['HTTP_'] # load headers
+        lazy_hash.keys.each {|k| hash[k] = lazy_hash[k]}
+        hash
+      end
+
+      def to_hash
+        @env
       end
     end
 

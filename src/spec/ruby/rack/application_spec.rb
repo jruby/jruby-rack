@@ -81,7 +81,8 @@ describe DefaultRackApplicationFactory do
 
     it "should change directories to /WEB-INF during application initialization" do
       @servlet_context.should_receive(:getInitParameter).with("rackup").and_return(
-        "pwd = Dir.pwd; run(Proc.new { [200, {'Pwd' => pwd}, ['']] })")
+        %{class Rack::Handler::Servlet; alias_method :create_env, :create_lazy_env; end;
+          pwd = Dir.pwd; run(Proc.new { [200, {'Pwd' => pwd}, ['']] })})
       @app_factory.init @servlet_context
       object = @app_factory.newApplication
       object.init

@@ -37,7 +37,7 @@ describe Rack::Handler::Servlet do
     end
 
     it "should create a hash with the Rack variables in it" do
-      hash = @servlet.create_env(@servlet_env)
+      hash = @servlet.create_lazy_env(@servlet_env)
       hash['rack.version'].should == Rack::VERSION
       hash['rack.multithread'].should == true
       hash['rack.multiprocess'].should == false
@@ -48,7 +48,7 @@ describe Rack::Handler::Servlet do
       @servlet_env.should_receive(:getAttributeNames).and_return ["PATH_INFO", "custom.attribute"]
       attrs = {"PATH_INFO" => "/path/info", "custom.attribute" => true}
       (class << @servlet_env; self; end).send(:define_method, :getAttribute) {|k| attrs[k]}
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       env["PATH_INFO"].should == "/path/info"
       env["custom.attribute"].should == true
     end
@@ -77,7 +77,7 @@ describe Rack::Handler::Servlet do
         :getRemoteUser => "admin"
       })
 
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
 
       env["REQUEST_METHOD"].should == "POST"
       env["SCRIPT_NAME"].should == "/override"
@@ -102,7 +102,7 @@ describe Rack::Handler::Servlet do
       stub_env :getHeaderNames => enum.keys, :getContentType => "text/plain", :getContentLength => 10
       (class << @servlet_env; self; end).send(:define_method, :getHeader) {|h| enum[h] }
 
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       env["CONTENT_TYPE"].should == "application/override"
       env["CONTENT_LENGTH"].should == "20"
       env["HTTP_HOST"].should == "override"
@@ -115,14 +115,14 @@ describe Rack::Handler::Servlet do
       attrs = {"CONTENT_TYPE" => nil, "CONTENT_LENGTH" => -1 }
       (class << @servlet_env; self; end).send(:define_method, :getAttribute) {|k| attrs[k]}
       stub_env :getContentType => "text/html", :getContentLength => 10
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       env["CONTENT_TYPE"].should == "text/html"
       env["CONTENT_LENGTH"].should == "10"
     end
 
     it "should set the input and error keys" do
       stub_env :to_io => StringIO.new, :getScheme => "http", :getContextPath => "/foo"
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       (input = env['rack.input']).should_not be_nil
       [:gets, :read, :each].each {|sym| input.respond_to?(sym).should == true }
       (errors = env['rack.errors']).should_not be_nil
@@ -144,7 +144,48 @@ describe Rack::Handler::Servlet do
         :getRemoteAddr => "127.0.0.1",
         :getRemoteUser => "admin"
       })
+
+      env = @servlet.create_lazy_env @servlet_env
+      env["REQUEST_METHOD"].should == "GET"
+      env["SCRIPT_NAME"].should == "/app/script_name"
+      env["PATH_INFO"].should == "/script_name/path/info"
+      env["REQUEST_URI"].should == "/app/script_name/path/info?hello=there"
+      env["QUERY_STRING"].should == "hello=there"
+      env["SERVER_NAME"].should == "localhost"
+      env["SERVER_PORT"].should == "80"
+      env["REMOTE_HOST"].should == "localhost"
+      env["REMOTE_ADDR"].should == "127.0.0.1"
+      env["REMOTE_USER"].should == "admin"
+    end
+
+    it "should add all variables under normal operation" do
+      enum = {"Host" => "localhost", "Accept" => "text/*", "Accept-Encoding" => "gzip"}
+      (class << @servlet_env; self; end).send(:define_method, :getHeader) {|h| enum[h] }
+      stub_env({
+        :to_io => StringIO.new,
+        :getScheme => "http",
+        :getContextPath => "/foo",
+        :getContentType => "text/html",
+        :getContentLength => 1,
+        :getHeaderNames => enum.keys,
+        :getMethod => "GET",
+        :getContextPath => "/app",
+        :getServletPath => "/script_name",
+        :getPathInfo => "/path/info",
+        :getRequestURI => "/app/script_name/path/info",
+        :getQueryString => "hello=there",
+        :getServerName => "localhost",
+        :getServerPort => 80,
+        :getRemoteHost => "localhost",
+        :getRemoteAddr => "127.0.0.1",
+        :getRemoteUser => "admin"
+      })
+
       env = @servlet.create_env @servlet_env
+      env["rack.version"].should == Rack::VERSION
+      env["CONTENT_TYPE"].should == "text/html"
+      env["HTTP_HOST"].should == "localhost"
+      env["HTTP_ACCEPT"].should == "text/*"
       env["REQUEST_METHOD"].should == "GET"
       env["SCRIPT_NAME"].should == "/app/script_name"
       env["PATH_INFO"].should == "/script_name/path/info"
@@ -159,7 +200,7 @@ describe Rack::Handler::Servlet do
 
     it "should set environment variables to the empty string if their value is nil" do
       stub_env
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       env["REQUEST_METHOD"].should == "GET"
       env["SCRIPT_NAME"].should == ""
       env["PATH_INFO"].should == ""
@@ -173,13 +214,13 @@ describe Rack::Handler::Servlet do
 
     it "should calculate path info from the servlet path and the path info" do
       stub_env :getContextPath => "/context", :getServletPath => "/path"
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       env["PATH_INFO"].should == "/path"
     end
 
     it "should include query string in the request URI" do
       stub_env :getRequestURI => "/some/path", :getQueryString => "some=query&string"
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       env["REQUEST_URI"].should == "/some/path?some=query&string"
     end
 
@@ -189,7 +230,7 @@ describe Rack::Handler::Servlet do
       @servlet_env.stub!(:getHeader).and_return {|h| enum[h]}
       (class << @servlet_env; self; end).send(:define_method, :getHeader) {|h| enum[h] }
 
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       env["CONTENT_TYPE"].should == "text/html"
       env["CONTENT_LENGTH"].should == "10"
       env["HTTP_CONTENT_TYPE"].should == nil
@@ -204,7 +245,7 @@ describe Rack::Handler::Servlet do
       stub_env :getHeaderNames => enum.keys, :getContentType => nil, :getContentLength => -1
       (class << @servlet_env; self; end).send(:define_method, :getHeader) {|h| enum[h] }
 
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       env["CONTENT_TYPE"].should == nil
       env.should_not have_key("CONTENT_TYPE")
       env["CONTENT_LENGTH"].should == nil
@@ -220,7 +261,7 @@ describe Rack::Handler::Servlet do
       stub_env :getHeaderNames => enum.keys, :getContentType => nil, :getContentLength => -1
       (class << @servlet_env; self; end).send(:define_method, :getHeader) {|h| enum[h] }
 
-      env = @servlet.create_env @servlet_env
+      env = @servlet.create_lazy_env @servlet_env
       env["HTTP_X_FORWARDED_PROTO"].should == "https"
       env["HTTP_IF_NONE_MATCH"].should == "abcdef"
       env["HTTP_IF_MODIFIED_SINCE"].should == "today"
