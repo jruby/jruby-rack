@@ -11,7 +11,7 @@ JRUBY = 'org.jruby:jruby-complete:jar:1.1.3'
 desc 'JRuby Rack adapter'
 define 'jruby-rack' do
   project.group = 'org.jruby.rack'
-  project.version = '0.9.1-SNAPSHOT'
+  project.version = '0.9.1'
   compile.with 'javax.servlet:servlet-api:jar:2.3', JRUBY
   meta_inf << file("src/main/tld/jruby-rack.tld")
 
