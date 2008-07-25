@@ -72,9 +72,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             RubyInstanceConfig config = new RubyInstanceConfig();
             config.setClassCache(classCache);
             try { // try to set jruby home to jar file path
-                String binjruby = RubyInstanceConfig.class.getResource(
-                        "/META-INF/jruby.home/bin/jruby").toURI().getPath();
-                config.setJRubyHome(binjruby.substring(0, binjruby.length() - 10));
+                 String binjruby = RubyInstanceConfig.class.getResource(
+                        "/META-INF/jruby.home/bin/jruby").toURI().getSchemeSpecificPart();
+                 config.setJRubyHome(binjruby.substring(0, binjruby.length() - 10));
             } catch (Exception e) { }
             Ruby runtime = JavaEmbedUtils.initialize(new ArrayList(), config);
             runtime.getGlobalVariables().set("$servlet_context",
