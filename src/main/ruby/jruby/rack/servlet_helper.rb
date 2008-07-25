@@ -57,7 +57,18 @@ module JRuby
           when /^Content-Length$/i
             response.setContentLength(v.to_i)
           else
-            v.each {|val| response.addHeader(k.to_s, val) }
+            if v.respond_to?(:each)
+              v.each {|val| response.addHeader(k.to_s, val) }
+            else
+              case v
+              when Numeric
+                response.addIntHeader(k.to_s, v.to_i)
+              when Time
+                response.addDateHeader(k.to_s, v.to_i * 1000)
+              else
+                response.addHeader(k.to_s, v.to_s)
+              end
+            end
           end
         end
       end

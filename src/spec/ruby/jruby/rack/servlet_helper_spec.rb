@@ -53,6 +53,23 @@ describe JRuby::Rack::Response do
     @response.write_headers(@servlet_response)
   end
 
+  it "should call addIntHeader with integer value" do
+    @headers.should_receive(:each).and_return do |block|
+      block.call "Expires", 0
+    end
+    @servlet_response.should_receive(:addIntHeader).with("Expires", 0)
+    @response.write_headers(@servlet_response)
+  end
+
+  it "should call addDateHeader with date value" do
+    time = Time.now - 1000
+    @headers.should_receive(:each).and_return do |block|
+      block.call "Last-Modified", time
+    end
+    @servlet_response.should_receive(:addDateHeader).with("Last-Modified", time.to_i * 1000)
+    @response.write_headers(@servlet_response)
+  end
+
   it "should write the body to the servlet response" do
     @body.should_receive(:each).and_return do |block|
       block.call "hello"
