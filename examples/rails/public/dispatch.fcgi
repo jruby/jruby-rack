@@ -1,4 +1,4 @@
-#!/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby
+#!/Users/nicksieger/Projects/jruby/trunk/jruby/bin/jruby
 #
 # You may specify the path to the FastCGI crash log (a log of unhandled
 # exceptions which forced the FastCGI instance to exit, great for debugging)
