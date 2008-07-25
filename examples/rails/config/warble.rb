@@ -4,7 +4,7 @@ Warbler::Config.new do |config|
   # config.staging_dir = "tmp/war"
 
   # Application directories to be included in the webapp.
-  config.dirs = %w(app config log)
+  config.dirs = %w(app config lib log vendor tmp)
 
   # Additional files/directories to include, above those in config.dirs
   # config.includes = FileList["db"]
@@ -32,7 +32,6 @@ Warbler::Config.new do |config|
   # Gems to be packaged in the webapp.  Note that Rails gems are added to this
   # list if vendor/rails is not present, so be sure to include rails if you
   # overwrite the value
-  config.gems = ["merb"]
   # config.gems = ["activerecord-jdbc-adapter", "jruby-openssl"]
   # config.gems << "tzinfo"
   # config.gems["rails"] = "1.2.3"
@@ -55,7 +54,7 @@ Warbler::Config.new do |config|
   config.webxml.rails.env = 'production'
 
   # Application booter to use, one of :rack, :rails, or :merb. (Default :rails)
-  config.webxml.booter = :merb
+  # config.webxml.booter = :rails
 
   # Control the pool of Rails runtimes. Leaving unspecified means
   # the pool will grow as needed to service requests. It is recommended

@@ -64,8 +64,14 @@ module JRuby
       
       def write_body(response)
         stream = response.getOutputStream
-        @body.each do |el|
-          stream.write(el.to_java_bytes)
+        begin
+          @body.each do |el|
+            stream.write(el.to_java_bytes)
+          end
+        rescue LocalJumpError => e
+          # HACK: deal with objects that don't comply with Rack specification
+          @body = [@body.to_s]
+          retry
         end
       end
     end
