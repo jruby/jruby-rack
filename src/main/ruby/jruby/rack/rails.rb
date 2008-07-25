@@ -42,6 +42,7 @@ module JRuby
         initializer_class.module_eval do
           alias_method :require_frameworks_without_servlet_env, :require_frameworks
           def require_frameworks_with_servlet_env
+            JRuby::Rack::RailsServletHelper.instance.before_require_frameworks
             require_frameworks_without_servlet_env
             JRuby::Rack::RailsServletHelper.instance.setup_actionpack
           end
@@ -49,14 +50,20 @@ module JRuby
         end
       end
 
+      def before_require_frameworks
+        Rails.public_path = PUBLIC_ROOT if defined?(Rails.public_path)
+      end
+
       def setup_actionpack
         ActionController::Base.session_store = :java_servlet_store
-        ActionController::Base.page_cache_directory = PUBLIC_ROOT
-        silence_warnings do
-          asset_tag_helper = ActionView::Helpers::AssetTagHelper
-          asset_tag_helper.const_set("ASSETS_DIR", PUBLIC_ROOT)
-          asset_tag_helper.const_set("JAVASCRIPTS_DIR", "#{PUBLIC_ROOT}/javascripts")
-          asset_tag_helper.const_set("STYLESHEETS_DIR", "#{PUBLIC_ROOT}/stylesheets")
+        unless defined?(Rails.public_path)
+          ActionController::Base.page_cache_directory = PUBLIC_ROOT
+          silence_warnings do
+            asset_tag_helper = ActionView::Helpers::AssetTagHelper
+            asset_tag_helper.const_set("ASSETS_DIR", PUBLIC_ROOT)
+            asset_tag_helper.const_set("JAVASCRIPTS_DIR", "#{PUBLIC_ROOT}/javascripts")
+            asset_tag_helper.const_set("STYLESHEETS_DIR", "#{PUBLIC_ROOT}/stylesheets")
+          end
         end
       end
 
