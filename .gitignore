@@ -4,4 +4,6 @@ target
 examples/*/tmp
 examples/merb/merb.war
 examples/rails/rails.war
+examples/camping/camping.war
+examples/sinatra/sinatra.war
 nbproject/private/*

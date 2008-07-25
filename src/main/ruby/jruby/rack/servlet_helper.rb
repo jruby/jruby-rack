@@ -101,6 +101,7 @@ module JRuby
         @public_root = "/#{@public_root}" unless @public_root =~ %r{^/}
         @public_root = expand_root_path @public_root
         @public_root = @public_root.chomp("/")
+        $0 = File.join(root_path, "web.xml")
         @gem_path = @servlet_context.getInitParameter 'gem.path'
         @gem_path ||= '/WEB-INF/gems'
         @gem_path = expand_root_path @gem_path
