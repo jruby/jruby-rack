@@ -34,7 +34,7 @@ Warbler::Config.new do |config|
   # overwrite the value
   # config.gems = ["activerecord-jdbc-adapter", "jruby-openssl"]
   # config.gems << "tzinfo"
-  config.gems["rails"] = "2.0.2"
+  config.gems["rails"] = "2.1.0"
 
   # Include gem dependencies not mentioned specifically
   config.gem_dependencies = true

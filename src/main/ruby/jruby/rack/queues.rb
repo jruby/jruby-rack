@@ -70,20 +70,21 @@ module JRuby
           @listener = listener
         end
 
-        def dispatch(message)
-          if @listener.respond_to?(:on_jms_message)
-            @listener.on_jms_message(message)
+        def dispatch(message, listener = nil)
+          listener ||= @listener
+          if listener.respond_to?(:on_jms_message)
+            listener.on_jms_message(message)
             return
           end
 
           message = convert_message(message)
 
-          if @listener.respond_to?(:call)
-            @listener.call(message)
-          elsif @listener.respond_to?(:on_message)
-            @listener.on_message(message)
-          elsif Class === @listener
-            dispatch(@listener.new)
+          if listener.respond_to?(:call)
+            listener.call(message)
+          elsif listener.respond_to?(:on_message)
+            listener.on_message(message)
+          elsif Class === listener
+            dispatch(message, listener.new)
           else
             puts "message dropped on the floor: #{message.inspect}"
           end
@@ -98,7 +99,7 @@ module JRuby
               payload << String.from_java_bytes(java_bytes)[0..bytes_read]
             end
             message = Marshal.load(payload)
-          elsif message.kind_of?(TextMessage)
+          elsif message.respond_to?(:getText)
             message = message.getText
           end
           message

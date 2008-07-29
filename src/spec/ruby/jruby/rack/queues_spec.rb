@@ -30,3 +30,71 @@ describe JRuby::Rack::Queues do
     end
   end
 end
+
+describe JRuby::Rack::Queues::MessageDispatcher do
+  before :each do
+    @message = mock "JMS message"
+    @listener = mock "listener"
+  end
+
+  it "should dispatch to an object that responds to #on_jms_message and provide the JMS message" do
+    @listener.should_receive(:on_jms_message)
+    JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+  end
+
+  it "should unmarshal the message if the marshal payload property is set" do
+    @message.should_receive(:getBooleanProperty).with(JRuby::Rack::Queues::MARSHAL_PAYLOAD).and_return true
+    first = false
+    @message.should_receive(:readBytes).twice.and_return do |byte_array|
+      if first
+        -1
+      else
+        first = true
+        bytes = Marshal.dump("hello").to_java_bytes
+        java.lang.System.arraycopy bytes, 0, byte_array, 0, bytes.length
+        bytes.length
+      end
+    end
+    @listener.should_receive(:call).with("hello")
+    JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+  end
+
+  it "should grab text out of the message if it responds to #getText" do
+    @message.stub!(:getBooleanProperty).and_return false
+    @message.should_receive(:getText).and_return "hello"
+    @listener.should_receive(:call).with("hello")
+    JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+  end
+
+  it "should pass the message through otherwise" do
+    @message.stub!(:getBooleanProperty).and_return false
+    @listener.should_receive(:call).with(@message)
+    JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+  end
+
+  it "should dispatch to a listener that responds to #call" do
+    @message.stub!(:getBooleanProperty).and_return false
+    @listener.should_receive(:call).with(@message)
+    JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+  end
+
+  it "should dispatch to a listener that responds to #on_message" do
+    @message.stub!(:getBooleanProperty).and_return false
+    @listener.should_receive(:on_message).with(@message)
+    JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+  end
+
+  class Listener
+    def self.message; @@message; end
+    def on_message(msg)
+      @@message = msg
+    end
+  end
+
+  it "should instantiate a class and dispatch to it" do
+    @message.stub!(:getBooleanProperty).and_return false
+    @listener = Listener
+    JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+    Listener.message.should == @message
+  end
+end
