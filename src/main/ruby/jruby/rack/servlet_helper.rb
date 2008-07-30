@@ -150,7 +150,7 @@ module JRuby
       end
 
       def change_to_root_directory
-        Dir.chdir(root_path)
+        Dir.chdir(root_path) if File.directory?(root_path)
       end
 
       def silence_warnings(&block)
