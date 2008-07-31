@@ -6,7 +6,7 @@
 
   <tag>
     <name>rails</name>
-    <tagclass>org.jruby.rack.RackTag</tagclass>
+    <tag-class>org.jruby.rack.RackTag</tag-class>
     <bodycontent>empty</bodycontent>
     <info>Makes requests to the rails application and renders the results to the page</info>
     <attribute>
@@ -24,7 +24,7 @@
   </tag>
   <tag>
     <name>rack</name>
-    <tagclass>org.jruby.rack.RackTag</tagclass>
+    <tag-class>org.jruby.rack.RackTag</tag-class>
     <bodycontent>empty</bodycontent>
     <info>Makes requests to the rack application and renders the results to the page</info>
     <attribute>
