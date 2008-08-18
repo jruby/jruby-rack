@@ -27,7 +27,7 @@ public class DefaultRackApplication implements RackApplication {
     private RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
 
     public RackResponse call(final ServletRequest env) {
-        Ruby runtime = application.getRuntime();
+        Ruby runtime = getRuntime();
         IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
         servlet_env.getMetaClass().defineMethod("to_io", new Callback() {
             public IRubyObject execute(IRubyObject recv, IRubyObject[] args, Block block) {
@@ -49,6 +49,10 @@ public class DefaultRackApplication implements RackApplication {
     }
 
     public void destroy() {
+    }
+
+    public Ruby getRuntime() {
+        return application.getRuntime();
     }
 
     public void setApplication(IRubyObject application) {

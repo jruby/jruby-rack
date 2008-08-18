@@ -124,6 +124,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                     };
                 }
                 public void destroy() { }
+                public Ruby getRuntime() { throw new UnsupportedOperationException("not supported"); }
             };
         }
     }

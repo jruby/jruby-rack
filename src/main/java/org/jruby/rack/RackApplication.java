@@ -7,13 +7,24 @@
 package org.jruby.rack;
 
 import javax.servlet.ServletRequest;
+import org.jruby.Ruby;
 
 /**
- *
+ * Application object that encapsulates the JRuby runtime and the
+ * entry point to the web application.
  * @author nicksieger
  */
 public interface RackApplication {
     void init() throws RackInitializationException;
-    RackResponse call(ServletRequest env);
     void destroy();
+
+    /** Make a request into the Rack-based Ruby web application. */
+    RackResponse call(ServletRequest env);
+
+    /**
+     * Get a reference to the underlying runtime that holds the application
+     * and supporting code. Useful for embedding environments that wish to access
+     * the application without entering through the web request/response cycle.
+     */
+    Ruby getRuntime();
 }
