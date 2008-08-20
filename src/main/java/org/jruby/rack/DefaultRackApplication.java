@@ -66,10 +66,6 @@ public class DefaultRackApplication implements RackApplication {
         this.application = application;
     }
 
-    public Ruby getRuntime() {
-        return application.getRuntime();
-    }
-
     /** Only used for testing. */
     public IRubyObject __call(final IRubyObject env) {
         return adapter.callMethod(application, "call", env);
