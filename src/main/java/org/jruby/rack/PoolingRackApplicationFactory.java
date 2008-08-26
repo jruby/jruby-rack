@@ -21,7 +21,7 @@ import javax.servlet.ServletException;
  * <p>
  * It has several context init parameters to control behavior:
  * <ul>
- * <li> jruby.initial.runtimes: Initial number of runtimes to create and put in
+ * <li> jruby.min.runtimes: Initial number of runtimes to create and put in
  *  the pool. Default is none.
  * <li> jruby.max.runtimes: Maximum size of the pool. Default is unlimited, in
  *  which case new requests for an application object will create one if none
@@ -189,7 +189,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     }
 
     private Integer getInitial() {
-        return getRangeValue("initial", "minIdle");
+        return getRangeValue("min", "minIdle");
     }
 
     private Integer getMaximum() {

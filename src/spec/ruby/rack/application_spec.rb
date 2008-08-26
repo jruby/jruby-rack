@@ -177,7 +177,7 @@ describe PoolingRackApplicationFactory do
   end
 
   it "should create applications during initialization according 
-  to the jruby.initial.runtimes context parameter" do
+  to the jruby.min.runtimes context parameter" do
     @factory.should_receive(:init).with(@servlet_context)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
@@ -185,7 +185,7 @@ describe PoolingRackApplicationFactory do
       app
     end
     @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("jruby.initial.runtimes").and_return "1"
+    @servlet_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "1"
     @pool.init(@servlet_context)
     @pool.getApplicationPool.size.should == 1
   end
@@ -225,7 +225,7 @@ describe PoolingRackApplicationFactory do
       app
     end
     @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("jruby.initial.runtimes").and_return "2"
+    @servlet_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "2"
     @servlet_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "1"
     @pool.init(@servlet_context)
     @pool.waitForNextAvailable(30)
