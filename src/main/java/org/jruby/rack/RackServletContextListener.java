@@ -32,7 +32,7 @@ public class RackServletContextListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent ctxEvent) {
         ServletContext ctx = ctxEvent.getServletContext();
-        final RackApplicationFactory fac = newApplicationFactory();
+        final RackApplicationFactory fac = newApplicationFactory(ctx);
         ctx.setAttribute(FACTORY_KEY, fac);
         try {
             fac.init(ctx);
@@ -51,7 +51,7 @@ public class RackServletContextListener implements ServletContextListener {
         }
     }
 
-    protected RackApplicationFactory newApplicationFactory() {
+    protected RackApplicationFactory newApplicationFactory(ServletContext context) {
         if (factory != null) {
             return factory;
         }

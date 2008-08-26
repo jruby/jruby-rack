@@ -6,9 +6,12 @@
 
 package org.jruby.rack.rails;
 
+import javax.servlet.ServletContext;
+
 import org.jruby.rack.PoolingRackApplicationFactory;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackServletContextListener;
+import org.jruby.rack.SharedRackApplicationFactory;
 
 /**
  *
@@ -16,8 +19,16 @@ import org.jruby.rack.RackServletContextListener;
  */
 public class RailsServletContextListener extends RackServletContextListener {
     @Override
-    protected RackApplicationFactory newApplicationFactory() {
-        return new PoolingRackApplicationFactory(
-                new RailsRackApplicationFactory());
+    protected RackApplicationFactory newApplicationFactory(ServletContext context) {
+        Integer maxRuntimes = null;
+        try {
+            maxRuntimes = Integer.parseInt(context.getAttribute("jruby.max.runtimes").toString());
+        } catch (Exception e) {
+        }
+        if (maxRuntimes != null && maxRuntimes == 1) {
+            return new SharedRackApplicationFactory(new RailsRackApplicationFactory());
+        } else {
+            return new PoolingRackApplicationFactory(new RailsRackApplicationFactory());
+        }
     }
 }
