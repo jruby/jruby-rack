@@ -19,7 +19,7 @@ define 'jruby-rack' do
   task :unpack_gems => _("target") do |t|
     Dir.chdir(t.prerequisites.first) do
       unless File.directory?(_("target/rack"))
-        ruby "-S", "gem", "unpack", "rack"
+        ruby "-S", "gem", "unpack", "-v", "0.4.0", "rack"
         mv FileList["rack-*"].first, "rack"
       end
     end
