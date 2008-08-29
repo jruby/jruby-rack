@@ -4,11 +4,9 @@
 # See the file LICENSE.txt for details.
 #++
 
-repositories.remote << "http://repo1.maven.org/maven2"
-repositories.remote << "http://repository.codehaus.org"
-repositories.remote << "http://snapshots.repository.codehaus.org"
+repositories.remote << "http://repo1.maven.org/maven2" << "http://snapshots.repository.codehaus.org"
 
-JRUBY = 'org.jruby:jruby-complete:jar:1.1.4'
+JRUBY = 'org.jruby:jruby-complete:jar:1.1.3'
 
 desc 'JRuby Rack adapter'
 define 'jruby-rack' do
