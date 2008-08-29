@@ -15,7 +15,7 @@ module ActionController
 
   class Base
     class << self
-      attr_accessor :page_cache_directory
+      attr_accessor :page_cache_directory, :relative_url_root
       def session_store
         ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS[:database_manager]
       end
@@ -30,11 +30,6 @@ module ActionController
 end
 
 module ActionView
-  class Base
-    class << self
-      attr_accessor :cache_template_loading
-    end
-  end
   module Helpers
     module AssetTagHelper
       ASSETS_DIR = "public"

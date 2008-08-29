@@ -136,8 +136,12 @@ module JRuby
 
       def call(env)
         env['rails.session_options'] = @servlet_helper.session_options_for_request(env)
-        env['RAILS_RELATIVE_URL_ROOT'] = env['java.servlet_request'].getContextPath
         env['HTTPS'] = 'on' if env['rack.url_scheme'] == 'https'
+        relative_url_root = env['java.servlet_request'].getContextPath
+        if relative_url_root && !relative_url_root.empty?
+          env['RAILS_RELATIVE_URL_ROOT'] = relative_url_root
+          ActionController::Base.relative_url_root = relative_url_root if ActionController::Base.respond_to?(:relative_url_root=)
+        end
         @app.call(env)
       end
     end
