@@ -12,13 +12,14 @@ describe DefaultRackApplication, "call" do
   it "should invoke the call method on the ruby object and return the rack response" do
     servlet_request = mock("servlet request")
     rack_response = org.jruby.rack.RackResponse.impl {}
+    rack_response.should_receive(:getBody)
 
     ruby_object = mock "application"
     ruby_object.should_receive(:call).with(servlet_request).and_return rack_response
 
     application = DefaultRackApplication.new
     application.setApplication(ruby_object)
-    application.call(servlet_request).should == rack_response
+    application.call(servlet_request).getBody
   end
 end
 
@@ -154,16 +155,18 @@ describe PoolingRackApplicationFactory do
 
   it "should create a new application when empty" do
     app = mock "app"
+    app.should_receive(:call)
     @factory.should_receive(:getApplication).and_return app
-    @pool.getApplication.should == app
+    @pool.getApplication.call nil
   end
 
   it "should accept an existing application and put it back in the pool" do
     app = mock "app"
+    app.should_receive(:call)
     @pool.getApplicationPool.should be_empty
     @pool.finishedWithApplication app
     @pool.getApplicationPool.should_not be_empty
-    @pool.getApplication.should == app
+    @pool.getApplication.call nil
   end
 
   it "should call destroy on all cached applications when destroyed" do
@@ -236,8 +239,9 @@ describe PoolingRackApplicationFactory do
 
   it "should retrieve the error application from the delegate factory" do
     app = mock("app")
+    app.should_receive(:call)
     @factory.should_receive(:getErrorApplication).and_return app
-    @pool.getErrorApplication.should == app
+    @pool.getErrorApplication.call nil
   end
 end
 
@@ -268,11 +272,12 @@ describe SharedRackApplicationFactory do
   it "should return the same application for any newApplication or getApplication call" do
     @factory.should_receive(:init).with(@servlet_context)
     app = mock "application"
+    app.should_receive(:call).exactly(10).times
     @factory.should_receive(:getApplication).and_return app
     @shared.init(@servlet_context)
     1.upto(5) do
-      @shared.newApplication.should == app
-      @shared.getApplication.should == app
+      @shared.newApplication.call nil
+      @shared.getApplication.call nil
       @shared.finishedWithApplication app
     end
   end
@@ -288,7 +293,8 @@ describe SharedRackApplicationFactory do
 
   it "should retrieve the error application from the delegate factory" do
     app = mock("app")
+    app.should_receive(:call)
     @factory.should_receive(:getErrorApplication).and_return app
-    @shared.getErrorApplication.should == app
+    @shared.getErrorApplication.call nil
   end
 end
