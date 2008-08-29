@@ -22,7 +22,7 @@ public class RailsServletContextListener extends RackServletContextListener {
     protected RackApplicationFactory newApplicationFactory(ServletContext context) {
         Integer maxRuntimes = null;
         try {
-            maxRuntimes = Integer.parseInt(context.getAttribute("jruby.max.runtimes").toString());
+            maxRuntimes = Integer.parseInt(context.getInitParameter("jruby.max.runtimes").toString());
         } catch (Exception e) {
         }
         if (maxRuntimes != null && maxRuntimes == 1) {
