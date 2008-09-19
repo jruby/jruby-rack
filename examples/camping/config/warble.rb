@@ -34,7 +34,6 @@ Warbler::Config.new do |config|
   # overwrite the value
   # config.gems = ["activerecord-jdbc-adapter", "jruby-openssl"]
   config.gems = ["camping"]
-  # config.gems["rails"] = "1.2.3"
 
   # Include gem dependencies not mentioned specifically
   config.gem_dependencies = true
@@ -52,14 +51,6 @@ Warbler::Config.new do |config|
 
   # Value of RAILS_ENV for the webapp
   config.webxml.rails.env = 'production'
-
-  # Application booter to use, one of :rack, :rails, or :merb. (Default :rails)
-  config.webxml.booter = :rack
-
-  config.webxml.rackup = %{
-    require './lib/demo'
-    run Rack::Adapter::Camping.new(Demo)
-  }
 
   # Control the pool of Rails runtimes. Leaving unspecified means
   # the pool will grow as needed to service requests. It is recommended
