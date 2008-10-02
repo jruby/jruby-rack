@@ -77,10 +77,15 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
 
     public RackApplication getApplication() throws RackInitializationException {
         if (permits != null) {
+            boolean acquired = false;
             try {
-                permits.tryAcquire(timeout, TimeUnit.SECONDS);
+                acquired = permits.tryAcquire(timeout, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
-                throw new RackInitializationException("timeout: all listeners busy", ex);
+                Thread.currentThread().interrupt();
+            }
+            if (!acquired) {
+                throw new RackInitializationException("timeout: all listeners busy",
+                  new InterruptedException());
             }
         }
         synchronized (applicationPool) {
