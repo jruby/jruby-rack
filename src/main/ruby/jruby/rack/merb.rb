@@ -17,17 +17,13 @@ module JRuby
       end
 
       def load_merb
-        load_merb_gems
-        register_servlet_adapter
-        load_servlet_sessions
-        start_merb
-      end
-
-      def load_merb_gems
-        logger.debug('Loading merb-core gem')
         require 'rubygems'
         require 'merb-core'
         require 'merb-core/rack'
+
+        register_servlet_adapter
+        load_servlet_sessions
+        start_merb
       end
 
       def load_servlet_sessions
@@ -39,13 +35,13 @@ module JRuby
         logger.debug('Registering Merb servlet adapter')
         Merb::Rack::Adapter.register %w{servlet}, :Servlet
       end
-      
+
       def start_merb
         logger.debug('Starting Merb')
         Merb.start :merb_root => merb_root,
                    :environment => merb_environment,
-                   :adapter => 'servlet'
-
+                   :adapter => 'servlet',
+                   :disabled_components => [:signals]
       end
     end
 
