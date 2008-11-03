@@ -2,16 +2,14 @@ require 'merb-core/dispatch/session'
 
 module Merb
   class ServletSession < ::Merb::SessionContainer
-    
+
     self.session_store_type = :servlet
 
     class << self
-
       def setup(request)
         session = self.new(Merb::SessionMixin.rand_uuid, request)
         request.session = session
       end
-
     end
 
     def initialize(session_id, request)
@@ -20,7 +18,7 @@ module Merb
       @java_request = request.env['java.servlet_request']
       self.restore_from_servlet_session
     end
-    
+
     def restore_from_servlet_session
       java_session = @java_request.getSession(false)
       if java_session
@@ -38,7 +36,12 @@ module Merb
       end
     end
 
-    def finalize(request)
+    def clear
+      @_destroy = true
+      finalize
+    end
+
+    def finalize(request=nil)
       @_destroy ? invalidate_java_session : save_to_java_session
     end
     
@@ -72,6 +75,6 @@ module Merb
         java_session.setAttribute(@session_id, marshalled_bytes)
       end
     end
-    
+
   end
 end
