@@ -20,7 +20,7 @@ module JRuby
       def initialize(arr)
         @status, @headers, @body = *arr
       end
-      
+
       def getStatus
         @status
       end
@@ -34,7 +34,7 @@ module JRuby
         @body.each {|part| b << part }
         b
       end
-      
+
       def respond(response)
         if fwd = @headers["Forward"]
           fwd.call(response)
@@ -48,7 +48,7 @@ module JRuby
       def write_status(response)
         response.setStatus(@status.to_i)
       end
-      
+
       def write_headers(response)
         @headers.each do |k,v|
           case k
@@ -72,7 +72,7 @@ module JRuby
           end
         end
       end
-      
+
       def write_body(response)
         stream = response.getOutputStream
         begin
@@ -119,13 +119,15 @@ module JRuby
         setup_gems
         ServletHelper.instance = self
       end
-      
+
       def root_path
         @root_path ||= real_path('/WEB-INF')
       end
 
       def real_path(path)
-        @servlet_context.getRealPath(path)
+        path = @servlet_context.getRealPath(path)
+        path.sub!(/\\([0-9])/, '\\\\\\\\\1') if path # protect windows paths from backrefs
+        path
       end
 
       def expand_root_path(path)
@@ -178,7 +180,7 @@ module JRuby
 
       def response_code(env)
         exc = env[EXCEPTION]
-        if exc 
+        if exc
           env['rack.showstatus.detail'] = exc.getMessage
           if exc.getCause.kind_of?(Java::JavaLang::InterruptedException)
             503
