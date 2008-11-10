@@ -65,3 +65,7 @@ task :jar => :spec do
 end
 
 task :default => :jar
+
+task :classpath do
+  puts "export CLASSPATH=#{ENV['CLASSPATH']}"
+end
