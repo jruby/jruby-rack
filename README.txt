@@ -62,20 +62,27 @@ every request.
 
 = Building
 
-Ensure you have JRuby with the buildr and rack gems installed.
+Checkout the JRuby Rack code and cd to that directory.
 
-  jruby -S gem install buildr rack
-
-Checkout the JRuby Rack code and cd to that directory
-
-  svn co http://svn.codehaus.org/jruby-contrib/trunk/rack
-  cd rack
+  git clone git://github.com/nicksieger/jruby-rack.git
+  cd jruby-rack
   
-Resolve dependencies, compile the code, and build the jar file.
+You can choose to build with either Maven or Rake. Either of the
+following two will suffice (but see the NOTE below).
 
-  jruby -S buildr package
+  mvn install
+  jruby -S rake 
 
 The generated jar should be located here: target/jruby-rack-*.jar.
+
+NOTE: There are currently some bugs in JRuby's java integration code
+that prevent the specs from running cleanly. Until I resolve these,
+you need to build as follows:
+
+  mvn install -Dmaven.test.skip
+  jruby -S rake SKIP_SPECS=true
+
+If you build with JRuby 1.1.3, the specs should run clean.
 
 == Rails Step-by-step
 
