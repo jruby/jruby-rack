@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.jruby.rack</groupId>
+  <artifactId>shared</artifactId>
+  <packaging>pom</packaging>
+  <version>0.9.4-SNAPSHOT</version>
+  <name>JRuby-Rack</name>
+  <url>http://jruby-rack.kenai.com/</url>
+  <description>
+    A servlet bridge to Ruby-based Rack applications that allow them
+    to run in Java Application servers using JRuby.
+  </description>
+
+  <properties>
+    <jruby.version>1.1.5</jruby.version>
+  </properties>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>http://jira.codehaus.org/browse/JRUBY</url>
+  </issueManagement>
+
+  <scm>
+    <!-- TODO: change to kenai -->
+    <connection>scm:git:git://github.com/nicksieger/jruby-rack.git</connection>
+    <developerConnection>scm:git:git@github.com:nicksieger/jruby-rack.git</developerConnection>
+    <url>git://github.com/nicksieger/jruby-rack.git</url>
+  </scm>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <distributionManagement>
+    <repository>
+      <id>codehaus-jruby-repository</id>
+      <name>JRuby Central Repository</name>
+      <url>dav:https://dav.codehaus.org/repository/jruby</url>
+    </repository>
+    <snapshotRepository>
+      <id>codehaus-jruby-snapshot-repository</id>
+      <name>JRuby Central Development Repository</name>
+      <url>dav:https://dav.codehaus.org/snapshots.repository/jruby</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>codehaus</id>
+      <name>Codehaus Repository</name>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <url>http://repository.codehaus.org</url>
+    </repository>
+    <repository>
+      <id>maven2-repository.dev.java.net</id>
+      <name>Java.net Repository for Maven</name>
+      <url>http://download.java.net/maven/2/</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+  
+  <developers>
+    <developer>
+      <id>nicksieger</id>
+      <name>Nick Sieger</name>
+      <email>nicksieger@gmail.com</email>
+    </developer>
+  </developers>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jruby</groupId>
+      <artifactId>jruby-complete</artifactId>
+      <version>${jruby.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.3</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <testSourceDirectory>${basedir}/src/spec/java</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.jruby.plugins</groupId>
+        <artifactId>jruby-rake-plugin</artifactId>
+        <version>${jruby.version}</version>
+        <executions>
+          <execution>
+            <id>unpack-gem</id>
+            <phase>generate-resources</phase>
+            <goals><goal>rake</goal></goals>
+            <configuration>
+              <args>resources</args>
+            </configuration>
+          </execution>
+          <execution>
+            <id>spec</id>
+            <phase>test</phase>
+            <goals><goal>rake</goal></goals>
+            <configuration>
+              <args>spec</args>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+      </extension>
+    </extensions>
+  </build>
+</project>
