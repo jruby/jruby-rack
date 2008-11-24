@@ -79,10 +79,12 @@ task :spec => [:compile, :resources, :compilespec, :speconly]
 
 task :test => :spec
 
-desc "Create the jar"
-task :jar => :spec do
-  sh "jar cf target/jruby-rack-#{JRuby::Rack::VERSION}.jar -C target/classes ."
+file "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" => :spec do |t|
+  sh "jar cf #{t.name} -C target/classes ."
 end
+
+desc "Create the jar"
+task :jar => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"
 
 task :default => :jar
 
