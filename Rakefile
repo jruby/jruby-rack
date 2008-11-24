@@ -77,8 +77,12 @@ task :speconly do
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
     test_classpath.each {|p| $CLASSPATH << p }
+    opts = ["--format", "specdoc"]
+    opts << ENV['SPEC_OPTS'] if ENV['SPEC_OPTS']
+    spec = ENV['SPEC'] || "src/spec/ruby/**/*_spec.rb"
+    opts.push *FileList[spec].to_a
     ENV['CLASSPATH'] = test_classpath.join(File::PATH_SEPARATOR)
-    ruby "-S", "spec", "--format", "specdoc", *FileList["src/spec/ruby/**/*_spec.rb"].to_a
+    ruby "-S", "spec", *opts
   end
 end
 
