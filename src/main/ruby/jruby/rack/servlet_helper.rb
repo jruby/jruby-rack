@@ -125,9 +125,14 @@ module JRuby
       end
 
       def real_path(path)
-        path = @servlet_context.getRealPath(path)
-        path.sub!(/\\([0-9])/, '\\\\\\\\\1') if path # protect windows paths from backrefs
-        path
+        rpath = @servlet_context.getRealPath(path)
+        if rpath.nil?
+          url = @servlet_context.getResource(path)
+          rpath = url.getPath if url
+        end
+        # protect windows paths from backrefs
+        rpath.sub!(/\\([0-9])/, '\\\\\\\\\1') if rpath
+        rpath
       end
 
       def expand_root_path(path)

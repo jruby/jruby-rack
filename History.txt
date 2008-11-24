@@ -6,6 +6,8 @@
 - Fix bug with backref interpretation and windows paths
 - Switched to dual rake/maven build process
 - Switched main code repository to github (for now)
+- JRUBY-2908: Add fallback for when servletContext.getRealPath doesn't
+  work (Joern Hartmann)
 
 == 0.9.2
 

@@ -21,7 +21,7 @@ describe JRuby::Rack::Response do
     @body.should_receive(:each).and_yield "hello"
     @response.getBody.should == "hello"
   end
-  
+
   it "should write the status to the servlet response" do
     @status.should_receive(:to_i).and_return(200)
     @servlet_response.should_receive(:setStatus).with(200)
@@ -78,7 +78,7 @@ describe JRuby::Rack::Response do
     stream = mock "output stream"
     @servlet_response.stub!(:getOutputStream).and_return stream
     stream.should_receive(:write).exactly(2).times
-    
+
     @response.write_body(@servlet_response)
   end
 
@@ -158,6 +158,15 @@ describe JRuby::Rack::ServletHelper do
     create_helper
     @servlet_context.should_receive(:log).with(/hello/)
     @helper.logger.info "hello"
+  end
+
+  it "should use servlet_context.getResource when getRealPath returns nil" do
+    @servlet_context.stub!(:getRealPath).and_return nil
+    url = mock "URL"
+    url.stub!(:getPath).and_return "."
+    @servlet_context.should_receive(:getResource).with("/WEB-INF").and_return url
+    create_helper
+    @helper.root_path.should == "."
   end
 end
 
