@@ -1,3 +1,11 @@
+== 0.9.3
+
+- Merb updates for 1.0 compatibility
+- Patch race condition in runtime pooling that allowed more than max
+  number of runtimes
+- Fix bug with backref interpretation and windows paths
+- Switch to rake/maven build process
+
 == 0.9.2
 
 - Upgrade to Rack 0.4.0

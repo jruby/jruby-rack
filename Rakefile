@@ -6,16 +6,20 @@
 
 require 'rake/clean'
 
-if ENV['JRUBY_PARENT_CLASSPATH']
-  classpath = []
-  ENV['JRUBY_PARENT_CLASSPATH'].split(File::PATH_SEPARATOR).each {|p| classpath << p}
-else
-  require 'rbconfig'
-  classpath = Dir["src/main/lib/*.jar"] + [File.join(Config::CONFIG['libdir'], Config::CONFIG['LIBRUBY'])]
+def compile_classpath
+  if ENV['JRUBY_PARENT_CLASSPATH']
+    classpath = []
+    ENV['JRUBY_PARENT_CLASSPATH'].split(File::PATH_SEPARATOR).each {|p| classpath << p}
+  else
+    require 'rbconfig'
+    classpath = Dir["#{File.expand_path 'src/main/lib'}/*.jar"] +
+      [File.join(Config::CONFIG['libdir'], Config::CONFIG['LIBRUBY'])]
+  end
 end
-classpath.unshift "target/classes", "target/test-classes"
-classpath.each {|p| $CLASSPATH << p}
-ENV['CLASSPATH'] = classpath.join(File::PATH_SEPARATOR)
+
+def test_classpath
+  compile_classpath + [File.expand_path("target/classes"), File.expand_path("target/test-classes")]
+end
 
 CLEAN << 'target'
 
@@ -23,14 +27,16 @@ directory 'target/classes'
 
 desc "Compile java classes"
 task :compile => "target/classes" do |t|
-  sh "javac -source 1.5 -target 1.5 -d #{t.prerequisites.first} #{Dir['src/main/java/**/*.java'].join(' ')}"
+  sh "javac -classpath #{compile_classpath.join(File::PATH_SEPARATOR)} -source 1.5 " +
+    "-target 1.5 -d #{t.prerequisites.first} #{Dir['src/main/java/**/*.java'].join(' ')}"
 end
 
 directory 'target/test-classes'
 
 desc "Compile classes used for test/spec"
 task :compilespec => "target/test-classes" do |t|
-  sh "javac -source 1.5 -target 1.5 -d #{t.prerequisites.first} #{Dir['src/spec/java/**/*.java'].join(' ')}"
+  sh "javac -classpath #{test_classpath.join(File::PATH_SEPARATOR)} -source 1.5 " +
+    "-target 1.5 -d #{t.prerequisites.first} #{Dir['src/spec/java/**/*.java'].join(' ')}"
 end
 
 desc "Unpack the rack gem"
@@ -67,9 +73,11 @@ task :resources => ["target/classes", :unpack_gem, :update_version] do |t|
 end
 
 task :speconly do
-  if ENV['SKIP_SPECS'] && !ENV['SKIP_SPECS'].empty?
+  if ENV['SKIP_SPECS'] && ENV['SKIP_SPECS'] == "true"
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
+    test_classpath.each {|p| $CLASSPATH << p }
+    ENV['CLASSPATH'] = test_classpath.join(File::PATH_SEPARATOR)
     ruby "-S", "spec", "--format", "specdoc", *FileList["src/spec/ruby/**/*_spec.rb"].to_a
   end
 end

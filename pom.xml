@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>0.9.4-SNAPSHOT</version>
+  <version>0.9.3-SNAPSHOT</version>
   <name>JRuby-Rack</name>
   <url>http://jruby-rack.kenai.com/</url>
   <description>
@@ -94,6 +94,14 @@
     <defaultGoal>install</defaultGoal>
     <testSourceDirectory>${basedir}/src/spec/java</testSourceDirectory>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.jruby.plugins</groupId>
         <artifactId>jruby-rake-plugin</artifactId>
