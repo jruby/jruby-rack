@@ -43,8 +43,19 @@ task :unpack_gem => "target" do |t|
   end
 end
 
+version_file = 'src/main/ruby/jruby/rack/version.rb'
+load version_file
+
+task :update_version do
+  if ENV["VERSION"] && ENV["VERSION"] != JRuby::Rack::VERSION
+    lines = File.readlines(version_file)
+    lines.each {|l| l.sub!(/VERSION =.*$/, %{VERSION = "#{ENV["VERSION"]}"})}
+    File.open(version_file, "wb") {|f| f.puts *lines }
+  end
+end
+
 desc "Copy resources"
-task :resources => ["target/classes", :unpack_gem] do |t|
+task :resources => ["target/classes", :unpack_gem, :update_version] do |t|
   ['src/main/ruby', 'target/rack/lib'].each do |dir|
     FileList["#{dir}/*"].each do |f|
       cp_r f, t.prerequisites.first
@@ -55,14 +66,18 @@ task :resources => ["target/classes", :unpack_gem] do |t|
   cp "src/main/tld/jruby-rack.tld", meta_inf
 end
 
-desc "Run specs"
-task :spec => [:compile, :resources, :compilespec] do
-  ruby "-S", "spec", "--format", "specdoc", *FileList["src/spec/ruby/**/*_spec.rb"].to_a
+task :speconly do
+  if ENV['SKIP_SPECS'] && !ENV['SKIP_SPECS'].empty?
+    puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
+  else
+    ruby "-S", "spec", "--format", "specdoc", *FileList["src/spec/ruby/**/*_spec.rb"].to_a
+  end
 end
 
-task :test => :spec
+desc "Run specs"
+task :spec => [:compile, :resources, :compilespec, :speconly]
 
-load 'src/main/ruby/jruby/rack/version.rb'
+task :test => :spec
 
 desc "Create the jar"
 task :jar => :spec do

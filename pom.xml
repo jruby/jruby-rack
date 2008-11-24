@@ -3,8 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jruby.rack</groupId>
-  <artifactId>shared</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>jruby-rack</artifactId>
   <version>0.9.4-SNAPSHOT</version>
   <name>JRuby-Rack</name>
   <url>http://jruby-rack.kenai.com/</url>
@@ -105,7 +104,7 @@
             <phase>generate-resources</phase>
             <goals><goal>rake</goal></goals>
             <configuration>
-              <args>resources</args>
+              <args>resources VERSION=${project.version}</args>
             </configuration>
           </execution>
           <execution>
@@ -113,7 +112,7 @@
             <phase>test</phase>
             <goals><goal>rake</goal></goals>
             <configuration>
-              <args>spec</args>
+              <args>speconly SKIP_SPECS=${maven.test.skip}</args>
             </configuration>
           </execution>
         </executions>
