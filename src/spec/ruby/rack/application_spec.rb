@@ -265,6 +265,14 @@ describe SharedRackApplicationFactory do
     }.should raise_error # TODO: doesn't work w/ raise_error(javax.servlet.ServletException)
   end
 
+  it "should return a valid application object even if initialization fails" do
+    @factory.should_receive(:init).with(@servlet_context)
+    app = mock "application"
+    @factory.should_receive(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
+    @shared.init(@servlet_context) rescue nil
+    @shared.getApplication.should_not be_nil
+  end
+
   it "should return the same application for any newApplication or getApplication call" do
     @factory.should_receive(:init).with(@servlet_context)
     app = mock "application"
