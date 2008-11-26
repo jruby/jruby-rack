@@ -26,23 +26,30 @@ public class DefaultRackApplication implements RackApplication {
     private IRubyObject application;
     private RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
 
-    public RackResponse call(final ServletRequest env) {
+    public RackResponse call(ServletRequest env) {
         Ruby runtime = getRuntime();
-        IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
-        servlet_env.getMetaClass().defineMethod("to_io", new Callback() {
-            public IRubyObject execute(IRubyObject recv, IRubyObject[] args, Block block) {
+        try {
+            final RubyIO io = new RubyIO(runtime, env.getInputStream());
+            try {
+                IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
+                servlet_env.getMetaClass().defineMethod("to_io", new Callback() {
+                        public IRubyObject execute(IRubyObject recv, IRubyObject[] args, Block block) {
+                            return io;
+                        }
+                        public Arity getArity() { return Arity.NO_ARGUMENTS; }
+                    });
+                IRubyObject response = __call(servlet_env);
+                return (RackResponse) JavaEmbedUtils.rubyToJava(runtime, response, RackResponse.class);
+            } finally {
                 try {
-                    return new RubyIO(recv.getRuntime(), env.getInputStream());
-                } catch (IOException ex) {
-                    throw RaiseException.createNativeRaiseException(recv.getRuntime(), ex);
+                    io.unregisterDescriptor(io.getOpenFile().getMainStream().getDescriptor().getFileno());
+                } catch (Throwable t) {
+                    // oh well, tried to ensure that the descriptor doesn't leak. keep going
                 }
             }
-            public Arity getArity() {
-                return Arity.NO_ARGUMENTS;
-            }
-        });
-        IRubyObject response = __call(servlet_env);
-        return (RackResponse) JavaEmbedUtils.rubyToJava(runtime, response, RackResponse.class);
+        } catch (IOException ex) {
+            throw RaiseException.createNativeRaiseException(runtime, ex);
+        }
     }
 
     public void init() throws RackInitializationException {

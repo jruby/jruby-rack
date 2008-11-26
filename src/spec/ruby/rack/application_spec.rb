@@ -11,6 +11,7 @@ import org.jruby.rack.DefaultRackApplication
 describe DefaultRackApplication, "call" do
   it "should invoke the call method on the ruby object and return the rack response" do
     servlet_request = mock("servlet request")
+    servlet_request.stub!(:getInputStream).and_return(StubServletInputStream.new)
     rack_response = org.jruby.rack.RackResponse.impl {}
 
     ruby_object = mock "application"

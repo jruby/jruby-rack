@@ -25,3 +25,12 @@ Spec::Runner.configure do |config|
     mock_servlet_context
   end
 end
+
+class StubServletInputStream < javax.servlet.ServletInputStream
+  def initialize
+    @is = java.io.ByteArrayInputStream.new([].to_java(:byte))
+  end
+  def read
+    @is.read
+  end
+end
