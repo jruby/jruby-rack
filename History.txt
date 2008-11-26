@@ -4,10 +4,12 @@
 - Patch race condition in runtime pooling that allowed more than max
   number of runtimes
 - Fix bug with backref interpretation and windows paths
-- Switched to dual rake/maven build process
-- Switched main code repository to github (for now)
 - JRUBY-2908: Add fallback for when servletContext.getRealPath doesn't
   work (Joern Hartmann)
+- Add extra prevention to ensure that IO descriptor keys do not leak in
+  the runtime's cache of descriptors (see also JRUBY-3185)
+- Switched to dual rake/maven build process
+- Switched main code repository to github (for now)
 
 == 0.9.2
 
