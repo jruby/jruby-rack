@@ -75,14 +75,16 @@ following two will suffice (but see the NOTE below).
 
 The generated jar should be located here: target/jruby-rack-*.jar.
 
-NOTE: There are currently some bugs in JRuby's java integration code
-that prevent the specs from running cleanly. Until I resolve these,
-you need to build as follows:
+NOTE: There was a bug in JRuby's java integration code in the 1.1.4
+and 1.1.5 releases that prevent the specs from running cleanly. If
+you're building JRuby-Rack with one of those versions of JRuby, you'll
+need to skip running the specs as follows:
 
   mvn install -Dmaven.test.skip
   jruby -S rake SKIP_SPECS=true
 
-If you build with JRuby 1.1.3, the specs should run clean.
+If you build with JRuby <= 1.1.3 or JRuby >= 1.1.6, the specs should
+run clean.
 
 == Rails Step-by-step
 
