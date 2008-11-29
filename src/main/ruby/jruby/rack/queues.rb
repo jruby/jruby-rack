@@ -106,5 +106,15 @@ module JRuby
         end
       end
     end
+
+    module MessageHandler
+      def consumes(queue_name, listener = nil, &block)
+        JRuby::Rack::Queues.register_listener(queue_name, listener, block)
+      end
+
+      def publish_to(queue_name, message)
+        JRuby::Rack::Queues.send_message(queue_name, message)
+      end
+    end
   end
 end
