@@ -60,14 +60,10 @@ end
 describe MerbRackApplicationFactory, "getApplication" do
   it "should load the Merb environment and return an application" do
     @app_factory = MerbRackApplicationFactory.new
+    @merb_root = File.expand_path(File.dirname(__FILE__) + '/../../merb')
     @servlet_context.stub!(:getRealPath).and_return Dir.pwd
-    @merb_root = File.dirname(__FILE__) + '/../../merb'
     @servlet_context.should_receive(:getInitParameter).
       with(/public|files|merb\.env/).any_number_of_times.and_return nil
-    @servlet_context.should_receive(:getInitParameter).
-      with("gem.path").and_return("merb/gems")
-    @servlet_context.should_receive(:getRealPath).
-      with("merb/gems").and_return(@merb_root + '/gems')
     @servlet_context.should_receive(:getInitParameter).
       with("merb.root").and_return("merb/root")
     @servlet_context.should_receive(:getRealPath).

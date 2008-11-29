@@ -60,8 +60,15 @@ task :update_version do
   end
 end
 
+
+task :test_resources => ["target/test-classes"] do |t|
+  FileList["src/spec/ruby/merb/gems/gems/merb-core-*/lib/*"].each do |f|
+    cp_r f, t.prerequisites.first
+  end
+end
+
 desc "Copy resources"
-task :resources => ["target/classes", :unpack_gem, :update_version] do |t|
+task :resources => ["target/classes", :unpack_gem, :update_version, :test_resources] do |t|
   ['src/main/ruby', 'target/rack/lib'].each do |dir|
     FileList["#{dir}/*"].each do |f|
       cp_r f, t.prerequisites.first
@@ -100,6 +107,9 @@ task :jar => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"
 
 task :default => :jar
 
-task :classpath do
-  puts "export CLASSPATH=#{ENV['CLASSPATH']}"
+task :install => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" do |t|
+  repos_dir = File.expand_path "~/.m2/repository/org/jruby/rack/jruby-rack/#{JRuby::Rack::VERSION}"
+  mkdir_p repos_dir
+  cp t.prerequisites.first, repos_dir
+  cp "pom.xml", "#{repos_dir}/jruby-rack-#{JRuby::Rack::VERSION}.pom"
 end
