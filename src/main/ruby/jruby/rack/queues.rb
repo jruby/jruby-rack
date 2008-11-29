@@ -108,7 +108,7 @@ module JRuby
     end
 
     module MessageHandler
-      def consumes(queue_name, listener = nil, &block)
+      def subscribe_to(queue_name, listener = nil, &block)
         JRuby::Rack::Queues.register_listener(queue_name, listener, block)
       end
 
