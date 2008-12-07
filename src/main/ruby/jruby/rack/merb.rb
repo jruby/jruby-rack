@@ -27,21 +27,22 @@ module JRuby
       end
 
       def load_servlet_sessions
-        logger.debug('Loading Merb servlet sessions')
+        logdev.write('Loading Merb servlet sessions')
         require 'jruby/rack/merb_servlet_session'
       end
 
       def register_servlet_adapter
-        logger.debug('Registering Merb servlet adapter')
+        logdev.write('Registering Merb servlet adapter')
         Merb::Rack::Adapter.register %w{servlet}, :Servlet
       end
 
       def start_merb
-        logger.debug('Starting Merb')
+        logdev.write('Starting Merb')
         Merb.start :merb_root => merb_root,
                    :environment => merb_environment,
                    :adapter => 'servlet',
-                   :disabled_components => [:signals]
+                   :disabled_components => [:signals],
+                   :log_stream => logdev
       end
     end
 

@@ -2,6 +2,7 @@ require 'jruby/rack/queues'
 
 class QueueController < ApplicationController
   include JRuby::Rack::MessageHandler
+
   skip_before_filter :verify_authenticity_token
   cattr_accessor :queue_count, :instance_writer => false
   @@queue_count = 0

@@ -11,6 +11,7 @@ import org.jruby.rack.DefaultRackApplication
 describe DefaultRackApplication, "call" do
   it "should invoke the call method on the ruby object and return the rack response" do
     servlet_request = mock("servlet request")
+    servlet_request.stub!(:getInputStream).and_return(StubServletInputStream.new)
     rack_response = org.jruby.rack.RackResponse.impl {}
 
     ruby_object = mock "application"
@@ -263,6 +264,14 @@ describe SharedRackApplicationFactory do
     lambda {
       @shared.init(@servlet_context)
     }.should raise_error # TODO: doesn't work w/ raise_error(javax.servlet.ServletException)
+  end
+
+  it "should return a valid application object even if initialization fails" do
+    @factory.should_receive(:init).with(@servlet_context)
+    app = mock "application"
+    @factory.should_receive(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
+    @shared.init(@servlet_context) rescue nil
+    @shared.getApplication.should_not be_nil
   end
 
   it "should return the same application for any newApplication or getApplication call" do

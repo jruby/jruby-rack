@@ -11,7 +11,7 @@ describe JRuby::Rack::MerbServletHelper do
   def create_helper
     @helper = JRuby::Rack::MerbServletHelper.new @servlet_context
   end
-  
+
   it "should determine merb_root from the 'merb.root' init parameter" do
     @servlet_context.should_receive(:getInitParameter).with("merb.root").and_return "/WEB-INF"
     @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
@@ -58,25 +58,18 @@ describe JRuby::Rack::MerbServletHelper do
 end
 
 describe MerbRackApplicationFactory, "getApplication" do
-  before :each do
-    @app_factory = MerbRackApplicationFactory.new
-    @servlet_context.stub!(:getRealPath).and_return Dir.pwd
-    @app_factory.init(@servlet_context)
-    @merb_root = File.dirname(__FILE__) + '/../../merb'
-  end
-
   it "should load the Merb environment and return an application" do
+    @app_factory = MerbRackApplicationFactory.new
+    @merb_root = File.expand_path(File.dirname(__FILE__) + '/../../merb')
+    @servlet_context.stub!(:getRealPath).and_return Dir.pwd
     @servlet_context.should_receive(:getInitParameter).
       with(/public|files|merb\.env/).any_number_of_times.and_return nil
-    @servlet_context.should_receive(:getInitParameter).
-      with("gem.path").and_return("merb/gems")
-    @servlet_context.should_receive(:getRealPath).
-      with("merb/gems").and_return(@merb_root + '/gems')
     @servlet_context.should_receive(:getInitParameter).
       with("merb.root").and_return("merb/root")
     @servlet_context.should_receive(:getRealPath).
       with("merb/root").and_return(@merb_root)
+    @app_factory.init(@servlet_context)
     app = @app_factory.getApplication
     app.should respond_to(:call)
-  end  
+  end
 end
