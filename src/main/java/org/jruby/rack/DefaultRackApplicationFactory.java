@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jruby.Ruby;
@@ -26,13 +25,13 @@ import org.jruby.util.ClassCache;
  */
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private String rackupScript;
-    private ServletContext servletContext;
+    private RackContext rackContext;
     private ClassCache classCache;
     private RackApplication errorApplication;
 
-    public void init(ServletContext servletContext) {
-        this.servletContext = servletContext;
-        this.rackupScript = servletContext.getInitParameter("rackup");
+    public void init(RackContext rackContext) {
+        this.rackContext = rackContext;
+        this.rackupScript = rackContext.getInitParameter("rackup");
         this.classCache = JavaEmbedUtils.createClassCache(
                 Thread.currentThread().getContextClassLoader());
         if (errorApplication == null) {
@@ -78,7 +77,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             } catch (Exception e) { }
             Ruby runtime = JavaEmbedUtils.initialize(new ArrayList(), config);
             runtime.getGlobalVariables().set("$servlet_context",
-                    JavaEmbedUtils.javaToRuby(runtime, servletContext));
+                    JavaEmbedUtils.javaToRuby(runtime, rackContext));
             runtime.evalScriptlet("require 'rack/handler/servlet'");
             return runtime;
         } catch (RaiseException re) {
@@ -105,7 +104,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             app.init();
             return app;
         } catch (final Exception e) {
-            servletContext.log(
+            rackContext.log(
                 "Warning: error application could not be initialized", e);
             return new RackApplication() {
                 public void init() throws RackInitializationException { }

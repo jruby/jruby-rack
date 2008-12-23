@@ -13,10 +13,10 @@ module JRuby
 
       def initialize(servlet_context = nil)
         super
-        @rails_root = @servlet_context.getInitParameter 'rails.root'
+        @rails_root = @rack_context.getInitParameter 'rails.root'
         @rails_root ||= '/WEB-INF'
         @rails_root = expand_root_path @rails_root
-        @rails_env = @servlet_context.getInitParameter 'rails.env'
+        @rails_env = @rack_context.getInitParameter 'rails.env'
         @rails_env ||= 'production'
         ENV['RAILS_ROOT'] = @rails_root
         ENV['RAILS_ENV'] = @rails_env

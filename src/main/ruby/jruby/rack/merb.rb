@@ -5,14 +5,14 @@ module JRuby
     class MerbServletHelper < ::JRuby::Rack::ServletHelper
       attr_reader :merb_environment, :merb_root
 
-      def initialize(servlet_context = nil)
+      def initialize(rack_context = nil)
         super
 
-        @merb_root = @servlet_context.getInitParameter('merb.root')
+        @merb_root = @rack_context.getInitParameter('merb.root')
         @merb_root ||= '/WEB-INF'
         @merb_root = expand_root_path @merb_root
 
-        @merb_environment = @servlet_context.getInitParameter('merb.environment')
+        @merb_environment = @rack_context.getInitParameter('merb.environment')
         @merb_environment ||= 'production'
       end
 

@@ -15,4 +15,5 @@ public interface RackContext {
     String getInitParameter(String key);
     void log(String message);
     void log(String message, Throwable ex);
+    String getRealPath(String path);
 }

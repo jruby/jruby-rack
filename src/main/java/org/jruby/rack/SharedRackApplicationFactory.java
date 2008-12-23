@@ -6,8 +6,6 @@
 
 package org.jruby.rack;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 
 import org.jruby.Ruby;
@@ -24,9 +22,9 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
         realFactory = factory;
     }
 
-    public void init(ServletContext servletContext) throws ServletException {
+    public void init(RackContext rackContext) throws RackInitializationException {
         try {
-            realFactory.init(servletContext);
+            realFactory.init(rackContext);
             application = realFactory.getApplication();
         } catch (final Exception ex) {
             application = new RackApplication() {
@@ -38,8 +36,8 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
                 public void destroy() { }
                 public Ruby getRuntime() { throw new UnsupportedOperationException("not supported"); }
             };
-            servletContext.log("unable to create shared application instance", ex);
-            throw new ServletException(ex);
+            rackContext.log("unable to create shared application instance", ex);
+            throw new RackInitializationException("unable to create shared application instance", ex);
         }
     }
 

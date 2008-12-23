@@ -6,16 +6,13 @@
 
 package org.jruby.rack;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 /**
  *
  * @author nicksieger
  */
 public interface RackApplicationFactory {
     /** Initialize the factory. */
-    void init(ServletContext servletContext) throws ServletException;
+    void init(RackContext rackContext) throws RackInitializationException;
     /** Create a new, uninitialized application. The resulting object must
      be initialized by calling its {@link RackApplication#init} method. */
     RackApplication newApplication() throws RackInitializationException;

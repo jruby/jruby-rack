@@ -104,16 +104,16 @@ module JRuby
     class ServletHelper
       attr_reader :public_root, :gem_path
 
-      def initialize(servlet_context = nil)
-        @servlet_context = servlet_context || $servlet_context
-        @public_root = @servlet_context.getInitParameter 'public.root'
-        @public_root ||= @servlet_context.getInitParameter 'files.prefix' # Goldspike
+      def initialize(rack_context = nil)
+        @rack_context = rack_context || $servlet_context
+        @public_root = @rack_context.getInitParameter 'public.root'
+        @public_root ||= @rack_context.getInitParameter 'files.prefix' # Goldspike
         @public_root ||= '/WEB-INF/public'
         @public_root = "/#{@public_root}" unless @public_root =~ %r{^/}
         @public_root = expand_root_path @public_root
         @public_root = @public_root.chomp("/")
         $0 = File.join(root_path, "web.xml")
-        @gem_path = @servlet_context.getInitParameter 'gem.path'
+        @gem_path = @rack_context.getInitParameter 'gem.path'
         @gem_path ||= '/WEB-INF/gems'
         @gem_path = expand_root_path @gem_path
         setup_gems
@@ -125,11 +125,7 @@ module JRuby
       end
 
       def real_path(path)
-        rpath = @servlet_context.getRealPath(path)
-        if rpath.nil?
-          url = @servlet_context.getResource(path)
-          rpath = url.getPath if url
-        end
+        rpath = @rack_context.getRealPath(path)
         # protect windows paths from backrefs
         rpath.sub!(/\\([0-9])/, '\\\\\\\\\1') if rpath
         rpath
@@ -144,7 +140,7 @@ module JRuby
       end
 
       def logdev
-        @logdev ||= ServletLog.new @servlet_context
+        @logdev ||= ServletLog.new @rack_context
       end
 
       def logger
