@@ -10,6 +10,7 @@ import org.jruby.rack.jms.QueueContextListener
 import org.jruby.rack.jms.QueueManager
 import org.jruby.rack.jms.DefaultQueueManager
 import org.jruby.rack.RackServletContextListener
+import org.jruby.rack.RackContext
 
 describe QueueContextListener do
   before :each do
@@ -21,7 +22,7 @@ describe QueueContextListener do
   
   it "should create a new QueueManager, initialize it and store it in the application context" do
     @qmf.should_receive(:newQueueManager).ordered.and_return @qm
-    @qm.should_receive(:init).with(an_instance_of(javax.servlet.ServletContext)).ordered
+    @qm.should_receive(:init).with(an_instance_of(RackContext)).ordered
     @servlet_context.should_receive(:setAttribute).with(QueueContextListener::MGR_KEY, an_instance_of(QueueManager)).ordered
     @listener.contextInitialized(@listener_event)
   end
@@ -45,15 +46,13 @@ describe DefaultQueueManager do
   before :each do
     @connection_factory = mock "jms connection factory"
     @context = mock "jndi context"
-    @servlet_context.stub!(:getInitParameter).and_return nil
     @queue_manager = DefaultQueueManager.new(@connection_factory, @context)
-    @queue_manager.init(@servlet_context)
+    @queue_manager.init(@rack_context)
   end
 
   it "should set up a connection with a message listener" do
     app_factory = RackApplicationFactory.impl {}
-    @servlet_context.should_receive(:getAttribute).with(
-      RackServletContextListener::FACTORY_KEY).and_return app_factory
+    @rack_context.should_receive(:getRackFactory).and_return app_factory
     conn = mock "connection"
     @connection_factory.should_receive(:createConnection).and_return conn
     session = mock "session"
