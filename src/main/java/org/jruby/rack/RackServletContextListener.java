@@ -6,6 +6,7 @@
 
 package org.jruby.rack;
 
+import org.jruby.rack.servlet.ServletRackContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;

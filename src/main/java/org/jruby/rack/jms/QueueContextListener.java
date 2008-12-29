@@ -9,7 +9,7 @@ package org.jruby.rack.jms;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import org.jruby.rack.ServletRackContext;
+import org.jruby.rack.servlet.ServletRackContext;
 
 /**
  *

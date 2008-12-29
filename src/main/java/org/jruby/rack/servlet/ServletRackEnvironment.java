@@ -4,8 +4,9 @@
  * See the file LICENSE.txt for details.
  */
 
-package org.jruby.rack;
+package org.jruby.rack.servlet;
 
+import org.jruby.rack.*;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.servlet.http.HttpServletRequest;

@@ -6,6 +6,8 @@
 
 package org.jruby.rack;
 
+import org.jruby.rack.servlet.DefaultServletDispatcher;
+import org.jruby.rack.servlet.ServletDispatcher;
 import java.io.IOException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;

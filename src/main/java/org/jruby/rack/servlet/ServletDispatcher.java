@@ -4,7 +4,7 @@
  * See the file LICENSE.txt for details.
  */
 
-package org.jruby.rack;
+package org.jruby.rack.servlet;
 
 import java.io.IOException;
 import javax.servlet.ServletException;

@@ -6,7 +6,7 @@
 
 require File.dirname(__FILE__) + '/../spec_helper'
 
-import org.jruby.rack.DefaultServletDispatcher
+import org.jruby.rack.servlet.DefaultServletDispatcher
 
 describe DefaultServletDispatcher do
   before :each do

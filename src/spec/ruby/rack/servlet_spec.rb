@@ -7,7 +7,7 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 import org.jruby.rack.RackServlet
-import org.jruby.rack.ServletRackContext
+import org.jruby.rack.servlet.ServletRackContext
 
 describe RackServlet, "service" do
   it "should delegate to process" do
