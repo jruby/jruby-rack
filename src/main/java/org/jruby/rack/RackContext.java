@@ -7,7 +7,8 @@
 package org.jruby.rack;
 
 /**
- *
+ * Abstraction of an application context to make parts of the library
+ * independent of the servlet context.
  * @author nicksieger
  */
 public interface RackContext {

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
-import javax.servlet.http.HttpServletResponse;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
@@ -111,13 +110,16 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                     return new RackResponse() {
                         public int getStatus() { return 500; }
                         public Map getHeaders() { return Collections.EMPTY_MAP; }
-                        public String getBody() { return ""; }
-                        public void respond(HttpServletResponse response) {
+                        public String getBody() {
+                            return "Application initialization failed: "
+                                    + e.getMessage();
+                        }
+                        public void respond(RackResponseEnvironment response) {
                             try {
-                                response.sendError(500,
-                                    "Application initialization failed: "
-                                    + e.getMessage());
-                            } catch (IOException ex) { }
+                                response.defaultRespond(this);
+                            } catch (IOException ex) {
+                                rackContext.log("Error writing body", ex);
+                            }
                         }
                     };
                 }

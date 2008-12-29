@@ -29,7 +29,7 @@ public class DefaultServletDispatcher implements ServletDispatcher {
         RackApplication app = null;
         try {
             app = rackFactory.getApplication();
-            app.call(new ServletRackEnvironment(request)).respond(response);
+            app.call(new ServletRackEnvironment(request)).respond(new ServletRackResponseEnvironment(response));
         } catch (Exception re) {
             handleException(re, rackFactory, request, response);
         } finally {
@@ -57,7 +57,7 @@ public class DefaultServletDispatcher implements ServletDispatcher {
             RackApplication errorApp = rackFactory.getErrorApplication();
             request.setAttribute(RackEnvironment.EXCEPTION, re);
             servletContext.log("Exception caught", re);
-            errorApp.call(new ServletRackEnvironment(request)).respond(response);
+            errorApp.call(new ServletRackEnvironment(request)).respond(new ServletRackResponseEnvironment(response));
         } catch (Exception e) {
             servletContext.log("Error: Couldn't handle error", e);
             response.sendError(500);

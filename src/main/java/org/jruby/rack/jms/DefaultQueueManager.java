@@ -18,7 +18,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.servlet.ServletContext;
 import org.jruby.Ruby;
 import org.jruby.RubyObjectAdapter;
 import org.jruby.RubyRuntimeAdapter;
@@ -26,7 +25,6 @@ import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.RackApplication;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackContext;
-import org.jruby.rack.RackServletContextListener;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
