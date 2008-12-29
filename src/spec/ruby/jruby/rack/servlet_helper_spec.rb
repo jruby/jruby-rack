@@ -171,7 +171,7 @@ describe JRuby::Rack::Errors do
 
   def init_exception(cause = nil)
     @exception = org.jruby.rack.RackInitializationException.new("something went wrong", cause)
-    @env[org.jruby.rack.RackDispatcher::EXCEPTION] = @exception
+    @env[org.jruby.rack.RackEnvironment::EXCEPTION] = @exception
   end
 
   it "should determine the response status code based on the exception in the servlet attribute" do

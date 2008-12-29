@@ -15,9 +15,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author nicksieger
  */
-public interface RackDispatcher {
-    final String EXCEPTION = "rack.exception";
-    final String DYNAMIC_REQS_ONLY = "rack.dynamic.requests.only";
+public interface ServletDispatcher {
     void process(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException;
 }

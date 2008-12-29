@@ -170,7 +170,7 @@ module JRuby
     end
 
     class Errors
-      EXCEPTION = org.jruby.rack.RackDispatcher::EXCEPTION
+      EXCEPTION = org.jruby.rack.RackEnvironment::EXCEPTION
       def initialize(file_server)
         @file_server = file_server
       end

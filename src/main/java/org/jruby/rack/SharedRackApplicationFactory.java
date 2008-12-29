@@ -28,7 +28,7 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
             application = new RackApplication() {
                 public void init() throws RackInitializationException { }
                 public RackResponse call(RackEnvironment env) {
-                    env.setAttribute(RackDispatcher.EXCEPTION, ex);
+                    env.setAttribute(RackEnvironment.EXCEPTION, ex);
                     return realFactory.getErrorApplication().call(env);
                 }
                 public void destroy() { }

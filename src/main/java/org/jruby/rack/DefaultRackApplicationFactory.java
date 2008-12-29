@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;

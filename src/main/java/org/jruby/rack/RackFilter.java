@@ -23,20 +23,20 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * @author nicksieger
  */
 public class RackFilter implements Filter {
-    private RackDispatcher dispatcher;
+    private ServletDispatcher dispatcher;
 
     /** Default constructor for servlet container */
     public RackFilter() {
     }
 
     /** Dependency-injected constructor for testing */
-    public RackFilter(RackDispatcher disp) {
+    public RackFilter(ServletDispatcher disp) {
         dispatcher = disp;
     }
 
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
-        dispatcher = new DefaultRackDispatcher(config.getServletContext());
+        dispatcher = new DefaultServletDispatcher(config.getServletContext());
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -47,7 +47,7 @@ public class RackFilter implements Filter {
         chain.doFilter(httpRequest, capture);
         if (capture.isError()) {
             httpResponse.reset();
-            request.setAttribute(RackDispatcher.DYNAMIC_REQS_ONLY, Boolean.TRUE);
+            request.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
             dispatcher.process((HttpServletRequest) request, httpResponse);
         }
     }

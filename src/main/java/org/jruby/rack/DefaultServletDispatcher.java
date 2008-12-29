@@ -16,10 +16,10 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author nicksieger
  */
-public class DefaultRackDispatcher implements RackDispatcher {
+public class DefaultServletDispatcher implements ServletDispatcher {
     private ServletContext servletContext;
 
-    public DefaultRackDispatcher(ServletContext servletContext) {
+    public DefaultServletDispatcher(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
 
@@ -55,7 +55,7 @@ public class DefaultRackDispatcher implements RackDispatcher {
 
         try {
             RackApplication errorApp = rackFactory.getErrorApplication();
-            request.setAttribute(EXCEPTION, re);
+            request.setAttribute(RackEnvironment.EXCEPTION, re);
             servletContext.log("Exception caught", re);
             errorApp.call(new ServletRackEnvironment(request)).respond(response);
         } catch (Exception e) {
@@ -63,5 +63,4 @@ public class DefaultRackDispatcher implements RackDispatcher {
             response.sendError(500);
         }
     }
-
 }

@@ -6,13 +6,13 @@
 
 require File.dirname(__FILE__) + '/../spec_helper'
 
-import org.jruby.rack.DefaultRackDispatcher
+import org.jruby.rack.DefaultServletDispatcher
 
-describe DefaultRackDispatcher do
+describe DefaultServletDispatcher do
   before :each do
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
     @servlet_context.should_receive(:getAttribute).with("rack.factory").and_return @rack_factory
-    @dispatcher = DefaultRackDispatcher.new @servlet_context
+    @dispatcher = DefaultServletDispatcher.new @servlet_context
   end
 
   describe "process" do
@@ -35,7 +35,7 @@ describe DefaultRackDispatcher do
       error_app = mock "error application"
       @rack_factory.should_receive(:getErrorApplication).and_return error_app
       req, res = mock("request"), mock("response")
-      req.should_receive(:setAttribute).with(org.jruby.rack.RackDispatcher::EXCEPTION, anything())
+      req.should_receive(:setAttribute).with(org.jruby.rack.RackEnvironment::EXCEPTION, anything())
       res.should_receive(:isCommitted).and_return false
       res.should_receive(:reset)
       rack_response = mock "rack response"
