@@ -17,6 +17,12 @@ module Rack
         @env    = options[:environment]  || 'production'
         @public = options[:public]       || ::File.join(@root, "public")
         @file_server = Rack::File.new(@public)
+        if defined?(ActionController::Dispatcher.middleware)
+          @dispatcher = ActionController::Dispatcher.new
+          class << self; alias_method :serve_rails, :serve_rails_rack; end
+        else
+          class << self; alias_method :serve_rails, :serve_rails_cgi; end
+        end
       end
 
       # TODO refactor this in File#can_serve?(path) ??
@@ -29,13 +35,15 @@ module Rack
         @file_server.call(env)
       end
 
-      def serve_rails(env)
-        request         = Request.new(env)
-        response        = Response.new
-        cgi             = CGIWrapper.new(request, response)
+      def serve_rails_rack(env)
+        @dispatcher.call(env)
+      end
 
+      def serve_rails_cgi(env)
+        request   = Request.new(env)
+        response  = Response.new
+        cgi       = CGIWrapper.new(request, response)
         Dispatcher.dispatch(cgi, session_options(env), response)
-
         response.finish
       end
 
