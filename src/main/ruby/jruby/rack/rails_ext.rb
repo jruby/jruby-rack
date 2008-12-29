@@ -26,36 +26,46 @@ module ActionController
     def servlet_request
       request.env['java.servlet_request']
     end
+
+    def render_with_servlet_response(&block)
+      if block
+        @performed_render = true
+        response.headers['Forward'] = block
+      end
+    end
+
     def forward_to(url)
-      @performed_render = true
       req = servlet_request
-      response.headers['Forward'] = proc do |resp|
+      render_with_servlet_response do |resp|
         req.getRequestDispatcher(url).forward(req, resp)
       end
     end
   end
 
-  module Rescue
-    # Rails 2.0 static rescue files
-    def render_optional_error_file(status_code) #:nodoc:
-      status = interpret_status(status_code)
-      path = "#{PUBLIC_ROOT}/#{status[0,3]}.html"
-      if File.exists?(path)
-        render :file => path, :status => status
-      else
-        head status
-      end
-    end
-
-    def rescue_action_in_public(exception) #:nodoc:
-      if respond_to?(:render_optional_error_file) # Rails 2
-        render_optional_error_file response_code_for_rescue(exception)
-      else # Rails 1
-        case exception
-        when RoutingError, UnknownAction
-          render_text(IO.read(File.join(PUBLIC_ROOT, '404.html')), "404 Not Found")
+  # These rescue module overrides should only be needed for pre-Rails 2.1
+  unless defined?(::Rails.public_path)
+    module Rescue
+      # Rails 2.0 static rescue files
+      def render_optional_error_file(status_code) #:nodoc:
+        status = interpret_status(status_code)
+        path = "#{PUBLIC_ROOT}/#{status[0,3]}.html"
+        if File.exists?(path)
+          render :file => path, :status => status
         else
-          render_text(IO.read(File.join(PUBLIC_ROOT, '500.html')), "500 Internal Error")
+          head status
+        end
+      end
+
+      def rescue_action_in_public(exception) #:nodoc:
+        if respond_to?(:render_optional_error_file) # Rails 2
+          render_optional_error_file response_code_for_rescue(exception)
+        else # Rails 1
+          case exception
+          when RoutingError, UnknownAction
+            render_text(IO.read(File.join(PUBLIC_ROOT, '404.html')), "404 Not Found")
+          else
+            render_text(IO.read(File.join(PUBLIC_ROOT, '500.html')), "500 Internal Error")
+          end
         end
       end
     end
