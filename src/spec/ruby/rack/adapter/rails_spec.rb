@@ -7,6 +7,7 @@
 require File.dirname(__FILE__) + '/../../spec_helper'
 require 'rack'
 require 'rack/adapter/rails'
+require 'rack/adapter/rails_cgi'
 
 module ActionController
   class Base; end
@@ -27,7 +28,7 @@ describe Rack::Adapter::Rails do
     File.should_receive(:file?).with("/tmp/root/public/index.html").and_return true
     File.should_receive(:readable?).with("/tmp/root/public/index.html").and_return true
     @file_server.should_receive(:call).and_return [200, {}, ""]
-    
+
     @env["PATH_INFO"] = "index.html"
     @rails.call(@env).should == [200, {}, ""]
   end
@@ -37,7 +38,7 @@ describe Rack::Adapter::Rails do
     File.should_receive(:file?).with("/tmp/root/public/index.html").and_return true
     File.should_receive(:readable?).with("/tmp/root/public/index.html").and_return true
     @file_server.should_receive(:call).and_return [200, {}, ""]
-    
+
     @env["PATH_INFO"] = "index"
     @rails.call(@env).should == [200, {}, ""]
     @env["PATH_INFO"].should == "index.html"
@@ -47,7 +48,7 @@ describe Rack::Adapter::Rails do
     File.should_receive(:file?).with("/tmp/root/public/index").and_return false
     File.should_receive(:file?).with("/tmp/root/public/index.html").and_return false
     @rails.should_receive(:serve_rails).and_return [200, {}, ""]
-    
+
     @env["PATH_INFO"] = "index"
     @rails.call(@env).should == [200, {}, ""]
   end
@@ -59,12 +60,12 @@ describe Rack::Adapter::Rails do
   end
 end
 
-describe Rack::Adapter::Rails::CGIWrapper, "#header" do
+describe Rack::Adapter::RailsCgi::CGIWrapper, "#header" do
   before :each do
     @request, @response = mock("request"), mock("response")
     @request.stub!(:env).and_return({"REQUEST_METHOD" => "GET"})
     @request.stub!(:body).and_return ""
-    @wrapper = Rack::Adapter::Rails::CGIWrapper.new(@request, @response)
+    @wrapper = Rack::Adapter::RailsCgi::CGIWrapper.new(@request, @response)
   end
 
   it "should set the Content-Type from the 'type' key in the options" do
