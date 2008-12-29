@@ -136,20 +136,15 @@ module Rack
       end
 
       def load__SCRIPT_NAME(env)
-        context_path = @servlet_env.getContextPath || ""
-        env["SCRIPT_NAME"] = "#{context_path}#{@servlet_env.getServletPath}"
+        env["SCRIPT_NAME"] = @servlet_env.getScriptName
       end
 
       def load__REQUEST_URI(env)
-        env["REQUEST_URI"] = @servlet_env.getRequestURI || ""
-        env["REQUEST_URI"] += "?#{@servlet_env.getQueryString}" if @servlet_env.getQueryString
-        env["REQUEST_URI"]
+        env["REQUEST_URI"] = @servlet_env.getRequestURI
       end
 
       def load__PATH_INFO(env)
-        path_info = @servlet_env.getServletPath || ""
-        path_info += @servlet_env.getPathInfo if @servlet_env.getPathInfo
-        env["PATH_INFO"] = path_info
+        env["PATH_INFO"] = @servlet_env.getPathInfo
       end
 
       def load__QUERY_STRING(env)

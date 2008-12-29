@@ -7,8 +7,6 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 import org.jruby.rack.RackApplicationFactory
-import org.jruby.rack.RackServletContextListener
-import org.jruby.rack.RackContext
 
 describe RackServletContextListener do
   before(:each) do

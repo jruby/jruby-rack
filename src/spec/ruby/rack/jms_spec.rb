@@ -9,8 +9,6 @@ require File.dirname(__FILE__) + '/../spec_helper'
 import org.jruby.rack.jms.QueueContextListener
 import org.jruby.rack.jms.QueueManager
 import org.jruby.rack.jms.DefaultQueueManager
-import org.jruby.rack.RackServletContextListener
-import org.jruby.rack.RackContext
 
 describe QueueContextListener do
   before :each do

@@ -29,7 +29,7 @@ public class DefaultRackDispatcher implements RackDispatcher {
         RackApplication app = null;
         try {
             app = rackFactory.getApplication();
-            app.call(request).respond(response);
+            app.call(new ServletRackEnvironment(request)).respond(response);
         } catch (Exception re) {
             handleException(re, rackFactory, request, response);
         } finally {
@@ -57,7 +57,7 @@ public class DefaultRackDispatcher implements RackDispatcher {
             RackApplication errorApp = rackFactory.getErrorApplication();
             request.setAttribute(EXCEPTION, re);
             servletContext.log("Exception caught", re);
-            errorApp.call(request).respond(response);
+            errorApp.call(new ServletRackEnvironment(request)).respond(response);
         } catch (Exception e) {
             servletContext.log("Error: Couldn't handle error", e);
             response.sendError(500);

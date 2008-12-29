@@ -29,7 +29,10 @@ Spec::Runner.configure do |config|
   end
 end
 
-class StubServletInputStream < javax.servlet.ServletInputStream
+import org.jruby.rack.RackServletContextListener unless defined?(RackServletContextListener)
+import org.jruby.rack.RackContext unless defined?(RackContext)
+
+class StubInputStream < java.io.InputStream
   def initialize
     @is = java.io.ByteArrayInputStream.new([].to_java(:byte))
   end

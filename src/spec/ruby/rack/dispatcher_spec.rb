@@ -24,7 +24,7 @@ describe DefaultRackDispatcher do
 
       @rack_factory.should_receive(:getApplication).and_return(application)
       @rack_factory.should_receive(:finishedWithApplication).with(application)
-      application.should_receive(:call).with(request).and_return rack_response
+      application.should_receive(:call).and_return rack_response
       rack_response.should_receive(:respond)
 
       @dispatcher.process(request, response)
@@ -39,7 +39,7 @@ describe DefaultRackDispatcher do
       res.should_receive(:isCommitted).and_return false
       res.should_receive(:reset)
       rack_response = mock "rack response"
-      error_app.should_receive(:call).with(req).and_return rack_response
+      error_app.should_receive(:call).and_return rack_response
       rack_response.should_receive(:respond)
       @dispatcher.process(req, res)
     end
@@ -62,7 +62,7 @@ describe DefaultRackDispatcher do
       req.stub!(:setAttribute)
       res.stub!(:isCommitted).and_return false
       res.stub!(:reset)
-      error_app.should_receive(:call).with(req).and_raise "some error"
+      error_app.should_receive(:call).and_raise "some error"
       res.should_receive(:sendError).with(500)
       @dispatcher.process(req, res)
     end

@@ -6,8 +6,6 @@
 
 package org.jruby.rack;
 
-import javax.servlet.ServletRequest;
-
 import org.jruby.Ruby;
 
 /**
@@ -29,7 +27,7 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
         } catch (final Exception ex) {
             application = new RackApplication() {
                 public void init() throws RackInitializationException { }
-                public RackResponse call(ServletRequest env) {
+                public RackResponse call(RackEnvironment env) {
                     env.setAttribute(RackDispatcher.EXCEPTION, ex);
                     return realFactory.getErrorApplication().call(env);
                 }

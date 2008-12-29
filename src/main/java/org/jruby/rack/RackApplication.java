@@ -6,7 +6,6 @@
 
 package org.jruby.rack;
 
-import javax.servlet.ServletRequest;
 import org.jruby.Ruby;
 
 /**
@@ -19,7 +18,7 @@ public interface RackApplication {
     void destroy();
 
     /** Make a request into the Rack-based Ruby web application. */
-    RackResponse call(ServletRequest env);
+    public RackResponse call(RackEnvironment env);
 
     /**
      * Get a reference to the underlying runtime that holds the application

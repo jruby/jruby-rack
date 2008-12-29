@@ -108,7 +108,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 "Warning: error application could not be initialized", e);
             return new RackApplication() {
                 public void init() throws RackInitializationException { }
-                public RackResponse call(ServletRequest env) {
+                public RackResponse call(RackEnvironment env) {
                     return new RackResponse() {
                         public int getStatus() { return 500; }
                         public Map getHeaders() { return Collections.EMPTY_MAP; }
