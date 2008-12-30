@@ -20,7 +20,7 @@ class JRuby::Rack::Queues
       yield activemq
     ensure
       activemq.register_jndi_properties
-      Queues.start_queue_manager
+      ::JRuby::Rack::Queues.start_queue_manager
     end
 
     attr_writer :url, :topics, :queues
@@ -37,16 +37,9 @@ class JRuby::Rack::Queues
       @topics ||= []
     end
 
-    private
-    def generate_list(prefix, names)
-      list = ''
-      names.each {|n| list << "#{prefix}#{n} = #{n}\n"}
-      list
-    end
-
     def register_jndi_properties
       # Based on http://activemq.apache.org/jndi-support.html
-      LocalContext.init_parameters["jms.jndi.properties"] = <<-JNDI
+      ::JRuby::Rack::Queues::LocalContext.init_parameters["jms.jndi.properties"] = <<-JNDI
 java.naming.factory.initial = org.apache.activemq.jndi.ActiveMQInitialContextFactory
 
 # use the following property to configure the default connector
@@ -64,6 +57,13 @@ java.naming.provider.url = #{url}
 # topic.[jndiName] = [physicalName]
 #{generate_list('topic.', topics)}
 JNDI
+    end
+
+    private
+    def generate_list(prefix, names)
+      list = ''
+      names.each {|n| list << "#{prefix}#{n} = #{n}\n"}
+      list
     end
   end
 end

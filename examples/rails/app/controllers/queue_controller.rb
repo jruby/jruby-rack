@@ -12,8 +12,8 @@ class QueueController < ApplicationController
 
   def index
     if request.post?
-      JRuby::Rack::Queues.send_message("rack", "hi")
+      JRuby::Rack::Queues.send_message("rack", params[:msg] || "hi")
     end
-    render :text => "Queue count: #{queue_count}"
+    render :text => "Queue count: #{queue_count}\n"
   end
 end
