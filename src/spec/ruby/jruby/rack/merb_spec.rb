@@ -12,17 +12,17 @@ describe JRuby::Rack::MerbServletHelper do
     @helper = JRuby::Rack::MerbServletHelper.new @rack_context
   end
 
-  it "should determine merb_root from the 'merb.root' init parameter" do
+  it "should determine app_path from the 'merb.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("merb.root").and_return "/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
     create_helper
-    @helper.merb_root.should == "./WEB-INF"
+    @helper.app_path.should == "./WEB-INF"
   end
 
-  it "should default merb_root to /WEB-INF" do
+  it "should default app_path to /WEB-INF" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
     create_helper
-    @helper.merb_root.should == "./WEB-INF"
+    @helper.app_path.should == "./WEB-INF"
   end
 
   it "should determine merb_environment from the 'merb.environment' init parameter" do
@@ -40,13 +40,13 @@ describe JRuby::Rack::MerbServletHelper do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
     create_helper
-    @helper.public_root.should == "."
+    @helper.public_path.should == "."
   end
 
   it "should default public root to '/WEB-INF/public'" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     create_helper
-    @helper.public_root.should == "./public"
+    @helper.public_path.should == "./public"
   end
 
   it "should create a Logger that writes messages to the servlet context" do
@@ -60,14 +60,14 @@ end
 describe MerbRackApplicationFactory, "getApplication" do
   it "should load the Merb environment and return an application" do
     @app_factory = MerbRackApplicationFactory.new
-    @merb_root = File.expand_path(File.dirname(__FILE__) + '/../../merb')
+    @app_path = File.expand_path(File.dirname(__FILE__) + '/../../merb')
     @rack_context.stub!(:getRealPath).and_return Dir.pwd
     @rack_context.should_receive(:getInitParameter).
       with(/public|files|merb\.env/).any_number_of_times.and_return nil
     @rack_context.should_receive(:getInitParameter).
       with("merb.root").and_return("merb/root")
     @rack_context.should_receive(:getRealPath).
-      with("merb/root").and_return(@merb_root)
+      with("merb/root").and_return(@app_path)
     @app_factory.init(@rack_context)
     app = @app_factory.getApplication
     app.should respond_to(:call)

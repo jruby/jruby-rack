@@ -1,3 +1,9 @@
+#--
+# Copyright 2007-2008 Sun Microsystems, Inc.
+# This source code is available under the MIT license.
+# See the file LICENSE.txt for details.
+#++
+
 require 'merb-core/dispatch/session'
 
 module Merb
@@ -44,7 +50,7 @@ module Merb
     def finalize(request=nil)
       @_destroy ? invalidate_java_session : save_to_java_session
     end
-    
+
     def invalidate_java_session
       java_session = @java_request.getSession(false)
       java_session.invalidate if java_session

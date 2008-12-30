@@ -9,24 +9,22 @@ require 'jruby/rack'
 module JRuby
   module Rack
     class RailsServletHelper < ServletHelper
-      attr_accessor :rails_env, :rails_root
+      attr_reader :rails_env
+      self.layout_class = RailsWebInfLayout
 
-      def initialize(servlet_context = nil)
+      def initialize(rack_context = nil)
         super
-        @rails_root = @rack_context.getInitParameter 'rails.root'
-        @rails_root ||= '/WEB-INF'
-        @rails_root = expand_root_path @rails_root
         @rails_env = @rack_context.getInitParameter 'rails.env'
         @rails_env ||= 'production'
-        ENV['RAILS_ROOT'] = @rails_root
+        ENV['RAILS_ROOT'] = app_path
         ENV['RAILS_ENV'] = @rails_env
-        silence_warnings { Object.const_set("PUBLIC_ROOT", public_root) }
+        silence_warnings { Object.const_set("PUBLIC_ROOT", public_path) }
       end
 
       def load_environment
         require 'cgi/session/java_servlet_store'
         require 'jruby/rack/rails_boot'
-        load File.join(rails_root, 'config', 'environment.rb')
+        load File.join(app_path, 'config', 'environment.rb')
         require 'dispatcher'
         require 'jruby/rack/rails_ext'
         setup_sessions
@@ -123,12 +121,13 @@ module JRuby
       end
 
       def options
-        {:public => public_root, :root => rails_root, :environment => rails_env}
+        {:public => public_path, :root => app_path}
       end
     end
+
     Bootstrap = RailsServletHelper
 
-    class RailsSetup
+    class RailsRequestSetup
       def initialize(app, servlet_helper)
         @app = app
         @servlet_helper = servlet_helper
@@ -151,7 +150,7 @@ module JRuby
         helper = RailsServletHelper.instance
         helper.load_environment
         ::Rack::Builder.new {
-          use RailsSetup, helper
+          use RailsRequestSetup, helper
           run ::Rack::Adapter::Rails.new(helper.options)
         }.to_app
       end

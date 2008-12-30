@@ -1,3 +1,18 @@
+== 0.9.4
+
+- EXPERIMENTAL: Detect Rails 2.3 rack machinery and dispatch to it
+  rather than the legacy CGI shim.
+- EXPERIMENTAL: Beginnings of a JMS API (more details to come)
+- REMOVAL: All the goldspike compatibility bits have been removed. You
+  should upgrade your application to use a web.xml similar to what
+  comes with Warbler.
+- RackApplication-related core Java classes have been insulated from
+  the servlet API, so that (parts of) JRuby-Rack can be used outside
+  of a servlet container. If your application or library is coupled to
+  these classes, you'll likely be broken with this release. See Nick
+  for details.
+- Fix TLD to be more compatible (Fred McHale).
+
 == 0.9.3
 
 - Merb updates for 1.0 compatibility

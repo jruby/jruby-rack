@@ -10,9 +10,8 @@ module Rack
   module Adapter
     class Rails
       def initialize(options={})
-        @root   = options[:root]         || Dir.pwd
-        @env    = options[:environment]  || 'production'
-        @public = options[:public]       || ::File.join(@root, "public")
+        @root   = options[:root]   || Dir.pwd
+        @public = options[:public] || ::File.join(@root, "public")
         @file_server = Rack::File.new(@public)
         if defined?(ActionController::Dispatcher.middleware)
           @dispatcher = ActionController::Dispatcher.new

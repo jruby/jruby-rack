@@ -13,17 +13,8 @@ JRuby-Rack's main mode of operation is as a servlet filter. This
 allows requests for static content to pass through and be served by
 the application server. Dynamic requests only happen for URLs that
 don't have a corresponding file, much like many Ruby applications
-expect.
-
-== Goldspike-compatible Servlet
-
-JRuby-Rack includes a stub RailsServlet and recognizes many of
-Goldspike's context parameters (e.g., pool size configuration), making
-it interchangeable with Goldspike, for convenience of migration. One
-caveat is that static content is served by Rack, which requires
-acquisition of a JRuby runtime. Your throughput with static files will
-be much lower than when JRuby-Rack is configured as a servlet filter.
-You have been warned!
+expect. The application can also be configured to dispatch through a
+servlet instead of a filter if it suits your environment better.
 
 == Servlet environment integration
 

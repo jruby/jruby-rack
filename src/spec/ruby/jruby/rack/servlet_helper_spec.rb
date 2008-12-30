@@ -111,28 +111,20 @@ describe JRuby::Rack::ServletHelper do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
     create_helper
-    @helper.public_root.should == "."
+    @helper.public_path.should == "."
   end
 
   it "should convert public.root to not have any trailing slashes" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah/"
-    @rack_context.should_receive(:getRealPath).with("/blah/").and_return "/blah/"
+    @rack_context.should_receive(:getRealPath).with("/blah").and_return "/blah/blah"
     create_helper
-    @helper.public_root.should == "/blah"
-  end
-
-  it "should also understand the 'files.prefix' init parameter from Goldspike" do
-    @rack_context.should_receive(:getInitParameter).with("public.root").and_return nil
-    @rack_context.should_receive(:getInitParameter).with("files.prefix").and_return ""
-    @rack_context.should_receive(:getRealPath).with("/").and_return "."
-    create_helper
-    @helper.public_root.should == "."
+    @helper.public_path.should == "/blah/blah"
   end
 
   it "should default public root to '/WEB-INF/public'" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     create_helper
-    @helper.public_root.should == "./public"
+    @helper.public_path.should == "./public"
   end
 
   it "should determine the gem path from the gem.path init parameter" do

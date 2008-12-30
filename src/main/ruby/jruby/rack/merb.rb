@@ -1,17 +1,20 @@
+#--
+# Copyright 2007-2008 Sun Microsystems, Inc.
+# This source code is available under the MIT license.
+# See the file LICENSE.txt for details.
+#++
+
 require 'jruby/rack'
 
 module JRuby
   module Rack
     class MerbServletHelper < ::JRuby::Rack::ServletHelper
-      attr_reader :merb_environment, :merb_root
+      attr_reader :merb_environment
+
+      self.layout_class = MerbWebInfLayout
 
       def initialize(rack_context = nil)
         super
-
-        @merb_root = @rack_context.getInitParameter('merb.root')
-        @merb_root ||= '/WEB-INF'
-        @merb_root = expand_root_path @merb_root
-
         @merb_environment = @rack_context.getInitParameter('merb.environment')
         @merb_environment ||= 'production'
       end
@@ -38,7 +41,7 @@ module JRuby
 
       def start_merb
         logdev.write('Starting Merb')
-        Merb.start :merb_root => merb_root,
+        Merb.start :merb_root => app_path,
                    :environment => merb_environment,
                    :adapter => 'servlet',
                    :disabled_components => [:signals],
