@@ -6,9 +6,11 @@
 
 package org.jruby.rack.jms;
 
+import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.Connection;
@@ -51,7 +53,12 @@ public class DefaultQueueManager implements QueueManager {
         this.context = context;
         String jndiName = context.getInitParameter("jms.connection.factory");
         if (jndiName != null && connectionFactory == null) {
-            jndiContext = new InitialContext();
+            Properties properties = new Properties();
+            String jndiProperties = context.getInitParameter("jms.jndi.properties");
+            if (jndiProperties != null) {
+                properties.load(new ByteArrayInputStream(jndiProperties.getBytes("UTF-8")));
+            }
+            jndiContext = new InitialContext(properties);
             connectionFactory = (ConnectionFactory) jndiContext.lookup(jndiName);
         }
     }

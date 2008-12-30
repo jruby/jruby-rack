@@ -65,14 +65,6 @@ module JRuby
         @queue_manager ||= $servlet_context.getAttribute(Java::OrgJrubyRackJms::QueueContextListener::MGR_KEY)
       end
 
-      def self.start_queue_manager
-        @queue_manager ||= begin
-                             dqm = Java::OrgJrubyRackJms::DefaultQueueManager.new
-                             dqm.init(LocalContext.new)
-                             dqm
-                           end
-      end
-
       class MessageDispatcher
         def initialize(listener)
           @listener = listener
@@ -111,49 +103,6 @@ module JRuby
           end
           message
         end
-      end
-    end
-
-    class LocalRackApplication
-      include Java::OrgJrubyRack::RackApplication
-      def getRuntime
-        @runtime ||= begin
-                       require 'jruby'
-                       JRuby.runtime
-                     end
-      end
-    end
-
-    class LocalRackApplicationFactory
-      include Java::OrgJrubyRack::RackApplicationFactory
-      def newApplication
-        getApplication
-      end
-
-      def getApplication
-        @app ||= LocalRackApplication.new
-      end
-
-      def finishedWithApplication(app)
-      end
-    end
-
-    class LocalContext
-      include Java::OrgJrubyRack::RackContext
-      def initialize
-        @context = {'jms.connection.factory'=>'ConnectionFactory'}
-      end
-
-      def getInitParameter(k)
-        @context[k]
-      end
-
-      def log(*args)
-        p *args
-      end
-
-      def getRackFactory
-        @rack_factory ||= LocalRackApplicationFactory.new
       end
     end
   end

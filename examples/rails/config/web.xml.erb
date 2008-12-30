@@ -22,9 +22,11 @@
     <listener-class><%= webxml.servlet_context_listener %></listener-class>
   </listener>
 
+<% if webxml.jms.provider %>
   <listener>
     <listener-class>org.jruby.rack.jms.QueueContextListener</listener-class>
   </listener>
+<% end %>
 
 <% if webxml.jndi then webxml.jndi.each do |jndi| %>
   <resource-ref>
@@ -33,6 +35,7 @@
     <res-auth>Container</res-auth>
   </resource-ref>
 <% end; end %>
+<% if webxml.jms.provider && webxml.jms.provider != 'activemq' %>
   <resource-ref>
     <res-ref-name>jms/queues</res-ref-name>
     <res-type>javax.jms.QueueConnectionFactory</res-type>
@@ -43,4 +46,5 @@
     <res-type>javax.jms.Queue</res-type>
     <res-auth>Container</res-auth>
   </resource-ref>
+<% end %>
 </web-app>
