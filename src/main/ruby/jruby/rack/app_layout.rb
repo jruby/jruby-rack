@@ -40,6 +40,7 @@ module JRuby
     class WebInfLayout < AppLayout
       def initialize(context)
         super
+        ENV['GEM_PATH'] = gem_path
         $0 = File.join(app_path, "web.xml")
       end
 
@@ -66,6 +67,10 @@ module JRuby
         else
           super
         end
+      end
+
+      def change_working_directory
+        Dir.chdir(app_path) if File.directory?(app_path)
       end
     end
 

@@ -4,13 +4,16 @@
 # See the file LICENSE.txt for details.
 #++
 
+def toplevel_binding; binding; end
+
 module JRuby
   module Rack
     class ServletHelper
       def initialize(rack_context = nil)
         @rack_context = rack_context || $servlet_context
-        @layout = layout_class.new(@rack_context)
-        ENV['GEM_PATH'] = @layout.gem_path
+        bootstrap_script = @rack_context.getInitParameter('rack.bootstrap.script')
+        eval(bootstrap_script, toplevel_binding) if bootstrap_script
+        @layout ||= layout_class.new(@rack_context)
         ServletHelper.instance = self
       end
 
@@ -41,8 +44,8 @@ module JRuby
         @logger ||= begin; require 'logger'; Logger.new(logdev); end
       end
 
-      def change_to_root_directory
-        Dir.chdir(app_path) if File.directory?(app_path)
+      def change_working_directory
+        @layout.change_working_directory if @layout.respond_to?(:change_working_directory)
       end
 
       def silence_warnings(&block)
