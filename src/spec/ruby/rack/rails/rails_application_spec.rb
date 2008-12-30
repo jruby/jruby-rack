@@ -15,7 +15,7 @@ describe RailsRackApplicationFactory, "getApplication" do
     @rack_context.stub!(:getRealPath).and_return Dir.pwd
     @rack_context.should_receive(:getInitParameter).with("rails.root").and_return("rails/root")
     @rack_context.should_receive(:getRealPath).with("rails/root").and_return(
-      File.dirname(__FILE__) + '/../../rails')
+      File.expand_path(File.dirname(__FILE__) + '/../../rails'))
     @app_factory.init(@rack_context)
     app = @app_factory.getApplication
     app.should respond_to(:call)
