@@ -47,9 +47,11 @@ module JRuby
       end
 
       def self.unregister_listener(listener)
-        if kv = self.listeners.detect {|k,v| v.listener == listener }
-          self.listeners.delete(kv.first)
-          queue_manager.close(kv.first)
+        if kvs = self.listeners.select {|k,v| v.listener == listener }
+          kvs.each do |kv|
+            self.listeners.delete(kv.first)
+            queue_manager.close(kv.first)
+          end
         end
       end
 
