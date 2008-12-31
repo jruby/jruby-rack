@@ -27,6 +27,7 @@ class JRuby::Rack::Queues
     end
 
     attr_writer :url, :topics, :queues
+    attr_accessor :username, :password
 
     def url
       @url ||= "vm://localhost"
@@ -47,6 +48,9 @@ java.naming.factory.initial = org.apache.activemq.jndi.ActiveMQInitialContextFac
 
 # use the following property to configure the default connector
 java.naming.provider.url = #{url}
+
+#{username && ("java.naming.security.principal = " + username) || ""}
+#{password && ("java.naming.security.credentials = " + password) || ""}
 
 # use the following property to specify the JNDI name the connection factory
 # should appear as.
