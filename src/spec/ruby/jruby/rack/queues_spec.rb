@@ -33,6 +33,7 @@ end
 
 describe JRuby::Rack::Queues::MessageDispatcher do
   before :each do
+    $servlet_context = @servlet_context
     @message = mock "JMS message"
     @listener = mock "listener"
   end
@@ -93,8 +94,23 @@ describe JRuby::Rack::Queues::MessageDispatcher do
 
   it "should instantiate a class and dispatch to it" do
     @message.stub!(:getBooleanProperty).and_return false
-    @listener = Listener
-    JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+    JRuby::Rack::Queues::MessageDispatcher.new(Listener).dispatch(@message)
     Listener.message.should == @message
+  end
+
+  it "should log and re-raise any exceptions that are raised during dispatch" do
+    @message.stub!(:getBooleanProperty).and_return false
+    @listener.should_receive(:on_message).and_raise "something went wrong"
+    @servlet_context.should_receive(:log).with(/something went wrong/)
+    lambda do
+      JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+    end.should raise_error
+  end
+
+  it "should raise an exception if it was unable to dispatch to anything" do
+    @message.stub!(:getBooleanProperty).and_return false
+    lambda do
+      JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
+    end.should raise_error
   end
 end

@@ -72,21 +72,32 @@ module JRuby
 
         def dispatch(message, listener = nil)
           listener ||= @listener
-          if listener.respond_to?(:on_jms_message)
-            listener.on_jms_message(message)
-            return
+          begin
+            if listener.respond_to?(:on_jms_message)
+              listener.on_jms_message(message)
+              return
+            end
+
+            message = convert_message(message)
+
+            if listener.respond_to?(:call)
+              listener.call(message)
+              return
+            elsif listener.respond_to?(:on_message)
+              listener.on_message(message)
+              return
+            end
+          rescue Exception => e
+            $servlet_context.log("Error during message dispatch: " +
+                                 e.to_s + "\nMessage: #{message.inspect}") if $servlet_context
+            raise
           end
 
-          message = convert_message(message)
-
-          if listener.respond_to?(:call)
-            listener.call(message)
-          elsif listener.respond_to?(:on_message)
-            listener.on_message(message)
-          elsif Class === listener
+          if Class === listener
             dispatch(message, listener.new)
           else
-            puts "message dropped on the floor: #{message.inspect}"
+            $servlet_context.log "Unable to dispatch: #{message.inspect}" if $servlet_context
+            raise "Unable to dispatch: #{message.inspect}"
           end
         end
 
