@@ -17,11 +17,11 @@ describe QueueContextListener do
     @listener_event = javax.servlet.ServletContextEvent.new @servlet_context
     @listener = QueueContextListener.new @qmf
   end
-  
+
   it "should create a new QueueManager, initialize it and store it in the application context" do
     @qmf.should_receive(:newQueueManager).ordered.and_return @qm
     @qm.should_receive(:init).with(an_instance_of(RackContext)).ordered
-    @servlet_context.should_receive(:setAttribute).with(QueueContextListener::MGR_KEY, an_instance_of(QueueManager)).ordered
+    @servlet_context.should_receive(:setAttribute).with(QueueManager::MGR_KEY, an_instance_of(QueueManager)).ordered
     @listener.contextInitialized(@listener_event)
   end
 
@@ -30,11 +30,11 @@ describe QueueContextListener do
     @qm.should_receive(:init).and_raise StandardError.new("something happened!")
     @listener.contextInitialized(@listener_event)
   end
-  
+
   it "should remove the QueueManager and destroy it" do
     qm = QueueManager.impl {}
-    @servlet_context.should_receive(:getAttribute).with(QueueContextListener::MGR_KEY).and_return qm
-    @servlet_context.should_receive(:removeAttribute).with(QueueContextListener::MGR_KEY)
+    @servlet_context.should_receive(:getAttribute).with(QueueManager::MGR_KEY).and_return qm
+    @servlet_context.should_receive(:removeAttribute).with(QueueManager::MGR_KEY)
     qm.should_receive(:destroy)
     @listener.contextDestroyed(@listener_event)
   end
@@ -49,7 +49,7 @@ describe DefaultQueueManager do
   end
 
   it "should set up a connection with a message listener" do
-    app_factory = RackApplicationFactory.impl {}
+    app_factory = Java::OrgJRubyRack::RackApplicationFactory.impl {}
     @rack_context.should_receive(:getRackFactory).and_return app_factory
     conn = mock "connection"
     @connection_factory.should_receive(:createConnection).and_return conn
@@ -62,5 +62,24 @@ describe DefaultQueueManager do
     consumer.should_receive(:setMessageListener).with(an_instance_of(javax.jms.MessageListener))
     conn.should_receive(:start)
     @queue_manager.listen("myqueue")
+  end
+
+  it "should shutdown a connection when closed" do
+    app_factory = Java::OrgJRubyRack::RackApplicationFactory.impl {}
+    @rack_context.stub!(:getRackFactory).and_return app_factory
+    conn = mock "connection"
+    @connection_factory.stub!(:createConnection).and_return conn
+    session = mock "session"
+    conn.stub!(:createSession).and_return session
+    dest = javax.jms.Destination.impl {}
+    @context.stub!(:lookup).with("myqueue").and_return dest
+    consumer = mock "consumer"
+    session.stub!(:createConsumer).and_return consumer
+    consumer.stub!(:setMessageListener)
+    conn.should_receive(:start)
+    @queue_manager.listen("myqueue")
+
+    conn.should_receive(:close)
+    @queue_manager.close("myqueue")
   end
 end

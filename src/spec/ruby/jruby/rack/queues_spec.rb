@@ -10,16 +10,18 @@ require 'jruby/rack/queues'
 describe JRuby::Rack::Queues do
   before :each do
     $servlet_context = @servlet_context
+    @queue_manager = mock "queue manager"
+    @servlet_context.stub!(:getAttribute).and_return @queue_manager
   end
+
   after :each do
     $servlet_context = nil
+    class JRuby::Rack::Queues; @queue_manager = nil; end
   end
 
   it "#with_jms_connection should yield a JMS connection" do
-    qm = mock "queue manager"
-    @servlet_context.should_receive(:getAttribute).with(org.jruby.rack.jms.QueueContextListener::MGR_KEY).and_return qm
     conn_factory = mock "connection factory"
-    qm.should_receive(:getConnectionFactory).and_return conn_factory
+    @queue_manager.should_receive(:getConnectionFactory).and_return conn_factory
     conn = mock "connection"
     conn_factory.should_receive(:createConnection).ordered.and_return conn
     conn.should_receive(:createMessage).ordered
@@ -28,6 +30,21 @@ describe JRuby::Rack::Queues do
     JRuby::Rack::Queues.with_jms_connection do |c|
       c.createMessage
     end
+  end
+
+  it "#register_listener should ensure the queue manager is listening and stash away the listener" do
+    listener = mock "listener"
+    @queue_manager.should_receive(:listen).with "FooQ"
+    JRuby::Rack::Queues.register_listener "FooQ", listener
+    JRuby::Rack::Queues.listeners["FooQ"].listener.should == listener
+  end
+
+  it "#unregister_listener should remove the listener and close the queue" do
+    listener = mock "listener"
+    JRuby::Rack::Queues.listeners["FooQ"] = JRuby::Rack::Queues::MessageDispatcher.new(listener)
+    @queue_manager.should_receive(:close).with "FooQ"
+    JRuby::Rack::Queues.unregister_listener(listener)
+    JRuby::Rack::Queues.listeners["FooQ"].should be_nil
   end
 end
 

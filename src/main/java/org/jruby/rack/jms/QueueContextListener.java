@@ -16,7 +16,6 @@ import org.jruby.rack.servlet.ServletRackContext;
  * @author nicksieger
  */
 public class QueueContextListener implements ServletContextListener {
-    public static final String MGR_KEY = "rack.queue.manager";
     private QueueManagerFactory factory;
     
     public QueueContextListener() {
@@ -32,16 +31,16 @@ public class QueueContextListener implements ServletContextListener {
         try {
             QueueManager qm = newQueueManagerFactory().newQueueManager();
             qm.init(new ServletRackContext(servletContext));
-            servletContext.setAttribute(MGR_KEY, qm);
+            servletContext.setAttribute(QueueManager.MGR_KEY, qm);
         } catch (Exception e) {
             servletContext.log("Error initializing queue manager:" + e.getMessage(), e);
         }
     }
 
     public void contextDestroyed(ServletContextEvent event) {
-        QueueManager qm = (QueueManager) event.getServletContext().getAttribute(MGR_KEY);
+        QueueManager qm = (QueueManager) event.getServletContext().getAttribute(QueueManager.MGR_KEY);
         if (qm != null) {
-            event.getServletContext().removeAttribute(MGR_KEY);
+            event.getServletContext().removeAttribute(QueueManager.MGR_KEY);
             qm.destroy();
         }
     }

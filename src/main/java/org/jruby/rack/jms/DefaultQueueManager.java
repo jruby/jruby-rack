@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -81,6 +82,13 @@ public class DefaultQueueManager implements QueueManager {
         }
     }
 
+    public synchronized void close(String queueName) {
+        Connection conn = queues.remove(queueName);
+        if (conn != null) {
+            closeConnection(conn);
+        }
+    }
+
     public ConnectionFactory getConnectionFactory() {
         return connectionFactory;
     }
@@ -92,14 +100,18 @@ public class DefaultQueueManager implements QueueManager {
     public void destroy() {
         for (Iterator it = queues.entrySet().iterator(); it.hasNext();) {
             Map.Entry<String,Connection> entry = (Map.Entry<String, Connection>) it.next();
-            try {
-                entry.getValue().close();
-            } catch (Exception e) {
-                context.log("exception while closing connection: " + e.getMessage(), e);
-            }
+            closeConnection(entry.getValue());
         }
         queues.clear();
         connectionFactory = null;
+    }
+
+    private void closeConnection(Connection conn) {
+        try {
+            conn.close();
+        } catch (Exception e) {
+            context.log("exception while closing connection: " + e.getMessage(), e);
+        }
     }
 
     private class RubyObjectMessageListener implements MessageListener {

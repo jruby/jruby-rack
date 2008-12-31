@@ -46,6 +46,13 @@ module JRuby
         queue_manager.listen(queue_name)
       end
 
+      def self.unregister_listener(listener)
+        if kv = self.listeners.detect {|k,v| v.listener == listener }
+          self.listeners.delete(kv.first)
+          queue_manager.close(kv.first)
+        end
+      end
+
       def self.listeners
         @listeners ||= {}
       end
@@ -62,10 +69,12 @@ module JRuby
       end
 
       def self.queue_manager
-        @queue_manager ||= $servlet_context.getAttribute(Java::OrgJrubyRackJms::QueueContextListener::MGR_KEY)
+        @queue_manager ||= $servlet_context.getAttribute(Java::OrgJrubyRackJms::QueueManager::MGR_KEY)
       end
 
       class MessageDispatcher
+        attr_reader :listener
+
         def initialize(listener)
           @listener = listener
         end
