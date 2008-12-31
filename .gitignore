@@ -3,7 +3,7 @@ target
 *.log
 log
 examples/*/tmp
-examples/*/activemq-data
+activemq-data
 examples/merb/merb.war
 examples/rails/rails.war
 examples/camping/camping.war
