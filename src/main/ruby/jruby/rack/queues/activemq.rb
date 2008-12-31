@@ -21,6 +21,9 @@ class JRuby::Rack::Queues
     ensure
       activemq.register_jndi_properties
       ::JRuby::Rack::Queues.start_queue_manager
+      at_exit do
+        ::JRuby::Rack::Queues.queue_manager.destroy
+      end
     end
 
     attr_writer :url, :topics, :queues
