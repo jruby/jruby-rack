@@ -1,5 +1,5 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
@@ -22,6 +22,7 @@ require 'jruby/rack/queues'
 # by prepending a queue name argument.
 #
 #     obj.send_message "DullQ", "hi" # => sends to "DullQ"
+#
 module JRuby::Rack::Queues::MessageSender
   def self.To(queue)
     m = Module.new do

@@ -8,14 +8,13 @@ module JRuby
   module Rack
     class Queues
       Session = Java::JavaxJms::Session
-      TextMessage = Java::JavaxJms::TextMessage
       MARSHAL_PAYLOAD = "ruby_marshal_payload"
 
       # Called into by the JRuby-Rack java code when an asynchronous message
       # is received.
       def self.receive_message(queue_name, message)
         listener = self.listeners[queue_name]
-        return unless listener
+        raise_dispatch_error(message) unless listener
         listener.dispatch(message)
       end
 
@@ -110,8 +109,7 @@ module JRuby
           if Class === listener
             dispatch(message, listener.new)
           else
-            $servlet_context.log "Unable to dispatch: #{message.inspect}" if $servlet_context
-            raise "Unable to dispatch: #{message.inspect}"
+            JRuby::Rack::Queues.raise_dispatch_error(message)
           end
         end
 
@@ -128,6 +126,11 @@ module JRuby
           end
           message
         end
+      end
+
+      def self.raise_dispatch_error(message)
+        $servlet_context.log "Unable to dispatch: #{message.inspect}" if $servlet_context
+        raise "Unable to dispatch: #{message.inspect}"
       end
     end
   end

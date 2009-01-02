@@ -27,6 +27,13 @@ describe JRuby::Rack::Queues do
     conn
   end
 
+  def mock_message(text)
+    message = mock "message"
+    message.stub!(:getBooleanProperty).and_return false
+    message.stub!(:getText).and_return text
+    message
+  end
+
   it "#with_jms_connection should yield a JMS connection" do
     conn = mock_connection
     conn.should_receive(:createMessage).ordered
@@ -87,19 +94,25 @@ describe JRuby::Rack::Queues do
     JRuby::Rack::Queues.send_message "FooQ", "hello"
   end
 
-  it "#register_listener should ensure the queue manager is listening and stash away the listener" do
+  it "#register_listener should ensure the queue manager is listening and store the listener" do
     listener = mock "listener"
     @queue_manager.should_receive(:listen).with "FooQ"
     JRuby::Rack::Queues.register_listener "FooQ", listener
-    JRuby::Rack::Queues.listeners["FooQ"].listener.should == listener
+    listener.should_receive(:call).with("hi")
+    JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi"))
   end
 
   it "#unregister_listener should remove the listener and close the queue" do
     listener = mock "listener"
-    JRuby::Rack::Queues.listeners["FooQ"] = JRuby::Rack::Queues::MessageDispatcher.new(listener)
+    @queue_manager.should_receive(:listen).with "FooQ"
+    JRuby::Rack::Queues.register_listener "FooQ", listener
     @queue_manager.should_receive(:close).with "FooQ"
     JRuby::Rack::Queues.unregister_listener(listener)
-    JRuby::Rack::Queues.listeners["FooQ"].should be_nil
+    lambda { JRuby::Rack::Queues.receive_message("FooQ", mock_message("msg")) }.should raise_error
+  end
+
+  it "#receive_message should raise an exception if there is no listener for the queue" do
+    lambda { JRuby::Rack::Queues.receive_message("NoQ", "hi") }.should raise_error
   end
 end
 
