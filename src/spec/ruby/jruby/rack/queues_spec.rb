@@ -1,5 +1,5 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
@@ -19,17 +19,72 @@ describe JRuby::Rack::Queues do
     class JRuby::Rack::Queues; @queue_manager = nil; end
   end
 
-  it "#with_jms_connection should yield a JMS connection" do
+  def mock_connection
     conn_factory = mock "connection factory"
     @queue_manager.should_receive(:getConnectionFactory).and_return conn_factory
     conn = mock "connection"
     conn_factory.should_receive(:createConnection).ordered.and_return conn
+    conn
+  end
+
+  it "#with_jms_connection should yield a JMS connection" do
+    conn = mock_connection
     conn.should_receive(:createMessage).ordered
     conn.should_receive(:close).ordered
 
     JRuby::Rack::Queues.with_jms_connection do |c|
       c.createMessage
     end
+  end
+
+  it "#send_message should create a session, producer and message" do
+    conn = mock_connection
+    queue = mock "queue"
+    session = mock "session"
+    producer = mock "producer"
+    message = mock "message"
+    @queue_manager.should_receive(:lookup).with("FooQ").and_return queue
+    conn.should_receive(:createSession).and_return session
+    conn.should_receive(:close)
+    session.should_receive(:createProducer).with(queue).and_return producer
+    session.should_receive(:createBytesMessage).and_return message
+    message.should_receive(:setBooleanProperty).with(JRuby::Rack::Queues::MARSHAL_PAYLOAD, true)
+    message.should_receive(:writeBytes)
+    producer.should_receive(:send).with(message)
+    JRuby::Rack::Queues.send_message("FooQ", Object.new)
+  end
+
+  it "#send_message should accept a block that allows construction of the message" do
+    conn = mock_connection
+    queue = mock "queue"
+    session = mock "session"
+    producer = mock "producer"
+    message = mock "message"
+    @queue_manager.should_receive(:lookup).with("FooQ").and_return queue
+    conn.should_receive(:createSession).and_return session
+    conn.should_receive(:close)
+    session.should_receive(:createProducer).with(queue).and_return producer
+    session.should_receive(:createTextMessage).and_return message
+    producer.should_receive(:send).with(message)
+    JRuby::Rack::Queues.send_message "FooQ" do |sess|
+      session.createTextMessage
+    end
+  end
+
+  it "#send_message should create a text message when handed a string message argument" do
+    conn = mock_connection
+    queue = mock "queue"
+    session = mock "session"
+    producer = mock "producer"
+    message = mock "message"
+    @queue_manager.should_receive(:lookup).with("FooQ").and_return queue
+    conn.should_receive(:createSession).and_return session
+    conn.should_receive(:close)
+    session.should_receive(:createProducer).with(queue).and_return producer
+    session.should_receive(:createTextMessage).and_return message
+    message.should_receive(:setText).with("hello")
+    producer.should_receive(:send).with(message)
+    JRuby::Rack::Queues.send_message "FooQ", "hello"
   end
 
   it "#register_listener should ensure the queue manager is listening and stash away the listener" do

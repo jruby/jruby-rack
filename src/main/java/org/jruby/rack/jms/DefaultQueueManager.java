@@ -10,7 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import javax.jms.Message;
 import javax.jms.MessageListener;

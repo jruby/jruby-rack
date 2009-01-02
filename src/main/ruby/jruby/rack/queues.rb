@@ -1,5 +1,5 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
@@ -31,6 +31,9 @@ module JRuby
           producer = session.createProducer(queue)
           if block
             message = yield session
+          elsif String === message_data
+            message = session.createTextMessage
+            message.setText message_data
           else
             message = session.createBytesMessage
             message.setBooleanProperty(MARSHAL_PAYLOAD, true)
