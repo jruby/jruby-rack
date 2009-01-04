@@ -16,7 +16,10 @@ describe JRuby::Rack::Queues do
 
   after :each do
     $servlet_context = nil
-    class JRuby::Rack::Queues; @queue_manager = nil; end
+    class JRuby::Rack::Queues
+      @queue_manager = nil
+      clear_listeners
+    end
   end
 
   def mock_connection
@@ -113,6 +116,50 @@ describe JRuby::Rack::Queues do
 
   it "#receive_message should raise an exception if there is no listener for the queue" do
     lambda { JRuby::Rack::Queues.receive_message("NoQ", "hi") }.should raise_error
+  end
+
+  it "#register_listener should allow multiple listeners per queue" do
+    listener1 = mock "listener 1"
+    listener2 = mock "listener 2"
+    @queue_manager.stub!(:listen)
+    JRuby::Rack::Queues.register_listener "FooQ", listener1
+    JRuby::Rack::Queues.register_listener "FooQ", listener2
+    listener1.should_receive(:call).with("hi")
+    listener2.should_receive(:call).with("hi")
+    JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi"))
+  end
+
+  it "#register_listener should only allow a given listener to be registered once per queue" do
+    listener = mock "listener"
+    @queue_manager.stub!(:listen)
+    JRuby::Rack::Queues.register_listener "FooQ", listener
+    JRuby::Rack::Queues.register_listener "FooQ", listener
+    listener.should_receive(:call).with("hi").once
+    JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi"))
+  end
+
+
+  it "#unregister_listener should only remove the given listener and not close the queue" do
+    listener1 = mock "listener 1"
+    listener2 = mock "listener 2"
+    @queue_manager.stub!(:listen)
+    @queue_manager.should_not_receive(:close)
+    JRuby::Rack::Queues.register_listener "FooQ", listener1
+    JRuby::Rack::Queues.register_listener "FooQ", listener2
+    JRuby::Rack::Queues.unregister_listener listener2
+    listener1.should_receive(:call).with("hi")
+    JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi"))
+  end
+
+  it "should deliver the message to all listeners, but raise the first of any exceptions raised" do
+    listener1 = mock "listener 1"
+    listener2 = mock "listener 2"
+    @queue_manager.stub!(:listen)
+    JRuby::Rack::Queues.register_listener "FooQ", listener1
+    JRuby::Rack::Queues.register_listener "FooQ", listener2
+    listener1.should_receive(:call).with("hi").and_raise "error 1"
+    listener2.should_receive(:call).with("hi").and_raise "error 2"
+    lambda { JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi")) }.should raise_error("error 1")
   end
 end
 

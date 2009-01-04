@@ -13,7 +13,7 @@ module JRuby
       # Called into by the JRuby-Rack java code when an asynchronous message
       # is received.
       def self.receive_message(queue_name, message)
-        listener = self.listeners[queue_name]
+        listener = listeners[queue_name]
         raise_dispatch_error(message) unless listener
         listener.dispatch(message)
       end
@@ -44,21 +44,27 @@ module JRuby
 
       # Register a Ruby listener on the given queue.
       def self.register_listener(queue_name, listener = nil, &block)
-        self.listeners[queue_name] = MessageDispatcher.new(block.nil? ? listener : block)
+        array_dispatcher = (listeners[queue_name] ||= ArrayMessageDispatcher.new)
+        array_dispatcher.add_dispatcher MessageDispatcher.new(block.nil? ? listener : block)
         queue_manager.listen(queue_name)
       end
 
       def self.unregister_listener(listener)
-        if kvs = self.listeners.select {|k,v| v.listener == listener }
-          kvs.each do |kv|
-            self.listeners.delete(kv.first)
-            queue_manager.close(kv.first)
+        listeners.delete_if do |k,v|
+          v.delete_listener listener
+          if v.empty?
+            queue_manager.close(k)
+            true
           end
         end
       end
 
       def self.listeners
         @listeners ||= {}
+      end
+
+      def self.clear_listeners
+        listeners.clear
       end
 
       # Helper method that yields a JMS connection resource, closing it after
@@ -125,6 +131,37 @@ module JRuby
             message = message.getText
           end
           message
+        end
+      end
+
+      class ArrayMessageDispatcher
+        def initialize
+          @dispatchers = []
+        end
+
+        def add_dispatcher(d)
+          @dispatchers << d unless @dispatchers.detect {|dispatcher| dispatcher.listener == d.listener }
+          self
+        end
+
+        def delete_listener(l)
+          @dispatchers.delete_if {|dispatcher| dispatcher.listener == l }
+        end
+
+        def empty?
+          @dispatchers.empty?
+        end
+
+        def dispatch(message)
+          raised_exception = nil
+          @dispatchers.each do |l|
+            begin
+              l.dispatch(message)
+            rescue Exception => e
+              raised_exception ||= e
+            end
+          end
+          raise raised_exception if raised_exception
         end
       end
 
