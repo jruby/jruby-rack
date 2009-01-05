@@ -1,5 +1,5 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
@@ -10,7 +10,7 @@ require 'jruby/rack/queues/message_listener'
 describe JRuby::Rack::Queues::MessageListener do
   it "should listen to a queue" do
     klass = Class.new(JRuby::Rack::Queues::MessageListener)
-    JRuby::Rack::Queues.should_receive(:register_listener).with("FooQ", klass)
+    JRuby::Rack::Queues::Registry.should_receive(:register_listener).with("FooQ", klass)
     klass.listen_to("FooQ")
   end
 

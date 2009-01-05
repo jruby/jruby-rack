@@ -1,5 +1,5 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
@@ -23,7 +23,7 @@ require 'jruby/rack/queues'
 class JRuby::Rack::Queues::MessageListener
   def self.listen_to(queue)
     @queue = queue
-    JRuby::Rack::Queues.register_listener(queue, self)
+    JRuby::Rack::Queues::Registry.register_listener(queue, self)
   end
 
   def on_message(message)

@@ -41,6 +41,6 @@ module JRuby::Rack::Queues::MessageSender
     if args_length < 2 && respond_to?(:default_destination)
       args.unshift default_destination
     end
-    JRuby::Rack::Queues.send_message(*args[0..1], &block)
+    JRuby::Rack::Queues::Registry.send_message(*args[0..1], &block)
   end
 end

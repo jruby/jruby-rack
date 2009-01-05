@@ -1,5 +1,5 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
@@ -14,6 +14,22 @@ describe JRuby::Rack::Queues::ActiveMQ do
 
   def jndi_properties
     JRuby::Rack::Queues::LocalContext.init_parameters["jms.jndi.properties"]
+  end
+
+  it "configure should start the queue manager and register an at_exit handler to stop it" do
+    JRuby::Rack::Queues::Registry.should_receive(:start_queue_manager).ordered
+    JRuby::Rack::Queues::Registry.should_receive(:stop_queue_manager).ordered
+    active_mq = JRuby::Rack::Queues::ActiveMQ
+    def active_mq.at_exit(&block)
+      @exit_block = block
+    end
+    def active_mq.exit_block
+      @exit_block
+    end
+    active_mq.configure do |amq|
+      amq
+    end
+    active_mq.exit_block.call
   end
 
   it "should put the specified URL in the JNDI properties" do

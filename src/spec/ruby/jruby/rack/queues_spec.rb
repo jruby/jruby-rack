@@ -12,14 +12,11 @@ describe JRuby::Rack::Queues do
     $servlet_context = @servlet_context
     @queue_manager = mock "queue manager"
     @servlet_context.stub!(:getAttribute).and_return @queue_manager
+    @registry = JRuby::Rack::Queues::QueueRegistry.new
   end
 
   after :each do
     $servlet_context = nil
-    class JRuby::Rack::Queues
-      @queue_manager = nil
-      clear_listeners
-    end
   end
 
   def mock_connection
@@ -42,7 +39,7 @@ describe JRuby::Rack::Queues do
     conn.should_receive(:createMessage).ordered
     conn.should_receive(:close).ordered
 
-    JRuby::Rack::Queues.with_jms_connection do |c|
+    @registry.with_jms_connection do |c|
       c.createMessage
     end
   end
@@ -61,7 +58,7 @@ describe JRuby::Rack::Queues do
     message.should_receive(:setBooleanProperty).with(JRuby::Rack::Queues::MARSHAL_PAYLOAD, true)
     message.should_receive(:writeBytes)
     producer.should_receive(:send).with(message)
-    JRuby::Rack::Queues.send_message("FooQ", Object.new)
+    @registry.send_message("FooQ", Object.new)
   end
 
   it "#send_message should accept a block that allows construction of the message" do
@@ -76,7 +73,7 @@ describe JRuby::Rack::Queues do
     session.should_receive(:createProducer).with(queue).and_return producer
     session.should_receive(:createTextMessage).and_return message
     producer.should_receive(:send).with(message)
-    JRuby::Rack::Queues.send_message "FooQ" do |sess|
+    @registry.send_message "FooQ" do |sess|
       session.createTextMessage
     end
   end
@@ -94,48 +91,48 @@ describe JRuby::Rack::Queues do
     session.should_receive(:createTextMessage).and_return message
     message.should_receive(:setText).with("hello")
     producer.should_receive(:send).with(message)
-    JRuby::Rack::Queues.send_message "FooQ", "hello"
+    @registry.send_message "FooQ", "hello"
   end
 
   it "#register_listener should ensure the queue manager is listening and store the listener" do
     listener = mock "listener"
     @queue_manager.should_receive(:listen).with "FooQ"
-    JRuby::Rack::Queues.register_listener "FooQ", listener
+    @registry.register_listener "FooQ", listener
     listener.should_receive(:call).with("hi")
-    JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi"))
+    @registry.receive_message("FooQ", mock_message("hi"))
   end
 
   it "#unregister_listener should remove the listener and close the queue" do
     listener = mock "listener"
     @queue_manager.should_receive(:listen).with "FooQ"
-    JRuby::Rack::Queues.register_listener "FooQ", listener
+    @registry.register_listener "FooQ", listener
     @queue_manager.should_receive(:close).with "FooQ"
-    JRuby::Rack::Queues.unregister_listener(listener)
-    lambda { JRuby::Rack::Queues.receive_message("FooQ", mock_message("msg")) }.should raise_error
+    @registry.unregister_listener(listener)
+    lambda { @registry.receive_message("FooQ", mock_message("msg")) }.should raise_error
   end
 
   it "#receive_message should raise an exception if there is no listener for the queue" do
-    lambda { JRuby::Rack::Queues.receive_message("NoQ", "hi") }.should raise_error
+    lambda { @registry.receive_message("NoQ", "hi") }.should raise_error
   end
 
   it "#register_listener should allow multiple listeners per queue" do
     listener1 = mock "listener 1"
     listener2 = mock "listener 2"
     @queue_manager.stub!(:listen)
-    JRuby::Rack::Queues.register_listener "FooQ", listener1
-    JRuby::Rack::Queues.register_listener "FooQ", listener2
+    @registry.register_listener "FooQ", listener1
+    @registry.register_listener "FooQ", listener2
     listener1.should_receive(:call).with("hi")
     listener2.should_receive(:call).with("hi")
-    JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi"))
+    @registry.receive_message("FooQ", mock_message("hi"))
   end
 
   it "#register_listener should only allow a given listener to be registered once per queue" do
     listener = mock "listener"
     @queue_manager.stub!(:listen)
-    JRuby::Rack::Queues.register_listener "FooQ", listener
-    JRuby::Rack::Queues.register_listener "FooQ", listener
+    @registry.register_listener "FooQ", listener
+    @registry.register_listener "FooQ", listener
     listener.should_receive(:call).with("hi").once
-    JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi"))
+    @registry.receive_message("FooQ", mock_message("hi"))
   end
 
 
@@ -144,22 +141,22 @@ describe JRuby::Rack::Queues do
     listener2 = mock "listener 2"
     @queue_manager.stub!(:listen)
     @queue_manager.should_not_receive(:close)
-    JRuby::Rack::Queues.register_listener "FooQ", listener1
-    JRuby::Rack::Queues.register_listener "FooQ", listener2
-    JRuby::Rack::Queues.unregister_listener listener2
+    @registry.register_listener "FooQ", listener1
+    @registry.register_listener "FooQ", listener2
+    @registry.unregister_listener listener2
     listener1.should_receive(:call).with("hi")
-    JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi"))
+    @registry.receive_message("FooQ", mock_message("hi"))
   end
 
   it "should deliver the message to all listeners, but raise the first of any exceptions raised" do
     listener1 = mock "listener 1"
     listener2 = mock "listener 2"
     @queue_manager.stub!(:listen)
-    JRuby::Rack::Queues.register_listener "FooQ", listener1
-    JRuby::Rack::Queues.register_listener "FooQ", listener2
+    @registry.register_listener "FooQ", listener1
+    @registry.register_listener "FooQ", listener2
     listener1.should_receive(:call).with("hi").and_raise "error 1"
     listener2.should_receive(:call).with("hi").and_raise "error 2"
-    lambda { JRuby::Rack::Queues.receive_message("FooQ", mock_message("hi")) }.should raise_error("error 1")
+    lambda { @registry.receive_message("FooQ", mock_message("hi")) }.should raise_error("error 1")
   end
 end
 

@@ -6,81 +6,90 @@
 
 module JRuby
   module Rack
-    class Queues
+    module Queues
       Session = Java::JavaxJms::Session
       MARSHAL_PAYLOAD = "ruby_marshal_payload"
 
-      # Called into by the JRuby-Rack java code when an asynchronous message
-      # is received.
-      def self.receive_message(queue_name, message)
-        listener = listeners[queue_name]
-        raise_dispatch_error(message) unless listener
-        listener.dispatch(message)
-      end
-
-      # Sends a message to the named queue. The message is assumed to be a Ruby
-      # object that will be marshalled and delivered to a Ruby receiver.
-      #
-      # If a block is given, the JMS session object is yielded, and allows custom
-      # message construction. The block should return a JMS Message object.
-      def self.send_message(queue_name, message_data = nil, &block)
-        with_jms_connection do |connection|
-          queue = queue_manager.lookup(queue_name)
-          session = connection.createSession(false, Session::AUTO_ACKNOWLEDGE)
-          producer = session.createProducer(queue)
-          if block
-            message = yield session
-          elsif String === message_data
-            message = session.createTextMessage
-            message.setText message_data
-          else
-            message = session.createBytesMessage
-            message.setBooleanProperty(MARSHAL_PAYLOAD, true)
-            message.writeBytes(Marshal.dump(message_data).to_java_bytes)
-          end
-          producer.send(message)
+      class QueueRegistry
+        # Called into by the JRuby-Rack java code when an asynchronous message
+        # is received.
+        def receive_message(queue_name, message)
+          listener = listeners[queue_name]
+          raise_dispatch_error(message) unless listener
+          listener.dispatch(message)
         end
-      end
 
-      # Register a Ruby listener on the given queue.
-      def self.register_listener(queue_name, listener = nil, &block)
-        array_dispatcher = (listeners[queue_name] ||= ArrayMessageDispatcher.new)
-        array_dispatcher.add_dispatcher MessageDispatcher.new(block.nil? ? listener : block)
-        queue_manager.listen(queue_name)
-      end
-
-      def self.unregister_listener(listener)
-        listeners.delete_if do |k,v|
-          v.delete_listener listener
-          if v.empty?
-            queue_manager.close(k)
-            true
+        # Sends a message to the named queue. The message is assumed to be a Ruby
+        # object that will be marshalled and delivered to a Ruby receiver.
+        #
+        # If a block is given, the JMS session object is yielded, and allows custom
+        # message construction. The block should return a JMS Message object.
+        def send_message(queue_name, message_data = nil, &block)
+          with_jms_connection do |connection|
+            queue = queue_manager.lookup(queue_name)
+            session = connection.createSession(false, Session::AUTO_ACKNOWLEDGE)
+            producer = session.createProducer(queue)
+            if block
+              message = yield session
+            elsif String === message_data
+              message = session.createTextMessage
+              message.setText message_data
+            else
+              message = session.createBytesMessage
+              message.setBooleanProperty(MARSHAL_PAYLOAD, true)
+              message.writeBytes(Marshal.dump(message_data).to_java_bytes)
+            end
+            producer.send(message)
           end
         end
-      end
 
-      def self.listeners
-        @listeners ||= {}
-      end
+        # Register a Ruby listener on the given queue.
+        def register_listener(queue_name, listener = nil, &block)
+          array_dispatcher = (listeners[queue_name] ||= ArrayMessageDispatcher.new)
+          array_dispatcher.add_dispatcher MessageDispatcher.new(block.nil? ? listener : block)
+          queue_manager.listen(queue_name)
+        end
 
-      def self.clear_listeners
-        listeners.clear
-      end
+        def unregister_listener(listener)
+          listeners.delete_if do |k,v|
+            v.delete_listener listener
+            if v.empty?
+              queue_manager.close(k)
+              true
+            end
+          end
+        end
 
-      # Helper method that yields a JMS connection resource, closing it after
-      # the block completes.
-      def self.with_jms_connection
-        conn = queue_manager.getConnectionFactory.createConnection
-        begin
-          yield conn
-        ensure
-          conn.close
+        def listeners
+          @listeners ||= {}
+        end
+
+        def clear_listeners
+          listeners.clear
+        end
+
+        # Helper method that yields a JMS connection resource, closing it after
+        # the block completes.
+        def with_jms_connection
+          conn = queue_manager.getConnectionFactory.createConnection
+          begin
+            yield conn
+          ensure
+            conn.close
+          end
+        end
+
+        def queue_manager
+          @queue_manager ||= $servlet_context.getAttribute(Java::OrgJrubyRackJms::QueueManager::MGR_KEY)
+        end
+
+        def raise_dispatch_error(message)
+          $servlet_context.log "Unable to dispatch: #{message.inspect}" if $servlet_context
+          raise "Unable to dispatch: #{message.inspect}"
         end
       end
 
-      def self.queue_manager
-        @queue_manager ||= $servlet_context.getAttribute(Java::OrgJrubyRackJms::QueueManager::MGR_KEY)
-      end
+      Registry = QueueRegistry.new
 
       class MessageDispatcher
         attr_reader :listener
@@ -115,7 +124,7 @@ module JRuby
           if Class === listener
             dispatch(message, listener.new)
           else
-            JRuby::Rack::Queues.raise_dispatch_error(message)
+            JRuby::Rack::Queues::Registry.raise_dispatch_error(message)
           end
         end
 
@@ -163,11 +172,6 @@ module JRuby
           end
           raise raised_exception if raised_exception
         end
-      end
-
-      def self.raise_dispatch_error(message)
-        $servlet_context.log "Unable to dispatch: #{message.inspect}" if $servlet_context
-        raise "Unable to dispatch: #{message.inspect}"
       end
     end
   end

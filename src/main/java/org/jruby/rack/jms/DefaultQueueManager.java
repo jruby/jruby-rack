@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2008 Sun Microsystems, Inc.
+ * Copyright 2007-2009 Sun Microsystems, Inc.
  * This source code is available under the MIT license.
  * See the file LICENSE.txt for details.
  */
@@ -126,7 +126,7 @@ public class DefaultQueueManager implements QueueManager {
             try {
                 app = rackFactory.getApplication();
                 Ruby runtime = app.getRuntime();
-                IRubyObject obj = rubyRuntimeAdapter.eval(runtime, "JRuby::Rack::Queues");
+                IRubyObject obj = rubyRuntimeAdapter.eval(runtime, "JRuby::Rack::Queues::Registry");
                 rubyObjectAdapter.callMethod(obj, "receive_message", new IRubyObject[] {
                     JavaEmbedUtils.javaToRuby(runtime, queueName),
                     JavaEmbedUtils.javaToRuby(runtime, message)});

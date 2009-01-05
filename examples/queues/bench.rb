@@ -18,7 +18,7 @@ class JRuby::Rack::Queues
   @running = true
   @counter = Java::JavaUtilConcurrentAtomic::AtomicInteger.new
 
-  register_listener Q do |msg|
+  Registry.register_listener Q do |msg|
     val = @counter.incrementAndGet
     if val == NUM_MSGS
       time = Time.now - @start
@@ -32,7 +32,7 @@ class JRuby::Rack::Queues
   @start = Time.now
   1.upto(NUM_MSGS) do
     print '.'
-    send_message Q, "hello-#{'%.02f' % rand}"
+    Registry.send_message Q, "hello-#{'%.02f' % rand}"
   end
 
   while @running
