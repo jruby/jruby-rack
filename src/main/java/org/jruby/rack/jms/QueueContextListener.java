@@ -9,6 +9,7 @@ package org.jruby.rack.jms;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import org.jruby.rack.servlet.ServletRackContext;
 
 /**
  *
@@ -30,7 +31,7 @@ public class QueueContextListener implements ServletContextListener {
         final ServletContext servletContext = event.getServletContext();
         try {
             QueueManager qm = newQueueManagerFactory().newQueueManager();
-            qm.init(servletContext);
+            qm.init(new ServletRackContext(servletContext));
             servletContext.setAttribute(MGR_KEY, qm);
         } catch (Exception e) {
             servletContext.log("Error initializing queue manager:" + e.getMessage(), e);

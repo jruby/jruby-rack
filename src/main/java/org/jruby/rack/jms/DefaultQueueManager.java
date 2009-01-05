@@ -18,14 +18,13 @@ import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.servlet.ServletContext;
 import org.jruby.Ruby;
 import org.jruby.RubyObjectAdapter;
 import org.jruby.RubyRuntimeAdapter;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.RackApplication;
 import org.jruby.rack.RackApplicationFactory;
-import org.jruby.rack.RackServletContextListener;
+import org.jruby.rack.RackContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -34,7 +33,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  */
 public class DefaultQueueManager implements QueueManager {
     private ConnectionFactory connectionFactory = null;
-    private ServletContext context;
+    private RackContext context;
     private Context jndiContext;
     private Map<String,Connection> queues = new HashMap<String,Connection>();
     private RubyRuntimeAdapter rubyRuntimeAdapter = JavaEmbedUtils.newRuntimeAdapter();
@@ -48,7 +47,7 @@ public class DefaultQueueManager implements QueueManager {
         this.jndiContext = ctx;
     }
     
-    public void init(ServletContext context) throws Exception {
+    public void init(RackContext context) throws Exception {
         this.context = context;
         String jndiName = context.getInitParameter("jms.connection.factory");
         if (jndiName != null && connectionFactory == null) {
@@ -101,7 +100,7 @@ public class DefaultQueueManager implements QueueManager {
         private RackApplicationFactory rackFactory;
         public RubyObjectMessageListener(String name) {
             this.queueName = name;
-            this.rackFactory = getRackFactory();
+            this.rackFactory = context.getRackFactory();
         }
 
         public void onMessage(Message message) {
@@ -120,11 +119,6 @@ public class DefaultQueueManager implements QueueManager {
                     rackFactory.finishedWithApplication(app);
                 }
             }
-        }
-
-        private RackApplicationFactory getRackFactory() {
-            return (RackApplicationFactory)
-                context.getAttribute(RackServletContextListener.FACTORY_KEY);
         }
     }
 }

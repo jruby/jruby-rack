@@ -6,6 +6,7 @@
 
 package org.jruby.rack;
 
+import org.jruby.rack.servlet.ServletRackContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -35,7 +36,7 @@ public class RackServletContextListener implements ServletContextListener {
         final RackApplicationFactory fac = newApplicationFactory(ctx);
         ctx.setAttribute(FACTORY_KEY, fac);
         try {
-            fac.init(ctx);
+            fac.init(new ServletRackContext(ctx));
         } catch (Exception ex) {
             ctx.log("Error: application initialization failed", ex);
         }

@@ -45,7 +45,7 @@ describe RackFilter do
       resp.sendError(404)
     end
     @response.should_receive(:reset).ordered
-    @request.should_receive(:setAttribute).ordered.with(org.jruby.rack.RackDispatcher::DYNAMIC_REQS_ONLY, true)
+    @request.should_receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
     @dispatcher.should_receive(:process).with(@request,@response).ordered
     @filter.doFilter(@request, @response, @chain)    
   end

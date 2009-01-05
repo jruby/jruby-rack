@@ -7,7 +7,6 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 import org.jruby.rack.RackApplicationFactory
-import org.jruby.rack.RackServletContextListener
 
 describe RackServletContextListener do
   before(:each) do
@@ -27,7 +26,7 @@ describe RackServletContextListener do
 
     it "should initialize it" do
       @servlet_context.stub!(:setAttribute)
-      @factory.should_receive(:init).with(an_instance_of(javax.servlet.ServletContext))
+      @factory.should_receive(:init).with(an_instance_of(RackContext))
       @listener.contextInitialized @servlet_context_event
     end
 

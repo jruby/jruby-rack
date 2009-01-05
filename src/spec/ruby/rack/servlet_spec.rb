@@ -7,6 +7,7 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 import org.jruby.rack.RackServlet
+import org.jruby.rack.servlet.ServletRackContext
 
 describe RackServlet, "service" do
   it "should delegate to process" do
@@ -16,5 +17,18 @@ describe RackServlet, "service" do
     dispatcher.should_receive(:process).with(request, response)
     @servlet = RackServlet.new dispatcher
     @servlet.service request, response
+  end
+end
+
+describe ServletRackContext, "getRealPath" do
+  before :each do
+    @context = ServletRackContext.new(@servlet_context)
+  end
+
+  it "should use getResource when getRealPath returns nil" do
+    @servlet_context.stub!(:getRealPath).and_return nil
+    url = java.net.URL.new("file:///var/tmp/foo.txt")
+    @servlet_context.should_receive(:getResource).with("/WEB-INF").and_return url
+    @context.getRealPath("/WEB-INF").should == "/var/tmp/foo.txt"
   end
 end

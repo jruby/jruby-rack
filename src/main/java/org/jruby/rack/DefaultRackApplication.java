@@ -7,7 +7,6 @@
 package org.jruby.rack;
 
 import java.io.IOException;
-import javax.servlet.ServletRequest;
 import org.jruby.Ruby;
 import org.jruby.RubyIO;
 import org.jruby.exceptions.RaiseException;
@@ -26,10 +25,10 @@ public class DefaultRackApplication implements RackApplication {
     private IRubyObject application;
     private RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
 
-    public RackResponse call(ServletRequest env) {
+    public RackResponse call(final RackEnvironment env) {
         Ruby runtime = getRuntime();
         try {
-            final RubyIO io = new RubyIO(runtime, env.getInputStream());
+            final RubyIO io = new RubyIO(runtime, env.getInput());
             try {
                 IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
                 servlet_env.getMetaClass().defineMethod("to_io", new Callback() {

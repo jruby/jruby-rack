@@ -6,6 +6,8 @@
 
 package org.jruby.rack;
 
+import org.jruby.rack.servlet.DefaultServletDispatcher;
+import org.jruby.rack.servlet.ServletDispatcher;
 import java.io.IOException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -20,20 +22,20 @@ import javax.servlet.http.HttpServletResponse;
  * @author nicksieger
  */
 public class RackServlet extends HttpServlet {
-    private RackDispatcher dispatcher;
+    private ServletDispatcher dispatcher;
 
     /** Default ctor, used by servlet container */
     public RackServlet() {
     }
 
     /** dependency injection ctor, used by unit tests */
-    public RackServlet(RackDispatcher dispatcher) {
+    public RackServlet(ServletDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 
     @Override
     public void init(ServletConfig config) {
-        this.dispatcher = new DefaultRackDispatcher(config.getServletContext());
+        this.dispatcher = new DefaultServletDispatcher(config.getServletContext());
     }
 
     @Override

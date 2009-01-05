@@ -93,8 +93,7 @@ module JRuby
         def convert_message(message)
           if message.getBooleanProperty(MARSHAL_PAYLOAD)
             payload = ""
-            # what's the most efficient way of doing this?
-            java_bytes = java.lang.reflect.Array.newInstance(java.lang.Byte::TYPE, 1024)
+            java_bytes = Java::byte[1024].new
             while (bytes_read = message.readBytes(java_bytes)) != -1
               payload << String.from_java_bytes(java_bytes)[0..bytes_read]
             end

@@ -4,8 +4,9 @@
  * See the file LICENSE.txt for details.
  */
 
-package org.jruby.rack;
+package org.jruby.rack.servlet;
 
+import org.jruby.rack.*;
 import java.io.IOException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -16,10 +17,10 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author nicksieger
  */
-public class DefaultRackDispatcher implements RackDispatcher {
+public class DefaultServletDispatcher implements ServletDispatcher {
     private ServletContext servletContext;
 
-    public DefaultRackDispatcher(ServletContext servletContext) {
+    public DefaultServletDispatcher(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
 
@@ -29,7 +30,7 @@ public class DefaultRackDispatcher implements RackDispatcher {
         RackApplication app = null;
         try {
             app = rackFactory.getApplication();
-            app.call(request).respond(response);
+            app.call(new ServletRackEnvironment(request)).respond(new ServletRackResponseEnvironment(response));
         } catch (Exception re) {
             handleException(re, rackFactory, request, response);
         } finally {
@@ -55,13 +56,12 @@ public class DefaultRackDispatcher implements RackDispatcher {
 
         try {
             RackApplication errorApp = rackFactory.getErrorApplication();
-            request.setAttribute(EXCEPTION, re);
+            request.setAttribute(RackEnvironment.EXCEPTION, re);
             servletContext.log("Exception caught", re);
-            errorApp.call(request).respond(response);
+            errorApp.call(new ServletRackEnvironment(request)).respond(new ServletRackResponseEnvironment(response));
         } catch (Exception e) {
             servletContext.log("Error: Couldn't handle error", e);
             response.sendError(500);
         }
     }
-
 }

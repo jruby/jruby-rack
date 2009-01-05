@@ -10,16 +10,16 @@ import org.jruby.rack.DefaultRackApplication
 
 describe DefaultRackApplication, "call" do
   it "should invoke the call method on the ruby object and return the rack response" do
-    servlet_request = mock("servlet request")
-    servlet_request.stub!(:getInputStream).and_return(StubServletInputStream.new)
+    server_request = mock("server request")
+    server_request.stub!(:getInput).and_return(StubInputStream.new)
     rack_response = org.jruby.rack.RackResponse.impl {}
 
     ruby_object = mock "application"
-    ruby_object.should_receive(:call).with(servlet_request).and_return rack_response
+    ruby_object.should_receive(:call).with(server_request).and_return rack_response
 
     application = DefaultRackApplication.new
     application.setApplication(ruby_object)
-    application.call(servlet_request).should == rack_response
+    application.call(server_request).should == rack_response
   end
 end
 
@@ -32,8 +32,8 @@ describe DefaultRackApplicationFactory do
 
   describe do
     before :each do
-      @servlet_context.stub!(:getInitParameter).and_return nil
-      @app_factory.init @servlet_context
+      @rack_context.stub!(:getInitParameter).and_return nil
+      @app_factory.init @rack_context
     end
 
     describe "init" do
@@ -63,28 +63,28 @@ describe DefaultRackApplicationFactory do
   describe "newApplication" do
     before :each do
       require 'tempfile'
-      @servlet_context.stub!(:getRealPath).and_return Dir::tmpdir
+      @rack_context.stub!(:getRealPath).and_return Dir::tmpdir
     end
 
     it "should create a Ruby object from the script snippet given" do
-      @servlet_context.stub!(:getInitParameter).and_return("require 'rack/lobster'; Rack::Lobster.new")
-      @app_factory.init @servlet_context
+      @rack_context.stub!(:getInitParameter).and_return("require 'rack/lobster'; Rack::Lobster.new")
+      @app_factory.init @rack_context
       object = @app_factory.newApplication
       object.respond_to?(:call).should == true
     end
 
     it "should raise an exception if creation failed" do
-      @servlet_context.stub!(:getInitParameter).and_return("raise 'something went wrong'")
-      @app_factory.init @servlet_context
+      @rack_context.stub!(:getInitParameter).and_return("raise 'something went wrong'")
+      @app_factory.init @rack_context
       object = @app_factory.newApplication
       lambda { object.init }.should raise_error
     end
 
     it "should change directories to /WEB-INF during application initialization" do
-      @servlet_context.should_receive(:getInitParameter).with("rackup").and_return(
+      @rack_context.should_receive(:getInitParameter).with("rackup").and_return(
         %{class Rack::Handler::Servlet; alias_method :create_env, :create_lazy_env; end;
           pwd = Dir.pwd; run(Proc.new { [200, {'Pwd' => pwd}, ['']] })})
-      @app_factory.init @servlet_context
+      @app_factory.init @rack_context
       object = @app_factory.newApplication
       object.init
       # Using mocks inside of another runtime breaks badly...trust me, this is the best way
@@ -111,8 +111,8 @@ describe DefaultRackApplicationFactory do
 
   describe "getApplication" do
     it "should create an application and initialize it" do
-      @servlet_context.stub!(:getInitParameter).and_return("raise 'init was called'")
-      @app_factory.init @servlet_context
+      @rack_context.stub!(:getInitParameter).and_return("raise 'init was called'")
+      @app_factory.init @rack_context
       lambda { @app_factory.getApplication }.should raise_error
     end
   end
@@ -144,9 +144,9 @@ describe PoolingRackApplicationFactory do
   end
 
   it "should initialize the delegate factory when initialized" do
-    @factory.should_receive(:init).with(@servlet_context)
-    @servlet_context.stub!(:getInitParameter).and_return nil
-    @pool.init(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
+    @rack_context.stub!(:getInitParameter).and_return nil
+    @pool.init(@rack_context)
   end
 
   it "should start out empty" do
@@ -179,56 +179,56 @@ describe PoolingRackApplicationFactory do
 
   it "should create applications during initialization according 
   to the jruby.min.runtimes context parameter" do
-    @factory.should_receive(:init).with(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.should_receive(:init)
       app
     end
-    @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "1"
-    @pool.init(@servlet_context)
+    @rack_context.stub!(:getInitParameter).and_return nil
+    @rack_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "1"
+    @pool.init(@rack_context)
     @pool.getApplicationPool.size.should == 1
   end
 
   it "should not create any new applications beyond the maximum specified
   by the jruby.max.runtimes context parameter" do
-    @factory.should_receive(:init).with(@servlet_context)
-    @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "1"
-    @pool.init(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
+    @rack_context.stub!(:getInitParameter).and_return nil
+    @rack_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "1"
+    @pool.init(@rack_context)
     @pool.finishedWithApplication mock("app1")
     @pool.finishedWithApplication mock("app2")
     @pool.getApplicationPool.size.should == 1
   end
 
   it "should also recognize the jruby.pool.minIdle and jruby.pool.maxActive parameters from Goldspike" do
-    @factory.should_receive(:init).with(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.should_receive(:init)
       app
     end
-    @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("jruby.pool.minIdle").and_return "1"
-    @servlet_context.should_receive(:getInitParameter).with("jruby.pool.maxActive").and_return "2"
-    @pool.init(@servlet_context)
+    @rack_context.stub!(:getInitParameter).and_return nil
+    @rack_context.should_receive(:getInitParameter).with("jruby.pool.minIdle").and_return "1"
+    @rack_context.should_receive(:getInitParameter).with("jruby.pool.maxActive").and_return "2"
+    @pool.init(@rack_context)
     @pool.getApplicationPool.size.should == 1
     @pool.finishedWithApplication mock("app")
     @pool.getApplicationPool.size.should == 2
   end
 
   it "should force the maximum size to be greater or equal to the initial size" do
-    @factory.should_receive(:init).with(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.should_receive(:init)
       app
     end
-    @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "2"
-    @servlet_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "1"
-    @pool.init(@servlet_context)
+    @rack_context.stub!(:getInitParameter).and_return nil
+    @rack_context.should_receive(:getInitParameter).with("jruby.min.runtimes").and_return "2"
+    @rack_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "1"
+    @pool.init(@rack_context)
     @pool.waitForNextAvailable(30)
     @pool.getApplicationPool.size.should == 2
     @pool.finishedWithApplication mock("app")
@@ -251,34 +251,34 @@ describe SharedRackApplicationFactory do
   end
 
   it "should initialize the delegate factory and create the shared application when initialized" do
-    @factory.should_receive(:init).with(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
     @factory.should_receive(:getApplication).and_return app
-    @shared.init(@servlet_context)
+    @shared.init(@rack_context)
   end
 
   it "should throw a servlet exception if the shared application cannot be initialized" do
-    @factory.should_receive(:init).with(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
     @factory.should_receive(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
     lambda {
-      @shared.init(@servlet_context)
+      @shared.init(@rack_context)
     }.should raise_error # TODO: doesn't work w/ raise_error(javax.servlet.ServletException)
   end
 
   it "should return a valid application object even if initialization fails" do
-    @factory.should_receive(:init).with(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
     @factory.should_receive(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
-    @shared.init(@servlet_context) rescue nil
+    @shared.init(@rack_context) rescue nil
     @shared.getApplication.should_not be_nil
   end
 
   it "should return the same application for any newApplication or getApplication call" do
-    @factory.should_receive(:init).with(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
     @factory.should_receive(:getApplication).and_return app
-    @shared.init(@servlet_context)
+    @shared.init(@rack_context)
     1.upto(5) do
       @shared.newApplication.should == app
       @shared.getApplication.should == app
@@ -287,11 +287,11 @@ describe SharedRackApplicationFactory do
   end
 
   it "should call destroy on the shared application when destroyed" do
-    @factory.should_receive(:init).with(@servlet_context)
+    @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
     @factory.should_receive(:getApplication).and_return app
     app.should_receive(:destroy)
-    @shared.init(@servlet_context)
+    @shared.init(@rack_context)
     @shared.destroy
   end
 

@@ -99,74 +99,65 @@ end
 
 describe JRuby::Rack::ServletHelper do
   before :each do
-    @servlet_context.stub!(:getInitParameter).and_return nil
-    @servlet_context.stub!(:getRealPath).and_return "/"
+    @rack_context.stub!(:getInitParameter).and_return nil
+    @rack_context.stub!(:getRealPath).and_return "/"
   end
 
   def create_helper
-    @helper = JRuby::Rack::ServletHelper.new @servlet_context
+    @helper = JRuby::Rack::ServletHelper.new @rack_context
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
-    @servlet_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
-    @servlet_context.should_receive(:getRealPath).with("/blah").and_return "."
+    @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
+    @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
     create_helper
     @helper.public_root.should == "."
   end
 
   it "should convert public.root to not have any trailing slashes" do
-    @servlet_context.should_receive(:getInitParameter).with("public.root").and_return "/blah/"
-    @servlet_context.should_receive(:getRealPath).with("/blah/").and_return "/blah/"
+    @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah/"
+    @rack_context.should_receive(:getRealPath).with("/blah/").and_return "/blah/"
     create_helper
     @helper.public_root.should == "/blah"
   end
 
   it "should also understand the 'files.prefix' init parameter from Goldspike" do
-    @servlet_context.should_receive(:getInitParameter).with("public.root").and_return nil
-    @servlet_context.should_receive(:getInitParameter).with("files.prefix").and_return ""
-    @servlet_context.should_receive(:getRealPath).with("/").and_return "."
+    @rack_context.should_receive(:getInitParameter).with("public.root").and_return nil
+    @rack_context.should_receive(:getInitParameter).with("files.prefix").and_return ""
+    @rack_context.should_receive(:getRealPath).with("/").and_return "."
     create_helper
     @helper.public_root.should == "."
   end
 
   it "should default public root to '/WEB-INF/public'" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     create_helper
     @helper.public_root.should == "./public"
   end
 
   it "should determine the gem path from the gem.path init parameter" do
-    @servlet_context.should_receive(:getInitParameter).with("gem.path").and_return "/blah"
-    @servlet_context.should_receive(:getRealPath).with("/blah").and_return "."
+    @rack_context.should_receive(:getInitParameter).with("gem.path").and_return "/blah"
+    @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
     create_helper
     @helper.gem_path.should == "."
   end
 
   it "should default gem path to '/WEB-INF/gems'" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     create_helper
     @helper.gem_path.should == "./gems"
   end
 
   it "should set Gem.path to the value of gem_path" do
-    @servlet_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
     create_helper
     ENV['GEM_PATH'].should == "/blah/gems"
   end
 
   it "should create a logger that writes messages to the servlet context" do
     create_helper
-    @servlet_context.should_receive(:log).with(/hello/)
+    @rack_context.should_receive(:log).with(/hello/)
     @helper.logger.info "hello"
-  end
-
-  it "should use servlet_context.getResource when getRealPath returns nil" do
-    @servlet_context.stub!(:getRealPath).and_return nil
-    url = mock "URL"
-    url.stub!(:getPath).and_return "."
-    @servlet_context.should_receive(:getResource).with("/WEB-INF").and_return url
-    create_helper
-    @helper.root_path.should == "."
   end
 end
 
@@ -180,7 +171,7 @@ describe JRuby::Rack::Errors do
 
   def init_exception(cause = nil)
     @exception = org.jruby.rack.RackInitializationException.new("something went wrong", cause)
-    @env[org.jruby.rack.RackDispatcher::EXCEPTION] = @exception
+    @env[org.jruby.rack.RackEnvironment::EXCEPTION] = @exception
   end
 
   it "should determine the response status code based on the exception in the servlet attribute" do

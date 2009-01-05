@@ -4,7 +4,7 @@
  * See the file LICENSE.txt for details.
  */
 
-package org.jruby.rack;
+package org.jruby.rack.servlet;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -15,9 +15,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author nicksieger
  */
-public interface RackDispatcher {
-    final String EXCEPTION = "rack.exception";
-    final String DYNAMIC_REQS_ONLY = "rack.dynamic.requests.only";
+public interface ServletDispatcher {
     void process(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException;
 }

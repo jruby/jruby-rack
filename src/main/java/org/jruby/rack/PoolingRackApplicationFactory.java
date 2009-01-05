@@ -12,8 +12,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 /**
  * A pooling application factory that creates runtimes and manages a fixed- or
@@ -37,7 +35,7 @@ import javax.servlet.ServletException;
 public class PoolingRackApplicationFactory implements RackApplicationFactory {
     static final int DEFAULT_TIMEOUT = 30;
 
-    private ServletContext servletContext;
+    private RackContext rackContext;
     private RackApplicationFactory realFactory;
     private Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
     private Integer initial, maximum;
@@ -48,15 +46,15 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         realFactory = factory;
     }
 
-    public void init(final ServletContext servletContext) throws ServletException {
-        this.servletContext = servletContext;
-        realFactory.init(servletContext);
+    public void init(final RackContext rackContext) throws RackInitializationException {
+        this.rackContext = rackContext;
+        realFactory.init(rackContext);
 
         Integer specifiedTimeout = getPositiveInteger("jruby.runtime.timeout.sec");
         if (specifiedTimeout != null) {
             timeout = specifiedTimeout.longValue();
         }
-        servletContext.log("Info: using runtime pool timeout of " + timeout + " seconds");
+        rackContext.log("Info: using runtime pool timeout of " + timeout + " seconds");
 
         initial = getInitial();
         maximum = getMaximum();
@@ -128,7 +126,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
 
     /** This creates the application objects in the foreground thread to avoid
      * leakage when the web application is undeployed from the application server. */
-    private void fillInitialPool() throws ServletException {
+    private void fillInitialPool() throws RackInitializationException {
         Queue<RackApplication> apps = createApplications();
         launchInitializerThreads(apps);
         synchronized (applicationPool) {
@@ -159,27 +157,23 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
                             app.init();
                             synchronized (applicationPool) {
                                 applicationPool.add(app);
-                                servletContext.log("Info: add application to the pool. size now = "
+                                rackContext.log("Info: add application to the pool. size now = "
                                         + applicationPool.size());
                                 applicationPool.notifyAll();
                             }
                         }
                     } catch (RackInitializationException ex) {
-                        servletContext.log("Error: unable to initialize application", ex);
+                        rackContext.log("Error: unable to initialize application", ex);
                     }
                 }
             }, "JRuby-Rack-App-Init-" + i).start();
         }
     }
 
-    private Queue<RackApplication> createApplications() throws ServletException {
+    private Queue<RackApplication> createApplications() throws RackInitializationException {
         Queue<RackApplication> apps = new LinkedList<RackApplication>();
         for (int i = 0; i < initial; i++) {
-            try {
-                apps.add(realFactory.newApplication());
-            } catch (RackInitializationException ex) {
-                throw new ServletException("Error: unable to create application for pool", ex);
-            }
+            apps.add(realFactory.newApplication());
         }
         return apps;
     }
@@ -207,16 +201,16 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             v = getPositiveInteger("jruby.pool." + gsValue);
         }
         if (v == null) {
-            servletContext.log("Warning: no " + end + " runtimes specified.");
+            rackContext.log("Warning: no " + end + " runtimes specified.");
         } else {
-            servletContext.log("Info: received " + end + " runtimes = " + v);
+            rackContext.log("Info: received " + end + " runtimes = " + v);
         }
         return v;
     }
 
     private Integer getPositiveInteger(String string) {
         try {
-            int i = Integer.parseInt(servletContext.getInitParameter(string));
+            int i = Integer.parseInt(rackContext.getInitParameter(string));
             if (i > 0) {
                 return new Integer(i);
             }

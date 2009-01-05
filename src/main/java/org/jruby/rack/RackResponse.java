@@ -7,7 +7,6 @@
 package org.jruby.rack;
 
 import java.util.Map;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -22,5 +21,5 @@ public interface RackResponse {
     String getBody();
 
     /** Write the status, headers, and body to the response. */
-    void respond(HttpServletResponse response);
+    void respond(RackResponseEnvironment response);
 }
