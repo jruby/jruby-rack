@@ -5,14 +5,17 @@ class QueueController < ApplicationController
   cattr_accessor :queue_count, :instance_writer => false
   @@queue_count = 0
 
-  JRuby::Rack::Queues::Registry.register_listener("rack") do |msg|
+  include JRuby::Rack::Queues::MessagePublisher::To("rack")
+  extend JRuby::Rack::Queues::MessageSubscriber
+
+  subscribes_to "rack" do |msg|
     puts "Received message: #{msg.inspect}"
     self.queue_count += 1
   end
 
   def index
     if request.post?
-      JRuby::Rack::Queues::Registry.send_message("rack", params[:msg] || "hi")
+      publish_message params[:msg] || "hi"
     end
     render :text => "Queue count: #{queue_count}\n"
   end
