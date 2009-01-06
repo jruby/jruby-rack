@@ -13,7 +13,7 @@ require 'jruby/rack/queues'
 # method:
 #
 #     class MyShinyObject
-#       include JRuby::Rack::Queues::MessagePublisher::To("ShinyQ")
+#       act_as_publisher "ShinyQ"
 #     end
 #     obj = MyShinyObject.new
 #     obj.publish_message "hi" # => sends to "ShinyQ"
@@ -23,24 +23,44 @@ require 'jruby/rack/queues'
 #
 #     obj.publish_message "DullQ", "hi" # => sends to "DullQ"
 #
-module JRuby::Rack::Queues::MessagePublisher
-  def self.To(queue)
-    m = Module.new do
-      include JRuby::Rack::Queues::MessagePublisher
-      define_method :default_destination do
-        m.default_destination
+module JRuby::Rack::Queues
+  module MessagePublisher
+    def self.To(queue)
+      m = Module.new do
+        include JRuby::Rack::Queues::MessagePublisher
+        define_method :default_destination do
+          m.default_destination
+        end
       end
+      class << m; attr_accessor :default_destination; end
+      m.default_destination = queue
+      m
     end
-    class << m; attr_accessor :default_destination; end
-    m.default_destination = queue
-    m
-  end
 
-  def publish_message(*args, &block)
-    args_length = args.length + (block ? 1 : 0)
-    if args_length < 2 && respond_to?(:default_destination)
-      args.unshift default_destination
+    def publish_message(*args, &block)
+      args_length = args.length + (block ? 1 : 0)
+      if args_length < 2 && respond_to?(:default_destination)
+        args.unshift default_destination
+      end
+      JRuby::Rack::Queues::Registry.publish_message(*args[0..1], &block)
     end
-    JRuby::Rack::Queues::Registry.publish_message(*args[0..1], &block)
+  end
+  
+  module ActAsMessagePublisher
+    def act_as_publisher(queue = nil)
+      include queue ? MessagePublisher::To(queue) : MessagePublisher
+    end
+  end
+end
+
+if defined? ActionController
+  class ActionController::Base
+    include JRuby::Rack::Queues::ActAsMessagePublisher
+  end
+end
+
+if defined? ActiveRecord
+  class ActiveRecord::Base
+    include JRuby::Rack::Queues::ActAsMessagePublisher
   end
 end

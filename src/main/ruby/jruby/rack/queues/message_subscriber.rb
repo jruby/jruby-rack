@@ -9,6 +9,8 @@ require 'jruby/rack/queues'
 # Include or extend from this module to subscribe to a queue.
 #
 #     class MySubscriber
+#       act_as_subscriber
+#
 #       subscribes_to "MyQ"
 #
 #       def self.on_message(message)
@@ -20,6 +22,8 @@ require 'jruby/rack/queues'
 # message dispatching:
 #
 #     class MySubscriber
+#       act_as_subscriber
+#
 #       subscribes_to "MyQ" do |message|
 #         self.new.on_message msg
 #       end
@@ -33,8 +37,28 @@ require 'jruby/rack/queues'
 # #on_message. The former has priority and receive the raw JMS message
 # object, while the second receives either the unmarshalled Ruby
 # object or the text content of the message.
-module JRuby::Rack::Queues::MessageSubscriber
-  def subscribes_to(queue, &block)
-    JRuby::Rack::Queues::Registry.register_listener(queue, self, &block)
+module JRuby::Rack::Queues
+  module MessageSubscriber
+    def subscribes_to(queue, &block)
+      JRuby::Rack::Queues::Registry.register_listener(queue, self, &block)
+    end
+  end
+  
+  module ActAsMessageSubscriber
+    def act_as_subscriber
+      include MessageSubscriber
+    end
+  end
+end
+
+if defined? ActionController
+  class ActionController::Base
+    include JRuby::Rack::Queues::ActAsMessageSubscriber
+  end
+end
+
+if defined? ActiveRecord
+  class ActiveRecord::Base
+    include JRuby::Rack::Queues::ActAsMessageSubscriber
   end
 end
