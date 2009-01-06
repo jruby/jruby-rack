@@ -46,19 +46,13 @@ module JRuby::Rack::Queues
   
   module ActAsMessageSubscriber
     def act_as_subscriber
-      include MessageSubscriber
+      extend MessageSubscriber
     end
-  end
-end
-
-if defined? ActionController
-  class ActionController::Base
-    include JRuby::Rack::Queues::ActAsMessageSubscriber
   end
 end
 
 if defined? ActiveRecord
   class ActiveRecord::Base
-    include JRuby::Rack::Queues::ActAsMessageSubscriber
+    extend JRuby::Rack::Queues::ActAsMessageSubscriber
   end
 end

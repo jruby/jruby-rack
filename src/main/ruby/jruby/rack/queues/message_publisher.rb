@@ -48,19 +48,13 @@ module JRuby::Rack::Queues
   
   module ActAsMessagePublisher
     def act_as_publisher(queue = nil)
-      include queue ? MessagePublisher::To(queue) : MessagePublisher
+      extend queue ? MessagePublisher::To(queue) : MessagePublisher
     end
-  end
-end
-
-if defined? ActionController
-  class ActionController::Base
-    include JRuby::Rack::Queues::ActAsMessagePublisher
   end
 end
 
 if defined? ActiveRecord
   class ActiveRecord::Base
-    include JRuby::Rack::Queues::ActAsMessagePublisher
+    extend JRuby::Rack::Queues::ActAsMessagePublisher
   end
 end
