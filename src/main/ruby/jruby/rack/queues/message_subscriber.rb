@@ -51,8 +51,3 @@ module JRuby::Rack::Queues
   end
 end
 
-if defined? ActiveRecord
-  class ActiveRecord::Base
-    extend JRuby::Rack::Queues::ActAsMessageSubscriber
-  end
-end

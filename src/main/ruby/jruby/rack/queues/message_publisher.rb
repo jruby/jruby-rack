@@ -52,9 +52,3 @@ module JRuby::Rack::Queues
     end
   end
 end
-
-if defined? ActiveRecord
-  class ActiveRecord::Base
-    extend JRuby::Rack::Queues::ActAsMessagePublisher
-  end
-end

@@ -172,7 +172,7 @@ describe JRuby::Rack, "Rails controller extensions" do
   end
   
   it "should add an act_as_subscriber method to ActionControler::Base" do
-    @controller.respond_to? :act_as_subscriber
+    @controller.respond_to?(:act_as_subscriber).should be_true
   end
   
   it "should add a subscribe_to method to the controller" do
@@ -181,6 +181,22 @@ describe JRuby::Rack, "Rails controller extensions" do
     @controller.respond_to?(:subscribes_to).should be_true
   end
 end
+
+describe JRuby::Rack, "Rails models extensions" do
+  
+  before :each do
+    @model = ActiveRecord::Base.new
+  end
+  
+  it "should add an act_as_publisher method to ActiveRecord::Base" do
+    @model.respond_to?(:act_as_publisher).should be_true
+  end
+  
+  it "should add an act_as_subscriber method to ActiveRecord::Base" do
+    @model.respond_to?(:act_as_subscriber).should be_true
+  end
+end
+
 
 describe JRuby::Rack::RailsRequestSetup do
   before :each do

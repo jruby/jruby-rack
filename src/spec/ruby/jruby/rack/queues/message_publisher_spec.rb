@@ -55,3 +55,29 @@ describe JRuby::Rack::Queues::MessagePublisher do
     end
   end
 end
+
+describe JRuby::Rack::Queues::ActAsMessagePublisher, "in controllers" do
+  before :each do
+    @controller = Object.new
+    @controller.extend JRuby::Rack::Queues::ActAsMessagePublisher
+  end
+  
+  it "should add an act_as_publisher method" do
+    @controller.respond_to?(:act_as_publisher).should be_true
+  end
+  
+  it "should add a publish_message method to the controllers" do
+    @controller.act_as_publisher
+    @controller.respond_to?(:publish_message).should be_true
+    @controller.respond_to?(:default_destination).should be_false
+  end
+  
+  it "should setup a default destination when called with a parameter" do
+    @controller.act_as_publisher "FooQ"
+    @controller.respond_to?(:publish_message).should be_true
+    @controller.respond_to?(:default_destination).should be_true
+    @controller.default_destination.should == "FooQ"
+  end
+end
+
+

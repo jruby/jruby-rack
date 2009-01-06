@@ -77,6 +77,13 @@ module ActionController
   end
 end
 
+module ActiveRecord
+  class Base
+    include JRuby::Rack::Queues::ActAsMessagePublisher
+    include JRuby::Rack::Queues::ActAsMessageSubscriber
+  end
+end
+
 module JRuby::Rack
   SESSION_OPTIONS = ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
 end

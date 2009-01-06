@@ -24,12 +24,12 @@ describe JRuby::Rack::Queues::ActAsMessageSubscriber do
   end
   
   it "should add an act_as_subscriber when included" do
-    @subscriber.respond_to? :act_as_subscriber
+    @subscriber.respond_to?(:act_as_subscriber).should be_true
   end
   
   it "should include MessageSubscriber when act_as_subscriber is called" do
     @subscriber.act_as_subscriber
-    @subscriber.respond_to? :subscribes_to
+    @subscriber.respond_to?(:subscribes_to).should be_true
     JRuby::Rack::Queues::Registry.should_receive(:register_listener).with("FooQ", @subscriber)
     @subscriber.subscribes_to("FooQ")
   end
