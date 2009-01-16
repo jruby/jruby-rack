@@ -80,4 +80,54 @@ describe JRuby::Rack::Queues::ActAsMessagePublisher, "in controllers" do
   end
 end
 
+describe ActiveRecord::Base do
+  before :each do
+    @model = ActiveRecord::Base.new
+  end
+  
+  it "should respond to act_as_publisher" do
+    @model.respond_to?(:act_as_publisher).should be_true
+  end
 
+  it "should have a publish_message method when act_as_publisher is called." do
+    @model.respond_to?(:publish_message).should be_false
+    @model.act_as_publisher
+    @model.respond_to?(:publish_message).should be_true
+    @model.respond_to?(:default_destination).should be_false
+  end
+
+  it "should have a publish_message and default_destination when act_as_publisher is called with a queue name." do
+    @model.respond_to?(:publish_message).should be_false
+    @model.respond_to?(:default_destination).should be_false
+    @model.act_as_publisher "FooQ"
+    @model.respond_to?(:publish_message).should be_true
+    @model.respond_to?(:default_destination).should be_true
+    @model.default_destination.should == "FooQ"
+  end
+end
+
+describe ActionController::Base do
+  before :each do
+    @controller = ActionController::Base.new
+  end
+
+  it "should respond to act_as_publisher" do
+    @controller.respond_to?(:act_as_publisher).should be_true
+  end
+
+  it "should respond to publish_message when act_as_publisher is called." do
+    @controller.respond_to?(:publish_message).should be_false
+    @controller.act_as_publisher
+    @controller.respond_to?(:publish_message).should be_true
+    @controller.respond_to?(:default_destination).should be_false
+  end
+
+  it "should respond to default_destination when act_as_publisher is called with a queue name." do
+    @controller.respond_to?(:publish_message).should be_false
+    @controller.respond_to?(:default_destination).should be_false
+    @controller.act_as_publisher "FooQ"
+    @controller.respond_to?(:publish_message).should be_true
+    @controller.respond_to?(:default_destination).should be_true
+    @controller.default_destination.should == "FooQ"
+  end
+end
