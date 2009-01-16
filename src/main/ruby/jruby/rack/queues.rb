@@ -24,7 +24,7 @@ module JRuby
         #
         # If a block is given, the JMS session object is yielded, and allows custom
         # message construction. The block should return a JMS Message object.
-        def send_message(queue_name, message_data = nil, &block)
+        def publish_message(queue_name, message_data = nil, &block)
           with_jms_connection do |connection|
             queue = queue_manager.lookup(queue_name)
             session = connection.createSession(false, Session::AUTO_ACKNOWLEDGE)

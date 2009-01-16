@@ -44,7 +44,7 @@ describe JRuby::Rack::Queues do
     end
   end
 
-  it "#send_message should create a session, producer and message" do
+  it "#publish_message should create a session, producer and message" do
     conn = mock_connection
     queue = mock "queue"
     session = mock "session"
@@ -58,10 +58,10 @@ describe JRuby::Rack::Queues do
     message.should_receive(:setBooleanProperty).with(JRuby::Rack::Queues::MARSHAL_PAYLOAD, true)
     message.should_receive(:writeBytes)
     producer.should_receive(:send).with(message)
-    @registry.send_message("FooQ", Object.new)
+    @registry.publish_message("FooQ", Object.new)
   end
 
-  it "#send_message should accept a block that allows construction of the message" do
+  it "#publish_message should accept a block that allows construction of the message" do
     conn = mock_connection
     queue = mock "queue"
     session = mock "session"
@@ -73,12 +73,12 @@ describe JRuby::Rack::Queues do
     session.should_receive(:createProducer).with(queue).and_return producer
     session.should_receive(:createTextMessage).and_return message
     producer.should_receive(:send).with(message)
-    @registry.send_message "FooQ" do |sess|
+    @registry.publish_message "FooQ" do |sess|
       session.createTextMessage
     end
   end
 
-  it "#send_message should create a text message when handed a string message argument" do
+  it "#publish_message should create a text message when handed a string message argument" do
     conn = mock_connection
     queue = mock "queue"
     session = mock "session"
@@ -91,7 +91,7 @@ describe JRuby::Rack::Queues do
     session.should_receive(:createTextMessage).and_return message
     message.should_receive(:setText).with("hello")
     producer.should_receive(:send).with(message)
-    @registry.send_message "FooQ", "hello"
+    @registry.publish_message "FooQ", "hello"
   end
 
   it "#register_listener should ensure the queue manager is listening and store the listener" do
