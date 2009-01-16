@@ -5,8 +5,6 @@
 #++
 
 require 'action_controller'
-require 'jruby/rack/queues/message_subscriber'
-require 'jruby/rack/queues/message_publisher'
 
 module ActionController
   class CgiRequest #:nodoc:
@@ -25,8 +23,6 @@ module ActionController
   end
 
   class Base
-    include JRuby::Rack::Queues::ActAsMessagePublisher
-    include JRuby::Rack::Queues::ActAsMessageSubscriber
     
     def servlet_request
       request.env['java.servlet_request']
@@ -74,13 +70,6 @@ module ActionController
         end
       end
     end
-  end
-end
-
-module ActiveRecord
-  class Base
-    include JRuby::Rack::Queues::ActAsMessagePublisher
-    include JRuby::Rack::Queues::ActAsMessageSubscriber
   end
 end
 

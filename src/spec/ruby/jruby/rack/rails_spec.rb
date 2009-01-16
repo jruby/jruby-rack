@@ -152,51 +152,7 @@ describe JRuby::Rack, "Rails controller extensions" do
     @controller.forward_to "/forward.jsp"
     @controller.response.headers['Forward'].call(@servlet_response)
   end
-  
-  it "should add an act_as_publisher method to ActionController::Base" do
-    @controller.respond_to? :act_as_publisher
-  end
-  
-  it "should add a publish_to method when act_as_publisher is called" do
-    @controller.respond_to?(:publish_message).should be_false
-    @controller.act_as_publisher
-    @controller.respond_to?(:publish_message).should be_true
-    @controller.respond_to?(:default_destination).should be_false
-  end
-  
-  it "should setup the default destination when called with a queue name" do
-    @controller.respond_to?(:default_destination).should be_false
-    @controller.act_as_publisher "FooQ"
-    @controller.respond_to?(:default_destination).should be_true
-    @controller.default_destination.should == "FooQ"
-  end
-  
-  it "should add an act_as_subscriber method to ActionControler::Base" do
-    @controller.respond_to?(:act_as_subscriber).should be_true
-  end
-  
-  it "should add a subscribe_to method to the controller" do
-    @controller.respond_to?(:subscribes_to).should be_false
-    @controller.act_as_subscriber
-    @controller.respond_to?(:subscribes_to).should be_true
-  end
 end
-
-describe JRuby::Rack, "Rails models extensions" do
-  
-  before :each do
-    @model = ActiveRecord::Base.new
-  end
-  
-  it "should add an act_as_publisher method to ActiveRecord::Base" do
-    @model.respond_to?(:act_as_publisher).should be_true
-  end
-  
-  it "should add an act_as_subscriber method to ActiveRecord::Base" do
-    @model.respond_to?(:act_as_subscriber).should be_true
-  end
-end
-
 
 describe JRuby::Rack::RailsRequestSetup do
   before :each do

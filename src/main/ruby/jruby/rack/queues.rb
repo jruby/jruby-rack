@@ -4,6 +4,9 @@
 # See the file LICENSE.txt for details.
 #++
 
+require 'jruby/rack/queues/message_subscriber'
+require 'jruby/rack/queues/message_publisher'
+
 module JRuby
   module Rack
     module Queues
@@ -176,3 +179,18 @@ module JRuby
     end
   end
 end
+
+module ActionController
+  class Base
+    include JRuby::Rack::Queues::ActAsMessagePublisher
+    include JRuby::Rack::Queues::ActAsMessageSubscriber
+  end
+end
+
+module ActiveRecord
+  class Base
+    include JRuby::Rack::Queues::ActAsMessagePublisher
+    include JRuby::Rack::Queues::ActAsMessageSubscriber
+  end
+end
+
