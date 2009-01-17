@@ -13,7 +13,7 @@ require 'jruby/rack/queues'
 # method:
 #
 #     class MyShinyObject
-#       act_as_publisher "ShinyQ"
+#       acts_as_publisher "ShinyQ"
 #     end
 #     obj = MyShinyObject.new
 #     obj.publish_message "hi" # => sends to "ShinyQ"
@@ -45,10 +45,22 @@ module JRuby::Rack::Queues
       JRuby::Rack::Queues::Registry.publish_message(*args[0..1], &block)
     end
   end
-  
-  module ActAsMessagePublisher
-    def act_as_publisher(queue = nil)
+
+  module ActsAsMessagePublisher
+    def acts_as_publisher(queue = nil)
       extend queue ? MessagePublisher::To(queue) : MessagePublisher
     end
+  end
+end
+
+if defined?(ActionController::Base)
+  class ActionController::Base
+    include JRuby::Rack::Queues::ActsAsMessagePublisher
+  end
+end
+
+if defined?(ActiveRecord::Base)
+  class ActiveRecord::Base
+    include JRuby::Rack::Queues::ActsAsMessagePublisher
   end
 end

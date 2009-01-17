@@ -179,18 +179,3 @@ module JRuby
     end
   end
 end
-
-module ActionController
-  class Base
-    include JRuby::Rack::Queues::ActAsMessagePublisher
-    include JRuby::Rack::Queues::ActAsMessageSubscriber
-  end
-end
-
-module ActiveRecord
-  class Base
-    include JRuby::Rack::Queues::ActAsMessagePublisher
-    include JRuby::Rack::Queues::ActAsMessageSubscriber
-  end
-end
-

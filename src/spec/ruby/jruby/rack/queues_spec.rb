@@ -5,6 +5,8 @@
 #++
 
 require File.dirname(__FILE__) + '/../../spec_helper'
+require 'action_controller'
+require 'active_record'
 require 'jruby/rack/queues'
 
 describe JRuby::Rack::Queues do

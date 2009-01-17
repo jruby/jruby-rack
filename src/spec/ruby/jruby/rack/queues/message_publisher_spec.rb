@@ -5,7 +5,9 @@
 #++
 
 require File.dirname(__FILE__) + '/../../../spec_helper'
-require 'jruby/rack/queues/message_publisher'
+require 'action_controller'
+require 'active_record'
+require 'jruby/rack/queues'
 
 describe JRuby::Rack::Queues::MessagePublisher do
   it "should delegate #publish_message to JRuby::Rack::Queues::Registry.publish_message" do
@@ -56,24 +58,24 @@ describe JRuby::Rack::Queues::MessagePublisher do
   end
 end
 
-describe JRuby::Rack::Queues::ActAsMessagePublisher, "in controllers" do
+describe JRuby::Rack::Queues::ActsAsMessagePublisher, "in controllers" do
   before :each do
     @controller = Object.new
-    @controller.extend JRuby::Rack::Queues::ActAsMessagePublisher
+    @controller.extend JRuby::Rack::Queues::ActsAsMessagePublisher
   end
-  
-  it "should add an act_as_publisher method" do
-    @controller.respond_to?(:act_as_publisher).should be_true
+
+  it "should add an acts_as_publisher method" do
+    @controller.respond_to?(:acts_as_publisher).should be_true
   end
-  
+
   it "should add a publish_message method to the controllers" do
-    @controller.act_as_publisher
+    @controller.acts_as_publisher
     @controller.respond_to?(:publish_message).should be_true
     @controller.respond_to?(:default_destination).should be_false
   end
-  
+
   it "should setup a default destination when called with a parameter" do
-    @controller.act_as_publisher "FooQ"
+    @controller.acts_as_publisher "FooQ"
     @controller.respond_to?(:publish_message).should be_true
     @controller.respond_to?(:default_destination).should be_true
     @controller.default_destination.should == "FooQ"
@@ -84,22 +86,22 @@ describe ActiveRecord::Base do
   before :each do
     @model = ActiveRecord::Base.new
   end
-  
-  it "should respond to act_as_publisher" do
-    @model.respond_to?(:act_as_publisher).should be_true
+
+  it "should respond to acts_as_publisher" do
+    @model.respond_to?(:acts_as_publisher).should be_true
   end
 
-  it "should have a publish_message method when act_as_publisher is called." do
+  it "should have a publish_message method when acts_as_publisher is called." do
     @model.respond_to?(:publish_message).should be_false
-    @model.act_as_publisher
+    @model.acts_as_publisher
     @model.respond_to?(:publish_message).should be_true
     @model.respond_to?(:default_destination).should be_false
   end
 
-  it "should have a publish_message and default_destination when act_as_publisher is called with a queue name." do
+  it "should have a publish_message and default_destination when acts_as_publisher is called with a queue name." do
     @model.respond_to?(:publish_message).should be_false
     @model.respond_to?(:default_destination).should be_false
-    @model.act_as_publisher "FooQ"
+    @model.acts_as_publisher "FooQ"
     @model.respond_to?(:publish_message).should be_true
     @model.respond_to?(:default_destination).should be_true
     @model.default_destination.should == "FooQ"
@@ -111,21 +113,21 @@ describe ActionController::Base do
     @controller = ActionController::Base.new
   end
 
-  it "should respond to act_as_publisher" do
-    @controller.respond_to?(:act_as_publisher).should be_true
+  it "should respond to acts_as_publisher" do
+    @controller.respond_to?(:acts_as_publisher).should be_true
   end
 
-  it "should respond to publish_message when act_as_publisher is called." do
+  it "should respond to publish_message when acts_as_publisher is called." do
     @controller.respond_to?(:publish_message).should be_false
-    @controller.act_as_publisher
+    @controller.acts_as_publisher
     @controller.respond_to?(:publish_message).should be_true
     @controller.respond_to?(:default_destination).should be_false
   end
 
-  it "should respond to default_destination when act_as_publisher is called with a queue name." do
+  it "should respond to default_destination when acts_as_publisher is called with a queue name." do
     @controller.respond_to?(:publish_message).should be_false
     @controller.respond_to?(:default_destination).should be_false
-    @controller.act_as_publisher "FooQ"
+    @controller.acts_as_publisher "FooQ"
     @controller.respond_to?(:publish_message).should be_true
     @controller.respond_to?(:default_destination).should be_true
     @controller.default_destination.should == "FooQ"

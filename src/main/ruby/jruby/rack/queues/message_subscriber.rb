@@ -9,11 +9,11 @@ require 'jruby/rack/queues'
 # Include or extend from this module to subscribe to a queue.
 #
 #     class MySubscriber
-#       act_as_subscriber
+#       acts_as_subscriber
 #
 #       subscribes_to "MyQ"
 #
-#       def self.on_message(message)
+#       def on_message(message)
 #         # process message here
 #       end
 #     end
@@ -22,13 +22,13 @@ require 'jruby/rack/queues'
 # message dispatching:
 #
 #     class MySubscriber
-#       act_as_subscriber
+#       acts_as_subscriber
 #
 #       subscribes_to "MyQ" do |message|
-#         self.new.on_message msg
+#         self.new.dispatch msg
 #       end
 #
-#       def on_message(message)
+#       def dispatch(message)
 #         # process message here
 #       end
 #     end
@@ -43,11 +43,22 @@ module JRuby::Rack::Queues
       JRuby::Rack::Queues::Registry.register_listener(queue, self, &block)
     end
   end
-  
-  module ActAsMessageSubscriber
-    def act_as_subscriber
+
+  module ActsAsMessageSubscriber
+    def acts_as_subscriber
       extend MessageSubscriber
     end
   end
 end
 
+if defined?(ActionController::Base)
+  class ActionController::Base
+    include JRuby::Rack::Queues::ActsAsMessageSubscriber
+  end
+end
+
+if defined?(ActiveRecord::Base)
+  class ActiveRecord::Base
+    include JRuby::Rack::Queues::ActsAsMessageSubscriber
+  end
+end

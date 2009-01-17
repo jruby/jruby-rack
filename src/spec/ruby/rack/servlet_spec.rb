@@ -1,5 +1,5 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
@@ -11,7 +11,6 @@ import org.jruby.rack.servlet.ServletRackContext
 
 describe RackServlet, "service" do
   it "should delegate to process" do
-    pending "Getting NPE while running this test."
     request = javax.servlet.http.HttpServletRequest.impl {}
     response = javax.servlet.http.HttpServletResponse.impl {}
     dispatcher = mock "dispatcher"
