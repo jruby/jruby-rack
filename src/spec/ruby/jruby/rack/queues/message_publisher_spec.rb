@@ -58,78 +58,90 @@ describe JRuby::Rack::Queues::MessagePublisher do
   end
 end
 
-describe JRuby::Rack::Queues::ActsAsMessagePublisher, "in controllers" do
+describe JRuby::Rack::Queues::ActsAsMessagePublisher, "in objects" do
   before :each do
     @controller = Object.new
     @controller.extend JRuby::Rack::Queues::ActsAsMessagePublisher
   end
 
   it "should add an acts_as_publisher method" do
-    @controller.respond_to?(:acts_as_publisher).should be_true
+    @controller.should respond_to(:acts_as_publisher)
   end
 
-  it "should add a publish_message method to the controllers" do
+  it "should add a publish_message method" do
     @controller.acts_as_publisher
-    @controller.respond_to?(:publish_message).should be_true
-    @controller.respond_to?(:default_destination).should be_false
+    @controller.should respond_to(:publish_message)
+    @controller.should_not respond_to(:default_destination)
   end
 
   it "should setup a default destination when called with a parameter" do
     @controller.acts_as_publisher "FooQ"
-    @controller.respond_to?(:publish_message).should be_true
-    @controller.respond_to?(:default_destination).should be_true
+    @controller.should respond_to(:publish_message)
+    @controller.should respond_to(:default_destination)
     @controller.default_destination.should == "FooQ"
+  end
+end
+
+describe JRuby::Rack::Queues::ActsAsMessagePublisher, "in classes" do
+  it "should add a publish_message instance method" do
+    controller = Class.new
+    controller.extend JRuby::Rack::Queues::ActsAsMessagePublisher
+    controller.acts_as_publisher
+    controller.should_not respond_to(:publish_message)
+    controller.new.should respond_to(:publish_message)
   end
 end
 
 describe ActiveRecord::Base do
   before :each do
-    @model = ActiveRecord::Base.new
+    @klass = Class.new(ActiveRecord::Base)
+    @model = @klass.new
   end
 
   it "should respond to acts_as_publisher" do
-    @model.respond_to?(:acts_as_publisher).should be_true
+    @klass.should respond_to(:acts_as_publisher)
   end
 
   it "should have a publish_message method when acts_as_publisher is called." do
-    @model.respond_to?(:publish_message).should be_false
-    @model.acts_as_publisher
-    @model.respond_to?(:publish_message).should be_true
-    @model.respond_to?(:default_destination).should be_false
+    @model.should_not respond_to(:publish_message)
+    @klass.acts_as_publisher
+    @model.should respond_to(:publish_message)
+    @model.should_not respond_to(:default_destination)
   end
 
   it "should have a publish_message and default_destination when acts_as_publisher is called with a queue name." do
-    @model.respond_to?(:publish_message).should be_false
-    @model.respond_to?(:default_destination).should be_false
-    @model.acts_as_publisher "FooQ"
-    @model.respond_to?(:publish_message).should be_true
-    @model.respond_to?(:default_destination).should be_true
+    @model.should_not respond_to(:publish_message)
+    @model.should_not respond_to(:default_destination)
+    @klass.acts_as_publisher "FooQ"
+    @model.should respond_to(:publish_message)
+    @model.should respond_to(:default_destination)
     @model.default_destination.should == "FooQ"
   end
 end
 
 describe ActionController::Base do
   before :each do
-    @controller = ActionController::Base.new
+    @klass = Class.new(ActionController::Base)
+    @controller = @klass.new
   end
 
   it "should respond to acts_as_publisher" do
-    @controller.respond_to?(:acts_as_publisher).should be_true
+    @klass.should respond_to(:acts_as_publisher)
   end
 
   it "should respond to publish_message when acts_as_publisher is called." do
-    @controller.respond_to?(:publish_message).should be_false
-    @controller.acts_as_publisher
-    @controller.respond_to?(:publish_message).should be_true
-    @controller.respond_to?(:default_destination).should be_false
+    @controller.should_not respond_to(:publish_message)
+    @klass.acts_as_publisher
+    @controller.should respond_to(:publish_message)
+    @controller.should_not respond_to(:default_destination)
   end
 
   it "should respond to default_destination when acts_as_publisher is called with a queue name." do
-    @controller.respond_to?(:publish_message).should be_false
-    @controller.respond_to?(:default_destination).should be_false
-    @controller.acts_as_publisher "FooQ"
-    @controller.respond_to?(:publish_message).should be_true
-    @controller.respond_to?(:default_destination).should be_true
+    @controller.should_not respond_to(:publish_message)
+    @controller.should_not respond_to(:default_destination)
+    @klass.acts_as_publisher "FooQ"
+    @controller.should respond_to(:publish_message)
+    @controller.should respond_to(:default_destination)
     @controller.default_destination.should == "FooQ"
   end
 end

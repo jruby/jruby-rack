@@ -19,7 +19,6 @@ describe JRuby::Rack::Queues::MessageSubscriber do
 end
 
 describe JRuby::Rack::Queues::ActsAsMessageSubscriber do
-
   before :each do
     @subscriber = Object.new
     @subscriber.extend JRuby::Rack::Queues::ActsAsMessageSubscriber
@@ -39,33 +38,33 @@ end
 
 describe ActiveRecord::Base do
   before :each do
-    @model = ActiveRecord::Base.new
+    @klass = Class.new(ActiveRecord::Base)
   end
 
   it "should respond to acts_as_subscriber" do
-    @model.respond_to?(:acts_as_subscriber).should be_true
+    @klass.should respond_to(:acts_as_subscriber)
   end
 
   it "should respond to subscribe_to when acts_as_subscriber is called." do
-    @model.respond_to?(:subscribes_to).should be_false
-    @model.acts_as_subscriber
-    @model.respond_to?(:subscribes_to).should be_true
+    @klass.should_not respond_to(:subscribes_to)
+    @klass.acts_as_subscriber
+    @klass.should respond_to(:subscribes_to)
   end
 end
 
 describe ActionController::Base do
   before :each do
-    @controller = ActionController::Base.new
+    @klass = Class.new(ActionController::Base)
   end
 
   it "should respond to acts_as_subscriber" do
-    @controller.respond_to?(:acts_as_subscriber).should be_true
+    @klass.should respond_to(:acts_as_subscriber)
   end
 
   it "should have a subscribes_to method when acts_as_subscriber is called." do
-    @controller.respond_to?(:subscribes_to).should be_false
-    @controller.acts_as_subscriber
-    @controller.respond_to?(:subscribes_to).should be_true
+    @klass.should_not respond_to(:subscribes_to)
+    @klass.acts_as_subscriber
+    @klass.should respond_to(:subscribes_to)
   end
 end
 

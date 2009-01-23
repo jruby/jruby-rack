@@ -53,12 +53,12 @@ end
 
 if defined?(ActionController::Base)
   class ActionController::Base
-    include JRuby::Rack::Queues::ActsAsMessageSubscriber
+    extend JRuby::Rack::Queues::ActsAsMessageSubscriber
   end
 end
 
 if defined?(ActiveRecord::Base)
   class ActiveRecord::Base
-    include JRuby::Rack::Queues::ActsAsMessageSubscriber
+    extend JRuby::Rack::Queues::ActsAsMessageSubscriber
   end
 end

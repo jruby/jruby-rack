@@ -4,9 +4,6 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby/rack/queues/message_subscriber'
-require 'jruby/rack/queues/message_publisher'
-
 module JRuby
   module Rack
     module Queues
@@ -179,3 +176,6 @@ module JRuby
     end
   end
 end
+
+require 'jruby/rack/queues/message_subscriber'
+require 'jruby/rack/queues/message_publisher'
