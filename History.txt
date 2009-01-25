@@ -1,5 +1,6 @@
 == 0.9.4
 
+- Upgrade to Rack 0.9.1
 - EXPERIMENTAL: Detect Rails 2.3 rack machinery and dispatch to it
   rather than the legacy CGI shim.
 - EXPERIMENTAL: Beginnings of a JMS API (more details to come)
