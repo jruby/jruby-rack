@@ -1,8 +1,10 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
+
+raise "JRuby-Rack must be built with JRuby: try again with `jruby -S rake'" unless defined?(JRUBY_VERSION)
 
 require 'rake/clean'
 
@@ -112,4 +114,9 @@ task :install => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" do |t|
   mkdir_p repos_dir
   cp t.prerequisites.first, repos_dir
   cp "pom.xml", "#{repos_dir}/jruby-rack-#{JRuby::Rack::VERSION}.pom"
+end
+
+task :classpaths do
+  puts "compile_classpath:",*compile_classpath
+  puts "test_classpath:", *test_classpath
 end
