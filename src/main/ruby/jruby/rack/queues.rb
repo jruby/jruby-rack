@@ -11,6 +11,10 @@ module JRuby
       MARSHAL_PAYLOAD = "ruby_marshal_payload"
 
       class QueueRegistry
+        def initialize
+          setup_rails_dispatcher_prepare_hook
+        end
+
         # Called into by the JRuby-Rack java code when an asynchronous message
         # is received.
         def receive_message(queue_name, message)
@@ -86,6 +90,22 @@ module JRuby
         def raise_dispatch_error(message)
           $servlet_context.log "Unable to dispatch: #{message.inspect}" if $servlet_context
           raise "Unable to dispatch: #{message.inspect}"
+        end
+
+        def setup_rails_dispatcher_prepare_hook
+          if defined?(::Rails)
+            begin
+              require 'dispatcher'
+              dispatcher = defined?(ActionController::Dispatcher) &&
+                ActionController::Dispatcher || defined?(::Dispatcher) && ::Dispatcher
+              if dispatcher && dispatcher.respond_to?(:to_prepare)
+                dispatcher.to_prepare do
+                  ::JRuby::Rack::Queues::Registry.clear_listeners
+                end
+              end
+            rescue Exception => e
+            end
+          end
         end
       end
 
