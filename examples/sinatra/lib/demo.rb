@@ -5,11 +5,12 @@ get '/' do
 end
 
 post '/' do
+  res = "Content-Type was: #{request.content_type.inspect}\n"
   body = request.body.read
   if body.empty?
     status 400
-    "Post body empty\n"
+    res << "Post body empty\n"
   else
-    "Post body was:\n#{body}\n"
+    res << "Post body was:\n#{body}\n"
   end
 end
