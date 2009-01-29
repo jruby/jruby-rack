@@ -1,12 +1,7 @@
-$:.unshift './vendor/sinatra/lib'
-$:.unshift './lib'
-
-require 'sinatra'
-Sinatra::Application.default_options.merge!(
-:run => false,
-:env => :production,
-:public => PUBLIC_ROOT
-)
-
-require 'demo'
-run Sinatra.application
+require 'rubygems'
+# Demo app built for 0.9.x
+gem 'sinatra', '~> 0.9' 
+require './lib/demo'
+set :run, false
+set :environment, :production
+run Sinatra::Application
