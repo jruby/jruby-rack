@@ -1,5 +1,5 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
@@ -22,7 +22,6 @@ module JRuby
       end
 
       def load_environment
-        require 'cgi/session/java_servlet_store'
         require 'jruby/rack/rails_boot'
         load File.join(app_path, 'config', 'environment.rb')
         require 'dispatcher'
@@ -53,7 +52,6 @@ module JRuby
       end
 
       def setup_actionpack
-        ActionController::Base.session_store = :java_servlet_store
         unless defined?(Rails.public_path)
           ActionController::Base.page_cache_directory = PUBLIC_ROOT
           silence_warnings do
@@ -66,9 +64,11 @@ module JRuby
       end
 
       def setup_sessions
-        if default_sessions?
-          session_options[:database_manager] = java_servlet_store
+        if pstore_sessions?
+          require 'cgi/session/java_servlet_store'
+          session_options[:database_manager] = CGI::Session::JavaServletStore
         end
+
         # Turn off default cookies when using Java sessions
         if java_sessions?
           session_options[:no_cookies] = true
@@ -105,19 +105,11 @@ module JRuby
       end
 
       def java_sessions?
-        session_options[:database_manager] == java_servlet_store
+        session_options[:database_manager].to_s =~ /JavaServletStore$/
       end
 
-      def default_sessions?
-        session_options[:database_manager] == default_store
-      end
-
-      def default_store
-        defined?(::CGI::Session::PStore) && CGI::Session::PStore
-      end
-
-      def java_servlet_store
-        CGI::Session::JavaServletStore
+      def pstore_sessions?
+        session_options[:database_manager] == (defined?(::CGI::Session::PStore) && ::CGI::Session::PStore)
       end
 
       def options
