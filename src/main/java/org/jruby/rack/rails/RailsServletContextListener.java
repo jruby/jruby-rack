@@ -12,6 +12,7 @@ import org.jruby.rack.PoolingRackApplicationFactory;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackServletContextListener;
 import org.jruby.rack.SharedRackApplicationFactory;
+import org.jruby.rack.SerialPoolingRackApplicationFactory;
 
 /**
  *
@@ -28,7 +29,17 @@ public class RailsServletContextListener extends RackServletContextListener {
         if (maxRuntimes != null && maxRuntimes == 1) {
             return new SharedRackApplicationFactory(new RailsRackApplicationFactory());
         } else {
-            return new PoolingRackApplicationFactory(new RailsRackApplicationFactory());
+            boolean serial = false;
+            try {
+                serial = Boolean.parseBoolean(context.getInitParameter("jruby.init.serial").toString());
+            } catch (Exception e) {
+            }
+            
+            if(serial) {
+                return new SerialPoolingRackApplicationFactory(new RailsRackApplicationFactory());
+            } else {
+                return new PoolingRackApplicationFactory(new RailsRackApplicationFactory());
+            }
         }
     }
 }
