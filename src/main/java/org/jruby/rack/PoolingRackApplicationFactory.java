@@ -35,9 +35,9 @@ import java.util.concurrent.TimeUnit;
 public class PoolingRackApplicationFactory implements RackApplicationFactory {
     static final int DEFAULT_TIMEOUT = 30;
 
-    private RackContext rackContext;
+    protected RackContext rackContext;
     private RackApplicationFactory realFactory;
-    private Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
+    protected Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
     private Integer initial, maximum;
     private long timeout = DEFAULT_TIMEOUT;
     private Semaphore permits;
@@ -126,7 +126,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
 
     /** This creates the application objects in the foreground thread to avoid
      * leakage when the web application is undeployed from the application server. */
-    private void fillInitialPool() throws RackInitializationException {
+    protected void fillInitialPool() throws RackInitializationException {
         Queue<RackApplication> apps = createApplications();
         launchInitializerThreads(apps);
         synchronized (applicationPool) {
@@ -136,7 +136,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
-    private void launchInitializerThreads(final Queue<RackApplication> apps) {
+    protected void launchInitializerThreads(final Queue<RackApplication> apps) {
         Integer numThreads = getPositiveInteger("jruby.runtime.initializer.threads");
         if (numThreads == null) {
             numThreads = 4;
@@ -170,7 +170,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
-    private Queue<RackApplication> createApplications() throws RackInitializationException {
+    protected Queue<RackApplication> createApplications() throws RackInitializationException {
         Queue<RackApplication> apps = new LinkedList<RackApplication>();
         for (int i = 0; i < initial; i++) {
             apps.add(realFactory.newApplication());
