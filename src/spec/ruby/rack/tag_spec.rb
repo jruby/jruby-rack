@@ -11,13 +11,6 @@ class ExceptionThrower
   end
 end
 
-class Writeable < String
-  def write(str)
-    self << str
-  end
-end
-
-
 describe RackTag do
 
   before :each do
@@ -25,27 +18,23 @@ describe RackTag do
     @result.stub!(:getBody).and_return("Hello World!")
 
     @application = mock("application")
-    @application.stub!(:call).with(an_instance_of(ServletRequest)).and_return @result
+    @application.stub!(:call).and_return @result
 
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
     @rack_factory.stub!(:getApplication).and_return @application
     @rack_factory.stub!(:finishedWithApplication)
 
-    @servlet_context.stub!(:getAttribute).with("rack.factory").and_return @rack_factory
+    @servlet_context.stub!(:getAttribute).and_return @rack_factory
     @servlet_request = mock("Servlet Request")
     @servlet_response = mock("Servlet Response")
 
     @writable = FakeJspWriter.new
     @page_context = FakePageContext.new(@servlet_context, @servlet_request, @servlet_response, @writable)
-    @page_context.stub!(:getOut).and_return(@writer)
-
-
 
     @tag = RackTag.new
     @tag.setPageContext(@page_context)
     @tag.setPath("/controller/action/id")
     @tag.setParams("fruit=apple&horse_before=cart")
-
   end
 
   it 'should be able to construct a new tag' do
