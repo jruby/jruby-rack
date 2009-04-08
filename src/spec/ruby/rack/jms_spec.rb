@@ -19,6 +19,7 @@ describe QueueContextListener do
   end
 
   it "should create a new QueueManager, initialize it and store it in the application context" do
+    pending "JRuby Java integration issue"
     @qmf.should_receive(:newQueueManager).ordered.and_return @qm
     @qm.should_receive(:init).with(an_instance_of(RackContext)).ordered
     @servlet_context.should_receive(:setAttribute).with(QueueManager::MGR_KEY, an_instance_of(QueueManager)).ordered
@@ -49,6 +50,7 @@ describe DefaultQueueManager do
   end
 
   it "should set up a connection with a message listener" do
+    pending "JRuby Java integration issue"
     app_factory = Java::OrgJRubyRack::RackApplicationFactory.impl {}
     @rack_context.should_receive(:getRackFactory).and_return app_factory
     conn = mock "connection"

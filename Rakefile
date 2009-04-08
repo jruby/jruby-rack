@@ -13,9 +13,8 @@ def compile_classpath
     classpath = []
     ENV['JRUBY_PARENT_CLASSPATH'].split(File::PATH_SEPARATOR).each {|p| classpath << p}
   else
-    require 'rbconfig'
-    classpath = Dir["#{File.expand_path 'src/main/lib'}/*.jar"] +
-      [File.join(Config::CONFIG['libdir'], Config::CONFIG['LIBRUBY'])]
+    java_classpath = Java::JavaLang::System.getProperty("java.class.path").split(File::PATH_SEPARATOR)
+    classpath = Dir["#{File.expand_path 'src/main/lib'}/*.jar"] + java_classpath
   end
 end
 
