@@ -63,15 +63,21 @@ module JRuby
         end
       end
 
-      def setup_sessions
-        if pstore_sessions?
-          require 'cgi/session/java_servlet_store'
-          session_options[:database_manager] = CGI::Session::JavaServletStore
-        end
+      def rack_based_rails?
+        defined?(ActionController::Dispatcher.middleware)
+      end
 
-        # Turn off default cookies when using Java sessions
-        if java_sessions?
-          session_options[:no_cookies] = true
+      def setup_sessions
+        unless rack_based_rails?
+          if pstore_sessions?
+            require 'cgi/session/java_servlet_store'
+            session_options[:database_manager] = CGI::Session::JavaServletStore
+          end
+
+          # Turn off default cookies when using Java sessions
+          if java_sessions?
+            session_options[:no_cookies] = true
+          end
         end
       end
 
@@ -98,10 +104,12 @@ module JRuby
         @session_options ||= SESSION_OPTIONS
       end
 
-      def session_options_for_request(env)
-        options = session_options.dup
-        options[:java_servlet_request] = env['java.servlet_request']
-        options
+      def set_session_options_for_request(env)
+        unless rack_based_rails?
+          options = session_options.dup
+          options[:java_servlet_request] = env['java.servlet_request']
+          env['rails.session_options'] = options
+        end
       end
 
       def java_sessions?
@@ -126,7 +134,7 @@ module JRuby
       end
 
       def call(env)
-        env['rails.session_options'] = @servlet_helper.session_options_for_request(env)
+        @servlet_helper.set_session_options_for_request(env)
         env['HTTPS'] = 'on' if env['rack.url_scheme'] == 'https'
         relative_url_root = env['java.servlet_request'].getContextPath
         if relative_url_root && !relative_url_root.empty?

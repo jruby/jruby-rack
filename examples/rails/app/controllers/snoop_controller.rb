@@ -6,7 +6,6 @@ class SnoopController < ApplicationController
     @snoop[:remote_ip]         = request.remote_ip
     @snoop[:host_with_port]    = request.host_with_port
     @snoop[:path]              = request.path
-    @snoop[:relative_url_root] = request.relative_url_root
     @snoop[:server_software]   = request.server_software
     @snoop[:cookies]           = request.cookies
     @snoop[:session_options]   = request.session_options

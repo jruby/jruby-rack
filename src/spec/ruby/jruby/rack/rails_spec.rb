@@ -1,5 +1,5 @@
 #--
-# Copyright 2007-2008 Sun Microsystems, Inc.
+# Copyright 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
 # See the file LICENSE.txt for details.
 #++
@@ -82,8 +82,9 @@ describe JRuby::Rack::RailsServletHelper do
     @helper.session_options[:database_manager] = ::CGI::Session::JavaServletStore
     @helper.setup_sessions
     env = {"java.servlet_request" => mock("servlet request")}
-    @helper.session_options_for_request(env).should have_key(:java_servlet_request)
-    @helper.session_options_for_request(env)[:java_servlet_request].should == env["java.servlet_request"]
+    @helper.set_session_options_for_request(env)
+    env['rails.session_options'].should have_key(:java_servlet_request)
+    env['rails.session_options'][:java_servlet_request].should == env["java.servlet_request"]
   end
 
   it "should set the PUBLIC_ROOT constant to the location of the public root" do
@@ -155,25 +156,16 @@ describe JRuby::Rack, "Rails controller extensions" do
 end
 
 describe JRuby::Rack::RailsRequestSetup do
-  before :each do
+  it "should set env['HTTPS'] == 'on' if env['rack.url_scheme] == 'https'" do
     @app = mock "app"
     @servlet_request = mock "servlet request"
     @servlet_request.stub!(:getContextPath).and_return "/blah"
     @helper = mock "servlet helper"
     @options = mock "options"
-    @helper.stub!(:session_options_for_request).and_return @options
     @rs = JRuby::Rack::RailsRequestSetup.new @app, @helper
     @env = {}
     @env['java.servlet_request'] = @servlet_request
-  end
-
-  it "should set up the env hash for Rails" do
-    @app.should_receive(:call).with(@env)
-    @rs.call(@env)
-    @env['rails.session_options'].should == @options
-  end
-
-  it "should set env['HTTPS'] == 'on' if env['rack.url_scheme] == 'https'" do
+    @helper.should_receive(:set_session_options_for_request)
     @app.should_receive(:call).with(@env)
     @env['rack.url_scheme'] = 'https'
     @rs.call(@env)
