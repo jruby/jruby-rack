@@ -18,8 +18,10 @@ Warbler::Config.new do |config|
   # JRuby and JRuby-Rack are pre-loaded in this list.  Be sure to include your
   # own versions if you directly set the value
   # config.java_libs += FileList["lib/java/*.jar"]
-  config.java_libs.delete_if {|f| f =~ /jruby-rack/}
-  config.java_libs += FileList["../../target/jruby-rack*.jar"]
+  if ENV['JRUBY_RACK_SRC']
+    config.java_libs.delete_if {|f| f =~ /jruby-rack/}
+    config.java_libs += FileList["../../target/jruby-rack*.jar"]
+  end
 
   # Loose Java classes and miscellaneous files to be placed in WEB-INF/classes.
   # config.java_classes = FileList["target/classes/**.*"]
