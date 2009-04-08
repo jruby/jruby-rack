@@ -11,6 +11,7 @@ class SnoopController < ApplicationController
     @snoop[:session_options]   = request.session_options
     @snoop[:session]           = request.session.inspect
     @snoop[:load_path]         = $LOAD_PATH
+    @snoop[:system_properties] = Hash[*Java::JavaLang::System.getProperties.to_a.flatten] if defined?(JRUBY_VERSION)
   end
 
   def hello
