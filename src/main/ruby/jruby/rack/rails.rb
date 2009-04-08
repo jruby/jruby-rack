@@ -63,12 +63,12 @@ module JRuby
         end
       end
 
-      def rack_based_rails?
-        defined?(ActionController::Dispatcher.middleware)
+      def rack_based_sessions?
+        defined?(ActionController::Session::AbstractStore)
       end
 
       def setup_sessions
-        unless rack_based_rails?
+        unless rack_based_sessions?
           if pstore_sessions?
             require 'cgi/session/java_servlet_store'
             session_options[:database_manager] = CGI::Session::JavaServletStore
@@ -105,7 +105,7 @@ module JRuby
       end
 
       def set_session_options_for_request(env)
-        unless rack_based_rails?
+        unless rack_based_sessions?
           options = session_options.dup
           options[:java_servlet_request] = env['java.servlet_request']
           env['rails.session_options'] = options

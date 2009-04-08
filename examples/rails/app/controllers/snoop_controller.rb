@@ -19,11 +19,10 @@ class SnoopController < ApplicationController
   end
 
   def session_form
-    sess = session
-    def sess.data; @data; end
-    @session_hash = sess.data
+    session[:id]
+    @session_hash = session.to_hash
   end
-  
+
   def session_edit
     if request.post?
       session[params[:key]] = params[:value] if params[:key]
