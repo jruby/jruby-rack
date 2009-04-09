@@ -25,4 +25,5 @@ config.action_view.cache_template_loading            = true
 # config.action_mailer.raise_delivery_errors = false
 
 # Enable threaded mode
+config.preload_frameworks = true
 config.threadsafe!
