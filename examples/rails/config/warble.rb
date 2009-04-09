@@ -55,39 +55,6 @@ Warbler::Config.new do |config|
   # Value of RAILS_ENV for the webapp
   config.webxml.rails.env = 'production'
 
-  # No JMS
-  # config.webxml.jms.provider = nil
-  # In-container JMS
-  # config.webxml.jms.provider = 'local'
-  # ActiveMQ
-  # config.webxml.jms.provider = 'activemq'
-  config.webxml.jms.provider = ENV['JMS_PROVIDER']
-
-  if config.webxml.jms.provider
-    if config.webxml.jms.provider == 'activemq'
-      config.webxml.jms.connection.factory = "ConnectionFactory"
-      config.webxml.jms.jndi.properties = <<-JNDI
-java.naming.factory.initial = org.apache.activemq.jndi.ActiveMQInitialContextFactory
-
-# use the following property to configure the default connector
-java.naming.provider.url = vm://localhost
-
-# use the following property to specify the JNDI name the connection factory
-# should appear as.
-#connectionFactoryNames = connectionFactory, queueConnectionFactory, topicConnectionFactry
-
-# register some queues in JNDI using the form
-# queue.[jndiName] = [physicalName]
-queue.rack = rack
-
-# register some topics in JNDI using the form
-# topic.[jndiName] = [physicalName]
-JNDI
-    else
-      config.webxml.jms.connection.factory = "jms/queues"
-    end
-  end
-
   # Application booter to use, one of :rack, :rails, or :merb. (Default :rails)
   # config.webxml.booter = :rails
 

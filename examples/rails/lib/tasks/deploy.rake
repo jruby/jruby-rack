@@ -11,8 +11,6 @@ class Warbler::Task
       jruby_stdlib_name = jruby_complete_jar.sub(/complete/, 'stdlib')
       working_dir = "tmp/jar_unpack"
 
-      puts jruby_complete_jar, jruby_core_name, jruby_stdlib_name
-
       task :unpack_jruby_complete_jar => jruby_complete_jar do |t|
         rm_rf working_dir
         mkdir_p "#{working_dir}/jruby_complete"
@@ -25,11 +23,13 @@ class Warbler::Task
         rm_f complete_jar_file
       end
 
-      file jruby_core_name => :unpack_jruby_complete_jar do |t|
+      file jruby_core_name do |t|
+        Rake::Task["#{name}:unpack_jruby_complete_jar"].invoke
         sh "jar cf #{t.name} -C #{working_dir}/jruby_core ."
       end
 
-      file jruby_stdlib_name => :unpack_jruby_complete_jar do |t|
+      file jruby_stdlib_name do |t|
+        Rake::Task["#{name}:unpack_jruby_complete_jar"].invoke
         sh "jar cf #{t.name} -C #{working_dir}/jruby_complete ."
       end
 
@@ -49,10 +49,18 @@ task :clean => "war:clean"
 
 task :warble => "war"
 
-task :deploy => :warble do
-  sh "asadmin deploy --name rails --contextroot rails tmp/war"
+namespace :glassfish do
+  task :deploy => :warble do
+    sh "asadmin deploy --name rails --contextroot rails tmp/war"
+  end
+
+  task :undeploy do
+    sh "asadmin undeploy rails"
+  end
 end
 
-task :undeploy do
-  sh "asadmin undeploy rails"
+namespace :appengine do
+  task :deploy => :warble do
+    sh "appcfg.sh --enable_jar_splitting update tmp/war"
+  end
 end

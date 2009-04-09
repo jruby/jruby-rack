@@ -16,6 +16,9 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import org.jruby.util.SafePropertyAccessor;
+
+import static java.lang.System.out;
 
 /**
  *
@@ -23,9 +26,38 @@ import javax.servlet.ServletException;
  */
 public class ServletRackContext implements RackContext, ServletContext {
     private ServletContext context;
+    private RackLogger logger;
+
+    private class ServletContextLogger implements RackLogger {
+        public void log(String message) {
+            context.log(message);
+        }
+
+        public void log(String message, Throwable ex) {
+            context.log(message,ex);
+        }
+    }
+
+    private static class StandardOutLogger implements RackLogger {
+        public void log(String message) {
+            out.println(message);
+            out.flush();
+        }
+
+        public void log(String message, Throwable ex) {
+            out.println(message);
+            ex.printStackTrace(out);
+            out.flush();
+        }
+    }
 
     public ServletRackContext(ServletContext context) {
         this.context = context;
+        if (SafePropertyAccessor.getProperty("jruby.rack.logger", "servlet_context").equals("servlet_context")) {
+            this.logger = new ServletContextLogger();
+        } else {
+            this.logger = new StandardOutLogger();
+        }
     }
 
     public String getInitParameter(String key) {
@@ -33,11 +65,12 @@ public class ServletRackContext implements RackContext, ServletContext {
     }
 
     public void log(String message) {
-        context.log(message);
+        logger.log(message);
+
     }
 
     public void log(String message, Throwable ex) {
-        context.log(message,ex);
+        logger.log(message, ex);
     }
 
     public String getRealPath(String path) {

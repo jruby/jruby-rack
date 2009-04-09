@@ -112,18 +112,26 @@ public class RackFilter implements Filter {
             uri += pathInfo;
         }
         if (uri.lastIndexOf('.') <= uri.lastIndexOf('/')) {
+
+            final String maybeIndex;
+            if (uri.endsWith("/")) {
+                maybeIndex = "index";
+            } else {
+                maybeIndex = "";
+            }
+
             if (pathInfo != null) {
                 httpRequest = new HttpServletRequestWrapper(httpRequest) {
                     @Override
                     public String getPathInfo() {
-                        return super.getPathInfo() + ".html";
+                        return super.getPathInfo() + maybeIndex + ".html";
                     }
                 };
             } else {
                 httpRequest = new HttpServletRequestWrapper(httpRequest) {
                     @Override
                     public String getServletPath() {
-                        return super.getServletPath() + ".html";
+                        return super.getServletPath() + maybeIndex + ".html";
                     }
                 };
             }
