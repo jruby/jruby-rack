@@ -141,6 +141,10 @@
         font-size: 18px;
         color: #333;
       }
+      #getting-started pre {
+        color: #555;
+        font-size: 13px;
+      }
       #getting-started li p {
         color: #555;
         font-size: 13px;
@@ -260,12 +264,12 @@
 
             <li>
               <h2>Deploy!</h2>
-              <p><pre>jruby -S rake appengine:deploy</pre></p>
+              <p><pre>jruby -S rake appengine:deploy \<br/>  EMAIL={email} PASSWORD={pass}</pre></p>
             </li>
 
             <li>
               <h2>Join the JRuby community</h2>
-              <p>Join the <a href="http://jruby.kenai.com/lists">mailing lists</a> to stay on top of the latest developments with Rails on Google App Engine.</p>
+              <p>Join the <a href="http://jruby.kenai.com/lists">mailing lists</a> or visit #jruby on irc.freenode.net to stay on top of the latest developments with Rails on Google App Engine.</p>
           </ol>
         </div>
       </div>

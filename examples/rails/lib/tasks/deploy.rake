@@ -2,9 +2,10 @@ gem 'warbler'
 require 'warbler'
 
 class Warbler::Task
-  def define_jruby_jar_split_tasks
+  def define_appengine_consolidation_tasks
     with_namespace_and_config do |name, config|
       app_task = Rake.application.lookup("app")
+
       jruby_complete_jar = app_task.prerequisites.detect {|p| p =~ /jruby-complete/}
       app_task.prerequisites.delete(jruby_complete_jar)
       jruby_core_name = jruby_complete_jar.sub(/complete/, 'core')
@@ -38,12 +39,25 @@ class Warbler::Task
       end
 
       task :app => [jruby_core_name, jruby_stdlib_name]
+
+      gems_task = Rake.application.lookup("gems")
+      app_task.prerequisites.delete("gems")
+      gems_jar_name = File.expand_path(File.join(config.staging_dir, "WEB-INF", "lib", "gems.jar"))
+
+      file gems_jar_name => gems_task.prerequisites do |t|
+        Dir.chdir(File.join(config.staging_dir, "WEB-INF")) do
+          sh "jar cf #{gems_jar_name} -C gems ."
+          rm_rf "gems"
+        end
+      end
+
+      task :app => gems_jar_name
     end
   end
 end
 
 warbler = Warbler::Task.new
-warbler.define_jruby_jar_split_tasks
+warbler.define_appengine_consolidation_tasks
 
 task :clean => "war:clean"
 
@@ -51,7 +65,11 @@ task :warble => "war"
 
 namespace :glassfish do
   task :deploy => :warble do
-    sh "asadmin deploy --name rails --contextroot rails tmp/war"
+    sh "asadmin deploy --name rails --contextroot rails tmp/war" do |ok, res|
+      unless ok
+        puts "Is the GLASSFISH/bin directory on your path?"
+      end
+    end
   end
 
   task :undeploy do
@@ -61,6 +79,25 @@ end
 
 namespace :appengine do
   task :deploy => :warble do
-    sh "appcfg.sh --enable_jar_splitting update tmp/war"
+    email = ENV['EMAIL']
+    pass = ENV['PASSWORD']
+    passfile = ENV['PASSWORDFILE']
+    fail "Please supply your Google account email using EMAIL={email}" unless email
+    fail %{Please supply your Google password using PASSWORD={pass} or PASSWORDFILE={file}.
+PASSWORDFILE should only contain the password value.} unless pass || passfile
+    require 'tempfile'
+    tmpfile = nil
+    passcmd = if pass
+                tmpfile = Tempfile.new("gaepass") {|f| f << pass }
+                "cat #{tmpfile.path}"
+              else
+                "cat #{passfile}"
+              end
+    sh "#{passcmd} | appcfg.sh --email=#{email} --passin --enable_jar_splitting update tmp/war" do |ok, res|
+      unless ok
+        puts "Is the AppEngine-SDK/bin directory on your path?"
+      end
+      tmpfile.unlink if tmpfile
+    end
   end
 end
