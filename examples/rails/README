@@ -4,7 +4,7 @@ This sample Rails application is preconfigured for both war deployment
 on any Java application server and for Google AppEngine.
 
 This document and sample application is a work in progress! Please
-provide feedback on the JRuby mailing lists: http://jruby.kenai.com/lists.
+provide feedback on the JRuby mailing lists (http://jruby.kenai.com/lists).
 
 === Prerequisites
 
