@@ -1,17 +1,20 @@
+require 'rails/info'
+
 class SnoopController < ApplicationController
   def index
-    @snoop = {}
-    @snoop[:env]               = request.env
-    @snoop[:remote_addr]       = request.remote_addr
-    @snoop[:remote_ip]         = request.remote_ip
-    @snoop[:host_with_port]    = request.host_with_port
-    @snoop[:path]              = request.path
-    @snoop[:server_software]   = request.server_software
-    @snoop[:cookies]           = request.cookies
-    @snoop[:session_options]   = request.session_options
-    @snoop[:session]           = request.session.inspect
-    @snoop[:load_path]         = $LOAD_PATH
-    @snoop[:system_properties] = Hash[*Java::JavaLang::System.getProperties.to_a.flatten] if defined?(JRUBY_VERSION)
+    @info = Rails::Info.to_html
+    @request = {}
+    @request[:env]               = request.env
+    @request[:remote_addr]       = request.remote_addr
+    @request[:remote_ip]         = request.remote_ip
+    @request[:host_with_port]    = request.host_with_port
+    @request[:path]              = request.path
+    @request[:server_software]   = request.server_software
+    @request[:cookies]           = request.cookies
+    @request[:session_options]   = request.session_options
+    @request[:session]           = request.session.inspect
+    @load_path = { :load_path => $LOAD_PATH }
+    @system_properties = Hash[*Java::JavaLang::System.getProperties.to_a.flatten] if defined?(JRUBY_VERSION)
   end
 
   def hello
