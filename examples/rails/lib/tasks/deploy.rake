@@ -100,4 +100,12 @@ PASSWORDFILE should only contain the password value.} unless pass || passfile
       tmpfile.unlink if tmpfile
     end
   end
+
+  task :server do
+    sh "dev_appserver.sh --port=3000 tmp/war" do |ok, res|
+      unless ok
+        puts "Is the AppEngine-SDK/bin directory on your path?"
+      end
+    end
+  end
 end
