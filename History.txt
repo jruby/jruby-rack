@@ -1,5 +1,9 @@
 == 0.9.4
 
+- PLEASE NOTE: Prior to 0.9.4, jruby-rack would try to use the java
+  servlet session store by default. This caused more confusion than
+  it's worth; so the default Rails cookie session store has been
+  reinstated for this release.
 - Upgrade bundled Rack version to 0.9.1
 - Introduce RackLogger, defaults to log to servlet context but can be
   made to point to stdout by setting -Djruby.rack.logging=stdout (for
