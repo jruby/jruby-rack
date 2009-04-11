@@ -1,4 +1,3 @@
-- Add ability to specify custom Rack middleware for Rails
 - Get rid of RackApplicationFactory; make custom factories just a decorating RackApplication instead
   - Move JRuby runtime factory logic into separate small factory that accepts a rackup script
 - Introduce application bootstrap strategy concept

@@ -1,18 +1,27 @@
 == 0.9.4
 
-- Upgrade to Rack 0.9.1
-- EXPERIMENTAL: Detect Rails 2.3 rack machinery and dispatch to it
-  rather than the legacy CGI shim.
-- EXPERIMENTAL: Beginnings of a JMS API (more details to come)
-- REMOVAL: All the goldspike compatibility bits have been removed. You
-  should upgrade your application to use a web.xml similar to what
-  comes with Warbler.
+- Upgrade bundled Rack version to 0.9.1
+- Introduce RackLogger, defaults to log to servlet context but can be
+  made to point to stdout by setting -Djruby.rack.logging=stdout (for
+  Google AppEngine)
+- Detect Rails 2.3 rack machinery and dispatch to it rather than the
+  legacy CGI shim.
+- TODO: Still missing a java servlet Rack::Session adapter for Rails
+  2.3. Should have it for next release.
+- Update example Rails application to Rails 2.3.2, include bits for
+  deployment to Google AppEngine using Warbler.
 - RackApplication-related core Java classes have been insulated from
   the servlet API, so that (parts of) JRuby-Rack can be used outside
   of a servlet container. If your application or library is coupled to
   these classes, you'll likely be broken with this release. See Nick
   for details.
 - Fix TLD to be more compatible (Fred McHale).
+- Switched main code repository to kenai.com. Github.com still
+  available as a mirror and for forking.
+- EXPERIMENTAL: Beginnings of a JMS API (more details to come)
+- REMOVAL: All the goldspike compatibility bits have been removed. You
+  should upgrade your application to use a web.xml similar to what
+  comes with Warbler.
 
 == 0.9.3
 

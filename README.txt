@@ -1,3 +1,7 @@
+= JRuby-Rack
+
+- http://jruby-rack.kenai.com/
+
 JRuby-Rack is a lightweight adapter for the Java servlet environment
 that allows any Rack-based application to run unmodified in a Java
 servlet container. JRuby-Rack supports Rails, Merb, as well as any
@@ -55,7 +59,7 @@ every request.
 
 Checkout the JRuby Rack code and cd to that directory.
 
-  git clone git://github.com/nicksieger/jruby-rack.git
+  git clone git://kenai.com/jruby-rack~main jruby-rack
   cd jruby-rack
   
 You can choose to build with either Maven or Rake. Either of the
@@ -65,17 +69,6 @@ following two will suffice (but see the NOTE below).
   jruby -S rake 
 
 The generated jar should be located here: target/jruby-rack-*.jar.
-
-NOTE: There was a bug in JRuby's java integration code in the 1.1.4
-and 1.1.5 releases that prevent the specs from running cleanly. If
-you're building JRuby-Rack with one of those versions of JRuby, you'll
-need to skip running the specs as follows:
-
-  mvn install -Dmaven.test.skip
-  jruby -S rake SKIP_SPECS=true
-
-If you build with JRuby <= 1.1.3 or JRuby >= 1.1.6, the specs should
-run clean.
 
 == Rails Step-by-step
 
