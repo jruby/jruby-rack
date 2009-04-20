@@ -33,8 +33,9 @@ import org.jruby.rack.RackServletContextListener unless defined?(RackServletCont
 import org.jruby.rack.RackContext unless defined?(RackContext)
 
 class StubInputStream < java.io.InputStream
-  def initialize
-    @is = java.io.ByteArrayInputStream.new([].to_java(:byte))
+  def initialize(val = "")
+    super()
+    @is = java.io.ByteArrayInputStream.new(val.to_s.to_java_bytes)
   end
   def read
     @is.read

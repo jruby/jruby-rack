@@ -12,10 +12,7 @@ import org.jruby.RubyIO;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.RubyObjectAdapter;
-import org.jruby.runtime.Arity;
-import org.jruby.runtime.Block;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.runtime.callback.Callback;
 
 /**
  *
@@ -31,12 +28,7 @@ public class DefaultRackApplication implements RackApplication {
             final RubyIO io = new RubyIO(runtime, env.getInput());
             try {
                 IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
-                servlet_env.getMetaClass().defineMethod("to_io", new Callback() {
-                        public IRubyObject execute(IRubyObject recv, IRubyObject[] args, Block block) {
-                            return io;
-                        }
-                        public Arity getArity() { return Arity.NO_ARGUMENTS; }
-                    });
+                adapter.setInstanceVariable(servlet_env, "@_io", io);
                 IRubyObject response = __call(servlet_env);
                 return (RackResponse) JavaEmbedUtils.rubyToJava(runtime, response, RackResponse.class);
             } finally {

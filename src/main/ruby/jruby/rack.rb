@@ -20,6 +20,7 @@ module JRuby
   end
 end
 
+require 'jruby/rack/environment'
 require 'jruby/rack/app_layout'
 require 'jruby/rack/errors'
 require 'jruby/rack/response'

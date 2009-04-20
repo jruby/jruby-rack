@@ -11,11 +11,14 @@ import org.jruby.rack.DefaultRackApplication
 describe DefaultRackApplication, "call" do
   it "should invoke the call method on the ruby object and return the rack response" do
     server_request = mock("server request")
-    server_request.stub!(:getInput).and_return(StubInputStream.new)
+    server_request.stub!(:getInput).and_return(StubInputStream.new("hello"))
     rack_response = org.jruby.rack.RackResponse.impl {}
 
     ruby_object = mock "application"
-    ruby_object.should_receive(:call).with(server_request).and_return rack_response
+    ruby_object.should_receive(:call).with(server_request).and_return do |servlet_env|
+      servlet_env.to_io.read.should == "hello"
+      rack_response
+    end
 
     application = DefaultRackApplication.new
     application.setApplication(ruby_object)
