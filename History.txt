@@ -1,3 +1,16 @@
+== 0.9.5
+
+- Upgrade to Rack 1.0.0
+- JRUBY_RACK-7: Implement a rewindable 'rack.input' shim between the
+  servlet input stream and the Rack environment. Below a certain
+  byte-size threshold, the input is entirely buffered in memory. Above
+  the threshold, the input is written to a tempfile. The default
+  threshold is 64k, and can be controlled by the system property
+  'jruby.rack.request.size.threshold.bytes'.
+- JRUBY_RACK-4: deal with threading and to_io by assigning IO object
+  to an instance variable instead of defining a singleton method on
+  the metaclass/singleton class
+
 == 0.9.4
 
 - PLEASE NOTE: Prior to 0.9.4, jruby-rack would try to use the java

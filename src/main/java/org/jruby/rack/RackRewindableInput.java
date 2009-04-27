@@ -27,7 +27,6 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
-import org.jruby.util.SafePropertyAccessor;
 
 /**
  * Suitable env['rack.input'] object for servlet environments, allowing to rewind the
@@ -51,8 +50,16 @@ public class RackRewindableInput extends RubyObject implements RackInput {
         return klass;
     }
 
-    /** 64k is the default cutoff for buffering to disk. */
-    public static final int DEFAULT_THRESHOLD = 64 * 1024;
+    public static int getDefaultThreshold() {
+        return DEFAULT_THRESHOLD;
+    }
+
+    public static void setDefaultThreshold(int thresh) {
+        DEFAULT_THRESHOLD = thresh;
+    }
+
+    /** 64k is the default cutoff for buffering in memory. */
+    private static int DEFAULT_THRESHOLD = 64 * 1024;
 
     private InputStream inputStream;
     private int threshold = DEFAULT_THRESHOLD;
@@ -65,7 +72,6 @@ public class RackRewindableInput extends RubyObject implements RackInput {
     public RackRewindableInput(Ruby runtime, InputStream input) {
         super(runtime, getClass(runtime));
         inputStream = input;
-        threshold = SafePropertyAccessor.getInt("jruby.rack.request.size.threshold.bytes", DEFAULT_THRESHOLD);
     }
 
     /**

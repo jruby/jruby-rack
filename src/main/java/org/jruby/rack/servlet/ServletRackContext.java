@@ -17,6 +17,7 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.jruby.util.SafePropertyAccessor;
 import static java.lang.System.out;
 
 /**
@@ -52,11 +53,14 @@ public class ServletRackContext implements RackContext, ServletContext {
 
     public ServletRackContext(ServletContext context) {
         this.context = context;
-        if (System.getProperty("jruby.rack.logging", "servlet_context").equals("servlet_context")) {
+        if (SafePropertyAccessor.getProperty("jruby.rack.logging", "servlet_context").equals("servlet_context")) {
             this.logger = new ServletContextLogger();
         } else {
             this.logger = new StandardOutLogger();
         }
+        RackRewindableInput.setDefaultThreshold(
+                SafePropertyAccessor.getInt("jruby.rack.request.size.threshold.bytes",
+                RackRewindableInput.getDefaultThreshold()));
     }
 
     public String getInitParameter(String key) {
