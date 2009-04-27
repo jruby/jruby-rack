@@ -4,7 +4,7 @@
  * See the file LICENSE.txt for details.
  */
 
-package org.jruby.rack;
+package org.jruby.rack.input;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,39 +15,34 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyModule;
-import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.RubyTempfile;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
+import org.jruby.rack.RackInput;
 
 /**
  * Suitable env['rack.input'] object for servlet environments, allowing to rewind the
  * input per the Rack specification.
  * @author nicksieger
  */
-public class RackRewindableInput extends RubyObject implements RackInput {
-    public static RubyClass getClass(Ruby runtime) {
-        RubyModule jrubyMod = runtime.getOrCreateModule("JRuby");
-        RubyClass klass = jrubyMod.getClass("RackRewindableInput");
-        if (klass == null) {
-            klass = jrubyMod.defineClassUnder("RackRewindableInput",
-                    runtime.getObject(),
-                    new ObjectAllocator() {
-                        public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-                            return new RackRewindableInput(runtime, klass);
-                        }
-                    });
-            klass.defineAnnotatedMethods(RackRewindableInput.class);
+public class RackRewindableInput extends RackBaseInput {
+    private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klass) {
+            return new RackRewindableInput(runtime, klass);
         }
-        return klass;
+    };
+
+    public static RubyClass getRackRewindableInputClass(Ruby runtime) {
+        return RackBaseInput.getClass(runtime, "RackRewindableInput",
+                RackBaseInput.getRackBaseInputClass(runtime), ALLOCATOR,
+                RackRewindableInput.class);
     }
 
     public static int getDefaultThreshold() {
@@ -61,45 +56,14 @@ public class RackRewindableInput extends RubyObject implements RackInput {
     /** 64k is the default cutoff for buffering in memory. */
     private static int DEFAULT_THRESHOLD = 64 * 1024;
 
-    private InputStream inputStream;
     private int threshold = DEFAULT_THRESHOLD;
-    private RackInput delegateInput;
 
     public RackRewindableInput(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
 
     public RackRewindableInput(Ruby runtime, InputStream input) {
-        super(runtime, getClass(runtime));
-        inputStream = input;
-    }
-
-    /**
-     * gets must be called without arguments and return a string, or nil on EOF.
-     */
-    @JRubyMethod()
-    public IRubyObject gets(ThreadContext context) {
-        return getDelegateInput().gets(context);
-    }
-
-    @JRubyMethod(optional = 2)
-    public IRubyObject read(ThreadContext context, IRubyObject[] args) {
-        return getDelegateInput().read(context, args);
-    }
-
-    @JRubyMethod()
-    public IRubyObject each(ThreadContext context, Block block) {
-        return getDelegateInput().each(context, block);
-    }
-
-    @JRubyMethod()
-    public IRubyObject rewind(ThreadContext context) {
-        return getDelegateInput().rewind(context);
-    }
-
-    public void close() {
-        getDelegateInput().close();
-        delegateInput = null;
+        super(runtime, getRackRewindableInputClass(runtime), input);
     }
 
     private class MemoryBufferRackInput implements RackInput {
@@ -110,7 +74,7 @@ public class RackRewindableInput extends RubyObject implements RackInput {
         private MemoryBufferRackInput() throws IOException {
             input = Channels.newChannel(inputStream);
             memoryBuffer = ByteBuffer.allocate(threshold);
-            input.read(memoryBuffer);          
+            input.read(memoryBuffer);
             full = !memoryBuffer.hasRemaining();
             memoryBuffer.flip();
         }
@@ -210,66 +174,35 @@ public class RackRewindableInput extends RubyObject implements RackInput {
         }
     }
 
-    private class RubyTempfileRackInput implements RackInput {
-        private RubyTempfile io;
-
+    private class RubyTempfileRackInput extends RubyIORackInput {
         private RubyTempfileRackInput(ReadableByteChannel input, ByteBuffer memoryBuffer) {
-            getRuntime().getLoadService().require("tempfile");
-            io = (RubyTempfile) RubyTempfile.open(getRuntime().getCurrentContext(),
-                    getRuntime().getClass("Tempfile"),
-                    new IRubyObject[] { getRuntime().newString("jruby-rack") },
-                    Block.NULL_BLOCK);
-            try {
-                FileChannel tempfileChannel = (FileChannel) io.getChannel();
-                tempfileChannel.write(memoryBuffer);
-                tempfileChannel.position(0);
-                long position = threshold, bytesRead = 0;
-                while ((bytesRead = tempfileChannel.transferFrom(input, position, 1024 * 1024)) > 0) {
-                    position += bytesRead;
-                }
-            } catch (IOException io) {
-                throw getRuntime().newIOErrorFromException(io);
-            }
-        }
-
-        public IRubyObject gets(ThreadContext context) {
-            return io.gets(context, NULL_ARRAY);
-        }
-
-        public IRubyObject read(ThreadContext context, IRubyObject[] args) {
-            switch (args.length) {
-                case 1:
-                    return io.read(context, args[0]);
-                case 2:
-                    return io.read(context, args[0], args[1]);
-                default:
-                    return io.read(context);
-            }
-        }
-
-        public IRubyObject each(ThreadContext context, Block block) {
-            return io.each_line(context, NULL_ARRAY, block);
-        }
-
-        public IRubyObject rewind(ThreadContext context) {
-            return io.rewind(context);
+            super(getRuntime(), createTempfile(input, memoryBuffer));
         }
 
         public void close() {
-            io.close_bang(getRuntime().getCurrentContext());
+            ((RubyTempfile) io).close_bang(getRuntime().getCurrentContext());
         }
     }
 
-    /**
-     * For testing, to allow the input stream to be set from Ruby.
-     */
-    @JRubyMethod(name = "stream=", visibility = Visibility.PRIVATE)
-    public IRubyObject set_stream(IRubyObject stream) {
-        Object obj = JavaEmbedUtils.rubyToJava(stream);
-        if (obj instanceof InputStream) {
-            inputStream = (InputStream) obj;
+    private RubyTempfile createTempfile(ReadableByteChannel input, ByteBuffer memoryBuffer) {
+        getRuntime().getLoadService().require("tempfile");
+        RubyTempfile tempfile = (RubyTempfile) RubyTempfile.open(getRuntime().getCurrentContext(),
+                getRuntime().getClass("Tempfile"),
+                new IRubyObject[]{getRuntime().newString("jruby-rack")},
+                Block.NULL_BLOCK);
+        try {
+            FileChannel tempfileChannel = (FileChannel) tempfile.getChannel();
+            tempfileChannel.write(memoryBuffer);
+            tempfileChannel.position(0);
+            long position = threshold;
+            long bytesRead = 0;
+            while ((bytesRead = tempfileChannel.transferFrom(input, position, 1024 * 1024)) > 0) {
+                position += bytesRead;
+            }
+        } catch (IOException io) {
+            throw getRuntime().newIOErrorFromException(io);
         }
-        return getRuntime().getNil();
+        return tempfile;
     }
 
     /**
@@ -281,7 +214,7 @@ public class RackRewindableInput extends RubyObject implements RackInput {
         return getRuntime().getNil();
     }
 
-    private RackInput getDelegateInput() {
+    protected RackInput getDelegateInput() {
         if (delegateInput == null) {
             try {
                 MemoryBufferRackInput memoryBufferInput = new MemoryBufferRackInput();

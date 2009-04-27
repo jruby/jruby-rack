@@ -6,6 +6,7 @@
 
 package org.jruby.rack;
 
+import org.jruby.rack.input.RackRewindableInput;
 import java.io.IOException;
 import org.jruby.Ruby;
 import org.jruby.exceptions.RaiseException;

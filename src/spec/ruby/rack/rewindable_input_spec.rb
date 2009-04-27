@@ -7,7 +7,7 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 # Force the class to be loaded on the Ruby side
 require 'jruby'
-Java::org.jruby.rack.RackRewindableInput.getClass(JRuby.runtime)
+Java::org.jruby.rack.input.RackRewindableInput.getRackRewindableInputClass(JRuby.runtime)
 
 def it_should_behave_like_rack_input
   it "should respond to gets and return a line" do

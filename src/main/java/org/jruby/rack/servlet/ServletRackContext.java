@@ -6,6 +6,7 @@
 
 package org.jruby.rack.servlet;
 
+import org.jruby.rack.input.RackRewindableInput;
 import org.jruby.rack.*;
 import java.io.InputStream;
 import java.net.MalformedURLException;
