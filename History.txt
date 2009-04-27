@@ -7,6 +7,10 @@
   the threshold, the input is written to a tempfile. The default
   threshold is 64k, and can be controlled by the system property
   'jruby.rack.request.size.threshold.bytes'.
+- The previous non-rewindable input behavior can be re-instated by
+  setting the system property 'jruby.rack.input.rewindable' to false.
+  Despite being out of spec, environments such as Google AppEngine
+  require this behavior because writing to a tempfile is not possible.
 - JRUBY_RACK-4: deal with threading and to_io by assigning IO object
   to an instance variable instead of defining a singleton method on
   the metaclass/singleton class
