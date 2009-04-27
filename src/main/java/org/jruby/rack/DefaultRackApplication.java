@@ -8,7 +8,6 @@ package org.jruby.rack;
 
 import java.io.IOException;
 import org.jruby.Ruby;
-import org.jruby.RubyIO;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.RubyObjectAdapter;
@@ -25,18 +24,14 @@ public class DefaultRackApplication implements RackApplication {
     public RackResponse call(final RackEnvironment env) {
         Ruby runtime = getRuntime();
         try {
-            final RubyIO io = new RubyIO(runtime, env.getInput());
+            RackRewindableInput io = new RackRewindableInput(runtime, env.getInput());
             try {
                 IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
                 adapter.setInstanceVariable(servlet_env, "@_io", io);
                 IRubyObject response = __call(servlet_env);
                 return (RackResponse) JavaEmbedUtils.rubyToJava(runtime, response, RackResponse.class);
             } finally {
-                try {
-                    io.unregisterDescriptor(io.getOpenFile().getMainStream().getDescriptor().getFileno());
-                } catch (Throwable t) {
-                    // oh well, tried to ensure that the descriptor doesn't leak. keep going
-                }
+                io.close();
             }
         } catch (IOException ex) {
             throw RaiseException.createNativeRaiseException(runtime, ex);

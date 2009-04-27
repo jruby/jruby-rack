@@ -27,6 +27,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
+import org.jruby.util.SafePropertyAccessor;
 
 /**
  * Suitable env['rack.input'] object for servlet environments, allowing to rewind the
@@ -50,18 +51,21 @@ public class RackRewindableInput extends RubyObject implements RackInput {
         return klass;
     }
 
+    /** 64k is the default cutoff for buffering to disk. */
+    public static final int DEFAULT_THRESHOLD = 64 * 1024;
+
     private InputStream inputStream;
-    private int threshold = 64 * 1024;
+    private int threshold = DEFAULT_THRESHOLD;
     private RackInput delegateInput;
 
     public RackRewindableInput(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
 
-    public RackRewindableInput(Ruby runtime, InputStream input, int thresh) {
+    public RackRewindableInput(Ruby runtime, InputStream input) {
         super(runtime, getClass(runtime));
         inputStream = input;
-        threshold = thresh;
+        threshold = SafePropertyAccessor.getInt("jruby.rack.request.size.threshold.bytes", DEFAULT_THRESHOLD);
     }
 
     /**
@@ -160,8 +164,6 @@ public class RackRewindableInput extends RubyObject implements RackInput {
         }
 
         public void close() {
-            input = null;
-            memoryBuffer = null;
         }
 
         private boolean isFull() {
@@ -209,14 +211,14 @@ public class RackRewindableInput extends RubyObject implements RackInput {
             getRuntime().getLoadService().require("tempfile");
             io = (RubyTempfile) RubyTempfile.open(getRuntime().getCurrentContext(),
                     getRuntime().getClass("Tempfile"),
-                    new IRubyObject[]{getRuntime().newString("rack")},
+                    new IRubyObject[] { getRuntime().newString("jruby-rack") },
                     Block.NULL_BLOCK);
             try {
                 FileChannel tempfileChannel = (FileChannel) io.getChannel();
                 tempfileChannel.write(memoryBuffer);
                 tempfileChannel.position(0);
                 long position = threshold, bytesRead = 0;
-                while ((bytesRead = tempfileChannel.transferFrom(input, position, 128 * 1024)) > 0) {
+                while ((bytesRead = tempfileChannel.transferFrom(input, position, 1024 * 1024)) > 0) {
                     position += bytesRead;
                 }
             } catch (IOException io) {
