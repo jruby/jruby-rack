@@ -9,13 +9,7 @@ require File.dirname(__FILE__) + '/../spec_helper'
 require 'jruby'
 Java::org.jruby.rack.RackRewindableInput.getClass(JRuby.runtime)
 
-describe JRuby::RackRewindableInput, "for small inputs" do
-  before :each do
-    @stream = java.io.ByteArrayInputStream.new("hello\ngoodbye".to_java_bytes)
-    @input = JRuby::RackRewindableInput.new
-    @input.send("stream=", @stream)
-  end
-
+def it_should_behave_like_rack_input
   it "should respond to gets and return a line" do
     @input.gets.should == "hello\n"
     @input.gets.should == "goodbye"
@@ -54,8 +48,29 @@ describe JRuby::RackRewindableInput, "for small inputs" do
 
   it "should respond to rewind" do
     @input.read
-    @input.read.should == nil
+    @input.read.should == ""
     @input.rewind
     @input.read.should == "hello\ngoodbye"
+  end  
+end
+
+describe JRuby::RackRewindableInput, "for inputs below the memory threshold" do
+  before :each do
+    @stream = java.io.ByteArrayInputStream.new("hello\ngoodbye".to_java_bytes)
+    @input = JRuby::RackRewindableInput.new
+    @input.send("stream=", @stream)
   end
+
+  it_should_behave_like_rack_input
+end
+
+describe JRuby::RackRewindableInput, "for inputs above the memory threshold" do
+  before :each do
+    @stream = java.io.ByteArrayInputStream.new("hello\ngoodbye".to_java_bytes)
+    @input = JRuby::RackRewindableInput.new
+    @input.send("stream=", @stream)
+    @input.send("threshold=", 1)
+  end
+
+  it_should_behave_like_rack_input
 end

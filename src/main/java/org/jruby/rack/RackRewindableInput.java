@@ -11,16 +11,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
+import org.jruby.RubyTempfile;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
@@ -32,10 +35,7 @@ import org.jruby.util.ByteList;
  */
 public class RackRewindableInput extends RubyObject {
     public static RubyClass getClass(Ruby runtime) {
-        RubyModule jrubyMod = runtime.getModule("JRuby");
-        if (jrubyMod == null) {
-            jrubyMod = runtime.getOrCreateModule("JRuby");
-        }
+        RubyModule jrubyMod = runtime.getOrCreateModule("JRuby");
         RubyClass klass = jrubyMod.getClass("RackRewindableInput");
         if (klass == null) {
             klass = jrubyMod.defineClassUnder("RackRewindableInput",
@@ -53,7 +53,8 @@ public class RackRewindableInput extends RubyObject {
     private InputStream inputStream;
     private ReadableByteChannel input;
     private ByteBuffer memoryBuffer;
-    private static int THRESHOLD = 64 * 1024;
+    private int threshold = 64 * 1024;
+    private RubyTempfile io;
 
     public RackRewindableInput(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
@@ -68,7 +69,11 @@ public class RackRewindableInput extends RubyObject {
      * gets must be called without arguments and return a string, or nil on EOF.
      */
     @JRubyMethod()
-    public IRubyObject gets() {
+    public IRubyObject gets(ThreadContext context) {
+        initializeInput(context);
+        if (io != null) {
+            return io.gets(context, NULL_ARRAY);
+        }
         try {
             final int NEWLINE = 10; // 10 == '\n'
             byte[] bytes = readUntil(NEWLINE, 0);
@@ -93,7 +98,19 @@ public class RackRewindableInput extends RubyObject {
      * buffer instead of a newly created String object.
      */
     @JRubyMethod(optional = 2)
-    public IRubyObject read(IRubyObject[] args) { // length, buffer
+    public IRubyObject read(ThreadContext context, IRubyObject[] args) { // length, buffer
+        initializeInput(context);
+        if (io != null) {
+            switch (args.length) {
+                case 0:
+                    return io.read(context);
+                case 1:
+                    return io.read(context, args[0]);
+                case 2:
+                    return io.read(context, args[0], args[1]);
+            }
+        }
+
         long count = 0;
         if (args.length > 0) {
             count = args[0].convertToInteger("to_i").getLongValue();
@@ -112,7 +129,7 @@ public class RackRewindableInput extends RubyObject {
                 }
                 return getRuntime().newString(new ByteList(bytes));
             } else {
-                return getRuntime().getNil();
+                return RubyString.newEmptyString(getRuntime());
             }
         } catch (IOException io) {
             throw getRuntime().newIOErrorFromException(io);
@@ -123,11 +140,16 @@ public class RackRewindableInput extends RubyObject {
      * each must be called without arguments and only yield Strings.
      */
     @JRubyMethod()
-    public IRubyObject each(Block block) {
+    public IRubyObject each(ThreadContext context, Block block) {
+        initializeInput(context);
+        if (io != null) {
+            return io.each_line(context, NULL_ARRAY, block);
+        }
+
         IRubyObject nil = getRuntime().getNil();
         IRubyObject line = null;
-        while ((line = gets()) != nil) {
-            block.yield(getRuntime().getCurrentContext(), line);
+        while ((line = gets(context)) != nil) {
+            block.yield(context, line);
         }
         return nil;
     }
@@ -139,13 +161,32 @@ public class RackRewindableInput extends RubyObject {
      * data into some rewindable object if the underlying input stream is not rewindable.
      */
     @JRubyMethod()
-    public IRubyObject rewind() {
+    public IRubyObject rewind(ThreadContext context) {
+        initializeInput(context);
+        if (io != null) {
+            return io.rewind(context);
+        }
+
         if (memoryBuffer != null) {
             memoryBuffer.rewind();
         }
         return getRuntime().getNil();
     }
 
+    /**
+     * Close the input. Exposed only to the Java side because the Rack spec says
+     * that application code must not call close, so we don't expose a close method to Ruby.
+     */
+    public void close() {
+        if (io != null) {
+            io.close_bang(getRuntime().getCurrentContext());
+            io = null;
+        }
+        if (input != null) {
+            input = null;
+            memoryBuffer = null;
+        }
+    }
     /**
      * For testing, to allow the input stream to be set from Ruby.
      */
@@ -158,8 +199,16 @@ public class RackRewindableInput extends RubyObject {
         return getRuntime().getNil();
     }
 
+    /**
+     * For testing, to allow the input threshold to be set from Ruby.
+     */
+    @JRubyMethod(name = "threshold=", visibility = Visibility.PRIVATE)
+    public IRubyObject set_threshold(IRubyObject threshold) {
+        this.threshold = (int) threshold.convertToInteger().getLongValue();
+        return getRuntime().getNil();
+    }
+
     private byte readByte() throws IOException {
-        initializeInput();
         if (memoryBuffer.hasRemaining()) {
             return memoryBuffer.get();
         } else {
@@ -191,12 +240,43 @@ public class RackRewindableInput extends RubyObject {
         return bs.toByteArray();
     }
 
-    private void initializeInput() throws IOException {
+    private void initializeMemoryBuffer() throws IOException {
+        input = Channels.newChannel(inputStream);
+        memoryBuffer = ByteBuffer.allocate(threshold);
+        int numBytes = input.read(memoryBuffer);
+    }
+
+    private void initializeTempfileAndIO(ThreadContext context) {
+        getRuntime().getLoadService().require("tempfile");
+        io = (RubyTempfile) RubyTempfile.open(getRuntime().getCurrentContext(),
+                getRuntime().getClass("Tempfile"),
+                new IRubyObject[] {getRuntime().newString("rack")},
+                Block.NULL_BLOCK);
+        try {
+            FileChannel tempfileChannel = (FileChannel) io.getChannel();
+            tempfileChannel.write(memoryBuffer);
+            tempfileChannel.position(0);
+            long position = threshold, bytesRead = 0;
+            while ((bytesRead = tempfileChannel.transferFrom(input, position, 128 * 1024)) > 0) {
+                position += bytesRead;
+            }
+        } catch (IOException io) {
+            throw getRuntime().newIOErrorFromException(io);
+        }
+    }
+
+    private void initializeInput(ThreadContext context) {
         if (input == null) {
-            input = Channels.newChannel(inputStream);
-            memoryBuffer = ByteBuffer.allocate(THRESHOLD);
-            int numBytes = input.read(memoryBuffer);
-            memoryBuffer.flip();
+            try {
+                initializeMemoryBuffer();
+                boolean isBufferFull = !memoryBuffer.hasRemaining();
+                memoryBuffer.flip();
+                if (isBufferFull) {
+                    initializeTempfileAndIO(context);
+                }
+            } catch (IOException io) {
+                throw getRuntime().newIOErrorFromException(io);
+            }
         }
     }
 }
