@@ -16,8 +16,8 @@ import java.util.Enumeration;
  * @author nicksieger
  */
 public interface RackEnvironment {
-    final String EXCEPTION = "rack.exception";
-    final String DYNAMIC_REQS_ONLY = "rack.dynamic.requests.only";
+    final String EXCEPTION = "jruby.rack.exception";
+    final String DYNAMIC_REQS_ONLY = "jruby.rack.dynamic.requests.only";
 
     // The following methods are specific to the rack environment
     InputStream getInput() throws IOException;

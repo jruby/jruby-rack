@@ -36,7 +36,7 @@ module Rack
       end
 
       def call(env)
-        if env['rack.dynamic.requests.only']
+        if env['jruby.rack.dynamic.requests.only']
           serve_rails(env)
         else
           path        = env['PATH_INFO'].chomp('/')

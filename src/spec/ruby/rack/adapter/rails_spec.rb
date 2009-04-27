@@ -53,9 +53,9 @@ describe Rack::Adapter::Rails do
     @rails.call(@env).should == [200, {}, ""]
   end
 
-  it "should not look for static files if 'rack.dynamic.requests.only' is present in the environment" do
+  it "should not look for static files if 'jruby.rack.dynamic.requests.only' is present in the environment" do
     @rails.should_receive(:serve_rails).and_return [200, {}, ""]
-    @env["rack.dynamic.requests.only"] = true
+    @env["jruby.rack.dynamic.requests.only"] = true
     @rails.call(@env).should == [200, {}, ""]
   end
 end
