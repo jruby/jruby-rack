@@ -11,5 +11,6 @@
     <property name="jruby.management.enabled" value="false" />
     <property name="os.arch" value="" />
     <property name="jruby.rack.logging" value="stdout"/>
+    <property name="jruby.rack.input.rewindable" value="false"/>
   </system-properties>
 </appengine-web-app>
