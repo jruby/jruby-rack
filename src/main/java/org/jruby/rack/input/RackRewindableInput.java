@@ -216,14 +216,13 @@ public class RackRewindableInput extends RackBaseInput {
                 Block.NULL_BLOCK);
         try {
             FileChannel tempfileChannel = (FileChannel) tempfile.getChannel();
-            long position = 0;
+            long transferPosition = 0, bytesRead = 0;
             if (memoryBuffer != null) {
-                position = tempfileChannel.write(memoryBuffer);
+                transferPosition = tempfileChannel.write(memoryBuffer);
             }
             tempfileChannel.position(0);
-            long bytesRead = 0;
-            while ((bytesRead = tempfileChannel.transferFrom(input, position, 1024 * 1024)) > 0) {
-                position += bytesRead;
+            while ((bytesRead = tempfileChannel.transferFrom(input, transferPosition, 1024 * 1024)) > 0) {
+                transferPosition += bytesRead;
             }
         } catch (IOException io) {
             throw getRuntime().newIOErrorFromException(io);
@@ -235,6 +234,9 @@ public class RackRewindableInput extends RackBaseInput {
      * Favor content length over threshold to determine buffer size. In the case
      * of content length, set the buffer 1 larger so as to be able to detect
      * overflow/incorrect content length issues.
+     *
+     * NOTE: It's assumed that content length has already been verified to be
+     * less than threshold.
      */
     private int getBufferSize() {
         int bufSize = threshold;

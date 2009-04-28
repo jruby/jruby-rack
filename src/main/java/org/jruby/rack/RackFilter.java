@@ -6,8 +6,6 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.servlet.DefaultServletDispatcher;
-import org.jruby.rack.servlet.ServletDispatcher;
 import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -19,6 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+
+import org.jruby.rack.servlet.DefaultServletDispatcher;
+import org.jruby.rack.servlet.ServletDispatcher;
 
 /**
  *

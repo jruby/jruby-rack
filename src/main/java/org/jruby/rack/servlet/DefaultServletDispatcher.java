@@ -6,12 +6,16 @@
 
 package org.jruby.rack.servlet;
 
-import org.jruby.rack.*;
 import java.io.IOException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.jruby.rack.RackApplication;
+import org.jruby.rack.RackApplicationFactory;
+import org.jruby.rack.RackEnvironment;
+import org.jruby.rack.RackServletContextListener;
 
 /**
  *

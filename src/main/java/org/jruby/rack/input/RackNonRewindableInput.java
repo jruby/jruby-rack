@@ -6,6 +6,7 @@
 
 package org.jruby.rack.input;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -43,16 +44,14 @@ public class RackNonRewindableInput extends RackBaseInput {
     @Override
     protected RackInput getDelegateInput() {
         if (delegateInput == null) {
-            delegateInput = new RubyIORackInput(getRuntime(), 
-                    new RubyIO(getRuntime(), inputStream)) {
+            // override close so we don't actually close the servlet input stream
+            final FilterInputStream filterStream = new FilterInputStream(inputStream) {
+                @Override
                 public void close() {
-                    // we don't want to actually close the servlet input stream
-                    // just try to ensure the descriptor doesn't leak
-                    try {
-                        io.unregisterDescriptor(io.getOpenFile().getMainStream().getDescriptor().getFileno());
-                    } catch (Throwable t) {
-                        // oh well
-                    }
+                }
+            };
+            delegateInput = new RubyIORackInput(getRuntime(), new RubyIO(getRuntime(), filterStream)) {
+                public void close() {
                 }
             };
         }
