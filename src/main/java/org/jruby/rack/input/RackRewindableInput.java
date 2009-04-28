@@ -8,7 +8,6 @@ package org.jruby.rack.input;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -18,7 +17,7 @@ import org.jruby.RubyClass;
 import org.jruby.RubyString;
 import org.jruby.RubyTempfile;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.exceptions.RaiseException;
+import org.jruby.rack.RackEnvironment;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
@@ -62,18 +61,16 @@ public class RackRewindableInput extends RackBaseInput {
         super(runtime, klass);
     }
 
-    public RackRewindableInput(Ruby runtime, InputStream input) {
-        super(runtime, getRackRewindableInputClass(runtime), input);
+    public RackRewindableInput(Ruby runtime, RackEnvironment env) throws IOException {
+        super(runtime, getRackRewindableInputClass(runtime), env);
     }
 
     private class MemoryBufferRackInput implements RackInput {
-        private ReadableByteChannel input;
         private ByteBuffer memoryBuffer;
         private boolean full;
 
-        private MemoryBufferRackInput() throws IOException {
-            input = Channels.newChannel(inputStream);
-            memoryBuffer = ByteBuffer.allocate(threshold);
+        private MemoryBufferRackInput(ReadableByteChannel input) throws IOException {
+            memoryBuffer = ByteBuffer.allocate(getBufferSize());
             input.read(memoryBuffer);
             full = !memoryBuffer.hasRemaining();
             memoryBuffer.flip();
@@ -140,10 +137,6 @@ public class RackRewindableInput extends RackBaseInput {
             return full;
         }
 
-        private ReadableByteChannel getChannel() {
-            return input;
-        }
-
         private ByteBuffer getBuffer() {
             return memoryBuffer;
         }
@@ -184,27 +177,6 @@ public class RackRewindableInput extends RackBaseInput {
         }
     }
 
-    private RubyTempfile createTempfile(ReadableByteChannel input, ByteBuffer memoryBuffer) {
-        getRuntime().getLoadService().require("tempfile");
-        RubyTempfile tempfile = (RubyTempfile) RubyTempfile.open(getRuntime().getCurrentContext(),
-                getRuntime().getClass("Tempfile"),
-                new IRubyObject[]{getRuntime().newString("jruby-rack")},
-                Block.NULL_BLOCK);
-        try {
-            FileChannel tempfileChannel = (FileChannel) tempfile.getChannel();
-            tempfileChannel.write(memoryBuffer);
-            tempfileChannel.position(0);
-            long position = threshold;
-            long bytesRead = 0;
-            while ((bytesRead = tempfileChannel.transferFrom(input, position, 1024 * 1024)) > 0) {
-                position += bytesRead;
-            }
-        } catch (IOException io) {
-            throw getRuntime().newIOErrorFromException(io);
-        }
-        return tempfile;
-    }
-
     /**
      * For testing, to allow the input threshold to be set from Ruby.
      */
@@ -217,19 +189,58 @@ public class RackRewindableInput extends RackBaseInput {
     protected RackInput getDelegateInput() {
         if (delegateInput == null) {
             try {
-                MemoryBufferRackInput memoryBufferInput = new MemoryBufferRackInput();
-                if (memoryBufferInput.isFull()) {
-                    delegateInput = 
-                        new RubyTempfileRackInput(
-                            memoryBufferInput.getChannel(),
-                            memoryBufferInput.getBuffer());
+                ReadableByteChannel input = Channels.newChannel(inputStream);
+                if (contentLength > threshold) {
+                    delegateInput = new RubyTempfileRackInput(input, null);
                 } else {
-                    delegateInput = memoryBufferInput;
+                    MemoryBufferRackInput memoryBufferInput = new MemoryBufferRackInput(input);
+                    if (memoryBufferInput.isFull()) {
+                        delegateInput = new RubyTempfileRackInput(input,
+                                memoryBufferInput.getBuffer());
+                    } else {
+                        delegateInput = memoryBufferInput;
+                    }
                 }
             } catch (IOException io) {
                 throw getRuntime().newIOErrorFromException(io);
             }
         }
         return delegateInput;
+    }
+
+    private RubyTempfile createTempfile(ReadableByteChannel input, ByteBuffer memoryBuffer) {
+        getRuntime().getLoadService().require("tempfile");
+        RubyTempfile tempfile = (RubyTempfile) RubyTempfile.open(getRuntime().getCurrentContext(),
+                getRuntime().getClass("Tempfile"),
+                new IRubyObject[]{getRuntime().newString("jruby-rack")},
+                Block.NULL_BLOCK);
+        try {
+            FileChannel tempfileChannel = (FileChannel) tempfile.getChannel();
+            long position = 0;
+            if (memoryBuffer != null) {
+                position = tempfileChannel.write(memoryBuffer);
+            }
+            tempfileChannel.position(0);
+            long bytesRead = 0;
+            while ((bytesRead = tempfileChannel.transferFrom(input, position, 1024 * 1024)) > 0) {
+                position += bytesRead;
+            }
+        } catch (IOException io) {
+            throw getRuntime().newIOErrorFromException(io);
+        }
+        return tempfile;
+    }
+
+    /**
+     * Favor content length over threshold to determine buffer size. In the case
+     * of content length, set the buffer 1 larger so as to be able to detect
+     * overflow/incorrect content length issues.
+     */
+    private int getBufferSize() {
+        int bufSize = threshold;
+        if (contentLength > 0) {
+            bufSize = contentLength + 1;
+        }
+        return bufSize;
     }
 }

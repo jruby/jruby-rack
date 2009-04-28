@@ -6,6 +6,7 @@
 
 package org.jruby.rack.input;
 
+import java.io.IOException;
 import java.io.InputStream;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -13,6 +14,7 @@ import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.RackInput;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
@@ -43,14 +45,16 @@ public abstract class RackBaseInput extends RubyObject implements RackInput {
 
     protected InputStream inputStream;
     protected RackInput delegateInput;
+    protected int contentLength = -1;
 
     public RackBaseInput(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
 
-    public RackBaseInput(Ruby runtime, RubyClass klass, InputStream input) {
+    public RackBaseInput(Ruby runtime, RubyClass klass, RackEnvironment env) throws IOException {
         super(runtime, klass);
-        inputStream = input;
+        inputStream = env.getInput();
+        contentLength = env.getContentLength();
     }
 
     @JRubyMethod()
@@ -89,6 +93,15 @@ public abstract class RackBaseInput extends RubyObject implements RackInput {
         if (obj instanceof InputStream) {
             inputStream = (InputStream) obj;
         }
+        return getRuntime().getNil();
+    }
+
+    /**
+     * For testing, to allow the content length to be set from Ruby.
+     */
+    @JRubyMethod(name = "content_length=", visibility = Visibility.PRIVATE)
+    public IRubyObject set_content_length(IRubyObject len) {
+        this.contentLength = (int) len.convertToInteger().getLongValue();
         return getRuntime().getNil();
     }
 }

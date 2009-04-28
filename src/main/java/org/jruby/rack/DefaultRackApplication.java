@@ -69,9 +69,9 @@ public class DefaultRackApplication implements RackApplication {
 
     private RackBaseInput createRackInput(Ruby runtime, RackEnvironment env) throws IOException {
         if (rewindable) {
-            return new RackRewindableInput(runtime, env.getInput());
+            return new RackRewindableInput(runtime, env);
         } else {
-            return new RackNonRewindableInput(runtime, env.getInput());
+            return new RackNonRewindableInput(runtime, env);
         }
     }
 }

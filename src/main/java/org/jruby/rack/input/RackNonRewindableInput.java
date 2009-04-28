@@ -6,10 +6,11 @@
 
 package org.jruby.rack.input;
 
-import java.io.InputStream;
+import java.io.IOException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyIO;
+import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.RackInput;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -35,8 +36,8 @@ public class RackNonRewindableInput extends RackBaseInput {
         super(runtime, klass);
     }
 
-    public RackNonRewindableInput(Ruby runtime, InputStream stream) {
-        super(runtime, getRackNonRewindableInputClass(runtime), stream);
+    public RackNonRewindableInput(Ruby runtime, RackEnvironment env) throws IOException {
+        super(runtime, getRackNonRewindableInputClass(runtime), env);
     }
 
     @Override

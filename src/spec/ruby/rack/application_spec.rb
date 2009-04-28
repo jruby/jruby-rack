@@ -12,6 +12,7 @@ describe DefaultRackApplication, "call" do
   it "should invoke the call method on the ruby object and return the rack response" do
     server_request = mock("server request")
     server_request.stub!(:getInput).and_return(StubInputStream.new("hello"))
+    server_request.stub!(:getContentLength).and_return(-1)
     rack_response = org.jruby.rack.RackResponse.impl {}
 
     ruby_object = mock "application"
