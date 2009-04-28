@@ -45,15 +45,12 @@ public class RackNonRewindableInput extends RackBaseInput {
     protected RackInput getDelegateInput() {
         if (delegateInput == null) {
             // override close so we don't actually close the servlet input stream
-            final FilterInputStream filterStream = new FilterInputStream(inputStream) {
+            FilterInputStream filterStream = new FilterInputStream(inputStream) {
                 @Override
                 public void close() {
                 }
             };
-            delegateInput = new RubyIORackInput(getRuntime(), new RubyIO(getRuntime(), filterStream)) {
-                public void close() {
-                }
-            };
+            delegateInput = new RubyIORackInput(getRuntime(), new RubyIO(getRuntime(), filterStream));
         }
         return delegateInput;
     }

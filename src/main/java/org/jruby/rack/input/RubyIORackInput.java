@@ -13,7 +13,7 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
-public abstract class RubyIORackInput implements RackInput {
+public class RubyIORackInput implements RackInput {
     protected final RubyIO io;
 
     public RubyIORackInput(Ruby runtime, RubyIO io) {
@@ -41,5 +41,8 @@ public abstract class RubyIORackInput implements RackInput {
 
     public IRubyObject rewind(ThreadContext context) {
         return io.rewind(context);
+    }
+
+    public void close() {
     }
 }
