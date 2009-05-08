@@ -10,14 +10,14 @@ require 'jruby/rack/rails_ext'
 require 'cgi/session/java_servlet_store'
 class ::CGI::Session::PStore; end
 
-describe JRuby::Rack::RailsServletHelper do
+describe JRuby::Rack::RailsBooter do
   before :each do
     @rack_context.stub!(:getInitParameter).and_return nil
     @rack_context.stub!(:getRealPath).and_return "/"
   end
 
   def create_helper
-    @helper = JRuby::Rack::RailsServletHelper.new @rack_context
+    @helper = JRuby::Rack::RailsBooter.new @rack_context
   end
   
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
@@ -98,7 +98,7 @@ describe JRuby::Rack::RailsServletHelper do
       $servlet_context = @servlet_context
       @servlet_context.stub!(:getInitParameter).and_return nil
       @servlet_context.stub!(:getRealPath).and_return "/"
-      @helper = JRuby::Rack::RailsServletHelper.new @servlet_context
+      @helper = JRuby::Rack::RailsBooter.new @servlet_context
       @helper.app_path = File.dirname(__FILE__) + "/../../rails"
       @helper.load_environment
     end

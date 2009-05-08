@@ -5,6 +5,6 @@
 #++
 
 module JRuby::Rack
-  Bootstrap = ServletHelper unless defined?(Bootstrap)
-  Bootstrap.instance.change_working_directory
+  self.booter ||= Booter.new
+  self.booter.boot!
 end

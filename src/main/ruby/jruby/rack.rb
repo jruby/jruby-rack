@@ -17,6 +17,14 @@ module JRuby
         $VERBOSE = oldv
       end
     end
+
+    def self.booter=(booter)
+      @booter = booter
+    end
+
+    def self.booter
+      @booter
+    end
   end
 end
 
@@ -25,5 +33,5 @@ require 'jruby/rack/app_layout'
 require 'jruby/rack/errors'
 require 'jruby/rack/response'
 require 'jruby/rack/servlet_log'
-require 'jruby/rack/servlet_helper'
+require 'jruby/rack/booter'
 require 'jruby/rack/servlet_ext'

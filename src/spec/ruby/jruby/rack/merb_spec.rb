@@ -3,13 +3,13 @@ require File.dirname(__FILE__) + '/../../spec_helper'
 require 'jruby/rack/merb'
 import org.jruby.rack.merb.MerbRackApplicationFactory
 
-describe JRuby::Rack::MerbServletHelper do
+describe JRuby::Rack::MerbBooter do
   before :each do
     @rack_context.stub!(:getRealPath).and_return "/"
   end
 
   def create_helper
-    @helper = JRuby::Rack::MerbServletHelper.new @rack_context
+    @helper = JRuby::Rack::MerbBooter.new @rack_context
   end
 
   it "should determine app_path from the 'merb.root' init parameter" do

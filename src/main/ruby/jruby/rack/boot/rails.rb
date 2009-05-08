@@ -7,7 +7,5 @@
 require 'rack/adapter/rails'
 
 module JRuby::Rack
-  silence_warnings do
-    const_set('Bootstrap', RailsServletHelper)
-  end
+  self.booter = RailsBooter.new
 end

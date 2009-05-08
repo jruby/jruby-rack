@@ -7,7 +7,5 @@
 require 'jruby/rack/merb'
 
 module JRuby::Rack
-  silence_warnings do
-    const_set('Bootstrap', MerbServletHelper)
-  end
+  self.booter = MerbBooter.new
 end

@@ -5,16 +5,16 @@
 #++
 
 require File.dirname(__FILE__) + '/../../spec_helper'
-require 'jruby/rack/servlet_helper'
+require 'jruby/rack/booter'
 
-describe JRuby::Rack::ServletHelper do
+describe JRuby::Rack::Booter do
   before :each do
     @rack_context.stub!(:getInitParameter).and_return nil
     @rack_context.stub!(:getRealPath).and_return "/"
   end
 
   def create_helper
-    @helper = JRuby::Rack::ServletHelper.new @rack_context
+    @helper = JRuby::Rack::Booter.new @rack_context
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do

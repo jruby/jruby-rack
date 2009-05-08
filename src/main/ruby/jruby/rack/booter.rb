@@ -8,11 +8,15 @@ def toplevel_binding; binding; end
 
 module JRuby
   module Rack
-    class ServletHelper
+    class Booter
       def initialize(rack_context = nil)
         @rack_context = rack_context || $servlet_context
         @layout ||= layout_class.new(@rack_context)
-        ServletHelper.instance = self
+        JRuby::Rack.booter = self
+      end
+
+      def boot!
+        @layout.change_working_directory if @layout.respond_to?(:change_working_directory)
       end
 
       def default_layout_class
@@ -42,20 +46,8 @@ module JRuby
         @logger ||= begin; require 'logger'; Logger.new(logdev); end
       end
 
-      def change_working_directory
-        @layout.change_working_directory if @layout.respond_to?(:change_working_directory)
-      end
-
       def silence_warnings(&block)
         JRuby::Rack.silence_warnings(&block)
-      end
-
-      def self.instance
-        @instance ||= self.new
-      end
-
-      def self.instance=(inst)
-        @instance = inst
       end
     end
   end

@@ -58,7 +58,7 @@ module JRuby
       def self.new
         ::Rack::Builder.new {
           use ::Rack::ShowStatus
-          run Errors.new(::Rack::File.new(ServletHelper.instance.public_path))
+          run Errors.new(::Rack::File.new(JRuby::Rack.booter.public_path))
         }.to_app
       end
     end

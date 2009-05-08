@@ -8,7 +8,7 @@ require 'jruby/rack'
 
 module JRuby
   module Rack
-    class RailsServletHelper < ServletHelper
+    class RailsBooter < Booter
       attr_reader :rails_env
 
       def initialize(rack_context = nil)
@@ -42,9 +42,9 @@ module JRuby
         initializer_class.module_eval do
           alias_method :require_frameworks_without_servlet_env, :require_frameworks
           def require_frameworks_with_servlet_env
-            JRuby::Rack::RailsServletHelper.instance.before_require_frameworks
+            JRuby::Rack.booter.before_require_frameworks
             require_frameworks_without_servlet_env
-            JRuby::Rack::RailsServletHelper.instance.setup_actionpack
+            JRuby::Rack.booter.setup_actionpack
           end
           alias_method :require_frameworks, :require_frameworks_with_servlet_env
         end
@@ -128,16 +128,14 @@ module JRuby
       end
     end
 
-    Bootstrap = RailsServletHelper
-
     class RailsRequestSetup
-      def initialize(app, servlet_helper)
+      def initialize(app, booter)
         @app = app
-        @servlet_helper = servlet_helper
+        @booter = booter
       end
 
       def call(env)
-        @servlet_helper.set_session_options_for_request(env)
+        @booter.set_session_options_for_request(env)
         env['HTTPS'] = 'on' if env['rack.url_scheme'] == 'https'
         relative_url_root = env['java.servlet_request'].getContextPath
         if relative_url_root && !relative_url_root.empty?
@@ -150,7 +148,7 @@ module JRuby
 
     class RailsFactory
       def self.new
-        helper = RailsServletHelper.instance
+        helper = JRuby::Rack.booter
         helper.load_environment
         ::Rack::Builder.new {
           use RailsRequestSetup, helper

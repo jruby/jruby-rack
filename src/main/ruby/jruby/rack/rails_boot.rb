@@ -18,7 +18,7 @@ module Rails
     end
     def run
       result = @real_boot.run
-      JRuby::Rack::RailsServletHelper.instance.boot_for_servlet_environment(result)
+      JRuby::Rack.booter.boot_for_servlet_environment(result)
       result
     end
     def custom_boot

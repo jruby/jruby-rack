@@ -8,7 +8,7 @@ require 'jruby/rack'
 
 module JRuby
   module Rack
-    class MerbServletHelper < ::JRuby::Rack::ServletHelper
+    class MerbBooter < Booter
       attr_reader :merb_environment
 
       def initialize(rack_context = nil)
@@ -53,7 +53,7 @@ module JRuby
 
     class MerbFactory
       def self.new
-        MerbServletHelper.instance.load_merb
+        JRuby::Rack.booter.load_merb
         ::Rack::Builder.new { run ::Merb::Config[:app] }.to_app
       end
     end
