@@ -131,6 +131,35 @@ framework. In the case of Rails, runtimes are pooled. For Merb and
 other Rack applications, a single runtime is created and shared for
 every request.
 
+## Servlet Context Init Parameters
+
+JRuby-Rack can be configured by setting context init parameters in
+web.xml.
+
+- `rackup`: Rackup script for configuring how the Rack application is
+  mounted. Required for Rack-based applications other than Rails or
+  Merb. Can be omitted if a `config.ru` is included in the application
+  root.
+- `jruby.min.runtimes`: For non-threadsafe Rails applications using a
+  runtime pool, specify an integer minimum number of runtimes to hold
+  in the pool.
+- `jruby.max.runtimes`: For non-threadsafe Rails applications, an
+  integer maximum number of runtimes to keep in the pool.
+- `jruby.init.serial`: When using runtime pooling, indicate that the
+  runtime pool should be created serially in the foreground rather
+  than spawning background threads. For environments where creating
+  threads is not permitted.
+- `public.root`: Relative path to the location of your application's
+  static assets. Defaults to `/`.
+- `gem.path`: Relative path to the bundled gem repository. Defaults to
+  `/WEB-INF/gems`.
+- `rails.root`, `merb.root`: Root path to the location of the Rails or
+  Merb application files. Defaults to `/WEB-INF`.
+- `rails.env`: Specify the Rails environment to run. Defaults
+  to 'production'.
+- `merb.environment`: Specify the merb environment to run. Defaults to
+  `production`.
+
 # Building
 
 Checkout the JRuby Rack code and cd to that directory.
