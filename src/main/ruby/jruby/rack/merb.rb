@@ -11,12 +11,14 @@ module JRuby
     class MerbServletHelper < ::JRuby::Rack::ServletHelper
       attr_reader :merb_environment
 
-      self.layout_class = MerbWebInfLayout
-
       def initialize(rack_context = nil)
         super
         @merb_environment = @rack_context.getInitParameter('merb.environment')
         @merb_environment ||= 'production'
+      end
+
+      def default_layout_class
+        MerbWebInfLayout
       end
 
       def load_merb

@@ -31,10 +31,10 @@ describe JRuby::Rack::ServletHelper do
     @helper.public_path.should == "/blah/blah"
   end
 
-  it "should default public root to '/WEB-INF/public'" do
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
+  it "should default public root to '/'" do
+    @rack_context.should_receive(:getRealPath).with("/").and_return "."
     create_helper
-    @helper.public_path.should == "./public"
+    @helper.public_path.should == "."
   end
 
   it "should determine the gem path from the gem.path init parameter" do
@@ -60,14 +60,6 @@ describe JRuby::Rack::ServletHelper do
     create_helper
     @rack_context.should_receive(:log).with(/hello/)
     @helper.logger.info "hello"
-  end
-
-  it "should allow a custom initializer script to be evaluated as the helper is initialized" do
-    @rack_context.should_receive(:getInitParameter
-      ).with("rack.bootstrap.script").and_return "load '#{File.dirname(__FILE__)}/custom_bootstrap.rb'"
-    create_helper
-    @helper.app_path.should == "/app"
-    @helper.public_path.should == "/web"
   end
 end
 

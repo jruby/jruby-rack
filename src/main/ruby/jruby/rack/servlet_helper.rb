@@ -11,21 +11,19 @@ module JRuby
     class ServletHelper
       def initialize(rack_context = nil)
         @rack_context = rack_context || $servlet_context
-        bootstrap_script = @rack_context.getInitParameter('rack.bootstrap.script')
-        eval(bootstrap_script, toplevel_binding) if bootstrap_script
         @layout ||= layout_class.new(@rack_context)
         ServletHelper.instance = self
       end
 
-      def self.layout_class
-        @layout_class ||= WebInfLayout
+      def default_layout_class
+        WebInfLayout
       end
 
       def layout_class
-        self.class.layout_class
+        @layout_class ||= default_layout_class
       end
 
-      def self.layout_class=(c)
+      def layout_class=(c)
         @layout_class = c
       end
 

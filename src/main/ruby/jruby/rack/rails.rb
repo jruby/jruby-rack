@@ -10,7 +10,6 @@ module JRuby
   module Rack
     class RailsServletHelper < ServletHelper
       attr_reader :rails_env
-      self.layout_class = RailsWebInfLayout
 
       def initialize(rack_context = nil)
         super
@@ -19,6 +18,10 @@ module JRuby
         ENV['RAILS_ROOT'] = app_path
         ENV['RAILS_ENV'] = @rails_env
         silence_warnings { Object.const_set("PUBLIC_ROOT", public_path) }
+      end
+
+      def default_layout_class
+        RailsWebInfLayout
       end
 
       def load_environment

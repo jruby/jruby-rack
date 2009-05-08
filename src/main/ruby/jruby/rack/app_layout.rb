@@ -10,10 +10,9 @@ module JRuby
     # {app,public,gem}_path. Each method returns a filesystem path
     # where that portion of the application can be loaded. The class
     # hierarchy here is just for implementation sharing; if you
-    # override the app layout by setting
-    # [Rails,Merb]ServletHelper.layout_class, then you only need to
-    # accept a rack context in your initializer and provide the three
-    # *_path methods.
+    # override the app layout by [insert mechanism here], then you
+    # only need to accept a rack context in your initializer and
+    # provide the three *_path methods.
     class AppLayout
       attr_reader :app_uri, :public_uri, :gem_uri
 
@@ -46,9 +45,10 @@ module JRuby
 
       def public_uri
         @public_uri ||= begin
-          path = @rack_context.getInitParameter('public.root') || '/WEB-INF/public'
+          path = @rack_context.getInitParameter('public.root') || '/'
           path = "/#{path}" unless path =~ %r{^/}
-          path.chomp("/")
+          path.chomp!("/") unless path == "/"
+          path
         end
       end
 
