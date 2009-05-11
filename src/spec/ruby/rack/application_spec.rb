@@ -34,7 +34,7 @@ describe DefaultRackApplicationFactory do
     @app_factory = DefaultRackApplicationFactory.new
   end
 
-  describe do
+  describe "" do
     before :each do
       @rack_context.stub!(:getInitParameter).and_return nil
       @app_factory.init @rack_context
