@@ -114,7 +114,7 @@ module Rack
         when 'rack.input'           then env[key] = @servlet_env.to_io
         when 'rack.errors'          then env[key] = JRuby::Rack::ServletLog.new
         when 'rack.url_scheme'      then env[key] = @servlet_env.getScheme
-        when 'java.servlet_request' then env[key] = @servlet_env
+        when 'java.servlet_request' then env[key] = @servlet_env.getRequest rescue @servlet_env
         when 'java.servlet_context' then env[key] = $servlet_context
         else
           nil

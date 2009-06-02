@@ -145,7 +145,7 @@ describe Rack::Handler::Servlet, "create_env" do
     [:gets, :read, :each].each {|sym| input.respond_to?(sym).should == true }
     (errors = env['rack.errors']).should_not be_nil
     [:puts, :write, :flush].each {|sym| errors.respond_to?(sym).should == true }
-    env['java.servlet_request'].should == @env
+    env['java.servlet_request'].should == @servlet_env
   end
 
   it "should add cgi variables" do
