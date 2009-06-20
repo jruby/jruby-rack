@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.jruby.rack.servlet.DefaultServletDispatcher;
 import org.jruby.rack.servlet.ServletDispatcher;
+import org.jruby.rack.servlet.ServletRackContext;
 
 /**
  *
@@ -39,7 +40,7 @@ public class RackFilter implements Filter {
 
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
-        dispatcher = new DefaultServletDispatcher(config.getServletContext());
+        dispatcher = new DefaultServletDispatcher(new ServletRackContext(config.getServletContext()));
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

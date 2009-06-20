@@ -57,6 +57,7 @@ public class DefaultServletDispatcher implements ServletDispatcher {
             return;
         }
         response.reset();
+        servletContext.log("Application Error", re);
 
         try {
             RackApplication errorApp = rackFactory.getErrorApplication();
