@@ -53,6 +53,26 @@ describe JRuby::Rack::Response do
     @response.write_headers(@servlet_response)
   end
 
+  it "should write headers whose value contains newlines as multiple addHeader invocations" do
+    @headers.should_receive(:each).and_return do |block|
+      block.call "Set-Cookie",  "cookie1\ncookie2"
+    end
+    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
+    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
+    @response.write_headers(@servlet_response)
+  end
+
+  it "should write headers whose value contains newlines as multiple addHeader invocations when string doesn't respond to #each" do
+    @headers.should_receive(:each).and_return do |block|
+      s = "cookie1\ncookie2"
+      class << s; undef_method :each; end if s.respond_to?(:each)
+      block.call "Set-Cookie", s
+    end
+    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
+    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
+    @response.write_headers(@servlet_response)
+  end
+
   it "should call addIntHeader with integer value" do
     @headers.should_receive(:each).and_return do |block|
       block.call "Expires", 0
