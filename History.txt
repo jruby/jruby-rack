@@ -14,6 +14,8 @@
 - JRUBY_RACK-4: deal with threading and to_io by assigning IO object
   to an instance variable instead of defining a singleton method on
   the metaclass/singleton class
+- JRUBY_RACK-17: Fix SCRIPT_NAME/PATH_INFO in root context (Chris
+  Read)
 
 == 0.9.4
 
