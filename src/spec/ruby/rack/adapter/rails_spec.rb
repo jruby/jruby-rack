@@ -5,7 +5,7 @@
 #++
 
 require File.dirname(__FILE__) + '/../../spec_helper'
-require 'rack'
+require 'vendor/rack'
 require 'rack/adapter/rails'
 require 'rack/adapter/rails_cgi'
 

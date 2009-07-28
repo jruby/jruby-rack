@@ -43,9 +43,13 @@ end
 desc "Unpack the rack gem"
 task :unpack_gem => "target" do |t|
   Dir.chdir(t.prerequisites.first) do
-    unless File.directory?("rack")
+    unless File.file?("vendor/rack.rb")
+      mkdir_p "vendor"
       ruby "-S", "gem", "unpack", FileList["../src/main/lib/rack*.gem"].first
-      mv FileList["rack-*"].first, "rack"
+      rack_dir = FileList["rack-*"].first
+      File.open("vendor/rack.rb", "w") do |f|
+        f << "$LOAD_PATH << File.dirname(__FILE__) + '/#{rack_dir}'; require 'rack'"
+      end
     end
   end
 end
@@ -70,9 +74,14 @@ end
 
 desc "Copy resources"
 task :resources => ["target/classes", :unpack_gem, :update_version, :test_resources] do |t|
-  ['src/main/ruby', 'target/rack/lib'].each do |dir|
-    FileList["#{dir}/*"].each do |f|
-      cp_r f, t.prerequisites.first
+  rack_dir = File.basename(FileList["target/rack-*"].first)
+  classes_dir = t.prerequisites.first
+  { 'src/main/ruby' => classes_dir,
+    'target/vendor' => "#{classes_dir}/vendor",
+    "target/#{rack_dir}/lib" => "#{t.prerequisites.first}/vendor/#{rack_dir}"}.each do |src,dest|
+    mkdir_p dest
+    FileList["#{src}/*"].each do |f|
+      cp_r f, dest
     end
   end
   meta_inf = File.join(t.prerequisites.first, "META-INF")

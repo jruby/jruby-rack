@@ -15,8 +15,12 @@ module JRuby::Rack
       @layout ||= layout_class.new(@rack_context)
       ENV['GEM_PATH'] = @layout.gem_path
       @layout.change_working_directory if @layout.respond_to?(:change_working_directory)
-      # Now load rack; allowing rack gem to override bundled copy
-      require 'rack'
+      begin
+        require 'rubygems'
+        require 'rack' # allow override via rubygems
+      rescue LoadError
+        require 'vendor/rack' # use jruby-rack's vendored copy
+      end
       require 'time' # some of rack uses Time#rfc822 but doesn't pull this in
     end
 
