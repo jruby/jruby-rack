@@ -14,6 +14,10 @@ module JRuby::Rack
       super
       @rails_env = @rack_context.getInitParameter 'rails.env'
       @rails_env ||= 'production'
+    end
+
+    def boot!
+      super
       ENV['RAILS_ROOT'] = app_path
       ENV['RAILS_ENV'] = @rails_env
       silence_warnings { Object.const_set("PUBLIC_ROOT", public_path) }

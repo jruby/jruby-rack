@@ -24,6 +24,13 @@ Spec::Runner.configure do |config|
     @servlet_config.stub!(:getServletContext).and_return(@servlet_context)
   end
 
+  def create_booter(booter_class = JRuby::Rack::Booter)
+    require 'jruby/rack'
+    @booter = booter_class.new @rack_context
+    yield if block_given?
+    @booter
+  end
+
   config.before :each do
     mock_servlet_context
   end

@@ -8,51 +8,47 @@ describe JRuby::Rack::MerbBooter do
     @rack_context.stub!(:getRealPath).and_return "/"
   end
 
-  def create_helper
-    @helper = JRuby::Rack::MerbBooter.new @rack_context
-  end
-
   it "should determine app_path from the 'merb.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("merb.root").and_return "/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
-    create_helper
-    @helper.app_path.should == "./WEB-INF"
+    create_booter(JRuby::Rack::MerbBooter).boot!
+    @booter.app_path.should == "./WEB-INF"
   end
 
   it "should default app_path to /WEB-INF" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
-    create_helper
-    @helper.app_path.should == "./WEB-INF"
+    create_booter(JRuby::Rack::MerbBooter).boot!
+    @booter.app_path.should == "./WEB-INF"
   end
 
   it "should determine merb_environment from the 'merb.environment' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("merb.environment").and_return "test"
-    create_helper
-    @helper.merb_environment.should == "test"
+    create_booter(JRuby::Rack::MerbBooter).boot!
+    @booter.merb_environment.should == "test"
   end
 
   it "should default merb_environment to 'production'" do
-    create_helper
-    @helper.merb_environment.should == "production"
+    create_booter(JRuby::Rack::MerbBooter).boot!
+    @booter.merb_environment.should == "production"
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
-    create_helper
-    @helper.public_path.should == "."
+    create_booter(JRuby::Rack::MerbBooter).boot!
+    @booter.public_path.should == "."
   end
 
   it "should default public root to '/'" do
     @rack_context.should_receive(:getRealPath).with("/").and_return "."
-    create_helper
-    @helper.public_path.should == "."
+    create_booter(JRuby::Rack::MerbBooter).boot!
+    @booter.public_path.should == "."
   end
 
   it "should create a Logger that writes messages to the servlet context" do
-    create_helper
+    create_booter(JRuby::Rack::MerbBooter).boot!
     @rack_context.should_receive(:log).with(/hello/)
-    @helper.logger.info "hello"
+    @booter.logger.info "hello"
   end
 
 end

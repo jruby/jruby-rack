@@ -8,12 +8,16 @@ module JRuby::Rack
   class Booter
     def initialize(rack_context = nil)
       @rack_context = rack_context || $servlet_context
-      @layout ||= layout_class.new(@rack_context)
       JRuby::Rack.booter = self
     end
 
     def boot!
+      @layout ||= layout_class.new(@rack_context)
+      ENV['GEM_PATH'] = @layout.gem_path
       @layout.change_working_directory if @layout.respond_to?(:change_working_directory)
+      # Now load rack; allowing rack gem to override bundled copy
+      require 'rack'
+      require 'time' # some of rack uses Time#rfc822 but doesn't pull this in
     end
 
     def default_layout_class

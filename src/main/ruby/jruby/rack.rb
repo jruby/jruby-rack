@@ -4,9 +4,6 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'rack'
-require 'time' # some of rack uses Time#rfc822 but doesn't pull this in
-
 module JRuby
   module Rack
     def self.silence_warnings
