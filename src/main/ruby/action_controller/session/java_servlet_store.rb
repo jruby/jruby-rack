@@ -14,7 +14,7 @@ module ActionController
 
       class JavaServletSessionHash < AbstractStore::SessionHash
         def finish_save
-          if @loaded || !@env[AbstractStore::ENV_SESSION_KEY].eql?(self)
+          if @loaded || !@env[AbstractStore::ENV_SESSION_KEY].equal?(self)
             if !@env[AbstractStore::ENV_SESSION_OPTIONS_KEY][:id].nil?
               @by.save_session(@env, to_hash)
             else
