@@ -16,6 +16,10 @@
   the metaclass/singleton class
 - JRUBY_RACK-17: Fix SCRIPT_NAME/PATH_INFO in root context (Chris
   Read)
+- JRUBY_RACK-10, JRUBY_RACK-15: Fix request channel read issue w/
+  POSTs and multiparts (Michael Pitman, Lenny Marks)
+- JRUBY_RACK-14: Override both Servlet service methods (Michael
+  Pitman)
 
 == 0.9.4
 

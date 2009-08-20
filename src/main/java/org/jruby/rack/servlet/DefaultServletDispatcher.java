@@ -62,7 +62,6 @@ public class DefaultServletDispatcher implements ServletDispatcher {
         try {
             RackApplication errorApp = rackFactory.getErrorApplication();
             request.setAttribute(RackEnvironment.EXCEPTION, re);
-            servletContext.log("Exception caught", re);
             errorApp.call(new ServletRackEnvironment(request)).respond(new ServletRackResponseEnvironment(response));
         } catch (Exception e) {
             servletContext.log("Error: Couldn't handle error", e);
