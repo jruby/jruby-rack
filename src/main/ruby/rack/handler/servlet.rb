@@ -5,6 +5,7 @@
 #++
 
 require 'jruby/rack'
+require 'jruby/rack/version'
 
 module Rack
   module Handler
@@ -28,7 +29,8 @@ module Rack
 
     class Env
       BUILTINS = %w(rack.version rack.multithread rack.multiprocess rack.run_once
-        rack.input rack.errors rack.url_scheme java.servlet_request java.servlet_context)
+        rack.input rack.errors rack.url_scheme java.servlet_request java.servlet_context
+        jruby.rack.version jruby.rack.rack.release)
 
       REQUEST = %w(CONTENT_TYPE CONTENT_LENGTH REQUEST_METHOD SCRIPT_NAME REQUEST_URI
         PATH_INFO QUERY_STRING SERVER_NAME REMOTE_HOST REMOTE_ADDR REMOTE_USER SERVER_PORT)
@@ -64,7 +66,7 @@ module Rack
       def load_env_key(env, key)
         if respond_to?("load__#{key}")
           send("load__#{key}", env)
-        elsif key =~ /^(rack|java)/
+        elsif key =~ /^(rack|java|jruby)/
           load_builtin(env, key)
         elsif key =~ /^HTTP_/
           load_headers(env, key)
@@ -107,7 +109,7 @@ module Rack
 
       def load_builtin(env, key)
         case key
-        when 'rack.version'         then env[key] = Rack::VERSION
+        when 'rack.version'         then env[key] = ::Rack::VERSION
         when 'rack.multithread'     then env[key] = true
         when 'rack.multiprocess'    then env[key] = false
         when 'rack.run_once'        then env[key] = false
@@ -116,6 +118,8 @@ module Rack
         when 'rack.url_scheme'      then env[key] = @servlet_env.getScheme
         when 'java.servlet_request' then env[key] = @servlet_env.getRequest rescue @servlet_env
         when 'java.servlet_context' then env[key] = $servlet_context
+        when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
+        when 'jruby.rack.rack.release' then env[key] = ::Rack.release
         else
           nil
         end
