@@ -19,7 +19,7 @@ class Warbler::Task
         complete_jar_file = File.expand_path(t.prerequisites.first)
         Dir.chdir("#{working_dir}/jruby_complete") do
           sh "jar xf #{complete_jar_file}"
-          mv FileList[*%w(builtin jruby org com jline)], "../jruby_core"
+          mv FileList[*%w(builtin jruby org com jline jay jni YechtService.class)].select{|f| File.exist?(f) }, "../jruby_core"
         end
         rm_f complete_jar_file
       end
