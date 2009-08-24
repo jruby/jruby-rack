@@ -30,7 +30,7 @@ module Rack
     class Env
       BUILTINS = %w(rack.version rack.multithread rack.multiprocess rack.run_once
         rack.input rack.errors rack.url_scheme java.servlet_request java.servlet_context
-        jruby.rack.version jruby.rack.rack.release)
+        jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release)
 
       REQUEST = %w(CONTENT_TYPE CONTENT_LENGTH REQUEST_METHOD SCRIPT_NAME REQUEST_URI
         PATH_INFO QUERY_STRING SERVER_NAME REMOTE_HOST REMOTE_ADDR REMOTE_USER SERVER_PORT)
@@ -119,7 +119,8 @@ module Rack
         when 'java.servlet_request' then env[key] = @servlet_env.getRequest rescue @servlet_env
         when 'java.servlet_context' then env[key] = $servlet_context
         when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
-        when 'jruby.rack.rack.release' then env[key] = ::Rack.release
+        when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
+        when 'jruby.rack.rack.release'  then env[key] = ::Rack.release
         else
           nil
         end
