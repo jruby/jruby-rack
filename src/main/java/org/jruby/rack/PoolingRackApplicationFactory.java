@@ -3,7 +3,6 @@
  * This source code is available under the MIT license.
  * See the file LICENSE.txt for details.
  */
-
 package org.jruby.rack;
 
 import java.util.Collection;
@@ -34,10 +33,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class PoolingRackApplicationFactory implements RackApplicationFactory {
     static final int DEFAULT_TIMEOUT = 30;
-
     protected RackContext rackContext;
     private RackApplicationFactory realFactory;
-    protected Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
+    protected final Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
     private Integer initial, maximum;
     private long timeout = DEFAULT_TIMEOUT;
     private Semaphore permits;
@@ -83,7 +81,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             }
             if (!acquired) {
                 throw new RackInitializationException("timeout: all listeners busy",
-                  new InterruptedException());
+                        new InterruptedException());
             }
         }
         synchronized (applicationPool) {
@@ -144,6 +142,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
 
         for (int i = 0; i < numThreads; i++) {
             new Thread(new Runnable() {
+
                 public void run() {
                     try {
                         while (true) {
@@ -156,9 +155,11 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
                             }
                             app.init();
                             synchronized (applicationPool) {
+                                if (maximum != null && applicationPool.size() >= maximum) {
+                                    break;
+                                }
                                 applicationPool.add(app);
-                                rackContext.log("Info: add application to the pool. size now = "
-                                        + applicationPool.size());
+                                rackContext.log("Info: add application to the pool. size now = " + applicationPool.size());
                                 applicationPool.notifyAll();
                             }
                         }
@@ -184,7 +185,8 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             synchronized (applicationPool) {
                 applicationPool.wait(timeout);
             }
-        } catch (InterruptedException ex) { }
+        } catch (InterruptedException ex) {
+        }
     }
 
     private Integer getInitial() {
