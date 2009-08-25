@@ -63,6 +63,11 @@ task :clean => "war:clean"
 
 task :warble => "war"
 
+def windows?
+  require 'rbconfig'
+  Config::CONFIG['host_os'] =~ /mswin32/
+end
+
 namespace :glassfish do
   task :deploy => :warble do
     sh "asadmin deploy --name rails --contextroot rails tmp/war" do |ok, res|
@@ -93,7 +98,12 @@ PASSWORDFILE should only contain the password value.} unless pass || passfile
               else
                 "cat #{passfile}"
               end
-    sh "#{passcmd} | appcfg.sh --email=#{email} --passin --enable_jar_splitting update tmp/war" do |ok, res|
+    fullcmd = "#{passcmd} | appcfg.sh --email=#{email} --passin --enable_jar_splitting update tmp/war"
+    if windows?
+      fullcmd.sub!(/^cat /, 'type ')
+      fullcmd.sub!(/appcfg.sh /, 'appcfg.cmd ')
+    end
+    sh fullcmd do |ok, res|
       unless ok
         puts "Is the AppEngine-SDK/bin directory on your path?"
       end
