@@ -29,4 +29,8 @@ class SnoopController < ApplicationController
     end
     redirect_to :action => "session_form"
   end
+
+  def error
+    raise "you requested an error"
+  end
 end
