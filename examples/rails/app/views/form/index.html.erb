@@ -1,0 +1,20 @@
+<% if @params -%>
+<div>
+<pre>
+<%= @params %>
+</pre>
+</div>
+<% end -%>
+
+<p>Here's a simple web form.</p>
+
+<% form_tag({:action => "index"}, :method => :post) do -%>
+  <%= label_tag "text" %><br/>
+  <textarea name="text" rows="8" cols="40"></textarea><br/>
+  <%= label_tag "radio" %><br/>
+  <%= radio_button_tag "radio", "A" %><span>"A"</span><br/>
+  <%= radio_button_tag "radio", "B" %><span>"B"</span><br/>
+  <%= label_tag "date" %><br/>
+  <%= date_select "object", "date" %><br/><br/>
+  <input type="submit" value="Continue &rarr;"/>
+<% end -%>
