@@ -23,7 +23,7 @@ Warbler::Config.new do |config|
     config.java_libs += FileList["../../target/jruby-rack*.jar"]
   end
   if ENV['JRUBY_COMPLETE_SRC']
-    config.java_libs.delete_if {|f| f =~ /jruby-complete/}
+    config.java_libs.delete_if {|f| f =~ /jruby-(core|stdlib|complete)/}
     config.java_libs += FileList[ENV['JRUBY_COMPLETE_SRC']]
   end
 

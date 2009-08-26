@@ -1,4 +1,4 @@
-class FormController < ApplicationController
+class SimpleFormController < ApplicationController
   def index
     if request.post?
       require 'pp'
