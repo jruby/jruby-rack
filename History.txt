@@ -1,6 +1,14 @@
 == 0.9.5
 
-- Upgrade to Rack 1.0.0
+- Upgrade to Rack 1.0.0. However, if you supply Rack in your
+  application (either via rubygems or by vendoring it), it will take
+  precedence -- JRuby-Rack's bundled copy is only loaded as a
+  fallback. This allows you to upgrade Rack without having to wait for
+  a new JRuby-Rack release.
+- Implement Rack-based java servlet session mechanism. You'll have to
+  turn on java servlet sessions by setting
+    ActionController::Base.session_store = :java_servlet_store
+  in your config/initializers/session_store.rb.
 - JRUBY_RACK-7: Implement a rewindable 'rack.input' shim between the
   servlet input stream and the Rack environment. Below a certain
   byte-size threshold, the input is entirely buffered in memory. Above

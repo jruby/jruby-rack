@@ -269,13 +269,12 @@ The war should be ready to deploy to your Java application server.
 
 # Thanks
 
+- All contributors! But also:
 - Dudley Flanders, for the Merb support
 - Robert Egglestone, for the original JRuby servlet integration
   project, Goldspike
 - Chris Neukirchen, for Rack
-- Sun Microsystems, Nick's employer, for project support
-- Last, but not least, Flannery, Nick's wife, for patience and
-  understanding
+- Sun Microsystems, for early project support
 
 [1]: http://warbler.kenai.com/pages/Home
 [2]: http://repository.codehaus.org/org/jruby/rack/jruby-rack/
