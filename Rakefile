@@ -96,7 +96,7 @@ task :speconly do
     test_classpath.each {|p| $CLASSPATH << p }
     opts = ["--format", "specdoc"]
     opts << ENV['SPEC_OPTS'] if ENV['SPEC_OPTS']
-    spec = ENV['SPEC'] || "src/spec/ruby/**/*_spec.rb"
+    spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
     opts.push *FileList[spec].to_a
     ENV['CLASSPATH'] = test_classpath.join(File::PATH_SEPARATOR)
     ruby "-S", "spec", *opts
