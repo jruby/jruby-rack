@@ -11,8 +11,8 @@ import org.jruby.rack.servlet.DefaultServletDispatcher
 describe DefaultServletDispatcher do
   before :each do
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
-    @servlet_context.should_receive(:getAttribute).with("rack.factory").and_return @rack_factory
-    @dispatcher = DefaultServletDispatcher.new @servlet_context
+    @rack_context.should_receive(:getRackFactory).and_return @rack_factory
+    @dispatcher = DefaultServletDispatcher.new @rack_context
   end
 
   describe "process" do

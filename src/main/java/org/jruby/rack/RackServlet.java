@@ -37,7 +37,9 @@ public class RackServlet extends HttpServlet {
 
     @Override
     public void init(ServletConfig config) {
-        this.dispatcher = new DefaultServletDispatcher(new ServletRackContext(config.getServletContext()));
+        if (dispatcher == null) {
+            dispatcher = new DefaultServletDispatcher(new ServletRackContext(config.getServletContext()));
+        }
     }
 
     @Override
