@@ -23,6 +23,8 @@ class JRuby::Rack::Response
     b = ""
     @body.each {|part| b << part }
     b
+  ensure
+    @body.close if @body.respond_to?(:close)
   end
 
   def respond(response)
@@ -75,6 +77,8 @@ class JRuby::Rack::Response
       # HACK: deal with objects that don't comply with Rack specification
       @body = [@body.to_s]
       retry
+    ensure
+      @body.close if @body.respond_to?(:close)
     end
   end
 end

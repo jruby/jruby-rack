@@ -115,4 +115,23 @@ describe JRuby::Rack::Response do
     @response.respond(@servlet_response)
     response.should == @servlet_response
   end
+
+  it "#getBody should call close on the body if the body responds to close" do
+    @body.should_receive(:each).ordered.and_yield "hello"
+    @body.should_receive(:close).ordered
+    @response.getBody.should == "hello"
+  end
+
+  it "#write_body should call close on the body if the body responds to close" do
+    @body.should_receive(:each).ordered.and_return do |block|
+      block.call "hello"
+      block.call "there"
+    end
+    @body.should_receive(:close).ordered
+    stream = mock "output stream"
+    @servlet_response.stub!(:getOutputStream).and_return stream
+    stream.should_receive(:write).exactly(2).times
+
+    @response.write_body(@servlet_response)
+  end
 end
