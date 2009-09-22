@@ -86,5 +86,22 @@ module JRuby
         @app_uri ||= @rack_context.getInitParameter('merb.root') || '/WEB-INF'
       end
     end
+    
+    class RailsFilesystemLayout < AppLayout
+      def initialize(context)
+        super(context)
+        
+        @public_uri = context.getInitParameter("public.root")
+        @app_uri = context.getInitParameter("rails.root")
+        #puts "APP_PATH: #{app_path} PUBLIC_PATH: #{public_path}"
+      end
+      
+      # do not use context.getRealPath
+      def real_path(path)
+        path
+      end
+    end
+    
+    
   end
 end
