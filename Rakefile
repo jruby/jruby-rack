@@ -14,6 +14,7 @@ def compile_classpath
     ENV['JRUBY_PARENT_CLASSPATH'].split(File::PATH_SEPARATOR).each {|p| classpath << p}
   else
     java_classpath = Java::JavaLang::System.getProperty("java.class.path").split(File::PATH_SEPARATOR)
+    java_classpath += Java::JavaLang::System.getProperty("sun.boot.class.path").split(File::PATH_SEPARATOR)
     classpath = Dir["#{File.expand_path 'src/main/lib'}/*.jar"] + java_classpath
   end
 end

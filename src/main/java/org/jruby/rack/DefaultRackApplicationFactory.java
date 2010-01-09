@@ -66,14 +66,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public Ruby newRuntime() throws RackInitializationException {
         try {
-            RubyInstanceConfig config = new RubyInstanceConfig();
-            config.setClassCache(classCache);
-            try { // try to set jruby home to jar file path
-                 String binjruby = RubyInstanceConfig.class.getResource(
-                        "/META-INF/jruby.home/bin/jruby").toURI().getSchemeSpecificPart();
-                 config.setJRubyHome(binjruby.substring(0, binjruby.length() - 10));
-            } catch (Exception e) { }
-            Ruby runtime = JavaEmbedUtils.initialize(new ArrayList(), config);
+            setupJRubyManagement();
+            Ruby runtime = JavaEmbedUtils.initialize(new ArrayList(), createRuntimeConfig());
             runtime.getGlobalVariables().set("$servlet_context",
                     JavaEmbedUtils.javaToRuby(runtime, rackContext));
             runtime.evalScriptlet("require 'rack/handler/servlet'");
@@ -81,6 +75,22 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         } catch (RaiseException re) {
             throw new RackInitializationException(re);
         }
+    }
+
+    /**
+     * JRuby 1.5 flips this setting to false by default for quicker
+     * startup. Appserver startup time probably doesn't matter.
+     */
+    private void setupJRubyManagement() {
+        if (!"false".equalsIgnoreCase(System.getProperty("jruby.management.enabled"))) {
+            System.setProperty("jruby.management.enabled", "true");
+        }
+    }
+
+    private RubyInstanceConfig createRuntimeConfig() {
+        RubyInstanceConfig config = new RubyInstanceConfig();
+        config.setClassCache(classCache);
+        return config;
     }
 
     public IRubyObject createApplicationObject(Ruby runtime) {
