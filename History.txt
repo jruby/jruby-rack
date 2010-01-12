@@ -1,3 +1,11 @@
+== 0.9.6
+
+- JRUBY_RACK-22: Ensure we call #close on the body per the Rack spec.
+- Set jruby.management.enabled true when creating a runtime. JRuby 1.5
+  will default this flag to false, but you probably still want JMX
+  capability inside an appserver.
+- Miscellaneous spec cleanup due to changes in JRuby 1.5
+
 == 0.9.5
 
 - Upgrade to Rack 1.0.0. However, if you supply Rack in your
