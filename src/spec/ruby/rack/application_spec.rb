@@ -9,6 +9,8 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 import org.jruby.rack.DefaultRackApplication
 
+require 'jruby/rack/environment'
+
 describe DefaultRackApplication, "call" do
   it "should invoke the call method on the ruby object and return the rack response" do
     server_request = mock("server request")
@@ -83,34 +85,6 @@ describe DefaultRackApplicationFactory do
       @app_factory.init @rack_context
       object = @app_factory.newApplication
       lambda { object.init }.should raise_error
-    end
-
-    it "should change directories to /WEB-INF during application initialization" do
-      @rack_context.should_receive(:getInitParameter).with("rackup").and_return(
-        %{class Rack::Handler::Servlet; alias_method :create_env, :create_lazy_env; end;
-          pwd = Dir.pwd; run(Proc.new { [200, {'Pwd' => pwd}, ['']] })})
-      @app_factory.init @rack_context
-      object = @app_factory.newApplication
-      object.init
-      # Using mocks inside of another runtime breaks badly...trust me, this is the best way
-      servlet_env = Object.new
-      def servlet_env.method_missing(meth, *args,&block)
-        case meth.to_sym
-        when :to_io: StringIO.new
-        when :getAttributeNames, :getHeaderNames: []
-        when :getServerPort, :getContentType: 0
-        when :getContentType: "text/html"
-        else
-          nil
-        end
-      end
-      response = object.__call(servlet_env)
-      io = StringIO.new
-      # more inter-runtime weirdness -- can't access the result string directly
-      # printing it to an object in this runtime works though
-      io.print(response.getHeaders['Pwd'])
-      object.destroy
-      io.string.should == Dir.chdir(Dir::tmpdir) { Dir.pwd }
     end
   end
 

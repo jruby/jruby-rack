@@ -43,12 +43,14 @@ describe Rack::Handler::Servlet, "create_env" do
     def hasMoreElements
       @pos < @arr.length
     end
+    alias_method :has_more_elements, :hasMoreElements
     def nextElement
       raise java.util.NoSuchElementException.new("no more elements") unless hasMoreElements
       pos = @pos
       @pos += 1
       @arr[pos]
     end
+    alias_method :next_element, :nextElement
   end
 
   def enumeration(arr)
