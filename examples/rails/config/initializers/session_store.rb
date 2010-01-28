@@ -2,12 +2,11 @@
 
 # Your secret key for verifying cookie session data integrity.
 # If you change this key, all old sessions will become invalid!
-# Make sure the secret is at least 30 characters and all random,
+# Make sure the secret is at least 30 characters and all random, 
 # no regular words or you'll be exposed to dictionary attacks.
 ActionController::Base.session = {
-#   :disabled    => true,
   :key         => '_rails_session',
-  :secret      => 'd652b8fa9b4e4e3018165d86310675170607c3eab5cc2e029d67187cee015a777ebf09dd19adfd3929e4e48c27f83bbec0c7eee101dfe08e1418669009fe93e9'
+  :secret      => '603e4819eb9da3e711dd95c56aced75a9689abf963af8e47c190b4215aa22fd1a7389c000e708a05ac6b6e8d8f7ed9168010d4e14862d9d10a602c7fccf107a1'
 }
 
 # Use the database for sessions instead of the cookie-based default,
