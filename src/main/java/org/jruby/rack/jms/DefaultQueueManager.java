@@ -97,6 +97,7 @@ public class DefaultQueueManager implements QueueManager {
         return jndiContext.lookup(name);
     }
 
+    @SuppressWarnings("unchecked")
     public void destroy() {
         for (Iterator it = queues.entrySet().iterator(); it.hasNext();) {
             Map.Entry<String,Connection> entry = (Map.Entry<String, Connection>) it.next();

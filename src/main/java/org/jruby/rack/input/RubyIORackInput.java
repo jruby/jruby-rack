@@ -22,7 +22,7 @@ public class RubyIORackInput implements RackInput {
     }
 
     public IRubyObject gets(ThreadContext context) {
-        return io.gets(context, IRubyObject.NULL_ARRAY);
+        return io.gets(context);
     }
 
     public IRubyObject read(ThreadContext context, IRubyObject[] args) {

@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
  * Implementation of RackEnvironment for the servlet environment.
  * @author nicksieger
  */
+@SuppressWarnings("deprecation")
 public class ServletRackEnvironment extends HttpServletRequestWrapper
         implements HttpServletRequest, RackEnvironment {
     public ServletRackEnvironment(HttpServletRequest request) {
