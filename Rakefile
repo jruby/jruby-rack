@@ -30,16 +30,16 @@ directory 'target/classes'
 
 desc "Compile java classes"
 task :compile => "target/classes" do |t|
-  sh "javac -classpath #{compile_classpath.join(File::PATH_SEPARATOR)} -source 1.5 " +
-    "-target 1.5 -d #{t.prerequisites.first} #{Dir['src/main/java/**/*.java'].join(' ')}"
+  sh 'javac -classpath "' + compile_classpath.join(File::PATH_SEPARATOR) + '" -source 1.5 ' +
+    '-target 1.5 -d ' + t.prerequisites.first + ' ' + Dir["src/main/java/**/*.java"].join(" ")
 end
 
 directory 'target/test-classes'
 
 desc "Compile classes used for test/spec"
 task :compilespec => "target/test-classes" do |t|
-  sh "javac -classpath #{test_classpath.join(File::PATH_SEPARATOR)} -source 1.5 " +
-    "-target 1.5 -d #{t.prerequisites.first} #{Dir['src/spec/java/**/*.java'].join(' ')}"
+  sh 'javac -classpath "' + test_classpath.join(File::PATH_SEPARATOR) + '" -source 1.5 ' +
+    '-target 1.5 -d ' + t.prerequisites.first + ' ' + Dir["src/spec/java/**/*.java"].join(" ")
 end
 
 desc "Unpack the rack gem"
