@@ -133,3 +133,46 @@ task :classpaths do
   puts "compile_classpath:",*compile_classpath
   puts "test_classpath:", *test_classpath
 end
+
+file "target/gem/lib/jruby-rack.rb" do |t|
+  mkdir_p File.dirname(t.name)
+  File.open(t.name, "wb") do |f|
+    f << %q{require 'jruby/rack/version'
+module JRubyJars
+  def self.jruby_rack_jar_path
+    File.expand_path("../jruby-rack-#{JRuby::Rack::VERSION}.jar", __FILE__)
+  end
+end
+}
+  end
+end
+
+file "target/gem/lib/jruby/rack/version.rb" => "src/main/ruby/jruby/rack/version.rb" do |t|
+  mkdir_p File.dirname(t.name)
+  cp t.prerequisites.first, t.name
+end
+
+task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
+              "target/gem/lib/jruby-rack.rb",
+              "target/gem/lib/jruby/rack/version.rb"] do |t|
+  cp FileList["History.txt", "License.txt", "README.md"], "target/gem"
+  cp t.prerequisites.first, "target/gem/lib"
+  Dir.chdir("target/gem") do
+    gemspec = Gem::Specification.new do |s|
+      s.name = %q{jruby-rack}
+      s.platform = Gem::Platform.new("java")
+      s.version = JRuby::Rack::VERSION.sub(/-SNAPSHOT/, '')
+      s.authors = ["Nick Sieger"]
+      s.date = Date.today.to_s
+      s.description = %{JRuby-Rack is a combined Java and Ruby library that adapts the Java Servlet API to Rack. For JRuby only.}
+      s.summary = %q{Rack adapter for JRuby and Servlet Containers}
+      s.email = ["nick@nicksieger.com"]
+      s.files = FileList["./**/*"].exclude("*.gem")
+      s.homepage = %q{http://jruby.org}
+      s.has_rdoc = false
+      s.rubyforge_project = %q{jruby-extras}
+    end
+    Gem::Builder.new(gemspec).build
+    mv FileList['*.gem'], '..'
+  end
+end
