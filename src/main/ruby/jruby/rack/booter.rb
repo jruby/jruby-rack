@@ -17,8 +17,7 @@ module JRuby::Rack
       ENV['GEM_PATH'] = @layout.gem_path
       @layout.change_working_directory if @layout.respond_to?(:change_working_directory)
       begin
-        require 'rubygems'
-        require 'rack' # allow override via rubygems
+        require 'rack' # allow override via rubygems or existing app
       rescue LoadError
         require 'vendor/rack' # use jruby-rack's vendored copy
       end
