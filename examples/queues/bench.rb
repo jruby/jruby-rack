@@ -7,7 +7,7 @@
 
 require 'jruby/rack/queues/activemq'
 
-class JRuby::Rack::Queues
+module JRuby::Rack::Queues
   NUM_MSGS = ENV['N'] && ENV['N'].to_i || 10000
   Q = "MyQueue"
 
@@ -32,7 +32,7 @@ class JRuby::Rack::Queues
   @start = Time.now
   1.upto(NUM_MSGS) do
     print '.'
-    Registry.send_message Q, "hello-#{'%.02f' % rand}"
+    Registry.publish_message Q, "hello-#{'%.02f' % rand}"
   end
 
   while @running

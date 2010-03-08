@@ -24,7 +24,7 @@ module JRuby
         end
       end
 
-      class LocalRackApplication
+      class LocalRackApplication < java.lang.Object
         include Java::OrgJrubyRack::RackApplication
         def getRuntime
           @runtime ||= begin
@@ -34,7 +34,7 @@ module JRuby
         end
       end
 
-      class LocalRackApplicationFactory
+      class LocalRackApplicationFactory < java.lang.Object
         include Java::OrgJrubyRack::RackApplicationFactory
         def newApplication
           getApplication
@@ -48,7 +48,7 @@ module JRuby
         end
       end
 
-      class LocalContext
+      class LocalContext < java.lang.Object
         include Java::OrgJrubyRack::RackContext
 
         def self.init_parameters
@@ -63,8 +63,12 @@ module JRuby
           self.class.init_parameters[k]
         end
 
-        def log(*args)
-          puts *args
+        def log(msg, exception = nil)
+          puts msg
+          while exception.respond_to?(:getCause) && exception.getCause
+            exception = exception.getCause
+          end
+          exception.printStackTrace
         end
 
         def getRackFactory

@@ -22,6 +22,7 @@ import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import org.jruby.Ruby;
+import org.jruby.RubyModule;
 import org.jruby.RubyObjectAdapter;
 import org.jruby.RubyRuntimeAdapter;
 import org.jruby.javasupport.JavaEmbedUtils;
@@ -128,7 +129,8 @@ public class DefaultQueueManager implements QueueManager {
             try {
                 app = rackFactory.getApplication();
                 Ruby runtime = app.getRuntime();
-                IRubyObject obj = rubyRuntimeAdapter.eval(runtime, "JRuby::Rack::Queues::Registry");
+                RubyModule mod = runtime.getClassFromPath("JRuby::Rack::Queues");
+                IRubyObject obj = mod.getConstant("Registry");
                 rubyObjectAdapter.callMethod(obj, "receive_message", new IRubyObject[] {
                     JavaEmbedUtils.javaToRuby(runtime, queueName),
                     JavaEmbedUtils.javaToRuby(runtime, message)});
