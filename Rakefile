@@ -160,7 +160,6 @@ task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
   Dir.chdir("target/gem") do
     gemspec = Gem::Specification.new do |s|
       s.name = %q{jruby-rack}
-      s.platform = Gem::Platform.new("java")
       s.version = JRuby::Rack::VERSION.sub(/-SNAPSHOT/, '')
       s.authors = ["Nick Sieger"]
       s.date = Date.today.to_s
