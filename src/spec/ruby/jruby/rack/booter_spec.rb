@@ -41,10 +41,23 @@ describe JRuby::Rack::Booter do
     @booter.gem_path.should == "."
   end
 
+  it "should also be able to determine the gem path from the gem.home init parameter" do
+    @rack_context.should_receive(:getInitParameter).with("gem.home").and_return "/blah"
+    @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
+    create_booter.boot!
+    @booter.gem_path.should == "."
+  end
+
   it "should default gem path to '/WEB-INF/gems'" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     create_booter.boot!
     @booter.gem_path.should == "./gems"
+  end
+
+  it "should get rack environment from rack.env" do
+    @rack_context.should_receive(:getInitParameter).with("rack.env").and_return "production"
+    create_booter.boot!
+    ENV['RACK_ENV'].should == "production"
   end
 
   it "should set Gem.path to the value of gem_path" do

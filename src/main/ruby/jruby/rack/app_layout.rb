@@ -57,7 +57,8 @@ module JRuby
       end
 
       def gem_uri
-        @gem_uri ||= @rack_context.getInitParameter('gem.path') || '/WEB-INF/gems'
+        @gem_uri ||= @rack_context.getInitParameter('gem.path') ||
+          @rack_context.getInitParameter('gem.home') || '/WEB-INF/gems'
       end
 
       def real_path(path)

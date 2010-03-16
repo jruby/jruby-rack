@@ -9,19 +9,16 @@ module JRuby::Rack
   class Booter
     def initialize(rack_context = nil)
       @rack_context = rack_context || $servlet_context
+      @rack_env = @rack_context.getInitParameter('rack.env') || 'production'
       JRuby::Rack.booter = self
     end
 
     def boot!
       @layout ||= layout_class.new(@rack_context)
+      ENV['RACK_ENV'] = @rack_env
       ENV['GEM_PATH'] = @layout.gem_path
       @layout.change_working_directory if @layout.respond_to?(:change_working_directory)
-      begin
-        require 'rack' # allow override via rubygems or existing app
-      rescue LoadError
-        require 'vendor/rack' # use jruby-rack's vendored copy
-      end
-      require 'time' # some of rack uses Time#rfc822 but doesn't pull this in
+      require 'vendor/rack'
     end
 
     def default_layout_class
