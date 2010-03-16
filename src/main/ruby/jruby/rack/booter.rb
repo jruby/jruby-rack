@@ -14,10 +14,9 @@ module JRuby::Rack
     end
 
     def boot!
-      @layout ||= layout_class.new(@rack_context)
       ENV['RACK_ENV'] = @rack_env
-      ENV['GEM_PATH'] = @layout.gem_path
-      @layout.change_working_directory if @layout.respond_to?(:change_working_directory)
+      ENV['GEM_PATH'] = layout.gem_path
+      layout.change_working_directory if layout.respond_to?(:change_working_directory)
       require 'vendor/rack'
     end
 
@@ -33,11 +32,15 @@ module JRuby::Rack
       @layout_class = c
     end
 
+    def layout
+      @layout ||= layout_class.new(@rack_context)
+    end
+
     %w(app_path gem_path public_path).each do |m|
-      # def app_path; @layout.app_path; end
-      # def app_path=(v); @layout.app_path = v; end
-      class_eval "def #{m}; @layout.#{m}; end"
-      class_eval "def #{m}=(v); @layout.#{m} = v; end"
+      # def app_path; layout.app_path; end
+      # def app_path=(v); layout.app_path = v; end
+      class_eval "def #{m}; layout.#{m}; end"
+      class_eval "def #{m}=(v); layout.#{m} = v; end"
     end
 
     def logdev

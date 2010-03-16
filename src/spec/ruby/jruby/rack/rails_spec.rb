@@ -7,7 +7,7 @@
 
 require File.dirname(__FILE__) + '/../../spec_helper'
 require 'jruby/rack/rails'
-require 'jruby/rack/rails_ext'
+require 'jruby/rack/rails/extensions'
 require 'cgi/session/java_servlet_store'
 class ::CGI::Session::PStore; end
 
@@ -89,18 +89,21 @@ describe JRuby::Rack::RailsBooter do
     PUBLIC_ROOT.should == @booter.public_path
   end
 
-  describe "#load_environment" do
+  describe "Rails 2 environment" do
     before :all do
+      @wd = Dir.getwd
       mock_servlet_context
       $servlet_context = @servlet_context
       @rack_context.stub!(:getInitParameter).and_return nil
       @rack_context.stub!(:getRealPath).and_return "/"
-      create_booter(JRuby::Rack::RailsBooter).boot!
-      @booter.app_path = File.dirname(__FILE__) + "/../../rails"
+      create_booter(JRuby::Rack::RailsBooter) do |b|
+        b.app_path = File.expand_path("../../../rails", __FILE__)
+      end.boot!
       @booter.load_environment
     end
 
     after :all do
+      Dir.chdir(@wd)
       $servlet_context = nil
     end
 
@@ -122,6 +125,36 @@ describe JRuby::Rack::RailsBooter do
 
     it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
       ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == @booter.public_path + "/stylesheets"
+    end
+  end
+
+  describe "Rails 3 environment" do
+    before :all do
+      @wd = Dir.getwd
+      mock_servlet_context
+      $servlet_context = @servlet_context
+      @rack_context.stub!(:getInitParameter).and_return nil
+      @rack_context.stub!(:getRealPath).and_return "/"
+      create_booter(JRuby::Rack::RailsBooter) do |b|
+        b.app_path = File.expand_path("../../../rails3", __FILE__)
+      end.boot!
+      @booter.load_environment
+    end
+
+    after :all do
+      $servlet_context = nil
+      Dir.chdir(@wd)
+    end
+
+    it "should set the application configuration's public path" do
+      paths = mock "paths"
+      app = mock "app"
+      app.stub_chain(:config, :paths).and_return(paths)
+      paths.should_receive(:public=).with(@booter.public_path)
+      init = Rails::Railtie.initializers.detect {|i| i.first =~ /public_path/}
+      init.should_not be_nil
+      init[1].should == [{:before => "action_controller.set_configs"}]
+      init.last.call(app)
     end
   end
 end

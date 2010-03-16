@@ -21,6 +21,8 @@ module ActionController
         @session_options = opts
       end
     end
+
+    DEFAULT_SESSION_OPTIONS = {} unless defined?(DEFAULT_SESSION_OPTIONS)
   end
 
   class Base

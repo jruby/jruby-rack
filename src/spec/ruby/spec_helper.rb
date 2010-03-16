@@ -6,11 +6,9 @@
 #++
 
 require 'java'
-require 'rubygems'
-gem 'rspec'
 require 'spec'
-# add to load path for stubbed out action_controller
-$LOAD_PATH << File.dirname(__FILE__) + '/rails'
+# add to load path for stubbed out action_controller, railtie classes
+$LOAD_PATH.unshift File.expand_path('../rails', __FILE__)
 
 Spec::Runner.configure do |config|
   def mock_servlet_context
@@ -28,12 +26,17 @@ Spec::Runner.configure do |config|
   def create_booter(booter_class = JRuby::Rack::Booter)
     require 'jruby/rack'
     @booter = booter_class.new @rack_context
-    yield if block_given?
+    yield @booter if block_given?
     @booter
   end
 
   config.before :each do
     mock_servlet_context
+    @pwd = Dir.getwd
+  end
+
+  config.after :each do
+    Dir.chdir(@pwd) unless Dir.getwd == @pwd
   end
 end
 

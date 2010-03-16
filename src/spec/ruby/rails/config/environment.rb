@@ -3,8 +3,6 @@
 RAILS_ROOT = ENV['RAILS_ROOT']
 RAILS_ENV = ENV['RAILS_ENV']
 
-$LOAD_PATH.unshift(File.dirname(__FILE__) + '/..')
-
 # Simulate the Rails 2.0 boot process here, to test our boot hook
 module Rails
   class << self
