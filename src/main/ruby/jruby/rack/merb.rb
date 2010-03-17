@@ -23,6 +23,8 @@ module JRuby::Rack
 
     def load_merb
       require 'rubygems'
+      require 'bundler'
+      Bundler.setup
       require 'merb-core'
       require 'merb-core/rack'
 
