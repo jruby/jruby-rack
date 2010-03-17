@@ -100,6 +100,10 @@ public class ServletRackContext implements RackContext, ServletContext {
         return context.getContext(path);
     }
 
+    public String getContextPath() {
+        return context.getContextPath();
+    }
+
     public int getMajorVersion() {
         return context.getMajorVersion();
     }

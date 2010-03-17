@@ -2,6 +2,7 @@ package org.jruby.rack.fake;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import javax.el.ELContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -24,7 +25,7 @@ public class FakePageContext extends PageContext {
     private ServletRequest request;
     private ServletResponse response;
     private JspWriter out;
-    
+
     public FakePageContext(ServletContext context, HttpServletRequest request, HttpServletResponse response, JspWriter out) {
         this.context = context;
         this.request = request;
@@ -52,7 +53,7 @@ public class FakePageContext extends PageContext {
     }
 
     @Override
-    public Enumeration getAttributeNamesInScope(int arg0) {
+    public Enumeration<String> getAttributeNamesInScope(int arg0) {
         throw new UnsupportedOperationException("Not supported yet. getAttributeNamesInScope");
     }
 
@@ -158,6 +159,11 @@ public class FakePageContext extends PageContext {
 
     @Override
     public VariableResolver getVariableResolver() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ELContext getELContext() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }
