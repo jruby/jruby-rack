@@ -12,13 +12,13 @@ $LOAD_PATH.unshift File.expand_path('../rails', __FILE__)
 
 Spec::Runner.configure do |config|
   def mock_servlet_context
-    @rack_context = mock "rack context"
-    @servlet_context = mock "servlet context"
+    @rack_context ||= mock "rack context"
+    @servlet_context ||= mock "servlet context"
     [@rack_context, @servlet_context].each do |context|
       context.stub!(:log)
       context.stub!(:getInitParameter).and_return nil
     end
-    @servlet_config = mock("servlet config")
+    @servlet_config ||= mock("servlet config")
     @servlet_config.stub!(:getServletName).and_return("A Servlet")
     @servlet_config.stub!(:getServletContext).and_return(@servlet_context)
   end

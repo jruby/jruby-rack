@@ -156,6 +156,40 @@ describe JRuby::Rack::RailsBooter do
       init[1].should == [{:before => "action_controller.set_configs"}]
       init.last.call(app)
     end
+
+    it "should switch out the logging device" do
+      config = mock "config"
+      Rails::Railtie.config = config
+      logger = mock "logger"
+      class << logger; attr_accessor :log; end
+      dev = mock "logdev"
+      dev.should_receive(:close)
+      logger.log = dev
+      config.stub!(:logger).and_return logger
+      init = Rails::Railtie.initializers.detect {|i| i.first =~ /log/}
+      init.should_not be_nil
+      init[1].should == [{:after => :initialize_logger}]
+      init.last.call
+      logger.log.should be_instance_of(JRuby::Rack::ServletLog)
+    end
+
+    it "should return the Rails.application instance" do
+      app = mock "app"
+      Rails.application = app
+      @booter.to_app.should == app
+    end
+
+    it "should set config.action_controller.relative_url_root" do
+      @rack_context.stub!(:getContextPath).and_return "/blah"
+      config = mock "config"
+      Rails::Railtie.config = config
+      config.stub_chain(:action_controller, :relative_url_root)
+      config.action_controller.should_receive(:relative_url_root=).with("/blah")
+      init = Rails::Railtie.initializers.detect {|i| i.first =~ /url/}
+      init.should_not be_nil
+      init[1].should == [{:after => "action_controller.set_configs"}]
+      init.last.call
+    end
   end
 end
 

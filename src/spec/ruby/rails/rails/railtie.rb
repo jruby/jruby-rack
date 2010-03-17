@@ -5,6 +5,14 @@ module Rails
       @name = nm
     end
 
+    def self.config
+      @@config
+    end
+
+    def self.config=(conf)
+      @@config = conf
+    end
+
     def self.initializer(name, *options, &block)
       self.initializers << [name, options, block]
     end

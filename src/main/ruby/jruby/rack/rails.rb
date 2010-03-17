@@ -150,6 +150,7 @@ module JRuby::Rack
       end
 
       def to_app
+        ::Rails.application
       end
     end
   end

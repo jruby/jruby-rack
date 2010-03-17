@@ -7,6 +7,8 @@
 
 module JRuby::Rack
   class Booter
+    attr_reader :rack_context
+
     def initialize(rack_context = nil)
       @rack_context = rack_context || $servlet_context
       @rack_env = @rack_context.getInitParameter('rack.env') || 'production'
