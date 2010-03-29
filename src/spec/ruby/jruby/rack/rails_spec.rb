@@ -96,6 +96,7 @@ describe JRuby::Rack::RailsBooter do
       $servlet_context = @servlet_context
       @rack_context.stub!(:getInitParameter).and_return nil
       @rack_context.stub!(:getRealPath).and_return "/"
+      @rack_context.stub!(:getContextPath).and_return "/foo"
       create_booter(JRuby::Rack::RailsBooter) do |b|
         b.app_path = File.expand_path("../../../rails", __FILE__)
       end.boot!
@@ -125,6 +126,10 @@ describe JRuby::Rack::RailsBooter do
 
     it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
       ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == @booter.public_path + "/stylesheets"
+    end
+
+    it "should set the ActionController.relative_url_root to the servlet context path" do
+      ActionController::Base.relative_url_root.should == "/foo"
     end
   end
 

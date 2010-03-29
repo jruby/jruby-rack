@@ -45,6 +45,7 @@ module JRuby::Rack
         require 'jruby/rack/rails/extensions'
         setup_sessions
         setup_logger
+        setup_relative_url_root
       end
 
       # This hook method is called back from within the mechanism installed
@@ -140,6 +141,14 @@ module JRuby::Rack
       def options
         {:public => public_path, :root => app_path}
       end
+
+      def setup_relative_url_root
+        relative_url_root = rack_context.getContextPath
+        if relative_url_root && !relative_url_root.empty?
+          ENV['RAILS_RELATIVE_URL_ROOT'] = relative_url_root
+          ActionController::Base.relative_url_root = relative_url_root if ActionController::Base.respond_to?(:relative_url_root=)
+        end
+      end
     end
 
     module Rails3Environment
@@ -164,11 +173,6 @@ module JRuby::Rack
     def call(env)
       @booter.set_session_options_for_request(env)
       env['HTTPS'] = 'on' if env['rack.url_scheme'] == 'https'
-      relative_url_root = env['java.servlet_request'].getContextPath
-      if relative_url_root && !relative_url_root.empty?
-        env['RAILS_RELATIVE_URL_ROOT'] = relative_url_root
-        ActionController::Base.relative_url_root = relative_url_root if ActionController::Base.respond_to?(:relative_url_root=)
-      end
       @app.call(env)
     end
   end
