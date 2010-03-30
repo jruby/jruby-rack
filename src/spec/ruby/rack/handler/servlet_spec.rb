@@ -167,7 +167,7 @@ describe Rack::Handler::Servlet, "create_env" do
 
     env = @servlet.create_lazy_env @env
     env["REQUEST_METHOD"].should == "GET"
-    env["SCRIPT_NAME"].should == "/app/script_name"
+    env["SCRIPT_NAME"].should == "/app"
     env["PATH_INFO"].should == "/script_name/path/info"
     env["REQUEST_URI"].should == "/app/script_name/path/info?hello=there"
     env["QUERY_STRING"].should == "hello=there"
@@ -206,7 +206,7 @@ describe Rack::Handler::Servlet, "create_env" do
     env["HTTP_HOST"].should == "localhost"
     env["HTTP_ACCEPT"].should == "text/*"
     env["REQUEST_METHOD"].should == "GET"
-    env["SCRIPT_NAME"].should == "/app/script_name"
+    env["SCRIPT_NAME"].should == "/app"
     env["PATH_INFO"].should == "/script_name/path/info"
     env["REQUEST_URI"].should == "/app/script_name/path/info?hello=there"
     env["QUERY_STRING"].should == "hello=there"
@@ -234,7 +234,7 @@ describe Rack::Handler::Servlet, "create_env" do
   it "should calculate path info from the servlet path and the path info" do
     stub_env :getContextPath => "/context", :getServletPath => "/path"
     env = @servlet.create_lazy_env @env
-    env["SCRIPT_NAME"].should == "/context/path"
+    env["SCRIPT_NAME"].should == "/context"
     env["PATH_INFO"].should == "/path"
   end
 

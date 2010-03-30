@@ -37,7 +37,6 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
         if (getContextPath() != null) {
             scriptName.append(getContextPath());
         }
-        scriptName.append(getServletPath());
         return scriptName.toString().equals("/") ? "" : scriptName.toString();
     }
 
