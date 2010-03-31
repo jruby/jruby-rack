@@ -34,6 +34,12 @@ describe JRuby::Rack::Booter do
     @booter.public_path.should == "."
   end
 
+  it "should chomp trailing slashes from paths" do
+    @rack_context.should_receive(:getRealPath).with("/").and_return "/hello/there/"
+    create_booter.boot!
+    @booter.public_path.should == "/hello/there"
+  end
+
   it "should determine the gem path from the gem.path init parameter" do
     @rack_context.should_receive(:getInitParameter).with("gem.path").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
