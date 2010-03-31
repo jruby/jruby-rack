@@ -30,8 +30,11 @@ module JRuby
 
       def real_path(path)
         rpath = @rack_context.getRealPath(path)
-        # protect windows paths from backrefs
-        rpath.sub!(/\\([0-9])/, '\\\\\\\\\1') if rpath
+        if rpath
+          # protect windows paths from backrefs
+          rpath.sub!(/\\([0-9])/, '\\\\\\\\\1')
+          rpath.chomp!('/')
+        end
         rpath
       end
 
