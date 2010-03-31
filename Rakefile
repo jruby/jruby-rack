@@ -160,7 +160,7 @@ end
 task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
               "target/gem/lib/jruby-rack.rb",
               "target/gem/lib/jruby/rack/version.rb"] do |t|
-  cp FileList["History.txt", "License.txt", "README.md"], "target/gem"
+  cp FileList["History.txt", "LICENSE.txt", "README.md"], "target/gem"
   cp t.prerequisites.first, "target/gem/lib"
   Dir.chdir("target/gem") do
     gemspec = Gem::Specification.new do |s|
