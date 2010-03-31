@@ -45,6 +45,10 @@ module ActionController
     end
   end
 
+  module Session
+    autoload :JavaServletStore, "action_controller/session/java_servlet_store"
+  end
+
   # These rescue module overrides should only be needed for pre-Rails 2.1
   unless defined?(::Rails.public_path)
     module Rescue

@@ -42,7 +42,6 @@ module JRuby::Rack
         require 'jruby/rack/rails/boot_hook'
         load File.join(app_path, 'config', 'environment.rb')
         require 'dispatcher'
-        require 'jruby/rack/rails/extensions'
         setup_sessions
         setup_logger
         setup_relative_url_root
@@ -79,6 +78,7 @@ module JRuby::Rack
             asset_tag_helper.const_set("STYLESHEETS_DIR", "#{PUBLIC_ROOT}/stylesheets")
           end
         end
+        require 'jruby/rack/rails/extensions'
       end
 
       def rack_based_sessions?
@@ -155,6 +155,7 @@ module JRuby::Rack
       def load_environment
         require File.join(app_path, 'config', 'boot')
         require 'jruby/rack/rails/railtie'
+        require 'jruby/rack/rails/extensions'
         require File.join(app_path, 'config', 'environment')
       end
 
