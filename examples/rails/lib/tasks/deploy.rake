@@ -3,20 +3,37 @@ require 'warbler'
 
 class Warbler::Task
   def define_appengine_consolidation_tasks
-    with_namespace_and_config do |name, config|
-      app_task = Rake.application.lookup("app")
-      gems_task = Rake.application.lookup("gems")
-      app_task.prerequisites.delete("gems")
-      gems_jar_name = File.expand_path(File.join(config.staging_dir, "WEB-INF", "lib", "gems.jar"))
-
-      file gems_jar_name => gems_task.prerequisites do |t|
-        Dir.chdir(File.join(config.staging_dir, "WEB-INF")) do
-          sh "jar cf #{gems_jar_name} -C gems ."
-          rm_rf "gems"
+    if defined?(Warbler::War)            # Warbler 1.0
+      gem_jar = Warbler::War.new
+      task "war:gemjar_files" do
+        gems = war.files.select{|k,v| k =~ %r{WEB-INF/gems/} }
+        gems.each do |k,v|
+          gem_jar.files[k.sub(%r{WEB-INF/gems/}, '')] = v
         end
+        war.files["WEB-INF/lib/gems.jar"] = "tmp/gems.jar"
+        war.files.reject!{|k,v| k =~ %r{WEB-INF/gems} }
       end
+      file "tmp/gems.jar" do
+        gem_jar.create("tmp/gems.jar")
+      end
+      task "war:gemjar" => ["war:files", "war:gemjar_files", "tmp/gems.jar"]
+      task "war:jar" => "war:gemjar"
+    else                        # Warbler 0.9.x
+      with_namespace_and_config do |name, config|
+        app_task = Rake.application.lookup("app")
+        gems_task = Rake.application.lookup("gems")
+        app_task.prerequisites.delete("gems")
+        gems_jar_name = File.expand_path(File.join(config.staging_dir, "WEB-INF", "lib", "gems.jar"))
 
-      task :app => gems_jar_name
+        file gems_jar_name => gems_task.prerequisites do |t|
+          Dir.chdir(File.join(config.staging_dir, "WEB-INF")) do
+            sh "jar cf #{gems_jar_name} -C gems ."
+            rm_rf "gems"
+          end
+        end
+
+        task :app => gems_jar_name
+      end
     end
   end
 end
@@ -33,9 +50,19 @@ def windows?
   Config::CONFIG['host_os'] =~ /mswin32/
 end
 
+task "tmpwar" => :warble do
+  if defined?(Warbler::War)     # Warbler 1.0, need to unpack the war file
+    rm_rf "tmp/war"
+    mkdir_p "tmp/war"
+    Dir.chdir("tmp/war") do
+      sh "jar xf ../../rails.war"
+    end
+  end
+end
+
 namespace :glassfish do
   task :deploy => :warble do
-    sh "asadmin deploy --name rails --contextroot rails tmp/war" do |ok, res|
+    sh "asadmin deploy --name rails --contextroot rails rails.war" do |ok, res|
       unless ok
         puts "Is the GLASSFISH/bin directory on your path?"
       end
@@ -48,7 +75,7 @@ namespace :glassfish do
 end
 
 namespace :appengine do
-  task :deploy => :warble do
+  task :deploy => "tmpwar" do
     email = ENV['EMAIL']
     pass = ENV['PASSWORD']
     passfile = ENV['PASSWORDFILE']
@@ -76,7 +103,7 @@ PASSWORDFILE should only contain the password value.} unless pass || passfile
     end
   end
 
-  task :server do
+  task :server => "tmpwar" do
     sh "dev_appserver.sh --port=3000 tmp/war" do |ok, res|
       unless ok
         puts "Is the AppEngine-SDK/bin directory on your path?"
