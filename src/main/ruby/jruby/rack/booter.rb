@@ -23,7 +23,8 @@ module JRuby::Rack
     end
 
     def default_layout_class
-      WebInfLayout
+      c = @rack_context.getInitParameter 'jruby.rack.layout_class'
+      c.nil? ? WebInfLayout : eval(c)
     end
 
     def layout_class
