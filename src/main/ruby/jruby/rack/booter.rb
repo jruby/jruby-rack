@@ -16,6 +16,7 @@ module JRuby::Rack
     end
 
     def boot!
+      adjust_load_path
       ENV['RACK_ENV'] = @rack_env
       ENV['GEM_PATH'] = layout.gem_path
       layout.change_working_directory if layout.respond_to?(:change_working_directory)
@@ -56,6 +57,17 @@ module JRuby::Rack
 
     def silence_warnings(&block)
       JRuby::Rack.silence_warnings(&block)
+    end
+
+    # http://kenai.com/jira/browse/JRUBY_RACK-8: If some containers do
+    # not allow proper detection of jruby.home, fall back to this
+    def adjust_load_path
+      require 'jruby'
+      if JRuby.runtime.instance_config.jruby_home == java.lang.System.getProperty('java.io.tmpdir')
+        $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
+        $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/1.8'
+        $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/shared'
+      end
     end
   end
 end
