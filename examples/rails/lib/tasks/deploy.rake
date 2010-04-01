@@ -3,20 +3,7 @@ require 'warbler'
 
 class Warbler::Task
   def define_appengine_consolidation_tasks
-    if defined?(Warbler::War)            # Warbler 1.0
-      gem_jar = Warbler::War.new
-      task "war:gemjar_files" do
-        gems = war.files.select{|k,v| k =~ %r{WEB-INF/gems/} }
-        gems.each do |k,v|
-          gem_jar.files[k.sub(%r{WEB-INF/gems/}, '')] = v
-        end
-        war.files["WEB-INF/lib/gems.jar"] = "tmp/gems.jar"
-        war.files.reject!{|k,v| k =~ %r{WEB-INF/gems} }
-      end
-      file "tmp/gems.jar" do
-        gem_jar.create("tmp/gems.jar")
-      end
-      task "war:gemjar" => ["war:files", "war:gemjar_files", "tmp/gems.jar"]
+    if Rake.application.lookup("war:gemjar") # Warbler 1.0
       task "war:jar" => "war:gemjar"
     else                        # Warbler 0.9.x
       with_namespace_and_config do |name, config|
