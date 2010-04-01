@@ -145,7 +145,7 @@ module JRuby::Rack
 
       def setup_relative_url_root
         relative_url_root = rack_context.getContextPath
-        if relative_url_root && !relative_url_root.empty?
+        if relative_url_root && !relative_url_root.empty? && relative_url_root != '/'
           ENV['RAILS_RELATIVE_URL_ROOT'] = relative_url_root
           ActionController::Base.relative_url_root = relative_url_root if ActionController::Base.respond_to?(:relative_url_root=)
         end
