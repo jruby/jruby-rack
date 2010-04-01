@@ -53,10 +53,11 @@ task :unpack_gem => "target" do |t|
       Gem::Installer.new(gem_file, :unpack => true).unpack path
       rack_dir = FileList["rack-*"].first
       File.open("vendor/rack.rb", "w") do |f|
-        f << "if File.dirname(__FILE__) =~ /\.jar!/\n"
-        f << "$LOAD_PATH.unshift 'file:' + File.dirname(__FILE__) + '/#{rack_dir}'\n"
+        f << "dir = File.dirname(__FILE__)\n"
+        f << "if dir =~ /.jar!/ && dir !~ /^file:/\n"
+        f << "$LOAD_PATH.unshift 'file:' + dir + '/#{rack_dir}'\n"
         f << "else\n"
-        f << "$LOAD_PATH.unshift File.dirname(__FILE__) + '/#{rack_dir}'\n"
+        f << "$LOAD_PATH.unshift dir + '/#{rack_dir}'\n"
         f << "end\n"
         f << "require 'rack'"
       end
