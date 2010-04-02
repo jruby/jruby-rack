@@ -54,6 +54,12 @@ def it_should_behave_like_rack_input
     buf.should == "hello"
   end
 
+  it "should replace contents of buffer" do
+    buf = "cruft"
+    @input.read(5, buf)
+    buf.should == "hello"
+  end
+
   it "should respond to each and yield lines" do
     lines = []
     @input.each {|l| lines << l}

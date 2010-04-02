@@ -105,6 +105,7 @@ public class RackRewindableInput extends RackBaseInput {
                 byte[] bytes = readUntil(Integer.MAX_VALUE, count);
                 if (bytes != null) {
                     if (string != null) {
+                        string.clear();
                         string.cat(bytes);
                         return string;
                     }
