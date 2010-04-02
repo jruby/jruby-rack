@@ -154,8 +154,14 @@ describe JRuby::Rack::RailsBooter do
     it "should set the application configuration's public path" do
       paths = mock "paths"
       app = mock "app"
+      public_path = Pathname.new(@booter.public_path)
       app.stub_chain(:config, :paths).and_return(paths)
-      paths.should_receive(:public=).with(@booter.public_path)
+      paths.stub_chain(:public, :to_a, :first).and_return("public")
+      paths.public.stub_chain(:javascripts, :to_a, :first).and_return("public/javascripts")
+      paths.public.stub_chain(:stylesheets, :to_a, :first).and_return("public/stylesheets")
+      paths.should_receive(:public=).with(public_path.to_s)
+      paths.public.should_receive(:javascripts=).with(public_path.join("javascripts").to_s)
+      paths.public.should_receive(:stylesheets=).with(public_path.join("stylesheets").to_s)
       init = Rails::Railtie.initializers.detect {|i| i.first =~ /public_path/}
       init.should_not be_nil
       init[1].should == [{:before => "action_controller.set_configs"}]
@@ -163,18 +169,17 @@ describe JRuby::Rack::RailsBooter do
     end
 
     it "should switch out the logging device" do
-      config = mock "config"
-      Rails::Railtie.config = config
       logger = mock "logger"
       class << logger; attr_accessor :log; end
       dev = mock "logdev"
       dev.should_receive(:close)
       logger.log = dev
-      config.stub!(:logger).and_return logger
+      app = mock "app"
+      app.stub_chain(:config, :logger).and_return(logger)
       init = Rails::Railtie.initializers.detect {|i| i.first =~ /log/}
       init.should_not be_nil
       init[1].should == [{:after => :initialize_logger}]
-      init.last.call
+      init.last.call(app)
       logger.log.should be_instance_of(JRuby::Rack::ServletLog)
     end
 
@@ -186,14 +191,13 @@ describe JRuby::Rack::RailsBooter do
 
     it "should set config.action_controller.relative_url_root" do
       @rack_context.stub!(:getContextPath).and_return "/blah"
-      config = mock "config"
-      Rails::Railtie.config = config
-      config.stub_chain(:action_controller, :relative_url_root)
-      config.action_controller.should_receive(:relative_url_root=).with("/blah")
+      app = mock "app"
+      app.stub_chain(:config, :action_controller, :relative_url_root)
+      app.config.action_controller.should_receive(:relative_url_root=).with("/blah")
       init = Rails::Railtie.initializers.detect {|i| i.first =~ /url/}
       init.should_not be_nil
       init[1].should == [{:after => "action_controller.set_configs"}]
-      init.last.call
+      init.last.call(app)
     end
   end
 end

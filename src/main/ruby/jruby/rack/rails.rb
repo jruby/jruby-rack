@@ -161,6 +161,7 @@ module JRuby::Rack
       end
 
       def to_app
+        load_environment
         ::Rails.application
       end
     end
