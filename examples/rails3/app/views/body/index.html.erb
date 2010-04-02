@@ -1,0 +1,7 @@
+<p>Here's a place to upload some text or a file:</p>
+
+<% form_tag({:action => "index"}, :method => :post, :multipart => true) do -%>
+  <textarea name="text" rows="8" cols="40"></textarea><br/>
+  <input type="file" name="file"/><br/>
+  <input type="submit" value="Continue &rarr;"/>
+<% end -%>

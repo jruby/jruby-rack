@@ -1,0 +1,2 @@
+module CacheHeadersHelper
+end
