@@ -8,6 +8,7 @@
 raise "JRuby-Rack must be built with JRuby: try again with `jruby -S rake'" unless defined?(JRUBY_VERSION)
 
 require 'rake/clean'
+require 'date'
 
 def compile_classpath
   if ENV['JRUBY_PARENT_CLASSPATH']
@@ -158,6 +159,7 @@ file "target/gem/lib/jruby/rack/version.rb" => "src/main/ruby/jruby/rack/version
   cp t.prerequisites.first, t.name
 end
 
+desc "Build gem"
 task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
               "target/gem/lib/jruby-rack.rb",
               "target/gem/lib/jruby/rack/version.rb"] do |t|
