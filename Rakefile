@@ -46,10 +46,10 @@ end
 desc "Unpack the rack gem"
 task :unpack_gem => "target" do |t|
   Dir.chdir(t.prerequisites.first) do
-    unless File.file?("vendor/rack.rb")
+    gem_file = FileList["../src/main/lib/rack*.gem"].first
+    unless uptodate?("vendor/rack.rb", [__FILE__, gem_file])
       mkdir_p "vendor"
       require 'rubygems/installer'
-      gem_file = FileList["../src/main/lib/rack*.gem"].first
       path = File.basename(gem_file).sub(/\.gem$/, '')
       Gem::Installer.new(gem_file, :unpack => true).unpack path
       rack_dir = FileList["rack-*"].first
