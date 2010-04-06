@@ -6,6 +6,7 @@ examples/*/tmp
 activemq-data
 examples/merb/merb.war
 examples/rails/rails.war
+examples/rails3/rails3.war
 examples/camping/camping.war
 examples/sinatra/sinatra.war
 nbproject/private/*

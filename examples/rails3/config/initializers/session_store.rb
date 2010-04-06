@@ -9,4 +9,4 @@ Rails.application.config.session_store :cookie_store, {
 # (create the session table with "rake db:sessions:create")
 # Rails.application.config.session_store :active_record_store
 
-ActionController::Base.session_store = :java_servlet_store if defined?($servlet_context)
+Rails.application.config.session_store :java_servlet_store if defined?($servlet_context)
