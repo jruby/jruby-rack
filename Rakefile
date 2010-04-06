@@ -120,7 +120,8 @@ task :spec => [:compile, :resources, :compilespec, :speconly]
 
 task :test => :spec
 
-file "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" => :spec do |t|
+file "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" do |t|
+  Rake::Task['spec'].invoke
   sh "jar cf #{t.name} -C target/classes ."
 end
 
