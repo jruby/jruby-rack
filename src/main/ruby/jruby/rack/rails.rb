@@ -157,6 +157,7 @@ module JRuby::Rack
         require File.join(app_path, 'config', 'boot')
         require 'jruby/rack/rails/railtie'
         require 'jruby/rack/rails/extensions'
+        require 'jruby/rack/rails/extensions3'
         require File.join(app_path, 'config', 'environment')
       end
 
