@@ -126,7 +126,7 @@ file "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" do |t|
 end
 
 desc "Create the jar"
-task :jar => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"
+task :jar => [:spec, "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"]
 
 task :default => :jar
 
