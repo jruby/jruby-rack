@@ -20,7 +20,7 @@ module JRuby::Rack
       ENV['RACK_ENV'] = @rack_env
       ENV['GEM_PATH'] = layout.gem_path
       layout.change_working_directory if layout.respond_to?(:change_working_directory)
-      require 'vendor/rack'
+      require 'vendor/rack' unless defined?(::Rack::VERSION) # already loaded?
     end
 
     def default_layout_class
