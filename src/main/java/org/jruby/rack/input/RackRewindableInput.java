@@ -111,7 +111,11 @@ public class RackRewindableInput extends RackBaseInput {
                     }
                     return getRuntime().newString(new ByteList(bytes));
                 } else {
-                    return RubyString.newEmptyString(getRuntime());
+                    if (count > 0) {
+                        return getRuntime().getNil();
+                    } else {
+                        return RubyString.newEmptyString(getRuntime());
+                    }
                 }
             } catch (IOException io) {
                 throw getRuntime().newIOErrorFromException(io);
