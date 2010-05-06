@@ -79,7 +79,9 @@ public abstract class RackBaseInput extends RubyObject implements RackInput {
     }
 
     public void close() {
-        getDelegateInput().close();
+        if (delegateInput != null) {
+            delegateInput.close();
+        }
         delegateInput = null;
     }
 
