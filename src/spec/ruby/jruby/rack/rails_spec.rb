@@ -174,12 +174,11 @@ describe JRuby::Rack::RailsBooter do
       dev = mock "logdev"
       dev.should_receive(:close)
       logger.log = dev
-      app = mock "app"
-      app.stub_chain(:config, :logger).and_return(logger)
+      Rails.stub!(:logger).and_return(logger)
       init = Rails::Railtie.initializers.detect {|i| i.first =~ /log/}
       init.should_not be_nil
       init[1].should == [{:after => :initialize_logger}]
-      init.last.call(app)
+      init.last.call(nil)
       logger.log.should be_instance_of(JRuby::Rack::ServletLog)
     end
 
