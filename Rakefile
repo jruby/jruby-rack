@@ -120,10 +120,11 @@ task :spec => [:compile, :resources, :compilespec, :speconly]
 
 task :test => :spec
 
-file "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" do |t|
+file "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" => :always_build do |t|
   Rake::Task['spec'].invoke
   sh "jar cf #{t.name} -C target/classes ."
 end
+task :always_build              # dummy task to force jar to get built
 
 desc "Create the jar"
 task :jar => [:spec, "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"]
