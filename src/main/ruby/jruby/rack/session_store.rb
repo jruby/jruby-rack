@@ -66,8 +66,8 @@ module JRuby::Rack
 
     def save_session(env, data)
       servlet_session = get_servlet_session(env, true)
-      servlet_session.getAttributeNames.each do |key|
-        servlet_session.removeAttribute(key) unless data[key]
+      servlet_session.getAttributeNames.select {|key| !data.has_key?(key)}.each do |key|
+        servlet_session.removeAttribute(key)
       end
       data.delete_if do |key,value|
         if String === key
