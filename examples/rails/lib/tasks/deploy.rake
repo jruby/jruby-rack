@@ -3,8 +3,10 @@ require 'warbler'
 
 class Warbler::Task
   def define_appengine_consolidation_tasks
-    if Rake.application.lookup("war:gemjar") # Warbler 1.0
-      task "war:jar" => "war:gemjar"
+    #              Warbler >= 1.1     Warbler 1.0
+    gemjar_task = ["war:make_gemjar", "war:gemjar"].detect {|t| Rake.application.lookup(t)}
+    if gemjar_task
+      task "war:jar" => gemjar_task
     else                        # Warbler 0.9.x
       with_namespace_and_config do |name, config|
         app_task = Rake.application.lookup("app")
