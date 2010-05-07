@@ -3,6 +3,8 @@
 
 # Warbler web application assembly configuration file
 Warbler::Config.new do |config|
+  config.features << 'executable' if defined?(config.features)
+
   # Application directories to be included in the webapp.
   config.dirs = %w(app config lib log vendor tmp)
 

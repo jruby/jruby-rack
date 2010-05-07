@@ -1,0 +1,65 @@
+--- 
+hash: 00ee74e6398f707b1ddd0ce3beac293768fdf693
+sources: 
+  - Rubygems: 
+      uri: http://rubygems.org
+specs: 
+  - rake: 
+      version: 0.8.7
+  - abstract: 
+      version: 1.0.0
+  - builder: 
+      version: 2.1.2
+  - i18n: 
+      version: 0.3.7
+  - memcache-client: 
+      version: 1.8.3
+  - tzinfo: 
+      version: 0.3.20
+  - activesupport: 
+      version: 3.0.0.beta2
+  - activemodel: 
+      version: 3.0.0.beta2
+  - erubis: 
+      version: 2.6.5
+  - rack: 
+      version: 1.1.0
+  - rack-mount: 
+      version: 0.6.3
+  - rack-test: 
+      version: 0.5.3
+  - actionpack: 
+      version: 3.0.0.beta2
+  - mime-types: 
+      version: "1.16"
+  - polyglot: 
+      version: 0.3.1
+  - treetop: 
+      version: 1.4.5
+  - mail: 
+      version: 2.1.5.3
+  - text-hyphen: 
+      version: 1.0.0
+  - text-format: 
+      version: 1.0.0
+  - actionmailer: 
+      version: 3.0.0.beta2
+  - arel: 
+      version: 0.3.3
+  - activerecord: 
+      version: 3.0.0.beta2
+  - activeresource: 
+      version: 3.0.0.beta2
+  - bundler: 
+      version: 0.9.25
+  - thor: 
+      version: 0.13.6
+  - railties: 
+      version: 3.0.0.beta2
+  - rails: 
+      version: 3.0.0.beta2
+dependencies: 
+  rails: 
+    version: = 3.0.0.beta2
+    group: 
+      - :default
