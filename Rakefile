@@ -9,6 +9,7 @@ raise "JRuby-Rack must be built with JRuby: try again with `jruby -S rake'" unle
 
 require 'rake/clean'
 require 'date'
+require 'java'
 
 def compile_classpath
   if ENV['JRUBY_PARENT_CLASSPATH']
@@ -51,7 +52,7 @@ task :unpack_gem => "target" do |t|
       mkdir_p "vendor"
       require 'rubygems/installer'
       path = File.basename(gem_file).sub(/\.gem$/, '')
-      Gem::Installer.new(gem_file, :unpack => true).unpack path
+      Gem::Installer.new(gem_file, :unpack => true, :install_dir => path).unpack path
       rack_dir = FileList["rack-*"].first
       File.open("vendor/rack.rb", "w") do |f|
         f << "dir = File.dirname(__FILE__)\n"
