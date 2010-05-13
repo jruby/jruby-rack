@@ -8,6 +8,7 @@
 package org.jruby.rack.servlet;
 
 import org.jruby.rack.input.RackRewindableInput;
+import org.jruby.rack.logging.RackLoggerFactory;
 import org.jruby.rack.*;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -30,36 +31,9 @@ public class ServletRackContext implements RackContext, ServletContext {
     private ServletContext context;
     private RackLogger logger;
 
-    private class ServletContextLogger implements RackLogger {
-        public void log(String message) {
-            context.log(message);
-        }
-
-        public void log(String message, Throwable ex) {
-            context.log(message,ex);
-        }
-    }
-
-    private static class StandardOutLogger implements RackLogger {
-        public void log(String message) {
-            out.println(message);
-            out.flush();
-        }
-
-        public void log(String message, Throwable ex) {
-            out.println(message);
-            ex.printStackTrace(out);
-            out.flush();
-        }
-    }
-
     public ServletRackContext(ServletContext context) {
         this.context = context;
-        if (SafePropertyAccessor.getProperty("jruby.rack.logging", "servlet_context").equals("servlet_context")) {
-            this.logger = new ServletContextLogger();
-        } else {
-            this.logger = new StandardOutLogger();
-        }
+        this.logger = new RackLoggerFactory().getLogger(context);
         RackRewindableInput.setDefaultThreshold(
                 SafePropertyAccessor.getInt("jruby.rack.request.size.threshold.bytes",
                 RackRewindableInput.getDefaultThreshold()));
@@ -71,7 +45,6 @@ public class ServletRackContext implements RackContext, ServletContext {
 
     public void log(String message) {
         logger.log(message);
-
     }
 
     public void log(String message, Throwable ex) {
