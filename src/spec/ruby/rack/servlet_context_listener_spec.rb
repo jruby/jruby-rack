@@ -19,9 +19,7 @@ describe RackServletContextListener do
 
   describe "contextInitialized" do
     it "should create a Rack application factory and store it in the context" do
-      pending "JRuby Java integration issue"
-      @servlet_context.should_receive(:setAttribute).with(
-        RackServletContextListener::FACTORY_KEY, an_instance_of(RackApplicationFactory))
+      @servlet_context.should_receive(:setAttribute).with(RackServletContextListener::FACTORY_KEY, @factory)
       @factory.stub!(:init)
       @listener.contextInitialized @servlet_context_event
     end
