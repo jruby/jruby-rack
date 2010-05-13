@@ -1,3 +1,31 @@
+== 0.9.8
+
+- JRUBY_RACK-21: Add logging adapter classes for commons-logging and
+  slf4j. If you use either of these logging frameworks in your app,
+  simply set 'jruby.rack.logging' to 'clogging' or 'slf4j' in either
+  web.xml as a context parameter or as a system property. (h/t
+  jcantrill)
+- Fix bug with Rack input #read(N) -- should return nil when finished
+- Fix logger config in Rails 3 railtie
+- Only load vendor/rack if Rack is not already loaded
+
+== 0.9.7
+
+- Rails 3 support
+- Fix "overrides final method getRuntime" error due to 1.5 Java class
+  generation changes
+- Upgrade to Rack 1.1.0
+- Upgrade to servlet 2.5 and jsp 2.1
+- Fix SCRIPT_NAME/PATH_INFO overlap issue with context paths (seen on
+  GAE and elsewhere)
+- JRUBY_RACK-8:  adjust LOAD_PATH if jruby_home detection failed in the current environment
+- JRUBY_RACK-23: JavaServletStore needs to be required before it can be set as the session store
+- JRUBY_RACK-26: Rack crashes on multipart/form-data bodies submitted with curl (or other headless client)
+- JRUBY_RACK-27: Rails.public_path has a trailing /
+- JRUBY_RACK-29: Incorrectly Bundling jruby-rack-0.0.7.SNAPSHOT.jar
+- JRUBY_RACK-19: Add a jruby-rack gem for finding the jar file
+- JRUBY_RACK-24: Support non-war deployment of Rails apps
+
 == 0.9.6
 
 - JRUBY_RACK-22: Ensure we call #close on the body per the Rack spec.
