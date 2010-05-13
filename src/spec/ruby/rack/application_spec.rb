@@ -37,9 +37,49 @@ describe DefaultRackApplicationFactory do
     @app_factory = DefaultRackApplicationFactory.new
   end
 
+  it "should receive a rackup script via the 'rackup' parameter" do
+    @rack_context.should_receive(:getInitParameter).with('rackup').and_return 'run MyRackApp'
+    @app_factory.init @rack_context
+    @app_factory.rackup_script.should == 'run MyRackApp'
+  end
+
+  it "should look for a rackup script via the 'rackup.path' parameter" do
+    @rack_context.should_receive(:getInitParameter).with('rackup.path').and_return '/WEB-INF/hello.ru'
+    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/hello.ru').and_return StubInputStream.new("run MyRackApp")
+    @app_factory.init @rack_context
+    @app_factory.rackup_script.should == 'run MyRackApp'
+  end
+
+  it "should look for a config.ru rackup script below /WEB-INF" do
+    @rack_context.should_receive(:getResourcePaths).with('/WEB-INF/').and_return(
+      java.util.HashSet.new(%w(app/ config/ config.ru lib/ vendor/).map{|f| "/WEB-INF/#{f}"}))
+    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/config.ru').and_return StubInputStream.new("run MyRackApp")
+    @app_factory.init @rack_context
+    @app_factory.rackup_script.should == 'run MyRackApp'
+  end
+
+  it "should look for a config.ru script in subdirectories of /WEB-INF" do
+    @rack_context.stub!(:getResourcePaths).and_return java.util.HashSet.new
+    @rack_context.should_receive(:getResourcePaths).with('/WEB-INF/').and_return(
+      java.util.HashSet.new(%w(app/ config/ lib/ vendor/).map{|f| "/WEB-INF/#{f}"}))
+    @rack_context.should_receive(:getResourcePaths).with('/WEB-INF/lib/').and_return(
+      java.util.HashSet.new(["/WEB-INF/lib/config.ru"]))
+    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/lib/config.ru').and_return StubInputStream.new("run MyRackApp")
+    @app_factory.init @rack_context
+    @app_factory.rackup_script.should == 'run MyRackApp'
+  end
+
+  it "should handle config.ru files with a coding: pragma" do
+    @rack_context.should_receive(:getInitParameter).with('rackup.path').and_return '/WEB-INF/hello.ru'
+    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/hello.ru').and_return StubInputStream.new("# coding: us-ascii\nrun MyRackApp")
+    @app_factory.init @rack_context
+    @app_factory.rackup_script.should == "# coding: us-ascii\nrun MyRackApp"
+  end
+
   describe "" do
     before :each do
       @rack_context.stub!(:getInitParameter).and_return nil
+      @rack_context.stub!(:getResourcePaths).and_return nil
       @app_factory.init @rack_context
     end
 

@@ -8,9 +8,17 @@
 package org.jruby.rack;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
@@ -30,7 +38,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public void init(RackContext rackContext) {
         this.rackContext = rackContext;
-        this.rackupScript = rackContext.getInitParameter("rackup");
+        this.rackupScript = findRackupScript();
         this.classCache = JavaEmbedUtils.createClassCache(
                 Thread.currentThread().getContextClassLoader());
         if (errorApplication == null) {
@@ -103,6 +111,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public IRubyObject createApplicationObject(Ruby runtime) {
+        if (rackupScript == null) {
+            rackContext.log("WARNING: no rackup script found. Starting empty Rack application.");
+            rackupScript = "";
+        }
         return createRackServletWrapper(runtime, rackupScript);
     }
 
@@ -184,6 +196,85 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
+    private String findConfigRuPathInSubDirectories(String path, int level) {
+        Set entries = rackContext.getResourcePaths(path);
+        if (entries != null) {
+            if (entries.contains(path + "config.ru")) {
+                return path + "config.ru";
+            }
+
+            if (level > 0) {
+                level--;
+                for (Iterator i = entries.iterator(); i.hasNext(); ) {
+                    String subpath = (String) i.next();
+                    if (subpath.endsWith("/")) {
+                        subpath = findConfigRuPathInSubDirectories(subpath, level);
+                        if (subpath != null) {
+                            return subpath;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static final Pattern CODING = Pattern.compile("coding:\\s*(\\S+)");
+
+    private String inputStreamToString(InputStream stream) {
+        if (stream == null) {
+            return null;
+        }
+
+        try {
+            StringBuilder str = new StringBuilder();
+            int c = stream.read();
+            Reader reader;
+            String coding = "UTF-8";
+            if (c == '#') {     // look for a coding: pragma
+                str.append((char) c);
+                while ((c = stream.read()) != -1 && c != 10) {
+                    str.append((char) c);
+                }
+                Matcher m = CODING.matcher(str.toString());
+                if (m.find()) {
+                    coding = m.group(1);
+                }
+            }
+
+            str.append((char) c);
+            reader = new InputStreamReader(stream, coding);
+
+            while ((c = reader.read()) != -1) {
+                str.append((char) c);
+            }
+
+            return str.toString();
+        } catch (Exception e) {
+            rackContext.log("Error reading rackup input", e);
+            return null;
+        }
+    }
+
+    private String findRackupScript() {
+        String rackup = rackContext.getInitParameter("rackup");
+        if (rackup != null) {
+            return rackup;
+        }
+
+        rackup = rackContext.getInitParameter("rackup.path");
+
+        if (rackup == null) {
+            rackup = findConfigRuPathInSubDirectories("/WEB-INF/", 1);
+        }
+
+        if (rackup != null) {
+            rackup = inputStreamToString(rackContext.getResourceAsStream(rackup));
+        }
+
+        return rackup;
+    }
+
     /** Used only for testing; not part of the public API. */
     public String verify(Ruby runtime, String script) {
         try {
@@ -196,5 +287,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /** Used only by unit tests */
     public void setErrorApplication(RackApplication app) {
         this.errorApplication = app;
+    }
+
+    /** Used only by unit tests */
+    public String getRackupScript() {
+        return rackupScript;
     }
 }
