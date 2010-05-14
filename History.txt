@@ -1,12 +1,16 @@
 == 0.9.8
 
+- Look for config.ru in either WEB-INF/config.ru or
+  WEB-INF/*/config.ru and use it for racking up the application.
+  'rackup' context parameter is still supported for embedding in
+  web.xml too.
 - JRUBY_RACK-21: Add logging adapter classes for commons-logging and
   slf4j. If you use either of these logging frameworks in your app,
   simply set 'jruby.rack.logging' to 'clogging' or 'slf4j' in either
-  web.xml as a context parameter or as a system property. (h/t
-  jcantrill)
-- Fix bug with Rack input #read(N) -- should return nil when finished
-- Fix logger config in Rails 3 railtie
+  web.xml as a context parameter or as a system property to pipe Ruby
+  logs through those frameworks (h/t jcantrill).
+- Fix bug with RackRewindableInput#read(N) -- should return nil when finished
+- Fix Rails 3 logger configuration
 - Only load vendor/rack if Rack is not already loaded
 
 == 0.9.7

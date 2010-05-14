@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>0.9.8.dev-SNAPSHOT</version>
+  <version>0.9.8</version>
   <name>JRuby-Rack</name>
   <url>http://jruby-rack.kenai.com/</url>
   <description>
@@ -18,7 +18,7 @@
 
   <issueManagement>
     <system>JIRA</system>
-    <url>http://jira.codehaus.org/browse/JRUBY</url>
+    <url>http://kenai.com/jira/browse/JRUBY_RACK</url>
   </issueManagement>
 
   <scm>
