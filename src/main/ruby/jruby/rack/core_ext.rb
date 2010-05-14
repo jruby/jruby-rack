@@ -4,21 +4,23 @@
 # See the file LICENSE.txt for details.
 #++
 
-# Monkey-patch LoadError's message to include the current $LOAD_PATH.
-# For debugging the infamous "no such file to load -- rack" and other
-# errors.
+module JRuby::Rack
+  module LoadPathDebugging
+    def initialize(*args)
+      super
+      library = args.first && args.first[/-- (.*)\z/, 1]
+      $servlet_context.log("LoadError while loading '#{library}', current path:\n " + $LOAD_PATH.join("\n "))
+    end
+  end
+end
+
+# Monkey-patch LoadError to dump out the current $LOAD_PATH upon
+# initialization. For debugging the infamous "no such file to load --
+# rack" and other errors.
 if $servlet_context &&
     ($servlet_context.getInitParameter('jruby.rack.debug.load') ||
      java.lang.System.getProperty('jruby.rack.debug.load'))
   class LoadError
-    def initialize(*args)
-      super
-      @path = $LOAD_PATH.dup
-    end
-
-    def message
-      $servlet_context.log("Current path:\n" + @path.join("\n"))
-      super
-    end
+    include JRuby::Rack::LoadPathDebugging
   end
 end
