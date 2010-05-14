@@ -1,3 +1,7 @@
+== 0.9.9
+
+- 0.9.8 broke Rubygem's custom require
+
 == 0.9.8
 
 - Look for config.ru in either WEB-INF/config.ru or
