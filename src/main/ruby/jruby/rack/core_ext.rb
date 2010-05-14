@@ -8,7 +8,13 @@
 # For debugging the infamous "no such file to load -- rack" and other
 # errors.
 class LoadError
+  def initialize(*args)
+    super
+    @path = $LOAD_PATH.dup
+  end
+
   def message
-    super + "\ncurrent path:\n" + $LOAD_PATH.join("\n")
+    $servlet_context.log("Current path:\n" + @path.join("\n")) if $servlet_context
+    super
   end
 end
