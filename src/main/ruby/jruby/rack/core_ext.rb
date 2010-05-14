@@ -7,14 +7,18 @@
 # Monkey-patch LoadError's message to include the current $LOAD_PATH.
 # For debugging the infamous "no such file to load -- rack" and other
 # errors.
-class LoadError
-  def initialize(*args)
-    super
-    @path = $LOAD_PATH.dup
-  end
+if $servlet_context &&
+    ($servlet_context.getInitParameter('jruby.rack.debug.load') ||
+     java.lang.System.getProperty('jruby.rack.debug.load'))
+  class LoadError
+    def initialize(*args)
+      super
+      @path = $LOAD_PATH.dup
+    end
 
-  def message
-    $servlet_context.log("Current path:\n" + @path.join("\n")) if $servlet_context
-    super
+    def message
+      $servlet_context.log("Current path:\n" + @path.join("\n"))
+      super
+    end
   end
 end
