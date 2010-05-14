@@ -1,3 +1,10 @@
+== 1.0.0
+
+- Might as well go to 1.0. We've been used in production code for a
+  while now.
+- Turns out the LoadError path dumping is pretty annoying. Rearrange
+  the code and have it only activated by 'jruby.rack.debug.load'.
+
 == 0.9.9
 
 - 0.9.8 broke Rubygem's custom require
