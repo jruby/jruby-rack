@@ -5,6 +5,7 @@
 #++
 
 require File.dirname(__FILE__) + '/../spec_helper'
+require 'jruby/rack'
 
 describe JRuby::Rack::LoadPathDebugging do
   before :each do
