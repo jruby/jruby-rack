@@ -168,6 +168,9 @@ task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
               "target/gem/lib/jruby/rack/version.rb"] do |t|
   cp FileList["History.txt", "LICENSE.txt", "README.md"], "target/gem"
   cp t.prerequisites.first, "target/gem/lib"
+  if (jars = FileList["target/gem/lib/*.jar"].to_a).size > 1
+    abort "Too many jars! #{jars.map{|j| File.basename(j)}.inspect}\nRun a clean build first"
+  end
   Dir.chdir("target/gem") do
     gemspec = Gem::Specification.new do |s|
       s.name = %q{jruby-rack}

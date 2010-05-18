@@ -1,3 +1,7 @@
+== 1.0.1
+
+- 1.0.0 release had a packaging snafu. Too many releases in too short a timespan
+
 == 1.0.0
 
 - Might as well go to 1.0. We've been used in production code for a
