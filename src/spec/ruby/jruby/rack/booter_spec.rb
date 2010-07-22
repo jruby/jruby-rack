@@ -66,7 +66,15 @@ describe JRuby::Rack::Booter do
     ENV['RACK_ENV'].should == "production"
   end
 
-  it "should set Gem.path to the value of gem_path" do
+  it "should prepend gem_path to ENV['GEM_PATH']  " do
+    ENV['GEM_PATH'] = '/other/gems'
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
+    create_booter.boot!
+    ENV['GEM_PATH'].should == "/blah/gems#{File::PATH_SEPARATOR}/other/gems"
+  end
+
+  it "should set ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
+    ENV['GEM_PATH'] = nil
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
     create_booter.boot!
     ENV['GEM_PATH'].should == "/blah/gems"

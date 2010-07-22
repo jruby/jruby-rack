@@ -31,11 +31,13 @@ Spec::Runner.configure do |config|
   end
 
   config.before :each do
+    @gem_path = ENV['GEM_PATH']
     mock_servlet_context
     @pwd = Dir.getwd
   end
 
   config.after :each do
+    ENV['GEM_PATH'] = @gem_path
     Dir.chdir(@pwd) unless Dir.getwd == @pwd
   end
 end

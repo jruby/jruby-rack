@@ -18,7 +18,11 @@ module JRuby::Rack
     def boot!
       adjust_load_path
       ENV['RACK_ENV'] = @rack_env
-      ENV['GEM_PATH'] = layout.gem_path
+      if ENV['GEM_PATH']
+        ENV['GEM_PATH'] = layout.gem_path + File::PATH_SEPARATOR + ENV['GEM_PATH']
+      else
+        ENV['GEM_PATH'] = layout.gem_path
+      end
       layout.change_working_directory if layout.respond_to?(:change_working_directory)
       require 'vendor/rack' unless defined?(::Rack::VERSION) # already loaded?
     end
