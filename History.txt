@@ -1,3 +1,8 @@
+== 1.0.2
+
+- Upgrade to Rack 1.2.1 (required for Rails 3 RC)
+- Retain any GEM_PATH that's set in the environment
+
 == 1.0.1
 
 - 1.0.0 release had a packaging snafu. Too many releases in too short a timespan
