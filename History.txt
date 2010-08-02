@@ -4,6 +4,8 @@
 - Retain any GEM_PATH that's set in the environment
 - Fixed XML Schema Location definition for jsptaglib for JBoss 6
   (NAKAMURA Hiroshi)
+- JRUBY_RACK-33: Fix RackFilter to only append .html to path info if
+  the resource exists (thanks Patrick Cheng)
 
 == 1.0.1
 

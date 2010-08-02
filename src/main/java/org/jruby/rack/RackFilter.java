@@ -28,6 +28,7 @@ import org.jruby.rack.servlet.ServletRackContext;
  * @author nicksieger
  */
 public class RackFilter implements Filter {
+    private RackContext context;
     private ServletDispatcher dispatcher;
 
     /** Default constructor for servlet container */
@@ -35,13 +36,15 @@ public class RackFilter implements Filter {
     }
 
     /** Dependency-injected constructor for testing */
-    public RackFilter(ServletDispatcher disp) {
-        dispatcher = disp;
+    public RackFilter(ServletDispatcher disp, RackContext context) {
+        this.context = context;
+        this.dispatcher = disp;
     }
 
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
-        dispatcher = new DefaultServletDispatcher(new ServletRackContext(config.getServletContext()));
+        this.context = new ServletRackContext(config.getServletContext());
+        this.dispatcher = new DefaultServletDispatcher(this.context);
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -114,13 +117,19 @@ public class RackFilter implements Filter {
         if (pathInfo != null) {
             uri += pathInfo;
         }
-        if (uri.lastIndexOf('.') <= uri.lastIndexOf('/')) {
 
+        if (uri.lastIndexOf('.') <= uri.lastIndexOf('/')) {
             final String maybeIndex;
             if (uri.endsWith("/")) {
                 maybeIndex = "index";
             } else {
                 maybeIndex = "";
+            }
+
+            uri += maybeIndex + ".html";
+
+            if (!resourceExists(uri)) {
+                return httpRequest;
             }
 
             if (pathInfo != null) {
@@ -140,5 +149,13 @@ public class RackFilter implements Filter {
             }
         }
         return httpRequest;
+    }
+
+    private boolean resourceExists(String path) {
+        try {
+            return context.getResource(path) != null;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
