@@ -13,7 +13,7 @@
   </description>
 
   <properties>
-    <jruby.version>1.5.0</jruby.version>
+    <jruby.version>1.5.1</jruby.version>
   </properties>
 
   <issueManagement>
