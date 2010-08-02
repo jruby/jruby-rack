@@ -2,6 +2,8 @@
 
 - Upgrade to Rack 1.2.1 (required for Rails 3 RC)
 - Retain any GEM_PATH that's set in the environment
+- Fixed XML Schema Location definition for jsptaglib for JBoss 6
+  (NAKAMURA Hiroshi)
 
 == 1.0.1
 
