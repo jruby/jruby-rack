@@ -20,12 +20,12 @@ class JRuby::RackRewindableInput
 end
 
 def stream_input
-  java.io.ByteArrayInputStream.new("hello\ngoodbye".to_java_bytes)
+  java.io.ByteArrayInputStream.new("hello\r\ngoodbye".to_java_bytes)
 end
 
 def it_should_behave_like_rack_input
   it "should respond to gets and return a line" do
-    @input.gets.should == "hello\n"
+    @input.gets.should == "hello\r\n"
     @input.gets.should == "goodbye"
   end
 
@@ -35,7 +35,7 @@ def it_should_behave_like_rack_input
   end
 
   it "should respond to read" do
-    @input.read.should == "hello\ngoodbye"
+    @input.read.should == "hello\r\ngoodbye"
   end
 
   it "should read a specified amount" do
@@ -45,7 +45,7 @@ def it_should_behave_like_rack_input
   it "should read into a provided buffer" do
     buf = ""
     @input.read(nil, buf)
-    buf.should == "hello\ngoodbye"
+    buf.should == "hello\r\ngoodbye"
   end
 
   it "should read a specified amount into a provided buffer" do
@@ -63,7 +63,7 @@ def it_should_behave_like_rack_input
   it "should respond to each and yield lines" do
     lines = []
     @input.each {|l| lines << l}
-    lines.should == ["hello\n", "goodbye"]
+    lines.should == ["hello\r\n", "goodbye"]
   end
 
 end
@@ -74,7 +74,7 @@ def it_should_behave_like_rewindable_rack_input
     @input.read
     @input.read.should == ""
     @input.rewind
-    @input.read.should == "hello\ngoodbye"
+    @input.read.should == "hello\r\ngoodbye"
   end
 end
 
