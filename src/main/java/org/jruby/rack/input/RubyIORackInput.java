@@ -19,6 +19,7 @@ public class RubyIORackInput implements RackInput {
 
     public RubyIORackInput(Ruby runtime, RubyIO io) {
         this.io = io;
+        this.io.binmode();
     }
 
     public IRubyObject gets(ThreadContext context) {
