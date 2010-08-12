@@ -23,6 +23,7 @@ module JRuby::Rack
       else
         ENV['GEM_PATH'] = layout.gem_path
       end
+      load_settings_from_init_rb
       layout.change_working_directory if layout.respond_to?(:change_working_directory)
       require 'vendor/rack' unless defined?(::Rack::VERSION) # already loaded?
     end
@@ -71,6 +72,23 @@ module JRuby::Rack
         $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
         $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/1.8'
         $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/shared'
+      end
+    end
+
+    def load_settings_from_init_rb
+      %w(META WEB).each do |where|
+        url = @rack_context.getResource("/#{where}-INF/init.rb")
+        next unless url
+        code = begin
+                 stream = url.openStream
+                 stream.to_io.read
+               rescue Exception
+                 next
+               ensure
+                 stream.close rescue nil
+               end
+        logger.info("* Loading from #{url.path}:\n#{code}") if LoadPathDebugging.enabled?
+        eval code, nil, url.path
       end
     end
   end

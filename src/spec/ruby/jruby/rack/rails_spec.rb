@@ -15,6 +15,7 @@ describe JRuby::Rack::RailsBooter do
   before :each do
     @rack_context.stub!(:getInitParameter).and_return nil
     @rack_context.stub!(:getRealPath).and_return "/"
+    @rack_context.stub!(:getResource).and_return nil
   end
 
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
@@ -97,6 +98,7 @@ describe JRuby::Rack::RailsBooter do
       @rack_context.stub!(:getInitParameter).and_return nil
       @rack_context.stub!(:getRealPath).and_return "/"
       @rack_context.stub!(:getContextPath).and_return "/foo"
+      @rack_context.stub!(:getResource).and_return nil
       create_booter(JRuby::Rack::RailsBooter) do |b|
         b.app_path = File.expand_path("../../../rails", __FILE__)
       end.boot!
@@ -140,6 +142,7 @@ describe JRuby::Rack::RailsBooter do
       $servlet_context = @servlet_context
       @rack_context.stub!(:getInitParameter).and_return nil
       @rack_context.stub!(:getRealPath).and_return "/"
+      @rack_context.stub!(:getResource).and_return nil
       create_booter(JRuby::Rack::RailsBooter) do |b|
         b.app_path = File.expand_path("../../../rails3", __FILE__)
       end.boot!

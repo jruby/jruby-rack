@@ -12,6 +12,8 @@ describe JRuby::Rack::Booter do
   before :each do
     @rack_context.stub!(:getInitParameter).and_return nil
     @rack_context.stub!(:getRealPath).and_return "/"
+    @rack_context.stub!(:getResource).and_return nil
+    $loaded_init_rb = nil
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
@@ -84,6 +86,18 @@ describe JRuby::Rack::Booter do
     create_booter.boot!
     @rack_context.should_receive(:log).with(/hello/)
     @booter.logger.info "hello"
+  end
+
+  it "should load and execute ruby code in META-INF/init.rb if it exists" do
+    @rack_context.should_receive(:getResource).with("/META-INF/init.rb").and_return java.net.URL.new("file:#{File.expand_path('../init.rb', __FILE__)}")
+    create_booter.boot!
+    $loaded_init_rb.should == true
+  end
+
+  it "should load and execute ruby code in WEB-INF/init.rb if it exists" do
+    @rack_context.should_receive(:getResource).with("/WEB-INF/init.rb").and_return java.net.URL.new("file:#{File.expand_path('../init.rb', __FILE__)}")
+    create_booter.boot!
+    $loaded_init_rb.should == true
   end
 end
 
