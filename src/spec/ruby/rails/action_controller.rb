@@ -26,6 +26,9 @@ module ActionController
         ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS[:database_manager] =
           store.is_a?(Symbol) ? CGI::Session.const_get(store == :drb_store ? "DRbStore" : camelized_store) : store
       end
+      def config
+        @_config ||= OpenStruct.new
+      end
     end
   end
 end

@@ -27,6 +27,7 @@ module JRuby::Rack
       if path && !path.empty?
         ENV['RAILS_RELATIVE_URL_ROOT'] = path
         app.config.action_controller.relative_url_root = path
+        ActionController::Base.config.relative_url_root = path
       end
     end
   end
