@@ -1,3 +1,9 @@
+== 1.0.3
+
+- JRUBY-4892: Fix IO collapsing \r\n to \n on Windows
+- Fix setting of relative_url_root in Rails 3
+- Recognize META-INF/init.rb and WEB-INF/init.rb as init scripts.
+
 == 1.0.2
 
 - Upgrade to Rack 1.2.1 (required for Rails 3 RC)
