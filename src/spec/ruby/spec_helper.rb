@@ -10,6 +10,8 @@ require 'spec'
 # add to load path for stubbed out action_controller, railtie classes
 $LOAD_PATH.unshift File.expand_path('../rails', __FILE__)
 
+WD_START = Dir.getwd
+
 Spec::Runner.configure do |config|
   def mock_servlet_context
     @rack_context ||= mock "rack context"
@@ -31,14 +33,14 @@ Spec::Runner.configure do |config|
   end
 
   config.before :each do
-    @gem_path = ENV['GEM_PATH']
+    @env_save = ENV.to_hash
     mock_servlet_context
-    @pwd = Dir.getwd
   end
 
   config.after :each do
-    ENV['GEM_PATH'] = @gem_path
-    Dir.chdir(@pwd) unless Dir.getwd == @pwd
+    (ENV.keys - @env_save.keys).each {|k| ENV.delete k}
+    @env_save.each {|k,v| ENV[k] = v}
+    Dir.chdir(WD_START) unless Dir.getwd == WD_START
   end
 end
 
