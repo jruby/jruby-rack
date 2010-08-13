@@ -12,13 +12,6 @@ require 'cgi/session/java_servlet_store'
 class ::CGI::Session::PStore; end
 
 describe JRuby::Rack::RailsBooter do
-  before :each do
-    @rack_context.stub!(:getInitParameter).and_return nil
-    @rack_context.stub!(:getRealPath).and_return "/"
-    @rack_context.stub!(:getResource).and_return nil
-    @rack_context.stub!(:getContextPath).and_return "/"
-  end
-
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
@@ -108,10 +101,7 @@ describe JRuby::Rack::RailsBooter do
     before :all do
       mock_servlet_context
       $servlet_context = @servlet_context
-      @rack_context.stub!(:getInitParameter).and_return nil
-      @rack_context.stub!(:getRealPath).and_return "/"
-      @rack_context.stub!(:getContextPath).and_return "/foo"
-      @rack_context.stub!(:getResource).and_return nil
+      @rack_context.should_receive(:getContextPath).and_return "/foo"
       create_booter(JRuby::Rack::RailsBooter) do |b|
         b.app_path = File.expand_path("../../../rails", __FILE__)
       end.boot!
@@ -151,10 +141,6 @@ describe JRuby::Rack::RailsBooter do
     before :all do
       mock_servlet_context
       $servlet_context = @servlet_context
-      @rack_context.stub!(:getInitParameter).and_return nil
-      @rack_context.stub!(:getRealPath).and_return "/"
-      @rack_context.stub!(:getResource).and_return nil
-      @rack_context.stub!(:getContextPath).and_return "/"
       create_booter(JRuby::Rack::RailsBooter) do |b|
         b.app_path = File.expand_path("../../../rails3", __FILE__)
       end.boot!

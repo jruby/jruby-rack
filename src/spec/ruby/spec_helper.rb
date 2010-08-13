@@ -19,6 +19,9 @@ Spec::Runner.configure do |config|
     [@rack_context, @servlet_context].each do |context|
       context.stub!(:log)
       context.stub!(:getInitParameter).and_return nil
+      context.stub!(:getRealPath).and_return "/"
+      context.stub!(:getResource).and_return nil
+      context.stub!(:getContextPath).and_return "/"
     end
     @servlet_config ||= mock("servlet config")
     @servlet_config.stub!(:getServletName).and_return("A Servlet")
@@ -41,6 +44,7 @@ Spec::Runner.configure do |config|
     (ENV.keys - @env_save.keys).each {|k| ENV.delete k}
     @env_save.each {|k,v| ENV[k] = v}
     Dir.chdir(WD_START) unless Dir.getwd == WD_START
+    $servlet_context = nil
   end
 end
 

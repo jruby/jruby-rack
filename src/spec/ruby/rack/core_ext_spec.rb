@@ -15,10 +15,6 @@ describe JRuby::Rack::LoadPathDebugging do
     end
   end
 
-  after :each do
-    $servlet_context = nil
-  end
-
   it "should dump a message to the servlet context log with the current load path" do
     @servlet_context.should_receive(:log).and_return do |msg|
       msg.should =~ /LoadError while loading 'rack'/

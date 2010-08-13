@@ -18,10 +18,6 @@ describe JRuby::Rack::Queues do
     @registry = JRuby::Rack::Queues::QueueRegistry.new
   end
 
-  after :each do
-    $servlet_context = nil
-  end
-
   def mock_connection
     conn_factory = mock "connection factory"
     @queue_manager.should_receive(:getConnectionFactory).and_return conn_factory

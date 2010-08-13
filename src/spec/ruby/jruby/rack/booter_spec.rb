@@ -10,9 +10,6 @@ require 'jruby/rack/booter'
 
 describe JRuby::Rack::Booter do
   before :each do
-    @rack_context.stub!(:getInitParameter).and_return nil
-    @rack_context.stub!(:getRealPath).and_return "/"
-    @rack_context.stub!(:getResource).and_return nil
     $loaded_init_rb = nil
   end
 
