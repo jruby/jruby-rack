@@ -16,6 +16,7 @@ describe JRuby::Rack::RailsBooter do
     @rack_context.stub!(:getInitParameter).and_return nil
     @rack_context.stub!(:getRealPath).and_return "/"
     @rack_context.stub!(:getResource).and_return nil
+    ENV.delete 'RAILS_ENV'
   end
 
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
@@ -29,6 +30,13 @@ describe JRuby::Rack::RailsBooter do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
     create_booter(JRuby::Rack::RailsBooter).boot!
     @booter.app_path.should == "./WEB-INF"
+  end
+
+  it "should leave ENV['RAILS_ENV'] as is if it was already set" do
+    ENV['RAILS_ENV'] = 'staging'
+    create_booter(JRuby::Rack::RailsBooter).boot!
+    ENV['RAILS_ENV'].should == 'staging'
+    @booter.rails_env.should == "staging"
   end
 
   it "should determine RAILS_ENV from the 'rails.env' init parameter" do

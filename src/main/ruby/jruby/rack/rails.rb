@@ -13,7 +13,7 @@ module JRuby::Rack
 
     def initialize(rack_context = nil)
       super
-      @rails_env = @rack_context.getInitParameter('rails.env') || 'production'
+      @rails_env = ENV['RAILS_ENV'] || @rack_context.getInitParameter('rails.env') || 'production'
     end
 
     def boot!
