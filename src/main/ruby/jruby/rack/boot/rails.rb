@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'rack/adapter/rails'
+require 'jruby/rack/rails'
 
 module JRuby::Rack
   self.booter = RailsBooter.new

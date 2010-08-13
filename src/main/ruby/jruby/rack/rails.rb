@@ -36,6 +36,7 @@ module JRuby::Rack
     module Rails2Environment
       def to_app
         load_environment
+        require 'rack/adapter/rails'
         RailsRequestSetup.new(::Rack::Adapter::Rails.new(options), self)
       end
 
