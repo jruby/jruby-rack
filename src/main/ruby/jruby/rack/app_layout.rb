@@ -93,8 +93,9 @@ module JRuby
     class RailsFilesystemLayout < AppLayout
       def initialize(context)
         super(context)
-        @public_uri = context.getInitParameter("public.root")
-        @app_uri = context.getInitParameter("rails.root")
+        @public_uri = context.getInitParameter("public.root") || "./public"
+        @app_uri = context.getInitParameter("rails.root") || "."
+        @gem_uri = context.getInitParameter("gem.path") || context.getInitParameter("gem.home")
       end
 
       # do not use context.getRealPath
