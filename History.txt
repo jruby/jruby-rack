@@ -1,3 +1,8 @@
+== 1.0.4
+
+- Make sane defaults for app/gem/public paths when using
+  RailsFilesystemLayout (Kristian Meier)
+
 == 1.0.3
 
 - JRUBY-4892: Fix IO collapsing \r\n to \n on Windows
