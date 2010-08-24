@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) 2010 Engine Yard, Inc.
  * Copyright (c) 2007-2009 Sun Microsystems, Inc.
  * This source code is available under the MIT license.
@@ -97,6 +97,9 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     public void finishedWithApplication(RackApplication app) {
         synchronized (applicationPool) {
             if (maximum != null && applicationPool.size() >= maximum) {
+                return;
+            }
+            if (applicationPool.contains(app)){
                 return;
             }
             applicationPool.add(app);
