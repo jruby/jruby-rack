@@ -218,6 +218,16 @@ describe PoolingRackApplicationFactory do
     @pool.getApplicationPool.size.should == 1
   end
 
+  it "should not add an application back into the pool if it already exists" do
+    @factory.should_receive(:init).with(@rack_context)
+    @rack_context.should_receive(:getInitParameter).with("jruby.max.runtimes").and_return "4"
+    @pool.init(@rack_context)
+    rack_application_1 = mock("app1")
+    @pool.finishedWithApplication rack_application_1
+    @pool.finishedWithApplication rack_application_1
+    @pool.getApplicationPool.size.should == 1
+  end
+
   it "should also recognize the jruby.pool.minIdle and jruby.pool.maxActive parameters from Goldspike" do
     @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
