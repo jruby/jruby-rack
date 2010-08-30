@@ -100,12 +100,12 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         RubyInstanceConfig config = new RubyInstanceConfig();
         config.setClassCache(classCache);
         try { // try to set jruby home to jar file path
-             String binjruby = RubyInstanceConfig.class.getResource(
-                    "/META-INF/jruby.home/bin/jruby").toURI().getSchemeSpecificPart();
-             if (binjruby.indexOf(".jar!") != -1 && binjruby.indexOf("file:") != 0) {
-                 binjruby = "file:"+binjruby;
+             String binfile = RubyInstanceConfig.class.getResource(
+                    "/META-INF/jruby.home/bin/jirb").toURI().getSchemeSpecificPart();
+             if (binfile.indexOf(".jar!") != -1 && binfile.indexOf("file:") != 0) {
+                 binfile = "file:"+binfile;
              }
-             config.setJRubyHome(binjruby.substring(0, binjruby.length() - 10));
+             config.setJRubyHome(binfile.substring(0, binfile.length() - 10));
         } catch (Exception e) { }
         return config;
     }
