@@ -105,7 +105,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
              if (binfile.indexOf(".jar!") != -1 && binfile.indexOf("file:") != 0) {
                  binfile = "file:"+binfile;
              }
-             config.setJRubyHome(binfile.substring(0, binfile.length() - 10));
+             config.setJRubyHome(binfile.substring(0, binfile.length() - "/bin/jirb".length()));
         } catch (Exception e) { }
         return config;
     }
