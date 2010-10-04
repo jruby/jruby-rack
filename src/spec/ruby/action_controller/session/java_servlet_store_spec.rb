@@ -5,8 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.dirname(__FILE__) + '/../../spec_helper'
-
+require 'spec_helper'
 require 'action_controller'
 
 describe "ActionController::Session::JavaServletStore" do

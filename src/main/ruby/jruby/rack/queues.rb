@@ -198,5 +198,4 @@ module JRuby
   end
 end
 
-require 'jruby/rack/queues/message_subscriber'
-require 'jruby/rack/queues/message_publisher'
+require 'jruby/rack/queues/pubsub'

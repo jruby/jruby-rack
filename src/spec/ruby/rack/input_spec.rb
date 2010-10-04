@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.dirname(__FILE__) + '/../spec_helper'
+require 'spec_helper'
 # Force the class to be loaded on the Ruby side
 require 'jruby'
 Java::org.jruby.rack.input.RackRewindableInput.getRackRewindableInputClass(JRuby.runtime)

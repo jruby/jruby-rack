@@ -112,7 +112,7 @@ task :speconly do
     spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
     opts.push *FileList[spec].to_a
     ENV['CLASSPATH'] = test_classpath.join(File::PATH_SEPARATOR)
-    ruby "-S", "spec", *opts
+    ruby "-Isrc/spec/ruby", "-S", "spec", *opts
   end
 end
 

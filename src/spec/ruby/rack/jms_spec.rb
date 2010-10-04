@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.dirname(__FILE__) + '/../spec_helper'
+require 'spec_helper'
 
 import org.jruby.rack.jms.QueueContextListener
 import org.jruby.rack.jms.QueueManager

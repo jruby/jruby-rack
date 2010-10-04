@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.dirname(__FILE__) + '/../../spec_helper'
+require 'spec_helper'
 require 'jruby/rack/errors'
 
 describe JRuby::Rack::Errors do

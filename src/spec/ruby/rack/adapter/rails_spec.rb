@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.dirname(__FILE__) + '/../../spec_helper'
+require 'spec_helper'
 require 'vendor/rack'
 require 'rack/adapter/rails'
 require 'rack/adapter/rails_cgi'
