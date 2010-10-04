@@ -25,9 +25,8 @@ describe RackServletContextListener do
     end
 
     it "should initialize it" do
-      pending "JRuby Java integration issue"
       @servlet_context.stub!(:setAttribute)
-      @factory.should_receive(:init).with(an_instance_of(RackContext))
+      @factory.should_receive(:init)
       @listener.contextInitialized @servlet_context_event
     end
 
