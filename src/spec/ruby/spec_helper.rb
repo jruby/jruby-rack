@@ -7,15 +7,20 @@
 
 require 'java'
 require 'spec'
+
 # add to load path for stubbed out action_controller, railtie classes
 $LOAD_PATH.unshift File.expand_path('../rails', __FILE__)
 
 WD_START = Dir.getwd
 
+java_import org.jruby.rack.RackContext
+java_import org.jruby.rack.RackServletContextListener
+java_import javax.servlet.ServletContext
+
 Spec::Runner.configure do |config|
   def mock_servlet_context
-    @rack_context ||= mock "rack context"
-    @servlet_context ||= mock "servlet context"
+    @rack_context ||= RackContext.impl {}
+    @servlet_context ||= ServletContext.impl {}
     [@rack_context, @servlet_context].each do |context|
       context.stub!(:log)
       context.stub!(:getInitParameter).and_return nil
@@ -48,8 +53,6 @@ Spec::Runner.configure do |config|
   end
 end
 
-import org.jruby.rack.RackServletContextListener unless defined?(RackServletContextListener)
-import org.jruby.rack.RackContext unless defined?(RackContext)
 
 class StubInputStream < java.io.InputStream
   def initialize(val = "")
