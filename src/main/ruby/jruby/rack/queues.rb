@@ -95,7 +95,15 @@ module JRuby
 
         def setup_rails_dispatcher_prepare_hook
           if defined?(::Rails)
-            begin
+            begin               # Rails 3
+              require 'action_dispatch'
+              ActionDispatch::Callbacks.to_prepare do
+                ::JRuby::Rack::Queues::Registry.clear_listeners
+              end
+              return
+            rescue Exception => e
+            end
+            begin               # Rails 2
               require 'dispatcher'
               dispatcher = defined?(ActionController::Dispatcher) &&
                 ActionController::Dispatcher || defined?(::Dispatcher) && ::Dispatcher
