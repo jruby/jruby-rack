@@ -159,6 +159,27 @@ web.xml.
   to 'production'.
 - `merb.environment`: Specify the merb environment to run. Defaults to
   `production`.
+- `jruby.rack.logging`: Specify the logging device to use. Defaults to
+  `servlet_context`. See below.
+
+## Logging
+
+JRuby-Rack sets up a delegate logger for Rails that sends logging
+output to `javax.servlet.ServletContext#log` by default. If you wish
+to use a different logging system, set the `jruby.rack.logging`
+context parameter as follows:
+
+- `servlet_context` (default): Sends log messages to the servlet
+  context.
+- `stdout`: Sends log messages to the standard output stream
+  `System.out`.
+- `commons_logging`: Sends log messages to Apache commons-logging. You
+  still need to configure commons-logging with additional details.
+- `slf4j`: Sends log messages to SLF4J. Again, SLF4J configuration is
+  left up to you.
+
+For those loggers that require a specific named logger, set it in the
+`jruby.rack.logging.name` context parameter.
 
 # Building
 
