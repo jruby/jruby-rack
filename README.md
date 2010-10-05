@@ -1,7 +1,5 @@
 # JRuby-Rack
 
-- http://jruby-rack.kenai.com/
-
 JRuby-Rack is a lightweight adapter for the Java servlet environment
 that allows any Rack-based application to run unmodified in a Java
 servlet container. JRuby-Rack supports Rails, Merb, as well as any
@@ -12,13 +10,19 @@ For more information on Rack, visit http://rack.rubyforge.org.
 # Getting Started
 
 The easiest way to use JRuby-Rack is to get [Warbler][1]. Warbler
-bundles the latest version of JRuby-Rack and ensures it gets placed in
+depends on the latest version of JRuby-Rack and ensures it gets placed in
 your WAR file when it gets built.
 
-If you're assembling your own WAR using other means, you'll need to
-drop the [latest JRuby-Rack jar][2] into the WEB-INF/lib directory and
-configure the RackFilter in your application's web.xml. Example
-web.xml snippets are as follows.
+If you're assembling your own WAR using other means, you can install the
+`jruby-rack` gem. It provides a method to located the jruby-rack jar file:
+
+    require 'fileutils'
+    require 'jruby-rack'
+    FileUtils.cp JRubyJars.jruby_rack_jar_path, '.'
+
+Otherwise you'll need to download the [latest JRuby-Rack jar][2], drop
+it into the WEB-INF/lib directory and configure the RackFilter in your
+application's web.xml. Example web.xml snippets are as follows.
 
 ## For Rails
 
@@ -297,5 +301,5 @@ The war should be ready to deploy to your Java application server.
 - Chris Neukirchen, for Rack
 - Sun Microsystems, for early project support
 
-[1]: http://warbler.kenai.com/pages/Home
+[1]: http://caldersphere.rubyforge.org/warbler
 [2]: http://repository.codehaus.org/org/jruby/rack/jruby-rack/
