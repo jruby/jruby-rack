@@ -11,7 +11,7 @@ module JRuby::Rack::Queues
   # Include or extend from this module to subscribe to a queue.
   #
   #     class MySubscriber
-  #       extend MessageSubscriber
+  #       extend JRuby::Rack::Queues::MessageSubscriber
   #
   #       subscribes_to "MyQ"
   #
@@ -24,7 +24,7 @@ module JRuby::Rack::Queues
   # message dispatching:
   #
   #     class MySubscriber
-  #       extend MessageSubscriber
+  #       extend JRuby::Rack::Queues::MessageSubscriber
   #
   #       subscribes_to "MyQ" do |message|
   #         self.new.dispatch msg
@@ -52,7 +52,7 @@ module JRuby::Rack::Queues
   # method:
   #
   #     class MyShinyObject
-  #       acts_as_publisher "ShinyQ"
+  #       include JRuby::Rack::Queues::MessagePublisher::To("ShinyQ")
   #     end
   #     obj = MyShinyObject.new
   #     obj.publish_message "hi" # => sends to "ShinyQ"
