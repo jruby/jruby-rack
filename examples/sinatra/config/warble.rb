@@ -19,7 +19,7 @@ Warbler::Config.new do |config|
   # own versions if you directly set the value
   # config.java_libs += FileList["lib/java/*.jar"]
   if ENV['JRUBY_RACK_SRC']
-    config.java_libs.delete_if {|f| f =~ /jruby-rack/}
+    config.java_libs.delete_if {|f| f =~ /jruby-rack[^\/]+\.jar/}
     config.java_libs += FileList["../../target/jruby-rack*.jar"]
   end
 
