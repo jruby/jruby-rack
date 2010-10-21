@@ -2,6 +2,16 @@
 
 - Make sane defaults for app/gem/public paths when using
   RailsFilesystemLayout (Kristian Meier)
+- Add 'jruby.rack.slash.index' init param that forces / =>
+  /index.html. Fixes JRUBY_RACK-35 and makes Jetty 6 work without
+  having to configure dirAllowed in Jetty's default servlet.
+- Switch to mostly relying on request URI and not so much servlet
+  path/path info. Makes Tomcat 7 work.
+- Added rails.relative_url_append context parameter. This can be set in
+  your web.xml or similar to append a string to the end of the context
+  path when the RAILS_RELATIVE_URL_ROOT is set. This allows you to
+  host your rails app in a location other than the base context path
+  of your application. (Ben Rosenblum)
 
 == 1.0.3
 
