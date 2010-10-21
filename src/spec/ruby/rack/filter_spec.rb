@@ -115,4 +115,21 @@ describe RackFilter do
     @response.should_receive(:setStatus).ordered.with(200)
     @filter.doFilter(@request, @response, @chain)
   end
+
+  it "should convert / to /index.html unconditionally if jruby.rack.slash.index is set" do
+    servlet_context = mock "servlet context"
+    config = mock "filter config"
+    config.stub!(:getServletContext).and_return servlet_context
+    servlet_context.stub!(:getInitParameter).and_return nil
+    servlet_context.stub!(:getInitParameter).with("jruby.rack.slash.index").and_return "true"
+    @filter.init(config)
+    stub_request("/")
+    @chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+      req.getServletPath.should == "/some/uri/index.html"
+      req.getPathInfo.should == ""
+      resp.setStatus(200)
+    end
+    @response.should_receive(:setStatus).ordered.with(200)
+    @filter.doFilter(@request, @response, @chain)
+  end
 end

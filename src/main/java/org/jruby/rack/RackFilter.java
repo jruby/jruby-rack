@@ -8,12 +8,7 @@
 package org.jruby.rack;
 
 import java.io.IOException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -30,21 +25,28 @@ import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 public class RackFilter implements Filter {
     private RackContext context;
     private RackDispatcher dispatcher;
+    private boolean convertSlashToIndex = false;
 
     /** Default constructor for servlet container */
     public RackFilter() {
     }
 
     /** Dependency-injected constructor for testing */
-    public RackFilter(RackDispatcher disp, RackContext context) {
+    public RackFilter(RackDispatcher dispatcher, RackContext context) {
         this.context = context;
-        this.dispatcher = disp;
+        this.dispatcher = dispatcher;
     }
 
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
         this.context = new ServletRackContext(config.getServletContext());
         this.dispatcher = new DefaultRackDispatcher(this.context);
+        this.convertSlashToIndex = shouldConvertSlashToIndex(config.getServletContext());
+    }
+
+    private boolean shouldConvertSlashToIndex(ServletContext context) {
+        return this.context.getInitParameter("jruby.rack.slash.index") != null
+                || context.getServerInfo().contains("jetty");  // JRUBY_RACK-35
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -115,12 +117,13 @@ public class RackFilter implements Filter {
         String path                     = env.getPathInfo();
 
         if (path.lastIndexOf('.') <= path.lastIndexOf('/')) {
-            if (path.endsWith("/")) {
+            boolean endsWithSlash = path.endsWith("/");
+            if (endsWithSlash) {
                 path += "index";
             }
             path += ".html";
 
-            if (!resourceExists(path)) {
+            if ((!endsWithSlash || !convertSlashToIndex) && !resourceExists(path)) {
                 return httpRequest;
             }
 
