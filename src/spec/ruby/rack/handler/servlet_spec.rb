@@ -245,6 +245,14 @@ describe Rack::Handler::Servlet, "create_env" do
     env["SCRIPT_NAME"].should == ""
   end
 
+  it "ignores servlet path when it is not part of the request URI" do
+    # This craziness is what happens in the default Tomcat 7 install
+    stub_env :getContextPath => "/context", :getServletPath => "/index.jsp", :getRequestURI => "/context/"
+    env = @servlet.create_lazy_env @env
+    env["SCRIPT_NAME"].should == "/context"
+    env["PATH_INFO"].should == "/"
+  end
+
   it "should include query string in the request URI" do
     stub_env :getRequestURI => "/some/path", :getQueryString => "some=query&string"
     env = @servlet.create_lazy_env @env

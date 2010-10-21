@@ -20,6 +20,11 @@ import javax.servlet.http.HttpServletRequestWrapper;
 @SuppressWarnings("deprecation")
 public class ServletRackEnvironment extends HttpServletRequestWrapper
         implements HttpServletRequest, RackEnvironment {
+    private String scriptName;
+    private String requestURI;
+    private String requestURIWithoutQuery;
+    private String pathInfo;
+
     public ServletRackEnvironment(HttpServletRequest request) {
         super(request);
     }
@@ -33,26 +38,42 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
      * @return script name
      */
     public String getScriptName() {
-        StringBuffer scriptName = new StringBuffer("");
-        if (getContextPath() != null) {
-            scriptName.append(getContextPath());
+        if (scriptName != null) {
+            return scriptName;
         }
-        return scriptName.toString().equals("/") ? "" : scriptName.toString();
+
+        StringBuffer buffer = new StringBuffer("");
+        if (getContextPath() != null) {
+            buffer.append(getContextPath());
+        }
+        scriptName =  buffer.toString().equals("/") ? "" : buffer.toString();
+        return scriptName;
     }
 
     /**
-     * Rewrite meaning of path info to be servlet path + path info.
+     * Rewrite meaning of path info to be either request URI - leading context path or
+     * servlet path + path info.
      * @return full path info
      */
     @Override public String getPathInfo() {
-        StringBuffer pathInfo = new StringBuffer("");
-        if (getServletPath() != null) {
-            pathInfo.append(getServletPath());
+        if (pathInfo != null) {
+            return pathInfo;
         }
-        if (super.getPathInfo() != null) {
-            pathInfo.append(super.getPathInfo());
+        StringBuffer buffer = new StringBuffer("");
+        if (getRequestURIWithoutQuery().length() > 0) {
+            if (getScriptName().length() > 0 && getRequestURIWithoutQuery().indexOf(getScriptName()) == 0) {
+                buffer.append(getRequestURIWithoutQuery().substring(getScriptName().length()));
+            } else {
+                buffer.append(getRequestURIWithoutQuery());
+            }
+        } else {
+            buffer.append(getServletPath());
+            if (super.getPathInfo() != null) {
+                buffer.append(super.getPathInfo());
+            }
         }
-        return pathInfo.toString();
+        pathInfo = buffer.toString();
+        return pathInfo;
     }
 
     /**
@@ -60,13 +81,33 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
      * @return
      */
     @Override public String getRequestURI() {
-        StringBuffer requestURI = new StringBuffer("");
-        if (super.getRequestURI() != null) {
-            requestURI.append(super.getRequestURI());
+        if (requestURI != null) {
+            return requestURI;
         }
+
+        StringBuffer buffer = new StringBuffer("");
+        buffer.append(getRequestURIWithoutQuery());
         if (super.getQueryString() != null) {
-            requestURI.append("?").append(super.getQueryString());
+            buffer.append("?").append(super.getQueryString());
         }
-        return requestURI.toString();
+        requestURI = buffer.toString();
+        return requestURI;
+    }
+
+    /**
+     * Return the servlet request's interpretation of request URI.
+     * Returns an empty string if the original request returned null.
+     * @return the request URI
+     */
+    public String getRequestURIWithoutQuery() {
+        if (requestURIWithoutQuery != null) {
+            return requestURIWithoutQuery;
+        }
+        if (super.getRequestURI() != null) {
+            requestURIWithoutQuery = super.getRequestURI();
+        } else {
+            requestURIWithoutQuery = "";
+        }
+        return requestURIWithoutQuery;
     }
 }

@@ -26,6 +26,7 @@ describe RackTag do
 
     @servlet_context.stub!(:getAttribute).and_return @rack_factory
     @servlet_request = mock("Servlet Request")
+    @servlet_request.stub!(:getContextPath).and_return ""
     @servlet_response = mock("Servlet Response")
 
     @writable = FakeJspWriter.new
