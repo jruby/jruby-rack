@@ -16,37 +16,37 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jruby.rack.servlet.DefaultServletDispatcher;
-import org.jruby.rack.servlet.ServletDispatcher;
 import org.jruby.rack.servlet.ServletRackContext;
+import org.jruby.rack.servlet.ServletRackEnvironment;
+import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 
 /**
  *
  * @author nicksieger
  */
 public class RackServlet extends HttpServlet {
-    private ServletDispatcher dispatcher;
+    private RackDispatcher dispatcher;
 
     /** Default ctor, used by servlet container */
     public RackServlet() {
     }
 
     /** dependency injection ctor, used by unit tests */
-    public RackServlet(ServletDispatcher dispatcher) {
+    public RackServlet(RackDispatcher dispatcher) {
         this.dispatcher = dispatcher;
     }
 
     @Override
     public void init(ServletConfig config) {
         if (dispatcher == null) {
-            dispatcher = new DefaultServletDispatcher(new ServletRackContext(config.getServletContext()));
+            dispatcher = new DefaultRackDispatcher(new ServletRackContext(config.getServletContext()));
         }
     }
 
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-        dispatcher.process(request, response);
+        dispatcher.process(new ServletRackEnvironment(request), new ServletRackResponseEnvironment(response));
     }
 
     @Override

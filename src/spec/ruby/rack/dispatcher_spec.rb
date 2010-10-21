@@ -7,13 +7,13 @@
 
 require 'spec_helper'
 
-import org.jruby.rack.servlet.DefaultServletDispatcher
+import org.jruby.rack.DefaultRackDispatcher
 
-describe DefaultServletDispatcher do
+describe DefaultRackDispatcher do
   before :each do
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
     @rack_context.should_receive(:getRackFactory).and_return @rack_factory
-    @dispatcher = DefaultServletDispatcher.new @rack_context
+    @dispatcher = DefaultRackDispatcher.new @rack_context
   end
 
   describe "process" do

@@ -22,8 +22,7 @@ describe RackFilter do
   def stub_request(path_info)
     @request = javax.servlet.http.HttpServletRequest.impl {}
     @request.stub!(:setAttribute)
-    @request.stub!(:getServletPath).and_return("/some/uri")
-    @request.stub!(:getPathInfo).and_return(path_info)
+    @request.stub!(:getRequestURI).and_return "/some/uri#{path_info}"
   end
 
   it "should dispatch the filter chain and finish if the chain resulted in a successful response" do
@@ -48,7 +47,7 @@ describe RackFilter do
     end
     @response.should_receive(:reset).ordered
     @request.should_receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
-    @dispatcher.should_receive(:process).with(@request,@response).ordered
+    @dispatcher.should_receive(:process).ordered
     @filter.doFilter(@request, @response, @chain)
   end
 
@@ -70,14 +69,14 @@ describe RackFilter do
     end
     @response.should_not_receive(:flushBuffer)
     @response.should_receive(:reset).ordered
-    @dispatcher.should_receive(:process).ordered.with(@request,@response)
+    @dispatcher.should_receive(:process).ordered
     @filter.doFilter(@request, @response, @chain)
   end
 
   it "should dispatch /some/uri/index to the filter chain as /some/uri/index.html if the resource exists" do
     @rack_context.should_receive(:getResource).with("/some/uri/index.html").and_return java.net.URL.new("file://some/uri/index.html")
     @chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getPathInfo.should == "/index.html"
+      req.getRequestURI.should == "/some/uri/index.html"
       resp.setStatus(200)
     end
     @response.should_receive(:setStatus).ordered.with(200)
@@ -87,7 +86,7 @@ describe RackFilter do
   it "should dispatch /some/uri/index.html unchanged" do
     stub_request("/index.html")
     @chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getPathInfo.should == "/index.html"
+      req.getRequestURI.should == "/some/uri/index.html"
       resp.setStatus(200)
     end
     @response.should_receive(:setStatus).ordered.with(200)
@@ -98,7 +97,7 @@ describe RackFilter do
     @rack_context.should_receive(:getResource).with("/some/uri/index.html").and_return java.net.URL.new("file://some/uri/index.html")
     stub_request("/")
     @chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getPathInfo.should == "/index.html"
+      req.getRequestURI.should == "/some/uri/index.html"
       resp.setStatus(200)
     end
     @response.should_receive(:setStatus).ordered.with(200)
@@ -107,10 +106,10 @@ describe RackFilter do
 
   it "should dispatch to /some/uri.html if the resource exists and there is no path info" do
     @rack_context.should_receive(:getResource).with("/some/uri.html").and_return java.net.URL.new("file://some/uri.html")
-    stub_request(nil)
+    stub_request("")
     @chain.should_receive(:doFilter).ordered.and_return do |req,resp|
       req.getServletPath.should == "/some/uri.html"
-      req.getPathInfo.should == nil
+      req.getPathInfo.should == ""
       resp.setStatus(200)
     end
     @response.should_receive(:setStatus).ordered.with(200)

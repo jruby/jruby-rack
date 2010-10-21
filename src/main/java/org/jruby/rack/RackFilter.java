@@ -19,9 +19,9 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.jruby.rack.servlet.DefaultServletDispatcher;
-import org.jruby.rack.servlet.ServletDispatcher;
 import org.jruby.rack.servlet.ServletRackContext;
+import org.jruby.rack.servlet.ServletRackEnvironment;
+import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 
 /**
  *
@@ -29,14 +29,14 @@ import org.jruby.rack.servlet.ServletRackContext;
  */
 public class RackFilter implements Filter {
     private RackContext context;
-    private ServletDispatcher dispatcher;
+    private RackDispatcher dispatcher;
 
     /** Default constructor for servlet container */
     public RackFilter() {
     }
 
     /** Dependency-injected constructor for testing */
-    public RackFilter(ServletDispatcher disp, RackContext context) {
+    public RackFilter(RackDispatcher disp, RackContext context) {
         this.context = context;
         this.dispatcher = disp;
     }
@@ -44,19 +44,21 @@ public class RackFilter implements Filter {
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
         this.context = new ServletRackContext(config.getServletContext());
-        this.dispatcher = new DefaultServletDispatcher(this.context);
+        this.dispatcher = new DefaultRackDispatcher(this.context);
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        HttpServletRequest    httpRequest  = maybeAppendHtmlToPath(request);
+        RackEnvironment env = new ServletRackEnvironment((HttpServletRequest) request);
+        RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment((HttpServletResponse) response);
+        HttpServletRequest    httpRequest  = maybeAppendHtmlToPath(request, env);
         HttpServletResponse   httpResponse = (HttpServletResponse) response;
         ResponseStatusCapture capture      = new ResponseStatusCapture(httpResponse);
         chain.doFilter(httpRequest, capture);
         if (capture.isError()) {
             httpResponse.reset();
             request.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
-            dispatcher.process((HttpServletRequest) request, httpResponse);
+            dispatcher.process(env, responseEnv);
         }
     }
 
@@ -108,45 +110,35 @@ public class RackFilter implements Filter {
         }
     }
 
-    private HttpServletRequest maybeAppendHtmlToPath(ServletRequest request) {
+    private HttpServletRequest maybeAppendHtmlToPath(ServletRequest request, RackEnvironment env) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String servletPath             = httpRequest.getServletPath();
-        String pathInfo                = httpRequest.getPathInfo();
-        String uri                     = servletPath;
+        String path                     = env.getPathInfo();
 
-        if (pathInfo != null) {
-            uri += pathInfo;
-        }
-
-        if (uri.lastIndexOf('.') <= uri.lastIndexOf('/')) {
-            final String maybeIndex;
-            if (uri.endsWith("/")) {
-                maybeIndex = "index";
-            } else {
-                maybeIndex = "";
+        if (path.lastIndexOf('.') <= path.lastIndexOf('/')) {
+            if (path.endsWith("/")) {
+                path += "index";
             }
+            path += ".html";
 
-            uri += maybeIndex + ".html";
-
-            if (!resourceExists(uri)) {
+            if (!resourceExists(path)) {
                 return httpRequest;
             }
 
-            if (pathInfo != null) {
-                httpRequest = new HttpServletRequestWrapper(httpRequest) {
-                    @Override
-                    public String getPathInfo() {
-                        return super.getPathInfo() + maybeIndex + ".html";
-                    }
-                };
-            } else {
-                httpRequest = new HttpServletRequestWrapper(httpRequest) {
-                    @Override
-                    public String getServletPath() {
-                        return super.getServletPath() + maybeIndex + ".html";
-                    }
-                };
-            }
+            final String uri = path;
+            httpRequest = new HttpServletRequestWrapper(httpRequest) {
+                @Override
+                public String getPathInfo() {
+                    return "";
+                }
+                @Override
+                public String getServletPath() {
+                    return uri;
+                }
+                @Override
+                public String getRequestURI() {
+                    return uri;
+                }
+            };
         }
         return httpRequest;
     }

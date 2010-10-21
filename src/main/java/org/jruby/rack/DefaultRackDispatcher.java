@@ -5,36 +5,28 @@
  * See the file LICENSE.txt for details.
  */
 
-package org.jruby.rack.servlet;
+package org.jruby.rack;
 
 import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.jruby.rack.RackApplication;
-import org.jruby.rack.RackApplicationFactory;
-import org.jruby.rack.RackContext;
-import org.jruby.rack.RackEnvironment;
 
 /**
  *
  * @author nicksieger
  */
-public class DefaultServletDispatcher implements ServletDispatcher {
+public class DefaultRackDispatcher implements RackDispatcher {
     private RackContext context;
 
-    public DefaultServletDispatcher(RackContext servletContext) {
+    public DefaultRackDispatcher(RackContext servletContext) {
         this.context = servletContext;
     }
 
-    public void process(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
+    public void process(RackEnvironment request, RackResponseEnvironment response)
+        throws IOException {
         final RackApplicationFactory rackFactory = context.getRackFactory();
         RackApplication app = null;
         try {
             app = rackFactory.getApplication();
-            app.call(new ServletRackEnvironment(request)).respond(new ServletRackResponseEnvironment(response));
+            app.call(request).respond(response);
         } catch (Exception re) {
             handleException(re, rackFactory, request, response);
         } finally {
@@ -45,8 +37,8 @@ public class DefaultServletDispatcher implements ServletDispatcher {
     }
 
     private void handleException(Exception re, RackApplicationFactory rackFactory,
-            HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            RackEnvironment request, RackResponseEnvironment response)
+            throws IOException {
         if (response.isCommitted()) {
             context.log("Error: Couldn't handle error: response committed", re);
             return;
@@ -57,7 +49,7 @@ public class DefaultServletDispatcher implements ServletDispatcher {
         try {
             RackApplication errorApp = rackFactory.getErrorApplication();
             request.setAttribute(RackEnvironment.EXCEPTION, re);
-            errorApp.call(new ServletRackEnvironment(request)).respond(new ServletRackResponseEnvironment(response));
+            errorApp.call(request).respond(response);
         } catch (Exception e) {
             context.log("Error: Couldn't handle error", e);
             response.sendError(500);

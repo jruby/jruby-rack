@@ -5,7 +5,7 @@
  * See the file LICENSE.txt for details.
  */
 
-package org.jruby.rack.servlet;
+package org.jruby.rack;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author nicksieger
  */
-public interface ServletDispatcher {
-    void process(HttpServletRequest request, HttpServletResponse response)
+public interface RackDispatcher {
+    void process(RackEnvironment request, RackResponseEnvironment response)
         throws ServletException, IOException;
 }

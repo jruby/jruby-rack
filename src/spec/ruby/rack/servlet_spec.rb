@@ -15,7 +15,7 @@ describe RackServlet, "service" do
     request = javax.servlet.http.HttpServletRequest.impl {}
     response = javax.servlet.http.HttpServletResponse.impl {}
     dispatcher = mock "dispatcher"
-    dispatcher.should_receive(:process).with(request, response)
+    dispatcher.should_receive(:process)
     @servlet = RackServlet.new dispatcher
     @servlet.service request, response
   end
