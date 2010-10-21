@@ -161,6 +161,10 @@ web.xml.
   Merb application files. Defaults to `/WEB-INF`.
 - `rails.env`: Specify the Rails environment to run. Defaults
   to 'production'.
+- `rails.relative_url_append`: Specify a path to be appended to the 
+  ActionController::Base.relative_url_root after the context path. Useful
+  for running a rails app from the same war as an existing app, under
+  a sub-path of the main servlet context root.
 - `merb.environment`: Specify the merb environment to run. Defaults to
   `production`.
 - `jruby.rack.logging`: Specify the logging device to use. Defaults to

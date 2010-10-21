@@ -49,6 +49,13 @@ describe JRuby::Rack::RailsBooter do
     ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp'
   end
 
+  it "should append to RAILS_RELATIVE_URL_ROOT if 'rails.relative_url_append' is set" do
+    @rack_context.should_receive(:getContextPath).and_return '/myapp'
+    @rack_context.should_receive(:getInitParameter).with("rails.relative_url_append").and_return "/blah"
+    create_booter(JRuby::Rack::RailsBooter).boot!
+    ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp/blah'
+  end
+
   it "should determine the public html root from the 'public.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."

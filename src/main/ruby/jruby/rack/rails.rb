@@ -30,7 +30,8 @@ module JRuby::Rack
     end
 
     def setup_relative_url_root
-      relative_url_root = @rack_context.getContextPath
+      relative_url_append = @rack_context.getInitParameter('rails.relative_url_append') || ''
+      relative_url_root = @rack_context.getContextPath + relative_url_append
       if relative_url_root && !relative_url_root.empty? && relative_url_root != '/'
         ENV['RAILS_RELATIVE_URL_ROOT'] = relative_url_root
       end
