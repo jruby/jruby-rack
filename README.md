@@ -169,6 +169,10 @@ web.xml.
   `production`.
 - `jruby.rack.logging`: Specify the logging device to use. Defaults to
   `servlet_context`. See below.
+- `jruby.rack.slash.index`: Force rewriting of requests that end in
+  '/' to be passed through to the container as '/index.html'. Default
+  is false, but is turned on for Jetty by default to avoid triggering
+  directory index pages.
 
 ## Logging
 
