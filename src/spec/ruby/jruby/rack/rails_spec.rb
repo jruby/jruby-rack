@@ -43,17 +43,10 @@ describe JRuby::Rack::RailsBooter do
     @booter.rails_env.should == "production"
   end
 
-  it "should set RAILS_RELATIVE_URL_ROOT based on the servlet context path" do
-    @rack_context.should_receive(:getContextPath).and_return '/myapp'
-    create_booter(JRuby::Rack::RailsBooter).boot!
-    ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp'
-  end
-
   it "should append to RAILS_RELATIVE_URL_ROOT if 'rails.relative_url_append' is set" do
-    @rack_context.should_receive(:getContextPath).and_return '/myapp'
     @rack_context.should_receive(:getInitParameter).with("rails.relative_url_append").and_return "/blah"
     create_booter(JRuby::Rack::RailsBooter).boot!
-    ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp/blah'
+    ENV['RAILS_RELATIVE_URL_ROOT'].should == '/blah'
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
@@ -108,7 +101,8 @@ describe JRuby::Rack::RailsBooter do
     before :all do
       mock_servlet_context
       $servlet_context = @servlet_context
-      @rack_context.should_receive(:getContextPath).and_return "/foo"
+      @rack_context.stub!(:getInitParameter).and_return nil
+      @rack_context.stub!(:getRealPath).and_return "/"
       create_booter(JRuby::Rack::RailsBooter) do |b|
         b.app_path = File.expand_path("../../../rails", __FILE__)
       end.boot!
@@ -137,10 +131,6 @@ describe JRuby::Rack::RailsBooter do
 
     it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
       ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == @booter.public_path + "/stylesheets"
-    end
-
-    it "should set the ActionController.relative_url_root to the servlet context path" do
-      ActionController::Base.relative_url_root.should == "/foo"
     end
   end
 

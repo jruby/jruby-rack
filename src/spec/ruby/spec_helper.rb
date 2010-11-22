@@ -26,7 +26,6 @@ Spec::Runner.configure do |config|
       context.stub!(:getInitParameter).and_return nil
       context.stub!(:getRealPath).and_return "/"
       context.stub!(:getResource).and_return nil
-      context.stub!(:getContextPath).and_return "/"
     end
     @servlet_config ||= mock("servlet config")
     @servlet_config.stub!(:getServletName).and_return("A Servlet")
