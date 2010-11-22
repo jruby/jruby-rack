@@ -49,8 +49,7 @@ module JRuby::Rack
                  :environment => merb_environment,
                  :adapter => 'servlet',
                  :disabled_components => [:signals],
-                 :log_stream => logdev,
-                 :path_prefix => $servlet_context.getContextPath
+                 :log_stream => logdev
     end
   end
 
