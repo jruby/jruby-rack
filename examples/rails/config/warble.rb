@@ -3,6 +3,8 @@ Warbler::Config.new do |config|
   # Temporary directory where the application is staged
   # config.staging_dir = "tmp/war"
 
+  config.features = %w(gemjar)
+
   # Application directories to be included in the webapp.
   config.dirs = %w(app config lib log vendor)
 

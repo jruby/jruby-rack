@@ -1,34 +1,7 @@
 gem 'warbler'
 require 'warbler'
 
-class Warbler::Task
-  def define_appengine_consolidation_tasks
-    #              Warbler >= 1.1     Warbler 1.0
-    gemjar_task = ["war:make_gemjar", "war:gemjar"].detect {|t| Rake.application.lookup(t)}
-    if gemjar_task
-      task "war:jar" => gemjar_task
-    else                        # Warbler 0.9.x
-      with_namespace_and_config do |name, config|
-        app_task = Rake.application.lookup("app")
-        gems_task = Rake.application.lookup("gems")
-        app_task.prerequisites.delete("gems")
-        gems_jar_name = File.expand_path(File.join(config.staging_dir, "WEB-INF", "lib", "gems.jar"))
-
-        file gems_jar_name => gems_task.prerequisites do |t|
-          Dir.chdir(File.join(config.staging_dir, "WEB-INF")) do
-            sh "jar cf #{gems_jar_name} -C gems ."
-            rm_rf "gems"
-          end
-        end
-
-        task :app => gems_jar_name
-      end
-    end
-  end
-end
-
 warbler = Warbler::Task.new
-warbler.define_appengine_consolidation_tasks
 
 task :clean => "war:clean"
 
