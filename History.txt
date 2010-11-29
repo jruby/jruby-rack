@@ -13,6 +13,14 @@
   host your rails app in a location other than the base context path
   of your application. (Ben Rosenblum)
 
+== 1.0.0.1 (11/29/10)
+
+- This version is actually a new branch of JRuby-Rack from right
+  before the 1.0.4 release with the Servlet 2.5 changes backed out.
+  Thus, if you run with Tomcat 5.5 or any other servlet container that
+  is not yet advanced to the Servlet 2.5 API, then you should be able
+  to run Rails 3 on those containers with this release.
+
 == 1.0.3
 
 - JRUBY-4892: Fix IO collapsing \r\n to \n on Windows
