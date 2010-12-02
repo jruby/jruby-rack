@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -100,12 +101,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         RubyInstanceConfig config = new RubyInstanceConfig();
         config.setClassCache(classCache);
         try { // try to set jruby home to jar file path
-             String binfile = RubyInstanceConfig.class.getResource(
-                    "/META-INF/jruby.home/bin/jirb").toURI().getSchemeSpecificPart();
-             if (binfile.indexOf(".jar!") != -1 && binfile.indexOf("file:") != 0) {
-                 binfile = "file:"+binfile;
-             }
-             config.setJRubyHome(binfile.substring(0, binfile.length() - "/bin/jirb".length()));
+            URL home = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
+            if (home.getProtocol().equals("jar")) {
+                config.setJRubyHome(home.getPath());
+            }
         } catch (Exception e) { }
         return config;
     }
