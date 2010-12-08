@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>1.0.4.dev-SNAPSHOT</version>
+  <version>1.0.4</version>
   <name>JRuby-Rack</name>
   <url>http://jruby-rack.kenai.com/</url>
   <description>
@@ -13,7 +13,7 @@
   </description>
 
   <properties>
-    <jruby.version>1.5.1</jruby.version>
+    <jruby.version>1.5.6</jruby.version>
   </properties>
 
   <issueManagement>

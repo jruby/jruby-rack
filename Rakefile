@@ -23,7 +23,7 @@ def compile_classpath
 end
 
 def test_classpath
-  compile_classpath + [File.expand_path("target/classes"), File.expand_path("target/test-classes")]
+  compile_classpath + [File.expand_path("target/classes") + "/", File.expand_path("target/test-classes/") + "/"]
 end
 
 CLEAN << 'target'
@@ -106,21 +106,13 @@ task :speconly do
   if ENV['SKIP_SPECS'] && ENV['SKIP_SPECS'] == "true"
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
-    # Need to run out-of-proc to ensure CLASSPATH is propagated
-    require 'jruby'
-    inproc = JRuby.runtime.instance_config.run_ruby_in_process
-    begin
-      JRuby.runtime.instance_config.run_ruby_in_process = false
-      test_classpath.each {|p| $CLASSPATH << p }
-      opts = ["--format", "specdoc"]
-      opts << ENV['SPEC_OPTS'] if ENV['SPEC_OPTS']
-      spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
-      opts.push *FileList[spec].to_a
-      ENV['CLASSPATH'] = test_classpath.join(File::PATH_SEPARATOR)
-      ruby "-Isrc/spec/ruby", "-S", "spec", *opts
-    ensure
-      JRuby.runtime.instance_config.run_ruby_in_process = inproc
-    end
+    test_classpath.each {|p| $CLASSPATH << p }
+    opts = ["--format", "specdoc"]
+    opts << ENV['SPEC_OPTS'] if ENV['SPEC_OPTS']
+    spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
+    opts.push *FileList[spec].to_a
+    ENV['CLASSPATH'] = test_classpath.join(File::PATH_SEPARATOR)
+    ruby "-Isrc/spec/ruby", "-S", "spec", *opts
   end
 end
 

@@ -12,6 +12,7 @@
   path when the RAILS_RELATIVE_URL_ROOT is set. This allows you to
   host your rails app in a location other than the base context path
   of your application. (Ben Rosenblum)
+- Don't use toURI, following changes in JRuby 1.5.6.
 
 == 1.0.3
 
