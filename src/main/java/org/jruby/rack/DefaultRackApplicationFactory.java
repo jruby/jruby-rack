@@ -161,7 +161,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup) {
         return runtime.evalScriptlet(
-                "load 'jruby/rack/boot/rack.rb'\n"
+                "load 'jruby/rack/boot/rack.rb';"
                 +"Rack::Handler::Servlet.new(Rack::Builder.new {( "
                 + rackup + "\n )}.to_app)");
     }
