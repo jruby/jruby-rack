@@ -32,7 +32,7 @@ import org.jruby.util.ClassCache;
  * @author nicksieger
  */
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
-    private String rackupScript;
+    private String rackupScript, rackupLocation;
     private RackContext rackContext;
     private ClassCache classCache;
     private RackApplication errorApplication;
@@ -160,10 +160,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup) {
-        return runtime.evalScriptlet(
-                "load 'jruby/rack/boot/rack.rb';"
-                +"Rack::Handler::Servlet.new(Rack::Builder.new {( "
-                + rackup + "\n )}.to_app)");
+        return runtime.executeScript("load 'jruby/rack/boot/rack.rb';"
+                                     +"Rack::Handler::Servlet.new(Rack::Builder.new {( "
+                                     + rackup + "\n )}.to_app)",
+                                     rackupLocation);
     }
 
     private interface ApplicationObjectFactory {
@@ -256,6 +256,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     private String findRackupScript() {
+        rackupLocation = "<web.xml>";
+
         String rackup = rackContext.getInitParameter("rackup");
         if (rackup != null) {
             return rackup;
@@ -268,6 +270,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
 
         if (rackup != null) {
+            rackupLocation = rackup;
             rackup = inputStreamToString(rackContext.getResourceAsStream(rackup));
         }
 
