@@ -80,18 +80,18 @@ describe DefaultRackApplicationFactory do
     before :each do
       @rack_context.stub!(:getInitParameter).and_return nil
       @rack_context.stub!(:getResourcePaths).and_return nil
-      @app_factory.init @rack_context
     end
+    let(:app_factory) { @app_factory.init @rack_context; @app_factory }
 
     describe "init" do
       it "should create an error application" do
-        @app_factory.getErrorApplication.should respond_to(:call)
+        app_factory.getErrorApplication.should respond_to(:call)
       end
     end
 
     describe "newRuntime" do
       it "should create a new Ruby runtime with the rack environment pre-loaded" do
-        runtime = @app_factory.newRuntime
+        runtime = app_factory.newRuntime
         lazy_string = proc {|v| "(begin; #{v}; rescue Exception => e; e.class; end).name"}
         @app_factory.verify(runtime, lazy_string.call("Rack")).should == "Rack"
         @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Servlet")
@@ -101,8 +101,14 @@ describe DefaultRackApplicationFactory do
       end
 
       it "should initialize the $servlet_context global variable" do
-        runtime = @app_factory.newRuntime
-        @app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
+        runtime = app_factory.newRuntime
+        app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
+      end
+
+      it "should handle jruby.compat.version == '1.9' and start up in 1.9 mode" do
+        @rack_context.stub!(:getInitParameter).with("jruby.compat.version").and_return "1.9"
+        runtime = app_factory.newRuntime
+        runtime.instance_config.compat_version.should == org.jruby.CompatVersion::RUBY1_9
       end
     end
   end

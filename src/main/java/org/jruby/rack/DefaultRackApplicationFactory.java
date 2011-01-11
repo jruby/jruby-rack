@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jruby.CompatVersion;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
@@ -97,9 +98,23 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
+    private static final Pattern COMPAT_VERSION = Pattern.compile("1[._]([89])");
+
     private RubyInstanceConfig createRuntimeConfig() {
         RubyInstanceConfig config = new RubyInstanceConfig();
         config.setClassCache(classCache);
+        if (rackContext.getInitParameter("jruby.compat.version") != null) {
+            Matcher matcher = COMPAT_VERSION.matcher(rackContext.getInitParameter("jruby.compat.version"));
+            if (matcher.find()) {
+                String version = matcher.group(1);
+                if (version.equals("8")) {
+                    config.setCompatVersion(CompatVersion.RUBY1_8);
+                } else if (version.equals("9")) {
+                    config.setCompatVersion(CompatVersion.RUBY1_9);
+                }
+            }
+        }
+
         try { // try to set jruby home to jar file path
             URL home = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
             if (home.getProtocol().equals("jar")) {
