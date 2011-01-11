@@ -153,6 +153,8 @@ web.xml.
   runtime pool should be created serially in the foreground rather
   than spawning background threads. For environments where creating
   threads is not permitted.
+- `jruby.compat.version`: Set to "1.8" or "1.9" to make JRuby run a
+  specific version of Ruby.
 - `public.root`: Relative path to the location of your application's
   static assets. Defaults to `/`.
 - `gem.path`: Relative path to the bundled gem repository. Defaults to
