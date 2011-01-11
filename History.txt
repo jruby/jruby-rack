@@ -1,3 +1,12 @@
+== 1.0.5 (01/11/11)
+
+- GH#6: Add context-init parameter `jruby.compat.version` which can be
+  set to either `1.8` or `1.9` to start JRuby in the corresponding
+  Ruby version.
+- Changes to rackup evaluation to help debugging: Set rackup filename
+  when executing config.ru, use a ; instead of \n when evaluating
+  rackup code
+
 == 1.0.4
 
 - Make sane defaults for app/gem/public paths when using
