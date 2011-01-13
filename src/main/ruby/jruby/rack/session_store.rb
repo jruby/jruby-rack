@@ -109,5 +109,17 @@ module JRuby::Rack
     def close_session(env)
       (session = get_servlet_session(env)) and session.invalidate
     end
+
+    def current_session_id(env)
+      env[AbstractStore::ENV_SESSION_OPTIONS_KEY][:id]
+    end
+
+    def exists?(env)
+      current_session_id(env).present?
+    end
+
+    def destroy(env)
+      close_session(env)
+    end
   end
 end
