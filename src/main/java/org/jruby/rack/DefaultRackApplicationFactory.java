@@ -78,8 +78,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public Ruby newRuntime() throws RackInitializationException {
         try {
-            setupJRubyManagement();
-            Ruby runtime = JavaEmbedUtils.initialize(new ArrayList(), createRuntimeConfig());
+            Ruby runtime = (Ruby) rackContext.getAttribute("jruby.runtime");
+            if (runtime == null) {
+                setupJRubyManagement();
+                runtime = JavaEmbedUtils.initialize(new ArrayList(), createRuntimeConfig());
+            }
             runtime.getGlobalVariables().set("$servlet_context",
                     JavaEmbedUtils.javaToRuby(runtime, rackContext));
             runtime.evalScriptlet("require 'rack/handler/servlet'");

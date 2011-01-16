@@ -24,4 +24,5 @@ public interface RackContext extends RackLogger {
     Set getResourcePaths(String path);
     URL getResource(String path) throws MalformedURLException;
     InputStream getResourceAsStream(String path);
+    Object getAttribute(String name);
 }
