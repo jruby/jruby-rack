@@ -27,6 +27,7 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ClassCache;
+import java.net.URLDecoder;
 
 /**
  *
@@ -118,7 +119,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         try { // try to set jruby home to jar file path
             URL home = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
             if (home.getProtocol().equals("jar")) {
-                config.setJRubyHome(home.getPath());
+                config.setJRubyHome(URLDecoder.decode(home.getPath(), "UTF-8"));
             }
         } catch (Exception e) { }
         return config;
