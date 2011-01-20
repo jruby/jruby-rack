@@ -1,7 +1,12 @@
-== 1.0.6 (01/18/11)
+== 1.0.6 (01/20/11)
 
 - Related to JRUBY-5281 and spaces in the path. Copy URL decoding fix
-  here also. Fixes "no such file to load" LoadErrors for lots of cases.
+  here also. Fixes "no such file to load" LoadErrors for lots of
+  cases.
+- NOTE: Next release will remove this code from JRuby-Rack completely,
+  relying on JRuby to properly determine jruby.home.
+- GH#8: Allow DefaultRackApplicationFactory to use an existing, single
+  runtime. (David Calavera)
 
 == 1.0.5 (01/11/11)
 
