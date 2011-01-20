@@ -1,3 +1,8 @@
+== 1.0.6 (01/18/11)
+
+- Related to JRUBY-5281 and spaces in the path. Copy URL decoding fix
+  here also. Fixes "no such file to load" LoadErrors for lots of cases.
+
 == 1.0.5 (01/11/11)
 
 - GH#6: Add context-init parameter `jruby.compat.version` which can be
