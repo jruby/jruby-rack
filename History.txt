@@ -1,6 +1,6 @@
 == 1.0.6 (01/20/11)
 
-- Related to JRUBY-5281 and spaces in the path. Copy URL decoding fix
+- Related to JRUBY-5281 and spaces in the path. Copy jruby.home fix
   here also. Fixes "no such file to load" LoadErrors for lots of
   cases.
 - NOTE: Next release will remove this code from JRuby-Rack completely,

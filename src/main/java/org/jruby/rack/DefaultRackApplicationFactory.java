@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -120,9 +121,13 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
 
         try { // try to set jruby home to jar file path
-            URL home = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
-            if (home.getProtocol().equals("jar")) {
-                config.setJRubyHome(URLDecoder.decode(home.getPath(), "UTF-8"));
+            URL resource = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
+            if (resource.getProtocol().equals("jar")) {
+                try { // http://weblogs.java.net/blog/2007/04/25/how-convert-javaneturl-javaiofile
+                    config.setJRubyHome(resource.toURI().getSchemeSpecificPart());
+                } catch (URISyntaxException urise) {
+                    config.setJRubyHome(resource.getPath());
+                }
             }
         } catch (Exception e) { }
         return config;
