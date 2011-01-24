@@ -99,6 +99,20 @@ describe JRuby::Rack::Response do
     stream = mock "output stream"
     @servlet_response.stub!(:getOutputStream).and_return stream
     stream.should_receive(:write).exactly(2).times
+    stream.should_receive(:flush).exactly(2).times
+
+    @response.write_body(@servlet_response)
+  end
+
+  it "should write the body to the servlet response, and flush after it" do
+    @body.should_receive(:each).and_return do |block|
+      block.call "hello"
+      block.call "there"
+    end
+    stream = mock "output stream"
+    @servlet_response.stub!(:getOutputStream).and_return stream
+    stream.should_receive(:write).exactly(2).times
+    stream.should_receive(:flush).exactly(2).times
 
     @response.write_body(@servlet_response)
   end
@@ -132,6 +146,7 @@ describe JRuby::Rack::Response do
     stream = mock "output stream"
     @servlet_response.stub!(:getOutputStream).and_return stream
     stream.should_receive(:write).exactly(2).times
+    stream.should_receive(:flush).exactly(2).times
 
     @response.write_body(@servlet_response)
   end

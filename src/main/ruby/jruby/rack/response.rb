@@ -73,6 +73,7 @@ class JRuby::Rack::Response
     begin
       @body.each do |el|
         stream.write(el.to_java_bytes)
+        stream.flush
       end
     rescue LocalJumpError => e
       # HACK: deal with objects that don't comply with Rack specification
