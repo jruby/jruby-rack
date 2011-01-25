@@ -28,9 +28,9 @@
   </issueManagement>
 
   <scm>
-    <connection>scm:git:git://kenai.com/jruby-rack~main</connection>
-    <developerConnection>scm:git:${maven.username}@git.kenai.com:jruby-rack~main</developerConnection>
-    <url>http://kenai.com/projects/jruby-rack/sources/main/show</url>
+    <connection>scm:git:git://github.com/nicksieger/jruby-rack.git</connection>
+    <developerConnection>scm:git:git@github.com:nicksieger/jruby-rack.git</developerConnection>
+    <url>http://github.com/nicksieger/jruby-rack/</url>
   </scm>
 
   <licenses>
