@@ -10,6 +10,8 @@ class JRuby::Rack::Response
 
   def initialize(arr)
     @status, @headers, @body = *arr
+    @chunked = ("chunked" == @headers['Transfer-Encoding'])
+    [@status, @headers, @body]
   end
 
   def getStatus
@@ -48,7 +50,9 @@ class JRuby::Rack::Response
       when /^Content-Type$/i
         response.setContentType(v.to_s)
       when /^Content-Length$/i
-        response.setContentLength(v.to_i)
+        response.setContentLength(v.to_i) unless @chunked
+      when /^Transfer-Encoding$/i
+        # ignore setting Transfer-Encoding, since Tomcat will add the header twice, Jetty on the other hand works fine either way.
       else
         if v.respond_to?(:each_line)
           v.each_line {|val| response.addHeader(k.to_s, val.chomp("\n")) }
@@ -73,7 +77,7 @@ class JRuby::Rack::Response
     begin
       @body.each do |el|
         stream.write(el.to_java_bytes)
-        stream.flush
+        stream.flush if @chunked
       end
     rescue LocalJumpError => e
       # HACK: deal with objects that don't comply with Rack specification
