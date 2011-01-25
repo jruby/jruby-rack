@@ -14,7 +14,7 @@ depends on the latest version of JRuby-Rack and ensures it gets placed in
 your WAR file when it gets built.
 
 If you're assembling your own WAR using other means, you can install the
-`jruby-rack` gem. It provides a method to located the jruby-rack jar file:
+`jruby-rack` gem. It provides a method to locate the jruby-rack jar file:
 
     require 'fileutils'
     require 'jruby-rack'
@@ -70,7 +70,7 @@ angle-brackets for XML.
       <param-name>rackup</param-name>
       <param-value>
         require 'rubygems'
-        gem 'sinatra', '~&gt; 0.9'
+        gem 'sinatra', '~&gt; 1.0'
         require './lib/demo'
         set :run, false
         set :environment, :production
@@ -199,7 +199,7 @@ For those loggers that require a specific named logger, set it in the
 
 Checkout the JRuby Rack code and cd to that directory.
 
-    git clone git://kenai.com/jruby-rack~main jruby-rack
+    git clone git://github.com/nicksieger/jruby-rack.git
     cd jruby-rack
 
 You can choose to build with either Maven or Rake. Either of the
@@ -214,9 +214,6 @@ The generated jar should be located here: target/jruby-rack-*.jar.
 
 This example shows how to create and deploy a simple Rails app using
 the embedded Java database H2 to a WAR using Warble and JRuby Rack.
-JRuby Rack is now included in the latest release of Warbler (0.9.9),
-but you can build your own jar from source and substitute it if you
-like.
 
 Install Rails and the driver and ActiveRecord adapters for the H2
 database:
@@ -229,7 +226,7 @@ Install Warbler:
 
 Make the "Blog" application
 
-    jruby -S rails blog
+    jruby -S rails new blog
     cd blog
 
 Copy this configuration into config/database.yml:
@@ -248,16 +245,16 @@ Copy this configuration into config/database.yml:
 
 Generate a scaffold for a simple model of blog comments.
 
-    jruby script/generate scaffold comment name:string body:text
+    jruby script/rails generate scaffold comment name:string body:text
 
 Run the database migration that was just created as part of the scaffold.
 
     jruby -S rake db:migrate
 
-Start your application on the Rails default port 3000 using Mongrel/
+Start your application on the Rails default port 3000 using WEBrick
 and make sure it works:
 
-    jruby script/server
+    jruby script/rails server
 
 Generate a custom Warbler WAR configuration for the blog application
 
@@ -310,6 +307,7 @@ The war should be ready to deploy to your Java application server.
   project, Goldspike
 - Chris Neukirchen, for Rack
 - Sun Microsystems, for early project support
+- Engine Yard, for more recent support
 
 [1]: http://caldersphere.rubyforge.org/warbler
 [2]: http://repository.codehaus.org/org/jruby/rack/jruby-rack/

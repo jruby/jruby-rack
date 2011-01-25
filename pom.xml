@@ -10,9 +10,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>1.0.6.rc1</version>
+  <version>1.0.6</version>
   <name>JRuby-Rack</name>
-  <url>http://jruby-rack.kenai.com/</url>
+  <url>http://github.com/nicksieger/jruby-rack/</url>
   <description>
     A servlet bridge to Ruby-based Rack applications that allow them
     to run in Java Application servers using JRuby.
@@ -23,8 +23,8 @@
   </properties>
 
   <issueManagement>
-    <system>JIRA</system>
-    <url>http://kenai.com/jira/browse/JRUBY_RACK</url>
+    <system>Github</system>
+    <url>http://github.com/nicksieger/jruby-rack/issues</url>
   </issueManagement>
 
   <scm>
