@@ -104,16 +104,15 @@ describe JRuby::Rack::Response do
   end
 
   it "should detect a chunked response when the Transfer-Encoding header is set" do
-    @headers = { "Transfer-Encoding" => "chunked", "Content-Type" => "text/html" }
+    @headers = { "Transfer-Encoding" => "chunked" }
     @response = JRuby::Rack::Response.new([@status, @headers, @body])
-    @servlet_response.should_receive(:setContentType).with("text/html")
     @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
     @response.write_headers(@servlet_response)
     @response.chunked?.should eql(true)
   end
 
-  it "should write the body to the servlet response and flush, when the response is chunked" do
-    @status, @headers, @body = mock("status"), { "Transfer-Encoding" => "chunked" }, mock("body")
+  it "should write the body to the stream and flush, when the response is chunked" do
+    @headers = { "Transfer-Encoding" => "chunked" }
     @response = JRuby::Rack::Response.new([@status, @headers, @body])
     @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
     @response.write_headers(@servlet_response)
