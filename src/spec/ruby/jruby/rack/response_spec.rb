@@ -104,17 +104,17 @@ describe JRuby::Rack::Response do
   end
 
   it "should detect a chunked response when the Transfer-Encoding header is set" do
-    @headers = { "Transfer-Encoding" => "chunked" }
+    @headers = { "Content-Transfer-Encoding" => "chunked" }
     @response = JRuby::Rack::Response.new([@status, @headers, @body])
-    @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
+    @servlet_response.should_receive(:addHeader).with("Content-Transfer-Encoding", "chunked")
     @response.write_headers(@servlet_response)
     @response.chunked?.should eql(true)
   end
 
   it "should write the body to the stream and flush, when the response is chunked" do
-    @headers = { "Transfer-Encoding" => "chunked" }
+    @headers = { "Content-Transfer-Encoding" => "chunked" }
     @response = JRuby::Rack::Response.new([@status, @headers, @body])
-    @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
+    @servlet_response.should_receive(:addHeader).with("Content-Transfer-Encoding", "chunked")
     @response.write_headers(@servlet_response)
     @response.chunked?.should eql(true)
     @body.should_receive(:each).ordered.and_return do |block|
@@ -133,7 +133,7 @@ describe JRuby::Rack::Response do
       block.call "hello"
       block.call "there"
     end
-    @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
+    @servlet_response.should_not_receive(:addHeader).with("Content-Transfer-Encoding", "chunked")
     @response.chunked?.should eql(false)
     stream = mock "output stream"
     @servlet_response.stub!(:getOutputStream).and_return stream

@@ -21,7 +21,7 @@ class JRuby::Rack::Response
   end
 
   def chunked?
-    (@headers && @headers['Transfer-Encoding'] == "chunked")
+    (@headers && @headers['Content-Transfer-Encoding'] == "chunked")
   end
 
   def getBody
