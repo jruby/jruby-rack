@@ -99,13 +99,26 @@ describe JRuby::Rack::Response do
     stream = mock "output stream"
     @servlet_response.stub!(:getOutputStream).and_return stream
     stream.should_receive(:write).exactly(2).times
-    stream.should_receive(:flush).exactly(2).times
 
     @response.write_body(@servlet_response)
   end
 
-  it "should write the body to the servlet response, and flush after it" do
-    @body.should_receive(:each).and_return do |block|
+  it "should detect a chunked response when the Transfer-Encoding header is set" do
+    @headers = { "Transfer-Encoding" => "chunked", "Content-Type" => "text/html" }
+    @response = JRuby::Rack::Response.new([@status, @headers, @body])
+    @servlet_response.should_receive(:setContentType).with("text/html")
+    @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
+    @response.write_headers(@servlet_response)
+    @response.chunked?.should eql(true)
+  end
+
+  it "should write the body to the servlet response and flush, when the response is chunked" do
+    @status, @headers, @body = mock("status"), { "Transfer-Encoding" => "chunked" }, mock("body")
+    @response = JRuby::Rack::Response.new([@status, @headers, @body])
+    @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
+    @response.write_headers(@servlet_response)
+    @response.chunked?.should eql(true)
+    @body.should_receive(:each).ordered.and_return do |block|
       block.call "hello"
       block.call "there"
     end
@@ -113,6 +126,20 @@ describe JRuby::Rack::Response do
     @servlet_response.stub!(:getOutputStream).and_return stream
     stream.should_receive(:write).exactly(2).times
     stream.should_receive(:flush).exactly(2).times
+    @response.write_body(@servlet_response)
+  end
+
+  it "should not flush after write if Transfer-Encoding header is not set" do
+    @body.should_receive(:each).and_return do |block|
+      block.call "hello"
+      block.call "there"
+    end
+    @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
+    @response.chunked?.should eql(false)
+    stream = mock "output stream"
+    @servlet_response.stub!(:getOutputStream).and_return stream
+    stream.should_receive(:write).exactly(2).times
+    stream.should_not_receive(:flush)
 
     @response.write_body(@servlet_response)
   end
@@ -146,7 +173,6 @@ describe JRuby::Rack::Response do
     stream = mock "output stream"
     @servlet_response.stub!(:getOutputStream).and_return stream
     stream.should_receive(:write).exactly(2).times
-    stream.should_receive(:flush).exactly(2).times
 
     @response.write_body(@servlet_response)
   end
