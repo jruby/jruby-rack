@@ -135,4 +135,8 @@ describe JRuby::Rack::Response do
 
     @response.write_body(@servlet_response)
   end
+
+  it "#write_body should yield the stream to an object that responds to #call"
+  it "#write_body should write stream using a channel if the object responds to #to_channel"
+  it "#write_body should write stream using a channel if the object responds to #to_outputstream"
 end
