@@ -20,6 +20,10 @@ class JRuby::Rack::Response
     @headers
   end
 
+  def chunked?
+    (@headers && @headers['Transfer-Encoding'] == "chunked")
+  end
+
   def getBody
     b = ""
     @body.each {|part| b << part }
@@ -48,7 +52,7 @@ class JRuby::Rack::Response
       when /^Content-Type$/i
         response.setContentType(v.to_s)
       when /^Content-Length$/i
-        response.setContentLength(v.to_i)
+        response.setContentLength(v.to_i) unless chunked?
       else
         if v.respond_to?(:each_line)
           v.each_line {|val| response.addHeader(k.to_s, val.chomp("\n")) }
@@ -73,6 +77,7 @@ class JRuby::Rack::Response
     begin
       @body.each do |el|
         stream.write(el.to_java_bytes)
+        stream.flush if chunked?
       end
     rescue LocalJumpError => e
       # HACK: deal with objects that don't comply with Rack specification
