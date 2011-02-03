@@ -7,6 +7,15 @@
 
 class JRuby::Rack::Response
   include Java::org.jruby.rack.RackResponse
+  java_import java.nio.channels.Channels
+
+  @@object_polluted = begin
+                        # Fixnum should not have this method, and it
+                        # shouldn't be on Object
+                        Fixnum.method('to_channel').owner == Object
+                      rescue
+                        false
+                      end
 
   def initialize(arr)
     @status, @headers, @body = *arr
@@ -73,11 +82,21 @@ class JRuby::Rack::Response
   end
 
   def write_body(response)
-    stream = response.getOutputStream
+    outputstream = response.getOutputStream
     begin
-      @body.each do |el|
-        stream.write(el.to_java_bytes)
-        stream.flush if chunked?
+      if @body.respond_to?(:call)
+        @body.call(outputstream)
+      elsif @body.respond_to?(:to_channel) && !object_polluted_with_anyio?(@body, :to_channel)
+        @body = @body.to_channel # so that we close the channel
+        transfer_channel(@body, outputstream)
+      elsif @body.respond_to?(:to_inputstream) && !object_polluted_with_anyio?(@body, :to_inputstream)
+        @body = @body.to_inputstream # so that we close the stream
+        transfer_channel(Channels.newChannel(@body), outputstream)
+      else
+        @body.each do |el|
+          outputstream.write(el.to_java_bytes)
+          outputstream.flush if chunked?
+        end
       end
     rescue LocalJumpError => e
       # HACK: deal with objects that don't comply with Rack specification
@@ -85,6 +104,37 @@ class JRuby::Rack::Response
       retry
     ensure
       @body.close if @body.respond_to?(:close)
+    end
+  end
+
+  def transfer_channel(channel, outputstream)
+    outputchannel = Channels.newChannel outputstream
+    if channel.respond_to?(:transfer_to)
+      channel.transfer_to(0, channel.size, outputchannel)
+    else
+      buffer = java.nio.ByteBuffer.allocate(16384)
+      while channel.read(buffer) != -1
+        buffer.flip
+        outputchannel.write(buffer)
+        buffer.compact
+      end
+      buffer.flip
+      while buffer.has_remaining
+        outputchannel.write(buffer)
+      end
+    end
+  end
+
+  # See http://bugs.jruby.org/5444 - we need to account for pre-1.6
+  # JRuby where Object was polluted with #to_channel by
+  # IOJavaAddions.AnyIO
+  def object_polluted_with_anyio?(obj, meth)
+    begin
+      # The object should not have this method, and
+      # it shouldn't be on Object
+      @@object_polluted && obj.method(meth).owner == Object
+    rescue
+      false
     end
   end
 end
