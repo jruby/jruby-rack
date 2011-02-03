@@ -102,6 +102,9 @@ class JRuby::Rack::Response
       # HACK: deal with objects that don't comply with Rack specification
       @body = [@body.to_s]
       retry
+    rescue NativeException => e
+      # Don't needlessly raise errors because of client abort exceptions
+      raise unless e.cause.to_s =~ /(clientabortexception|broken pipe)/i
     ensure
       @body.close if @body.respond_to?(:close)
     end
