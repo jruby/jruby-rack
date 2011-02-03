@@ -63,3 +63,18 @@ class StubInputStream < java.io.InputStream
     @is.read
   end
 end
+
+class StubOutputStream < java.io.OutputStream
+  def initialize
+    super()
+    @os = java.io.ByteArrayOutputStream.new
+  end
+
+  def write(b)
+    @os.write(b)
+  end
+
+  def to_s
+    String.from_java_bytes @os.to_byte_array
+  end
+end

@@ -91,56 +91,12 @@ describe JRuby::Rack::Response do
     @response.write_headers(@servlet_response)
   end
 
-  it "should write the body to the servlet response" do
-    @body.should_receive(:each).and_return do |block|
-      block.call "hello"
-      block.call "there"
-    end
-    stream = mock "output stream"
-    @servlet_response.stub!(:getOutputStream).and_return stream
-    stream.should_receive(:write).exactly(2).times
-
-    @response.write_body(@servlet_response)
-  end
-
   it "should detect a chunked response when the Transfer-Encoding header is set" do
     @headers = { "Transfer-Encoding" => "chunked" }
     @response = JRuby::Rack::Response.new([@status, @headers, @body])
     @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
     @response.write_headers(@servlet_response)
     @response.chunked?.should eql(true)
-  end
-
-  it "should write the body to the stream and flush, when the response is chunked" do
-    @headers = { "Transfer-Encoding" => "chunked" }
-    @response = JRuby::Rack::Response.new([@status, @headers, @body])
-    @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
-    @response.write_headers(@servlet_response)
-    @response.chunked?.should eql(true)
-    @body.should_receive(:each).ordered.and_return do |block|
-      block.call "hello"
-      block.call "there"
-    end
-    stream = mock "output stream"
-    @servlet_response.stub!(:getOutputStream).and_return stream
-    stream.should_receive(:write).exactly(2).times
-    stream.should_receive(:flush).exactly(2).times
-    @response.write_body(@servlet_response)
-  end
-
-  it "should not flush after write if Transfer-Encoding header is not set" do
-    @body.should_receive(:each).and_return do |block|
-      block.call "hello"
-      block.call "there"
-    end
-    @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
-    @response.chunked?.should eql(false)
-    stream = mock "output stream"
-    @servlet_response.stub!(:getOutputStream).and_return stream
-    stream.should_receive(:write).exactly(2).times
-    stream.should_not_receive(:flush)
-
-    @response.write_body(@servlet_response)
   end
 
   it "should write the status first, followed by the headers, and the body last" do
@@ -163,20 +119,106 @@ describe JRuby::Rack::Response do
     @response.getBody.should == "hello"
   end
 
-  it "#write_body should call close on the body if the body responds to close" do
-    @body.should_receive(:each).ordered.and_return do |block|
-      block.call "hello"
-      block.call "there"
+  describe "#write_body" do
+    let(:stream) do
+      StubOutputStream.new.tap do |stream|
+        @servlet_response.stub!(:getOutputStream).and_return stream
+      end
     end
-    @body.should_receive(:close).ordered
-    stream = mock "output stream"
-    @servlet_response.stub!(:getOutputStream).and_return stream
-    stream.should_receive(:write).exactly(2).times
 
-    @response.write_body(@servlet_response)
+    it "does not flush after write if Transfer-Encoding header is not set" do
+      @body.should_receive(:each).and_return do |block|
+        block.call "hello"
+        block.call "there"
+      end
+      @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
+      @response.chunked?.should eql(false)
+      stream.should_receive(:write).exactly(2).times
+      stream.should_not_receive(:flush)
+
+      @response.write_body(@servlet_response)
+    end
+
+    it "writes the body to the stream and flushes when the response is chunked" do
+      @headers = { "Transfer-Encoding" => "chunked" }
+      @response = JRuby::Rack::Response.new([@status, @headers, @body])
+      @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
+      @response.write_headers(@servlet_response)
+      @response.chunked?.should eql(true)
+      @body.should_receive(:each).ordered.and_return do |block|
+        block.call "hello"
+        block.call "there"
+      end
+      stream.should_receive(:write).exactly(2).times
+      stream.should_receive(:flush).exactly(2).times
+      @response.write_body(@servlet_response)
+    end
+
+    it "writes the body to the servlet response" do
+      @body.should_receive(:each).and_return do |block|
+        block.call "hello"
+        block.call "there"
+      end
+
+      stream.should_receive(:write).exactly(2).times
+
+      @response.write_body(@servlet_response)
+    end
+
+    it "calls close on the body if the body responds to close" do
+      @body.should_receive(:each).ordered.and_return do |block|
+        block.call "hello"
+        block.call "there"
+      end
+      @body.should_receive(:close).ordered
+      stream.should_receive(:write).exactly(2).times
+
+      @response.write_body(@servlet_response)
+    end
+
+    it "yields the stream to an object that responds to #call" do
+      @body.should_receive(:call).and_return do |stream|
+        stream.write("".to_java_bytes)
+      end
+      stream.should_receive(:write).exactly(1).times
+
+      @response.write_body(@servlet_response)
+    end
+
+    it "writes the stream using a channel if the object responds to #to_channel" do
+      channel = mock "channel"
+      @body.should_receive(:to_channel).and_return channel
+      read_done = false
+      channel.should_receive(:read).exactly(2).times.and_return do |buf|
+        if read_done
+          -1
+        else
+          buf.put "hello".to_java_bytes
+          read_done = true
+          5
+        end
+      end
+      stream.should_receive(:write)
+
+      @response.write_body(@servlet_response)
+    end
+
+    it "uses #transfer_to to copy the stream if available" do
+      channel = mock "channel"
+      @body.should_receive(:to_channel).and_return channel
+      channel.stub!(:size).and_return 10
+      channel.should_receive(:transfer_to).with(0, 10, anything)
+      stream.should be_kind_of(java.io.OutputStream)
+
+      @response.write_body(@servlet_response)
+    end
+
+    it "writes the stream using a channel if the object responds to #to_inputstream" do
+      @body.should_receive(:to_inputstream).and_return StubInputStream.new("hello")
+      stream.should be_kind_of(java.io.OutputStream)
+
+      @response.write_body(@servlet_response)
+      stream.to_s.should == "hello"
+    end
   end
-
-  it "#write_body should yield the stream to an object that responds to #call"
-  it "#write_body should write stream using a channel if the object responds to #to_channel"
-  it "#write_body should write stream using a channel if the object responds to #to_outputstream"
 end
