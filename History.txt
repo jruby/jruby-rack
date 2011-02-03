@@ -1,12 +1,25 @@
 == 1.0.6 (01/20/11)
 
-- Related to JRUBY-5281 and spaces in the path. Copy jruby.home fix
-  here also. Fixes "no such file to load" LoadErrors for lots of
+- GH#4: Related to JRUBY-5281 and spaces in the path. Copy jruby.home
+  fix here also. Fixes "no such file to load" LoadErrors for lots of
   cases.
 - NOTE: Next release will remove this code from JRuby-Rack completely,
   relying on JRuby to properly determine jruby.home.
 - GH#8: Allow DefaultRackApplicationFactory to use an existing, single
   runtime. (David Calavera)
+- GH#9: Support chunked Transfer-Encoding, allowing for early flush of
+  the output (Alejandro Crosa)
+- Add some new options for handling the Rack body.
+  - If the body object responds to `#call`, then the servlet output
+    stream will be yielded to it.
+  - If the body object responds to `#to_channel`, then JRuby-Rack will
+    copy the channel to the output stream for you. The same happens if
+    the body responds to `#to_inputstream`.
+  - Otherwise, JRuby-Rack follows the standard Rack behavior of
+    calling `#each` on the body and copying the contents to the output
+    stream.
+- GH#7: JavaServletStore: Add missing #exists? and #destroy
+  implementations
 
 == 1.0.5 (01/11/11)
 
