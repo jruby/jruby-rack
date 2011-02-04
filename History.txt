@@ -20,6 +20,10 @@
     stream.
 - GH#7: JavaServletStore: Add missing #exists? and #destroy
   implementations
+- JRUBY_RACK-38: Don't needlessly raise errors because of client abort
+  exceptions
+- GH#5: Experimental background spooling enabled by
+  `jruby.rack.background.spool` context parameter
 
 == 1.0.5 (01/11/11)
 
