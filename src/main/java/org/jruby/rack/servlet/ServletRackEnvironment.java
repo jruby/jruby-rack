@@ -24,9 +24,15 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
     private String requestURI;
     private String requestURIWithoutQuery;
     private String pathInfo;
+    private RackContext rackContext;
 
-    public ServletRackEnvironment(HttpServletRequest request) {
+    public ServletRackEnvironment(HttpServletRequest request, RackContext rackContext) {
         super(request);
+        this.rackContext = rackContext;
+    }
+
+    public RackContext getContext() {
+        return rackContext;
     }
 
     public InputStream getInput() throws IOException {
