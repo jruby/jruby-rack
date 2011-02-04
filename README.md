@@ -175,6 +175,8 @@ web.xml.
   '/' to be passed through to the container as '/index.html'. Default
   is false, but is turned on for Jetty by default to avoid triggering
   directory index pages.
+- `jruby.rack.background.spool`: (EXPERIMENTAL) Enable large request
+  bodies to be spooled to a tempfile in the background.
 
 ## Logging
 
