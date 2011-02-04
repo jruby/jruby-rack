@@ -15,12 +15,10 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
-import org.jruby.Ruby;
-import org.jruby.RubyClass;
-import org.jruby.RubyString;
-import org.jruby.RubyTempfile;
+import org.jruby.*;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.runtime.Block;
@@ -188,12 +186,17 @@ public class RackRewindableInput extends RackBaseInput {
     }
 
     private class RubyTempfileRackInput extends RubyIORackInput {
-        private RubyTempfileRackInput(ReadableByteChannel input, ByteBuffer memoryBuffer) {
-            super(getRuntime(), createTempfile(input, memoryBuffer));
+        private Future future;
+        private RubyTempfileRackInput(TempfileAndFuture tf) {
+            super(getRuntime(), tf.tempfile);
+            future = tf.future;
         }
 
         @Override
         public void close() {
+            if (future != null && !future.isDone() && !future.isCancelled()) {
+                future.cancel(true);
+            }
             ((RubyTempfile) io).close_bang(getRuntime().getCurrentContext());
         }
     }
@@ -207,17 +210,22 @@ public class RackRewindableInput extends RackBaseInput {
         return getRuntime().getNil();
     }
 
+    private static class TempfileAndFuture {
+        public RubyTempfile tempfile;
+        public Future future;
+    }
+
     protected RackInput getDelegateInput() {
         if (delegateInput == null) {
             try {
                 ReadableByteChannel input = Channels.newChannel(inputStream);
                 if (contentLength > threshold) {
-                    delegateInput = new RubyTempfileRackInput(input, null);
+                    delegateInput = new RubyTempfileRackInput(createTempfileAndFuture(input, null));
                 } else {
                     MemoryBufferRackInput memoryBufferInput = new MemoryBufferRackInput(input);
                     if (memoryBufferInput.isFull()) {
-                        delegateInput = new RubyTempfileRackInput(input,
-                                memoryBufferInput.getBuffer());
+                        delegateInput = new RubyTempfileRackInput(createTempfileAndFuture(input,
+                                memoryBufferInput.getBuffer()));
                     } else {
                         delegateInput = memoryBufferInput;
                     }
@@ -229,14 +237,15 @@ public class RackRewindableInput extends RackBaseInput {
         return delegateInput;
     }
 
-    private RubyTempfile createTempfile(final ReadableByteChannel input, ByteBuffer memoryBuffer) {
+    private TempfileAndFuture createTempfileAndFuture(final ReadableByteChannel input, ByteBuffer memoryBuffer) {
         getRuntime().getLoadService().require("tempfile");
-        RubyTempfile tempfile = (RubyTempfile) RubyTempfile.open(getRuntime().getCurrentContext(),
+        TempfileAndFuture tf = new TempfileAndFuture();
+        tf.tempfile = (RubyTempfile) RubyTempfile.open(getRuntime().getCurrentContext(),
                 getRuntime().getClass("Tempfile"),
                 new IRubyObject[]{getRuntime().newString("jruby-rack")},
                 Block.NULL_BLOCK);
         try {
-            final FileChannel tempfileChannel = (FileChannel) tempfile.getChannel();
+            final FileChannel tempfileChannel = (FileChannel) tf.tempfile.getChannel();
             long position = 0;
             if (memoryBuffer != null) {
                 position = tempfileChannel.write(memoryBuffer);
@@ -256,14 +265,14 @@ public class RackRewindableInput extends RackBaseInput {
                 }
             };
             if (environment != null && environment.getContext().getInitParameter("jruby.rack.background.spool") != null) {
-                backgroundSpooler.execute(runnable);
+                tf.future = backgroundSpooler.submit(runnable);
             } else {
                 runnable.run();
             }
         } catch (IOException io) {
             throw getRuntime().newIOErrorFromException(io);
         }
-        return tempfile;
+        return tf;
     }
 
     /**
