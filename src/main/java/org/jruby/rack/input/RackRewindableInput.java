@@ -10,9 +10,7 @@ package org.jruby.rack.input;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -58,7 +56,7 @@ public class RackRewindableInput extends RackBaseInput {
     private static ExecutorService backgroundSpooler = Executors.newCachedThreadPool(new ThreadFactory() {
         public Thread newThread(Runnable runnable) {
             Thread t = new Thread(runnable);
-            t.setName("Rack-background-spooler-" + t.getName());
+            t.setName("JRuby-Rack-background-spooler-" + t.getName());
             t.setDaemon(true);
             return t;
         }
@@ -68,13 +66,17 @@ public class RackRewindableInput extends RackBaseInput {
     private static int DEFAULT_THRESHOLD = 64 * 1024;
 
     private int threshold = DEFAULT_THRESHOLD;
+    private ExecutorService spooler;
 
     public RackRewindableInput(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
 
-    public RackRewindableInput(Ruby runtime, RackEnvironment env) throws IOException {
-        super(runtime, getRackRewindableInputClass(runtime), env);
+    public RackRewindableInput(Ruby runtime, RackEnvironment environment) throws IOException {
+        super(runtime, getRackRewindableInputClass(runtime), environment);
+        if (environment != null && environment.getContext().getInitParameter("jruby.rack.background.spool") != null) {
+            spooler = backgroundSpooler;
+        }
     }
 
     private class MemoryBufferRackInput implements RackInput {
@@ -259,13 +261,15 @@ public class RackRewindableInput extends RackBaseInput {
                         while ((bytesRead = tempfileChannel.transferFrom(input, transferPosition, 1024 * 1024)) > 0) {
                             transferPosition += bytesRead;
                         }
+                    } catch (ClosedChannelException cce) {
+                        // this should be an expected result of cancelling the task
                     } catch (IOException e) {
                         environment.getContext().log("WARNING: Error while spooling to tempfile", e);
                     }
                 }
             };
-            if (environment != null && environment.getContext().getInitParameter("jruby.rack.background.spool") != null) {
-                tf.future = backgroundSpooler.submit(runnable);
+            if (spooler != null) {
+                tf.future = spooler.submit(runnable);
             } else {
                 runnable.run();
             }
