@@ -20,6 +20,8 @@ public interface RackEnvironment {
     final String EXCEPTION = "jruby.rack.exception";
     final String DYNAMIC_REQS_ONLY = "jruby.rack.dynamic.requests.only";
 
+    RackContext getContext();
+
     // The following methods are specific to the rack environment
     InputStream getInput() throws IOException;
     String getScriptName();

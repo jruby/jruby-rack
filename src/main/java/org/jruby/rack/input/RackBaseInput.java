@@ -47,6 +47,7 @@ public abstract class RackBaseInput extends RubyObject implements RackInput {
     protected InputStream inputStream;
     protected RackInput delegateInput;
     protected int contentLength = -1;
+    protected RackEnvironment environment;
 
     public RackBaseInput(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
@@ -54,6 +55,7 @@ public abstract class RackBaseInput extends RubyObject implements RackInput {
 
     public RackBaseInput(Ruby runtime, RubyClass klass, RackEnvironment env) throws IOException {
         super(runtime, klass);
+        environment = env;
         inputStream = env.getInput();
         contentLength = env.getContentLength();
     }

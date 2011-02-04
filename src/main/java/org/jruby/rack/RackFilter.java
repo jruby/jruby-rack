@@ -51,7 +51,7 @@ public class RackFilter implements Filter {
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        RackEnvironment env = new ServletRackEnvironment((HttpServletRequest) request);
+        RackEnvironment env = new ServletRackEnvironment((HttpServletRequest) request, context);
         RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment((HttpServletResponse) response);
         HttpServletRequest    httpRequest  = maybeAppendHtmlToPath(request, env);
         HttpServletResponse   httpResponse = (HttpServletResponse) response;

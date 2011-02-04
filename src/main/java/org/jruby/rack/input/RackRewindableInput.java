@@ -13,6 +13,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyString;
@@ -52,6 +56,15 @@ public class RackRewindableInput extends RackBaseInput {
     public static void setDefaultThreshold(int thresh) {
         DEFAULT_THRESHOLD = thresh;
     }
+
+    private static ExecutorService backgroundSpooler = Executors.newCachedThreadPool(new ThreadFactory() {
+        public Thread newThread(Runnable runnable) {
+            Thread t = new Thread(runnable);
+            t.setName("Rack-background-spooler-" + t.getName());
+            t.setDaemon(true);
+            return t;
+        }
+    });
 
     /** 64k is the default cutoff for buffering in memory. */
     private static int DEFAULT_THRESHOLD = 64 * 1024;
@@ -216,21 +229,36 @@ public class RackRewindableInput extends RackBaseInput {
         return delegateInput;
     }
 
-    private RubyTempfile createTempfile(ReadableByteChannel input, ByteBuffer memoryBuffer) {
+    private RubyTempfile createTempfile(final ReadableByteChannel input, ByteBuffer memoryBuffer) {
         getRuntime().getLoadService().require("tempfile");
         RubyTempfile tempfile = (RubyTempfile) RubyTempfile.open(getRuntime().getCurrentContext(),
                 getRuntime().getClass("Tempfile"),
                 new IRubyObject[]{getRuntime().newString("jruby-rack")},
                 Block.NULL_BLOCK);
         try {
-            FileChannel tempfileChannel = (FileChannel) tempfile.getChannel();
-            long transferPosition = 0, bytesRead = 0;
+            final FileChannel tempfileChannel = (FileChannel) tempfile.getChannel();
+            long position = 0;
             if (memoryBuffer != null) {
-                transferPosition = tempfileChannel.write(memoryBuffer);
+                position = tempfileChannel.write(memoryBuffer);
             }
             tempfileChannel.position(0);
-            while ((bytesRead = tempfileChannel.transferFrom(input, transferPosition, 1024 * 1024)) > 0) {
-                transferPosition += bytesRead;
+            final long startPosition = position;
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    long bytesRead = 0, transferPosition = startPosition;
+                    try {
+                        while ((bytesRead = tempfileChannel.transferFrom(input, transferPosition, 1024 * 1024)) > 0) {
+                            transferPosition += bytesRead;
+                        }
+                    } catch (IOException e) {
+                        environment.getContext().log("WARNING: Error while spooling to tempfile", e);
+                    }
+                }
+            };
+            if (environment != null && environment.getContext().getInitParameter("jruby.rack.background.spool") != null) {
+                backgroundSpooler.execute(runnable);
+            } else {
+                runnable.run();
             }
         } catch (IOException io) {
             throw getRuntime().newIOErrorFromException(io);

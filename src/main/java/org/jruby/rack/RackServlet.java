@@ -26,6 +26,7 @@ import org.jruby.rack.servlet.ServletRackResponseEnvironment;
  */
 public class RackServlet extends HttpServlet {
     private RackDispatcher dispatcher;
+    private ServletRackContext rackContext;
 
     /** Default ctor, used by servlet container */
     public RackServlet() {
@@ -39,14 +40,15 @@ public class RackServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) {
         if (dispatcher == null) {
-            dispatcher = new DefaultRackDispatcher(new ServletRackContext(config.getServletContext()));
+            rackContext = new ServletRackContext(config.getServletContext());
+            dispatcher = new DefaultRackDispatcher(rackContext);
         }
     }
 
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-        dispatcher.process(new ServletRackEnvironment(request), new ServletRackResponseEnvironment(response));
+        dispatcher.process(new ServletRackEnvironment(request, rackContext), new ServletRackResponseEnvironment(response));
     }
 
     @Override

@@ -14,7 +14,7 @@ describe Rack::Handler::Servlet, "create_env" do
   before :each do
     @servlet = Rack::Handler::Servlet.new(nil)
     @servlet_env = mock "servlet request"
-    @env = org.jruby.rack.servlet.ServletRackEnvironment.new @servlet_env
+    @env = org.jruby.rack.servlet.ServletRackEnvironment.new @servlet_env, @rack_context
     @servlet_env.stub!(:getAttributeNames).and_return enumeration([])
   end
 
