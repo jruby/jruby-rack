@@ -7,8 +7,9 @@
 
 package org.jruby.rack.jms;
 
-import javax.jms.ConnectionFactory;
 import org.jruby.rack.RackContext;
+
+import javax.jms.ConnectionFactory;
 
 /**
  *

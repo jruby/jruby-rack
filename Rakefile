@@ -32,7 +32,8 @@ directory 'target/classes'
 
 desc "Compile java classes"
 task :compile => "target/classes" do |t|
-  sh 'javac -Xlint:deprecation -Xlint:unchecked -classpath "' + compile_classpath.join(File::PATH_SEPARATOR) + '" -source 1.5 ' +
+  debug = ENV['DEBUG'] ? '-g' : ''
+  sh "javac -Xlint:deprecation -Xlint:unchecked #{debug} -classpath \"" + compile_classpath.join(File::PATH_SEPARATOR) + '" -source 1.5 ' +
     '-target 1.5 -d ' + t.prerequisites.first + ' ' + Dir["src/main/java/**/*.java"].join(" ")
 end
 

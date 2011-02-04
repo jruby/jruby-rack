@@ -16,8 +16,8 @@ import java.io.IOException;
 public class DefaultRackDispatcher implements RackDispatcher {
     private RackContext context;
 
-    public DefaultRackDispatcher(RackContext servletContext) {
-        this.context = servletContext;
+    public DefaultRackDispatcher(RackContext rackContext) {
+        this.context = rackContext;
     }
 
     public void process(RackEnvironment request, RackResponseEnvironment response)

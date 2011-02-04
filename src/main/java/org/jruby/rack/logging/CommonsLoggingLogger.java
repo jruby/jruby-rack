@@ -15,10 +15,6 @@ import org.jruby.rack.RackLogger;
 public class CommonsLoggingLogger implements RackLogger {
     private Log logger;
 
-    public CommonsLoggingLogger() {
-        this(RackLoggerFactory.defaultLogName());
-    }
-
     public CommonsLoggingLogger(String loggerName) {
         setLoggerName(loggerName);
     }

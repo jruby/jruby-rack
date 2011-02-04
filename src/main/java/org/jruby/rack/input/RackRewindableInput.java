@@ -7,25 +7,32 @@
 
 package org.jruby.rack.input;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-
-import org.jruby.*;
+import org.jruby.Ruby;
+import org.jruby.RubyClass;
+import org.jruby.RubyString;
+import org.jruby.RubyTempfile;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackEnvironment;
+import org.jruby.rack.RackInput;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
-import org.jruby.rack.RackInput;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Suitable env['rack.input'] object for servlet environments, allowing to rewind the
@@ -74,8 +81,12 @@ public class RackRewindableInput extends RackBaseInput {
 
     public RackRewindableInput(Ruby runtime, RackEnvironment environment) throws IOException {
         super(runtime, getRackRewindableInputClass(runtime), environment);
-        if (environment != null && environment.getContext().getInitParameter("jruby.rack.background.spool") != null) {
-            spooler = backgroundSpooler;
+        if (environment != null) {
+            RackConfig config = environment.getContext().getConfig();
+            if (config.isBackgroundSpooling()) {
+                spooler = backgroundSpooler;
+            }
+            threshold = config.getMemoryBufferSize();
         }
     }
 

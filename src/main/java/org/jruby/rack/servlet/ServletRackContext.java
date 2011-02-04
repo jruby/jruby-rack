@@ -7,40 +7,38 @@
 
 package org.jruby.rack.servlet;
 
-import org.jruby.rack.input.RackRewindableInput;
-import org.jruby.rack.logging.RackLoggerFactory;
-import org.jruby.rack.*;
+import org.jruby.rack.RackApplicationFactory;
+import org.jruby.rack.RackConfig;
+import org.jruby.rack.RackContext;
+import org.jruby.rack.RackLogger;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Set;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
-import org.jruby.util.SafePropertyAccessor;
-import static java.lang.System.out;
 
 /**
  *
  * @author nicksieger
  */
 public class ServletRackContext implements RackContext, ServletContext {
+    private RackConfig config;
     private ServletContext context;
     private RackLogger logger;
 
-    public ServletRackContext(ServletContext context) {
-        this.context = context;
-        this.logger = new RackLoggerFactory().getLogger(context);
-        RackRewindableInput.setDefaultThreshold(
-                SafePropertyAccessor.getInt("jruby.rack.request.size.threshold.bytes",
-                RackRewindableInput.getDefaultThreshold()));
+    public ServletRackContext(ServletRackConfig config) {
+        this.config  = config;
+        this.context = config.getServletContext();
+        this.logger  = config.getLogger();
     }
 
     public String getInitParameter(String key) {
-        return context.getInitParameter(key);
+        return config.getProperty(key);
     }
 
     public void log(String message) {
@@ -66,7 +64,7 @@ public class ServletRackContext implements RackContext, ServletContext {
     }
 
     public RackApplicationFactory getRackFactory() {
-        return (RackApplicationFactory) context.getAttribute(RackServletContextListener.FACTORY_KEY);
+        return (RackApplicationFactory) context.getAttribute(RackApplicationFactory.FACTORY);
     }
 
     public ServletContext getContext(String path) {
@@ -126,7 +124,7 @@ public class ServletRackContext implements RackContext, ServletContext {
 
     @Deprecated
     public void log(Exception ex, String msg) {
-        context.log(ex, msg);
+        logger.log(msg, ex);
     }
 
     public String getServerInfo() {
@@ -139,6 +137,10 @@ public class ServletRackContext implements RackContext, ServletContext {
 
     public Object getAttribute(String key) {
         return context.getAttribute(key);
+    }
+
+    public RackConfig getConfig() {
+        return config;
     }
 
     public Enumeration getAttributeNames() {

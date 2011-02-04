@@ -7,9 +7,10 @@
 
 package org.jruby.rack;
 
+import org.jruby.exceptions.RaiseException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import org.jruby.exceptions.RaiseException;
 
 public class RackInitializationException extends Exception {
     public RackInitializationException(RaiseException re) {

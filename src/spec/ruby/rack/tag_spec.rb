@@ -31,7 +31,8 @@ describe RackTag do
     @rack_factory.stub!(:getApplication).and_return @application
     @rack_factory.stub!(:finishedWithApplication)
 
-    @servlet_context.stub!(:getAttribute).and_return @rack_factory
+    @servlet_context.stub!(:getAttribute).with('rack.factory').and_return @rack_factory
+    @servlet_context.stub!(:getAttribute).with('rack.context').and_return @rack_context
     @servlet_request = mock("Servlet Request")
     @servlet_request.stub!(:getContextPath).and_return ""
     @servlet_response = mock("Servlet Response")

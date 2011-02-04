@@ -7,16 +7,12 @@
 
 package org.jruby.rack.logging;
 
+import org.jruby.rack.RackLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.jruby.rack.RackLogger;
 
 public class Slf4jLogger implements RackLogger {
     private Logger logger;
-
-    public Slf4jLogger() {
-        this(RackLoggerFactory.defaultLogName());
-    }
 
     public Slf4jLogger(String loggerName) {
         setLoggerName(loggerName);

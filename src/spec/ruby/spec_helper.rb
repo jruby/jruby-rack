@@ -14,11 +14,13 @@ $LOAD_PATH.unshift File.expand_path('../rails', __FILE__)
 WD_START = Dir.getwd
 
 java_import org.jruby.rack.RackContext
+java_import org.jruby.rack.RackConfig
 java_import org.jruby.rack.RackServletContextListener
 java_import javax.servlet.ServletContext
 
 Spec::Runner.configure do |config|
   def mock_servlet_context
+    @rack_config ||= RackConfig.impl {}
     @rack_context ||= RackContext.impl {}
     @servlet_context ||= ServletContext.impl {}
     [@rack_context, @servlet_context].each do |context|
@@ -28,9 +30,10 @@ Spec::Runner.configure do |config|
       context.stub!(:getResource).and_return nil
       context.stub!(:getContextPath).and_return "/"
     end
+    @rack_context.stub!(:getConfig).and_return @rack_config
     @servlet_config ||= mock("servlet config")
-    @servlet_config.stub!(:getServletName).and_return("A Servlet")
-    @servlet_config.stub!(:getServletContext).and_return(@servlet_context)
+    @servlet_config.stub!(:getServletName).and_return "A Servlet"
+    @servlet_config.stub!(:getServletContext).and_return @servlet_context
   end
 
   def create_booter(booter_class = JRuby::Rack::Booter)

@@ -7,11 +7,13 @@
 
 package org.jruby.rack.servlet;
 
-import org.jruby.rack.*;
-import java.io.IOException;
-import java.io.InputStream;
+import org.jruby.rack.RackContext;
+import org.jruby.rack.RackEnvironment;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Implementation of RackEnvironment for the servlet environment.
