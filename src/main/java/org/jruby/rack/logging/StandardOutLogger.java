@@ -7,11 +7,14 @@
 
 package org.jruby.rack.logging;
 
-import static java.lang.System.out;
-
 import org.jruby.rack.RackLogger;
 
+import static java.lang.System.out;
+
 public class StandardOutLogger implements RackLogger {
+    public StandardOutLogger(String ignored) {
+    }
+
     public void log(String message) {
         out.println(message);
         out.flush();

@@ -7,9 +7,9 @@
 
 package org.jruby.rack.logging;
 
-import javax.servlet.ServletContext;
-
 import org.jruby.rack.RackLogger;
+
+import javax.servlet.ServletContext;
 
 public class ServletContextLogger implements RackLogger {
     private ServletContext context;

@@ -7,10 +7,10 @@
 
 package org.jruby.rack;
 
-import java.util.Set;
-import java.net.URL;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Set;
 
 /**
  * Abstraction of an application context to make parts of the library
@@ -25,4 +25,5 @@ public interface RackContext extends RackLogger {
     URL getResource(String path) throws MalformedURLException;
     InputStream getResourceAsStream(String path);
     Object getAttribute(String name);
+    RackConfig getConfig();
 }

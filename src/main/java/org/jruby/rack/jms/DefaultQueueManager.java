@@ -7,20 +7,6 @@
 
 package org.jruby.rack.jms;
 
-import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.MessageConsumer;
-import javax.jms.Session;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import org.jruby.Ruby;
 import org.jruby.RubyModule;
 import org.jruby.RubyObjectAdapter;
@@ -30,6 +16,15 @@ import org.jruby.rack.RackApplication;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackContext;
 import org.jruby.runtime.builtin.IRubyObject;
+
+import javax.jms.*;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  *
@@ -53,10 +48,10 @@ public class DefaultQueueManager implements QueueManager {
     
     public void init(RackContext context) throws Exception {
         this.context = context;
-        String jndiName = context.getInitParameter("jms.connection.factory");
+        String jndiName = context.getConfig().getJmsConnectionFactory();
         if (jndiName != null && connectionFactory == null) {
             Properties properties = new Properties();
-            String jndiProperties = context.getInitParameter("jms.jndi.properties");
+            String jndiProperties = context.getConfig().getJmsJndiProperties();
             if (jndiProperties != null) {
                 properties.load(new ByteArrayInputStream(jndiProperties.getBytes("UTF-8")));
             }

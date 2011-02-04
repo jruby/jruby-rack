@@ -121,7 +121,8 @@ describe RackFilter do
     config = mock "filter config"
     config.stub!(:getServletContext).and_return servlet_context
     servlet_context.stub!(:getInitParameter).and_return nil
-    servlet_context.stub!(:getInitParameter).with("jruby.rack.slash.index").and_return "true"
+    servlet_context.should_receive(:getAttribute).with('rack.context').and_return @rack_context
+    @rack_config.stub!(:isSlashIndex).and_return true
     @filter.init(config)
     stub_request("/")
     @chain.should_receive(:doFilter).ordered.and_return do |req,resp|

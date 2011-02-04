@@ -49,14 +49,15 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         this.rackContext = rackContext;
         realFactory.init(rackContext);
 
-        Integer specifiedTimeout = getPositiveInteger("jruby.runtime.timeout.sec");
+        RackConfig config = rackContext.getConfig();
+        Integer specifiedTimeout = config.getRuntimeTimeoutSeconds();
         if (specifiedTimeout != null) {
             timeout = specifiedTimeout.longValue();
         }
         rackContext.log("Info: using runtime pool timeout of " + timeout + " seconds");
 
-        initial = getInitial();
-        maximum = getMaximum();
+        initial = config.getInitialRuntimes();
+        maximum = config.getMaximumRuntimes();
         if (maximum != null) {
             if (initial != null && initial > maximum) {
                 maximum = initial;
@@ -139,7 +140,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     }
 
     protected void launchInitializerThreads(final Queue<RackApplication> apps) {
-        Integer numThreads = getPositiveInteger("jruby.runtime.initializer.threads");
+        Integer numThreads = rackContext.getConfig().getNumInitializerThreads();
         if (numThreads == null) {
             numThreads = 4;
         }
@@ -191,37 +192,5 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             }
         } catch (InterruptedException ex) {
         }
-    }
-
-    private Integer getInitial() {
-        return getRangeValue("min", "minIdle");
-    }
-
-    private Integer getMaximum() {
-        return getRangeValue("max", "maxActive");
-    }
-
-    private Integer getRangeValue(String end, String gsValue) {
-        Integer v = getPositiveInteger("jruby." + end + ".runtimes");
-        if (v == null) {
-            v = getPositiveInteger("jruby.pool." + gsValue);
-        }
-        if (v == null) {
-            rackContext.log("Warning: no " + end + " runtimes specified.");
-        } else {
-            rackContext.log("Info: received " + end + " runtimes = " + v);
-        }
-        return v;
-    }
-
-    private Integer getPositiveInteger(String string) {
-        try {
-            int i = Integer.parseInt(rackContext.getInitParameter(string));
-            if (i > 0) {
-                return new Integer(i);
-            }
-        } catch (Exception e) {
-        }
-        return null;
     }
 }

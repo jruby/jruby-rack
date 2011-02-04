@@ -12,6 +12,9 @@ package org.jruby.rack;
  * @author nicksieger
  */
 public interface RackApplicationFactory {
+    String RACK_CONTEXT = "rack.context";
+    String FACTORY = "rack.factory";
+
     /** Initialize the factory. */
     void init(RackContext rackContext) throws RackInitializationException;
     /** Create a new, uninitialized application. The resulting object must

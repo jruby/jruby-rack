@@ -7,12 +7,12 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.servlet.ServletRackContext;
 import org.jruby.rack.servlet.ServletRackEnvironment;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.jsp.tagext.TagSupport;
 import javax.servlet.jsp.JspException;
+import javax.servlet.jsp.tagext.TagSupport;
 
 public class RackTag extends TagSupport {
     private String path;
@@ -30,7 +30,9 @@ public class RackTag extends TagSupport {
     public int doEndTag() throws JspException {
         try {
             RackApplicationFactory factory = (RackApplicationFactory)
-                pageContext.getServletContext().getAttribute(RackServletContextListener.FACTORY_KEY);
+                    pageContext.getServletContext().getAttribute(RackApplicationFactory.FACTORY);
+            RackContext context = (RackContext)
+                    pageContext.getServletContext().getAttribute(RackApplicationFactory.RACK_CONTEXT);
             RackApplication app = factory.getApplication();
             try {
                 final HttpServletRequest request =
@@ -41,7 +43,7 @@ public class RackTag extends TagSupport {
                     @Override public String getQueryString() { return params; }
                     @Override public String getServletPath() { return ""; }
                 };
-                RackResponse result = app.call(new ServletRackEnvironment(request, new ServletRackContext(pageContext.getServletContext())));
+                RackResponse result = app.call(new ServletRackEnvironment(request, context));
                 pageContext.getOut().write(result.getBody());
             } finally {
               factory.finishedWithApplication(app);

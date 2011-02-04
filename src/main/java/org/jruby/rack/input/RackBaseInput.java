@@ -7,8 +7,6 @@
 
 package org.jruby.rack.input;
 
-import java.io.IOException;
-import java.io.InputStream;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
@@ -22,6 +20,9 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  *

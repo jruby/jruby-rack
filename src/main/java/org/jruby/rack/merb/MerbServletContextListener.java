@@ -7,9 +7,8 @@
 
 package org.jruby.rack.merb;
 
-import javax.servlet.ServletContext;
-
 import org.jruby.rack.RackApplicationFactory;
+import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackServletContextListener;
 import org.jruby.rack.SharedRackApplicationFactory;
 
@@ -19,7 +18,7 @@ import org.jruby.rack.SharedRackApplicationFactory;
  */
 public class MerbServletContextListener extends RackServletContextListener {
     @Override
-    protected RackApplicationFactory newApplicationFactory(ServletContext context) {
+    protected RackApplicationFactory newApplicationFactory(RackConfig config) {
         return new SharedRackApplicationFactory(
             new MerbRackApplicationFactory()
         );

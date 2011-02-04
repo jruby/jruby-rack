@@ -7,29 +7,26 @@
 
 package org.jruby.rack;
 
-import java.io.IOException;
 import org.jruby.Ruby;
+import org.jruby.RubyObjectAdapter;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
-import org.jruby.RubyObjectAdapter;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.util.SafePropertyAccessor;
-
 import org.jruby.rack.input.RackBaseInput;
 import org.jruby.rack.input.RackNonRewindableInput;
 import org.jruby.rack.input.RackRewindableInput;
+import org.jruby.runtime.builtin.IRubyObject;
+
+import java.io.IOException;
 
 /**
  *
  * @author nicksieger
  */
 public class DefaultRackApplication implements RackApplication {
-    private final boolean rewindable;
     private final RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
     private IRubyObject application;
 
     public DefaultRackApplication() {
-        rewindable = SafePropertyAccessor.getBoolean("jruby.rack.input.rewindable", true);
     }
 
     public RackResponse call(final RackEnvironment env) {
@@ -69,7 +66,7 @@ public class DefaultRackApplication implements RackApplication {
     }
 
     private RackBaseInput createRackInput(Ruby runtime, RackEnvironment env) throws IOException {
-        if (rewindable) {
+        if (env.getContext().getConfig().isRewindable()) {
             return new RackRewindableInput(runtime, env);
         } else {
             return new RackNonRewindableInput(runtime, env);

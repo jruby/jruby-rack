@@ -7,12 +7,14 @@
 
 package org.jruby.rack.servlet;
 
-import org.jruby.rack.*;
+import org.jruby.rack.RackResponse;
+import org.jruby.rack.RackResponseEnvironment;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  *

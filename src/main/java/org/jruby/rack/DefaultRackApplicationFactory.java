@@ -7,28 +7,22 @@
 
 package org.jruby.rack;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.jruby.CompatVersion;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ClassCache;
-import java.net.URLDecoder;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -77,6 +71,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         errorApplication = null;
     }
 
+    public RackContext getRackContext() {
+        return rackContext;
+    }
+
     public Ruby newRuntime() throws RackInitializationException {
         try {
             Ruby runtime = (Ruby) rackContext.getAttribute("jruby.runtime");
@@ -103,21 +101,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
-    private static final Pattern COMPAT_VERSION = Pattern.compile("1[._]([89])");
-
     private RubyInstanceConfig createRuntimeConfig() {
         RubyInstanceConfig config = new RubyInstanceConfig();
         config.setClassCache(classCache);
-        if (rackContext.getInitParameter("jruby.compat.version") != null) {
-            Matcher matcher = COMPAT_VERSION.matcher(rackContext.getInitParameter("jruby.compat.version"));
-            if (matcher.find()) {
-                String version = matcher.group(1);
-                if (version.equals("8")) {
-                    config.setCompatVersion(CompatVersion.RUBY1_8);
-                } else if (version.equals("9")) {
-                    config.setCompatVersion(CompatVersion.RUBY1_9);
-                }
-            }
+        if (rackContext.getConfig().getCompatVersion() != null) {
+            config.setCompatVersion(rackContext.getConfig().getCompatVersion());
         }
 
         try { // try to set jruby home to jar file path
@@ -282,12 +270,12 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private String findRackupScript() {
         rackupLocation = "<web.xml>";
 
-        String rackup = rackContext.getInitParameter("rackup");
+        String rackup = rackContext.getConfig().getRackup();
         if (rackup != null) {
             return rackup;
         }
 
-        rackup = rackContext.getInitParameter("rackup.path");
+        rackup = rackContext.getConfig().getRackupPath();
 
         if (rackup == null) {
             rackup = findConfigRuPathInSubDirectories("/WEB-INF/", 1);

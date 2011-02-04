@@ -19,7 +19,8 @@ describe RackServletContextListener do
 
   describe "contextInitialized" do
     it "should create a Rack application factory and store it in the context" do
-      @servlet_context.should_receive(:setAttribute).with(RackServletContextListener::FACTORY_KEY, @factory)
+      @servlet_context.should_receive(:setAttribute).with(RackApplicationFactory::FACTORY, @factory)
+      @servlet_context.should_receive(:setAttribute).with(RackApplicationFactory::RACK_CONTEXT, anything())
       @factory.stub!(:init)
       @listener.contextInitialized @servlet_context_event
     end
@@ -41,16 +42,18 @@ describe RackServletContextListener do
   describe "contextDestroyed" do
     it "should remove the application factory from the servlet context" do
       @servlet_context.should_receive(:getAttribute).with(
-        RackServletContextListener::FACTORY_KEY).and_return @factory
+        RackApplicationFactory::FACTORY).and_return @factory
       @servlet_context.should_receive(:removeAttribute).with(
-        RackServletContextListener::FACTORY_KEY)
+        RackApplicationFactory::FACTORY)
+      @servlet_context.should_receive(:removeAttribute).with(
+        RackApplicationFactory::RACK_CONTEXT)
       @factory.stub!(:destroy)
       @listener.contextDestroyed @servlet_context_event
     end
 
     it "should destroy it" do
       @servlet_context.should_receive(:getAttribute).with(
-        RackServletContextListener::FACTORY_KEY).and_return @factory
+        RackApplicationFactory::FACTORY).and_return @factory
       @servlet_context.stub!(:removeAttribute)
       @factory.should_receive(:destroy)
       @listener.contextDestroyed @servlet_context_event
@@ -58,7 +61,7 @@ describe RackServletContextListener do
 
     it "should do nothing if no application is found in the context" do
       @servlet_context.should_receive(:getAttribute).with(
-        RackServletContextListener::FACTORY_KEY).and_return nil
+        RackApplicationFactory::FACTORY).and_return nil
       @listener.contextDestroyed @servlet_context_event
     end
   end

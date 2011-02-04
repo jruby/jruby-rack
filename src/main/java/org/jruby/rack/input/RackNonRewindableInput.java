@@ -7,8 +7,6 @@
 
 package org.jruby.rack.input;
 
-import java.io.FilterInputStream;
-import java.io.IOException;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyIO;
@@ -16,6 +14,9 @@ import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.RackInput;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.builtin.IRubyObject;
+
+import java.io.FilterInputStream;
+import java.io.IOException;
 
 /**
  *

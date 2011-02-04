@@ -7,16 +7,15 @@
 
 package org.jruby.rack;
 
-import java.io.IOException;
+import org.jruby.rack.servlet.ServletRackEnvironment;
+import org.jruby.rack.servlet.ServletRackResponseEnvironment;
+
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-
-import org.jruby.rack.servlet.ServletRackContext;
-import org.jruby.rack.servlet.ServletRackEnvironment;
-import org.jruby.rack.servlet.ServletRackResponseEnvironment;
+import java.io.IOException;
 
 /**
  *
@@ -39,13 +38,13 @@ public class RackFilter implements Filter {
 
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
-        this.context = new ServletRackContext(config.getServletContext());
+        this.context = (RackContext) config.getServletContext().getAttribute(RackApplicationFactory.RACK_CONTEXT);
         this.dispatcher = new DefaultRackDispatcher(this.context);
         this.convertSlashToIndex = shouldConvertSlashToIndex(config.getServletContext());
     }
 
     private boolean shouldConvertSlashToIndex(ServletContext context) {
-        return this.context.getInitParameter("jruby.rack.slash.index") != null
+        return this.context.getConfig().isSlashIndex()
                 || context.getServerInfo().contains("jetty");  // JRUBY_RACK-35
     }
 

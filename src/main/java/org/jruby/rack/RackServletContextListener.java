@@ -7,7 +7,9 @@
 
 package org.jruby.rack;
 
+import org.jruby.rack.servlet.ServletRackConfig;
 import org.jruby.rack.servlet.ServletRackContext;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -17,7 +19,6 @@ import javax.servlet.ServletContextListener;
  * @author nicksieger
  */
 public class RackServletContextListener implements ServletContextListener {
-    public static final String FACTORY_KEY = "rack.factory";
     private final RackApplicationFactory factory;
 
     public RackServletContextListener() {
@@ -34,10 +35,13 @@ public class RackServletContextListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent ctxEvent) {
         ServletContext ctx = ctxEvent.getServletContext();
-        final RackApplicationFactory fac = newApplicationFactory(ctx);
-        ctx.setAttribute(FACTORY_KEY, fac);
+        ServletRackConfig config = new ServletRackConfig(ctx);
+        final RackApplicationFactory fac = newApplicationFactory(config);
+        ctx.setAttribute(RackApplicationFactory.FACTORY, fac);
+        ServletRackContext rackContext = new ServletRackContext(config);
+        ctx.setAttribute(RackApplicationFactory.RACK_CONTEXT, rackContext);
         try {
-            fac.init(new ServletRackContext(ctx));
+            fac.init(rackContext);
         } catch (Exception ex) {
             ctx.log("Error: application initialization failed", ex);
         }
@@ -46,14 +50,15 @@ public class RackServletContextListener implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent ctxEvent) {
         ServletContext ctx = ctxEvent.getServletContext();
         final RackApplicationFactory fac =
-                (RackApplicationFactory) ctx.getAttribute(FACTORY_KEY);
+                (RackApplicationFactory) ctx.getAttribute(RackApplicationFactory.FACTORY);
         if (fac != null) {
             fac.destroy();
-            ctx.removeAttribute(FACTORY_KEY);
+            ctx.removeAttribute(RackApplicationFactory.FACTORY);
+            ctx.removeAttribute(RackApplicationFactory.RACK_CONTEXT);
         }
     }
 
-    protected RackApplicationFactory newApplicationFactory(ServletContext context) {
+    protected RackApplicationFactory newApplicationFactory(RackConfig config) {
         if (factory != null) {
             return factory;
         }
