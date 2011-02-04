@@ -84,7 +84,7 @@ class JRuby::Rack::Response
   def write_body(response)
     outputstream = response.getOutputStream
     begin
-      if @body.respond_to?(:call)
+      if @body.respond_to?(:call) && !@body.respond_to?(:each)
         @body.call(outputstream)
       elsif @body.respond_to?(:to_channel) && !object_polluted_with_anyio?(@body, :to_channel)
         @body = @body.to_channel # so that we close the channel

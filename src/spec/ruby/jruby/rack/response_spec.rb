@@ -185,6 +185,16 @@ describe JRuby::Rack::Response do
       @response.write_body(@servlet_response)
     end
 
+    it "does not yield the stream if the object responds to both #call and #each" do
+      @body.stub!(:call)
+      @body.should_receive(:each).and_return do |block|
+        block.call "hi"
+      end
+      stream.should_receive(:write)
+
+      @response.write_body(@servlet_response)
+    end
+
     it "writes the stream using a channel if the object responds to #to_channel" do
       channel = mock "channel"
       @body.should_receive(:to_channel).and_return channel
