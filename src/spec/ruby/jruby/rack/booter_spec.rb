@@ -89,6 +89,7 @@ describe JRuby::Rack::Booter do
     @rack_context.should_receive(:getResource).with("/META-INF/init.rb").and_return java.net.URL.new("file:#{File.expand_path('../init.rb', __FILE__)}")
     create_booter.boot!
     $loaded_init_rb.should == true
+    defined?(::SOME_TOPLEVEL_CONSTANT).should be_true
   end
 
   it "should load and execute ruby code in WEB-INF/init.rb if it exists" do
