@@ -1,10 +1,11 @@
 require 'sinatra'
+helpers DemoHelpers
 
 get '/' do
-  'Hello world!'
+  "Oops! Something's not right.<br/>\nYou should be seeing <a href='index.html'>index.html</a> instead."
 end
 
-post '/' do
+post '/body' do
   res = "Content-Type was: #{request.content_type.inspect}\n"
   body = request.body.read
   if body.empty?
@@ -16,25 +17,13 @@ post '/' do
 end
 
 get %r'.*/info' do
-  env = request.env
-  res = ""
-  res << "rack.version: " << env["rack.version"].inspect << "\n"
-  res << "CONTENT_TYPE: " << env["CONTENT_TYPE"].inspect << "\n"
-  res << "HTTP_HOST: "    << env["HTTP_HOST"].inspect << "\n"
-  res << "HTTP_ACCEPT: "  << env["HTTP_ACCEPT"].inspect << "\n"
-  res << "REQUEST_METHOD: " << env["REQUEST_METHOD"].inspect << "\n"
-  res << "SCRIPT_NAME: " << env["SCRIPT_NAME"].inspect << "\n"
-  res << "PATH_INFO: " << env["PATH_INFO"].inspect << "\n"
-  if env['java.servlet_request']
-    res << "getServletPath: " << env['java.servlet_request'].getServletPath.inspect << "\n"
-    res << "getPathInfo: " << env['java.servlet_request'].getPathInfo.inspect << "\n"
-  end
-  res << "REQUEST_URI: " << env["REQUEST_URI"].inspect << "\n"
-  res << "QUERY_STRING: " << env["QUERY_STRING"].inspect << "\n"
-  res << "SERVER_NAME: " << env["SERVER_NAME"].inspect << "\n"
-  res << "SERVER_PORT: " << env["SERVER_PORT"].inspect << "\n"
-  res << "REMOTE_HOST: " << env["REMOTE_HOST"].inspect << "\n"
-  res << "REMOTE_ADDR: " << env["REMOTE_ADDR"].inspect << "\n"
-  res << "REMOTE_USER: " << env["REMOTE_USER"].inspect << "\n"
-  res
+  content_type 'text/plain; charset=utf-8'
+  erb :info
+end
+
+get '/env' do
+  content_type 'text/plain; charset=utf-8'
+  result = erb :env
+  write_environment(result)
+  result
 end

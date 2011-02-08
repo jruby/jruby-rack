@@ -1,0 +1,9 @@
+body {font: 100% Helvetica, sans-serif;}
+h1 {font-size: 2em;}
+h2 {font-size: 1.2em;}
+p {margin: 20px 0px;}
+#content {margin: 0 auto;width: 720px;padding: 20px;}
+ul, ol {margin:0 1.5em 1.5em 1.5em;}
+ul {list-style-type:disc;}
+ol {list-style-type:decimal;}
+

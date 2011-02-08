@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Sinatra JRuby-Rack Demo</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/2.8.0r4/build/reset/reset-min.css" type="text/css" media="screen, projection">
+    <link rel="stylesheet" href="style.css" type="text/css" media="screen, projection">
+    <link rel="shortcut icon" href="favicon.ico">
+  </head>
+  <body>
+    <div id="content">
+      <h1>Sinatra on JRuby-Rack</h1>
+      <div>
+        <p>Congratulations! The Sinatra demo application was
+        successfully deployed.</p>
+
+        <ul>
+          <li>You can <a href="env">check out the environment</a> in
+          which the application is deployed. This displays the server
+          environment and writes information back to the jruby-rack
+          repository where you built this application if it
+          exists.</li>
+        </ul>
+
+        <p>Other actions available:</p>
+
+        <ul>
+          <li><a href="/info">View request info</a></li>
+          <li>
+            <form action="body" method="POST">
+              <p>Show request post body. Enter text below and the
+              request body will be displayed.</p>
+              <textarea name="text" rows="8" cols="40"></textarea>
+              <input type="submit" name="submit" value="Submit"/>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
