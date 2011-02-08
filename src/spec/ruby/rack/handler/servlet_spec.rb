@@ -81,7 +81,7 @@ describe Rack::Handler::Servlet, "create_env" do
     attrs = { "REQUEST_METHOD" => "POST", "SCRIPT_NAME" => "/override",
       "PATH_INFO" => "/override", "REQUEST_URI" => "/override",
       "QUERY_STRING" => "override", "SERVER_NAME" => "override",
-      "SERVER_PORT" => 8080, "REMOTE_HOST" => "override",
+      "SERVER_PORT" => 8080, "SERVER_SOFTWARE" => "servy", "REMOTE_HOST" => "override",
       "REMOTE_ADDR" => "192.168.0.1", "REMOTE_USER" => "override" }
     (class << @servlet_env; self; end).send(:define_method, :getAttribute) {|k| attrs[k]}
     stub_env({ :getMethod => "GET",
@@ -96,6 +96,7 @@ describe Rack::Handler::Servlet, "create_env" do
                :getRemoteAddr => "127.0.0.1",
                :getRemoteUser => "admin"
              })
+    @rack_context.stub!(:getServerInfo).and_return 'servy'
 
     env = @servlet.create_lazy_env @env
 
@@ -106,6 +107,7 @@ describe Rack::Handler::Servlet, "create_env" do
     env["QUERY_STRING"].should == "override"
     env["SERVER_NAME"].should == "override"
     env["SERVER_PORT"].should == "8080"
+    env["SERVER_SOFTWARE"].should == "servy"
     env["REMOTE_HOST"].should == "override"
     env["REMOTE_ADDR"].should == "192.168.0.1"
     env["REMOTE_USER"].should == "override"

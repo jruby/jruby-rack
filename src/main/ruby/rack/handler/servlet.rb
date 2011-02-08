@@ -34,7 +34,7 @@ module Rack
         jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release)
 
       REQUEST = %w(CONTENT_TYPE CONTENT_LENGTH REQUEST_METHOD SCRIPT_NAME REQUEST_URI
-        PATH_INFO QUERY_STRING SERVER_NAME REMOTE_HOST REMOTE_ADDR REMOTE_USER SERVER_PORT)
+        PATH_INFO QUERY_STRING SERVER_NAME SERVER_SOFTWARE REMOTE_HOST REMOTE_ADDR REMOTE_USER SERVER_PORT)
 
       def initialize(servlet_env)
         @env = populate(LazyEnv.new(servlet_env).to_hash)
@@ -175,6 +175,10 @@ module Rack
 
       def load__SERVER_PORT(env)
         env["SERVER_PORT"] = @servlet_env.getServerPort.to_s
+      end
+
+      def load__SERVER_SOFTWARE(env)
+        env["SERVER_SOFTWARE"] = @servlet_env.context.getServerInfo
       end
     end
   end
