@@ -1,17 +1,9 @@
 # -*- mode: ruby -*-
 
-require 'rubygems'
 require './lib/helpers'
-extend DemoHelpers
-begin
-  pre_capture_paths
-  require 'bundler/setup'
-  post_capture_paths
-  require './lib/demo'
-rescue Exception => e
-  write_environment(nil, e) rescue nil
-  raise e
-end
+require 'rubygems'
+require 'bundler/setup'
+require './lib/demo'
 
 set :run, false
 set :public, './public'

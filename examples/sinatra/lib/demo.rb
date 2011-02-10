@@ -1,5 +1,18 @@
 require 'sinatra'
-helpers DemoHelpers
+if defined?(JRuby::Rack::Capture)
+  helpers do
+    include JRuby::Rack::Capture::Base
+    include JRuby::Rack::Capture::RubyGems
+    include JRuby::Rack::Capture::Bundler
+    include JRuby::Rack::Capture::Environment
+    include JRuby::Rack::Capture::JavaEnvironment
+    include JRuby::Rack::Capture::LoadPath
+    include DemoCaptureHelper
+    include FileStoreHelper
+  end
+else
+  helpers DemoDummyHelper
+end
 
 get '/' do
   "Oops! Something's not right.<br/>\nYou should be seeing <a href='index.html'>index.html</a> instead."
@@ -23,7 +36,7 @@ end
 
 get '/env' do
   content_type 'text/plain; charset=utf-8'
-  result = erb :env
-  write_environment(result)
-  result
+  capture
+  store
+  output.string
 end
