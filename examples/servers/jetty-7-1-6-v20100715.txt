@@ -1,0 +1,211 @@
+--- System
+jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
+Time: Thu Feb 10 14:26:05 -0600 2011
+Server: jetty/7.1.6.v20100715
+jruby.home: file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
+
+--- Context Init Parameters:
+ENV_HOST = vanguard.local
+ENV_OUTPUT = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
+public.root = /
+rails.env = production
+
+--- RubyGems
+Gem.dir: file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Gem.path:
+/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Activated gems:
+  bundler-1.0.10
+  rack-1.2.1
+  sinatra-1.0
+
+--- Bundler
+Bundler.bundle_path: file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Bundler.root: /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF
+Gemfile: /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/Gemfile
+Settings:
+  without = development:test
+  bin_path = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+  gemfile = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/Gemfile
+
+--- JRuby-Rack Config
+background_spooling = false
+compat_version = 
+initial_runtimes = 
+jms_connection_factory = 
+jms_jndi_properties = 
+logger = org.jruby.rack.logging.ServletContextLogger@275cea3
+logger_class_name = servlet_context
+logger_name = jruby.rack
+maximum_runtimes = 
+memory_buffer_size = 65536
+num_initializer_threads = 
+rackup = 
+rackup_path = 
+rewindable = true
+runtime_timeout_seconds = 
+serial_initialization = false
+servlet_context = ServletContext@78db81f3{/sinatra,file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/}
+slash_index = true
+
+--- Environment Variables
+Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
+BUNDLE_BIN_PATH = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+BUNDLE_GEMFILE = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/Gemfile
+BUNDLE_WITHOUT = development:test
+COMMAND_MODE = unix2003
+CVSROOT = 
+CVS_RSH = ssh
+DISPLAY = /tmp/launch-yYgQ1w/org.x:0
+EDITOR = emacs_wait
+GEM_PATH = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems
+GLASSFISH = /Users/nicksieger/Projects/java/glassfishv3/glassfish
+GLOBAL_PROJFILE = /Users/nicksieger/.global.env-vanguard.local
+GLOBAL_VARFILE = /Users/nicksieger/.global.vars-vanguard.local
+HISTFILE = /Users/nicksieger/.bash_history-vanguard.local
+HOME = /Users/nicksieger
+J2EE_HOME = 
+JAVA_ARCH = x86_64
+JAVA_LIBDIR = /Users/nicksieger/java
+JAVA_MAIN_CLASS_32557 = org.eclipse.jetty.start.Main
+JAVA_OPTS = -d32
+JRUBY_RACK_SRC = true
+LANG = en_US.UTF-8
+LAST_SESSION = /Users/nicksieger/.last_session-vanguard.local
+LESS = -rqFX
+LOGNAME = nicksieger
+MANPATH = /usr/local/man
+OLDPWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+PAGER = less
+PATH = file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
+PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
+PROJ_EXIT = 
+PWD = /Users/nicksieger/Projects/java/jetty-7.1.6.v20100715
+RACK_ENV = production
+RUBYOPT = -I/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
+SECURITYSESSIONID = 301e55
+SESSIONDIR = /Users/nicksieger
+SHELL = /bin/bash
+SHLVL = 2
+SSH_AUTH_SOCK = /tmp/launch-AYXflR/Listeners
+TERM = xterm-color
+TERM_PROGRAM = Apple_Terminal
+TERM_PROGRAM_VERSION = 273
+TITLE = Bash 3.2.48(1)-release
+TITLE_BASE = ${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}
+TMPDIR = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
+USER = nicksieger
+_ = /usr/bin/java
+__CF_USER_TEXT_ENCODING = 0x1F5:0:0
+com.apple.java.jvmMode = client
+rvm_path = /Users/nicksieger/.rvm
+rvm_selfcontained = 1
+rvm_version = 1.2.5
+
+--- System Properties
+awt.nativeDoubleBuffering = true
+awt.toolkit = apple.awt.CToolkit
+file.encoding = MacRoman
+file.encoding.pkg = sun.io
+file.separator = /
+ftp.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
+gopherProxySet = false
+http.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
+java.awt.graphicsenv = apple.awt.CGraphicsEnvironment
+java.awt.printerjob = apple.awt.CPrinterJob
+java.class.path = /Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-xml-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/servlet-api-2.5.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-http-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-continuation-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-server-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-security-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-servlet-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-webapp-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-deploy-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-servlets-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-jmx-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jsp/com.sun.el_1.0.0.v201004190952.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jsp/ecj-3.6.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jsp/javax.el_2.1.0.v201004190952.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jsp/javax.servlet.jsp_2.1.0.v201004190952.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jsp/javax.servlet.jsp.jstl_1.2.0.v201004190952.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jsp/jetty-jsp-2.1-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jsp/org.apache.jasper.glassfish_2.1.0.v201007080150.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jsp/org.apache.taglibs.standard.glassfish_1.2.0.v201004190952.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/resources:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-websocket-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-util-7.1.6.v20100715.jar:/Users/nicksieger/Projects/java/jetty-7.1.6.v20100715/lib/jetty-io-7.1.6.v20100715.jar
+java.class.version = 50.0
+java.endorsed.dirs = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/lib/endorsed
+java.ext.dirs = /Library/Java/Extensions:/System/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/lib/ext
+java.home = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home
+java.io.tmpdir = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
+java.library.path = .:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
+java.runtime.name = Java(TM) SE Runtime Environment
+java.runtime.version = 1.6.0_22-b04-307-10M3261
+java.specification.name = Java Platform API Specification
+java.specification.vendor = Sun Microsystems Inc.
+java.specification.version = 1.6
+java.vendor = Apple Inc.
+java.vendor.url = http://www.apple.com/
+java.vendor.url.bug = http://bugreport.apple.com/
+java.version = 1.6.0_22
+java.vm.info = mixed mode
+java.vm.name = Java HotSpot(TM) 64-Bit Server VM
+java.vm.specification.name = Java Virtual Machine Specification
+java.vm.specification.vendor = Sun Microsystems Inc.
+java.vm.specification.version = 1.0
+java.vm.vendor = Apple Inc.
+java.vm.version = 17.1-b03-307
+jetty.home = /Users/nicksieger/Projects/java/jetty-7.1.6.v20100715
+jruby.management.enabled = true
+line.separator = 
+mrj.build = 10M3261
+mrj.version = 1060.1.6.0_22-307
+os.arch = x86_64
+os.name = Mac OS X
+os.version = 10.6.6
+path.separator = :
+socksNonProxyHosts = local|*.local|169.254/16|*.169.254/16
+sun.arch.data.model = 64
+sun.boot.class.path = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsfd.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/classes.jar:/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Resources/Java/JavaRuntimeSupport.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/ui.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/laf.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/sunrsasign.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsse.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jce.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/charsets.jar
+sun.boot.library.path = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Libraries
+sun.cpu.endian = little
+sun.cpu.isalist = 
+sun.io.unicode.encoding = UnicodeLittle
+sun.java.launcher = SUN_STANDARD
+sun.jnu.encoding = MacRoman
+sun.management.compiler = HotSpot 64-Bit Server Compiler
+sun.os.patch.level = unknown
+user.country = US
+user.dir = /Users/nicksieger/Projects/java/jetty-7.1.6.v20100715
+user.home = /Users/nicksieger
+user.language = en
+user.name = nicksieger
+user.timezone = America/Chicago
+
+--- $LOAD_PATH:
+/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/sinatra-1.0/lib
+/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/rack-1.2.1/lib
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-rack-1.0.6.jar!/vendor/rack-1.2.1
+/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/bundler-1.0.10/lib
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/1.8
+.
+
+--- Request Environment
+HTTP_ACCEPT = application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+HTTP_ACCEPT_ENCODING = gzip, deflate
+HTTP_ACCEPT_LANGUAGE = en-us
+HTTP_CONNECTION = keep-alive
+HTTP_COOKIE = __utmc=111872281; __utma=111872281.937288940.1258574061.1294697219.1297282370.26; __utmz=111872281.1292187687.24.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _mkto_trk=id:422-MTH-535&token:_mch-localhost-1286296323340-33293
+HTTP_HOST = localhost:8080
+HTTP_REFERER = http://localhost:8080/sinatra/
+HTTP_USER_AGENT = Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
+PATH_INFO = /env
+QUERY_STRING = 
+REMOTE_ADDR = 0:0:0:0:0:0:0:1%0
+REMOTE_HOST = 0:0:0:0:0:0:0:1%0
+REMOTE_USER = 
+REQUEST_METHOD = GET
+REQUEST_URI = /sinatra/env
+SCRIPT_NAME = /sinatra
+SERVER_NAME = localhost
+SERVER_PORT = 8080
+SERVER_SOFTWARE = jetty/7.1.6.v20100715
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@308c666a
+java.servlet_request = [GET /sinatra/env]@976463544 org.eclipse.jetty.server.Request@3a33a6b8
+jruby.rack.dynamic.requests.only = true
+jruby.rack.jruby.version = 1.6.0.RC1
+jruby.rack.rack.release = 1.2
+jruby.rack.version = 1.0.6
+rack.errors = #<JRuby::Rack::ServletLog:0x1330b682>
+rack.input = #<JRuby::RackRewindableInput:0x631e1aa5>
+rack.multiprocess = false
+rack.multithread = true
+rack.request.query_hash = 
+rack.request.query_string = 
+rack.run_once = false
+rack.url_scheme = http
+rack.version = 11

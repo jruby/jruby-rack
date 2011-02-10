@@ -1,0 +1,224 @@
+--- System
+jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) Client VM 1.6.0_22) [darwin-i386-java]
+Time: Thu Feb 10 14:22:44 -0600 2011
+Server: Apache Tomcat/7.0.2
+jruby.home: file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
+
+--- Context Init Parameters:
+ENV_HOST = vanguard.local
+ENV_OUTPUT = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
+public.root = /
+rails.env = production
+
+--- RubyGems
+Gem.dir: file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Gem.path:
+/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems
+file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Activated gems:
+  bundler-1.0.10
+  rack-1.2.1
+  sinatra-1.0
+
+--- Bundler
+Bundler.bundle_path: file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Bundler.root: /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF
+Gemfile: /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/Gemfile
+Settings:
+  without = development:test
+  bin_path = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+  gemfile = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/Gemfile
+
+--- JRuby-Rack Config
+background_spooling = false
+compat_version = 
+initial_runtimes = 
+jms_connection_factory = 
+jms_jndi_properties = 
+logger = org.jruby.rack.logging.ServletContextLogger@cfd22a
+logger_class_name = servlet_context
+logger_name = jruby.rack
+maximum_runtimes = 
+memory_buffer_size = 65536
+num_initializer_threads = 
+rackup = 
+rackup_path = 
+rewindable = true
+runtime_timeout_seconds = 
+serial_initialization = false
+servlet_context = org.apache.catalina.core.ApplicationContextFacade@88a80e
+slash_index = true
+
+--- Environment Variables
+Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
+BUNDLE_BIN_PATH = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+BUNDLE_GEMFILE = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/Gemfile
+BUNDLE_WITHOUT = development:test
+COMMAND_MODE = unix2003
+CVSROOT = 
+CVS_RSH = ssh
+DISPLAY = /tmp/launch-yYgQ1w/org.x:0
+EDITOR = emacs_wait
+GEM_PATH = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems
+GLASSFISH = /Users/nicksieger/Projects/java/glassfishv3/glassfish
+GLOBAL_PROJFILE = /Users/nicksieger/.global.env-vanguard.local
+GLOBAL_VARFILE = /Users/nicksieger/.global.vars-vanguard.local
+HISTFILE = /Users/nicksieger/.bash_history-vanguard.local
+HOME = /Users/nicksieger
+J2EE_HOME = 
+JAVA_HOME = /System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home
+JAVA_LIBDIR = /Users/nicksieger/java
+JAVA_MAIN_CLASS_32026 = org.apache.catalina.startup.Bootstrap
+JAVA_OPTS = -d32 -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+JRUBY_RACK_SRC = true
+LANG = en_US.UTF-8
+LAST_SESSION = /Users/nicksieger/.last_session-vanguard.local
+LESS = -rqFX
+LOGNAME = nicksieger
+MANPATH = /usr/local/man
+PAGER = less
+PATH = file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
+PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
+PROJ_EXIT = 
+PWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+RACK_ENV = production
+RUBYOPT = -I/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
+SECURITYSESSIONID = 301e55
+SESSIONDIR = /Users/nicksieger
+SHELL = /bin/bash
+SHLVL = 2
+SSH_AUTH_SOCK = /tmp/launch-AYXflR/Listeners
+TERM = xterm-color
+TERM_PROGRAM = Apple_Terminal
+TERM_PROGRAM_VERSION = 273
+TITLE = Bash 3.2.48(1)-release
+TITLE_BASE = ${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}
+TMPDIR = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
+USER = nicksieger
+_ = /System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home/bin/java
+__CF_USER_TEXT_ENCODING = 0x1F5:0:0
+rvm_path = /Users/nicksieger/.rvm
+rvm_selfcontained = 1
+rvm_version = 1.2.5
+
+--- System Properties
+awt.nativeDoubleBuffering = true
+awt.toolkit = apple.awt.CToolkit
+catalina.base = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2
+catalina.home = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2
+catalina.useNaming = true
+common.loader = ${catalina.base}/lib,${catalina.base}/lib/*.jar,${catalina.home}/lib,${catalina.home}/lib/*.jar
+file.encoding = MacRoman
+file.encoding.pkg = sun.io
+file.separator = /
+ftp.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
+gopherProxySet = false
+http.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
+java.awt.graphicsenv = apple.awt.CGraphicsEnvironment
+java.awt.printerjob = apple.awt.CPrinterJob
+java.class.path = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/bin/bootstrap.jar:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/bin/tomcat-juli.jar
+java.class.version = 50.0
+java.endorsed.dirs = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/endorsed
+java.ext.dirs = /Library/Java/Extensions:/System/Library/Java/Extensions:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext
+java.home = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home
+java.io.tmpdir = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/temp
+java.library.path = .:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
+java.naming.factory.initial = org.apache.naming.java.javaURLContextFactory
+java.naming.factory.url.pkgs = org.apache.naming
+java.runtime.name = Java(TM) SE Runtime Environment
+java.runtime.version = 1.6.0_22-b04-307-10M3261
+java.specification.name = Java Platform API Specification
+java.specification.vendor = Sun Microsystems Inc.
+java.specification.version = 1.6
+java.util.logging.config.file = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/conf/logging.properties
+java.util.logging.manager = org.apache.juli.ClassLoaderLogManager
+java.vendor = Apple Inc.
+java.vendor.url = http://www.apple.com/
+java.vendor.url.bug = http://bugreport.apple.com/
+java.version = 1.6.0_22
+java.vm.info = mixed mode
+java.vm.name = Java HotSpot(TM) Client VM
+java.vm.specification.name = Java Virtual Machine Specification
+java.vm.specification.vendor = Sun Microsystems Inc.
+java.vm.specification.version = 1.0
+java.vm.vendor = Apple Inc.
+java.vm.version = 17.1-b03-307
+jruby.management.enabled = true
+line.separator = 
+mrj.build = 10M3261
+mrj.version = 1060.1.6.0_22-307
+os.arch = i386
+os.name = Mac OS X
+os.version = 10.6.6
+package.access = sun.,org.apache.catalina.,org.apache.coyote.,org.apache.tomcat.,org.apache.jasper.,sun.beans.
+package.definition = sun.,java.,org.apache.catalina.,org.apache.coyote.,org.apache.tomcat.,org.apache.jasper.
+path.separator = :
+server.loader = 
+shared.loader = 
+socksNonProxyHosts = local|*.local|169.254/16|*.169.254/16
+sun.arch.data.model = 32
+sun.boot.class.path = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jsfd.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar:/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Resources/Java/JavaRuntimeSupport.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/ui.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/laf.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/sunrsasign.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jsse.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jce.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/charsets.jar
+sun.boot.library.path = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Libraries
+sun.cpu.endian = little
+sun.cpu.isalist = 
+sun.io.unicode.encoding = UnicodeLittle
+sun.java.launcher = SUN_STANDARD
+sun.jnu.encoding = MacRoman
+sun.management.compiler = HotSpot Client Compiler
+sun.os.patch.level = unknown
+tomcat.util.buf.StringCache.byte.enabled = true
+tomcat.util.scan.DefaultJarScanner.jarsToSkip = bootstrap.jar,commons-daemon.jar,tomcat-juli.jar,annotations-api.jar,el-api.jar,jsp-api.jar,servlet-api.jar,catalina.jar,catalina-ant.jar,catalina-ha.jar,catalina-tribes.jar,jasper.jar,jasper-el.jar,ecj-3.6.jar,tomcat-api.jar,tomcat-util.jar,tomcat-coyote.jar,tomcat-dbcp.jar,tomcat-i18n-en.jar,tomcat-i18n-es.jar,tomcat-i18n-fr.jar,tomcat-i18n-ja.jar,commons-beanutils.jar,commons-collections.jar,commons-dbcp.jar,commons-digester.jar,commons-fileupload-1.0.jar,commons-logging.jar,commons-pool.jar,ant.jar,jmx.jar,jmx-tools.jar,xercesImpl.jar,xmlParserAPIs.jar,xml-apis.jar,dnsns.jar,ldapsec.jar,localedata.jar,sunjce_provider.jar,sunpkcs11.jar,tools.jar,apple_provider.jar,AppleScriptEngine.jar,CoreAudio.jar,dns_sd.jar,j3daudio.jar,j3dcore.jar,j3dutils.jar,jai_core.jar,jai_codec.jar,mlibwrapper_jai.jar,MRJToolkit.jar,vecmath.jar
+user.country = US
+user.dir = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+user.home = /Users/nicksieger
+user.language = en
+user.name = nicksieger
+user.timezone = America/Chicago
+
+--- $LOAD_PATH:
+/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/sinatra-1.0/lib
+/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/rack-1.2.1/lib
+file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-rack-1.0.6.jar!/vendor/rack-1.2.1
+/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib
+file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
+file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
+file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/1.8
+.
+
+--- Request Environment
+HTTP_ACCEPT = application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+HTTP_ACCEPT_ENCODING = gzip, deflate
+HTTP_ACCEPT_LANGUAGE = en-us
+HTTP_CONNECTION = keep-alive
+HTTP_COOKIE = __utmc=111872281; __utma=111872281.937288940.1258574061.1294697219.1297282370.26; __utmz=111872281.1292187687.24.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _mkto_trk=id:422-MTH-535&token:_mch-localhost-1286296323340-33293
+HTTP_HOST = localhost:8080
+HTTP_REFERER = http://localhost:8080/sinatra/index.html
+HTTP_USER_AGENT = Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
+PATH_INFO = /env
+QUERY_STRING = 
+REMOTE_ADDR = 0:0:0:0:0:0:0:1%0
+REMOTE_HOST = 0:0:0:0:0:0:0:1%0
+REMOTE_USER = 
+REQUEST_METHOD = GET
+REQUEST_URI = /sinatra/env
+SCRIPT_NAME = /sinatra
+SERVER_NAME = localhost
+SERVER_PORT = 8080
+SERVER_SOFTWARE = Apache Tomcat/7.0.2
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@d9799d
+java.servlet_request = org.apache.catalina.connector.RequestFacade@1f10df7
+jruby.rack.dynamic.requests.only = true
+jruby.rack.jruby.version = 1.6.0.RC1
+jruby.rack.rack.release = 1.2
+jruby.rack.version = 1.0.6
+org.apache.catalina.ASYNC_SUPPORTED = 
+org.apache.catalina.valves.AccessLogValve.t1 = 1297369364155
+rack.errors = #<JRuby::Rack::ServletLog:0x1d1358f>
+rack.input = #<JRuby::RackRewindableInput:0x13706e>
+rack.multiprocess = false
+rack.multithread = true
+rack.request.query_hash = 
+rack.request.query_string = 
+rack.run_once = false
+rack.url_scheme = http
+rack.version = 11
