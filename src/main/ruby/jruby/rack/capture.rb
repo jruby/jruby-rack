@@ -64,6 +64,21 @@ module JRuby::Rack
       end
     end
 
+    module JRubyRackConfig
+      def capture
+        super
+        methods = $servlet_context.config.class.instance_methods(false) +
+          org.jruby.rack.DefaultRackConfig.instance_methods(false)
+        methods = methods.uniq.reject do |m|
+          m =~ /^(get|is|set)/ || m =~ /[A-Z]|create|quiet|([!?=]$)/
+        end
+        output.puts("\n--- JRuby-Rack Config",
+                    *(methods.sort.map do |m|
+                        "#{m} = #{$servlet_context.config.send(m)}" rescue "#{m} = <error: #{$?}>"
+                      end))
+      end
+    end
+
     module Environment
       def capture
         super
