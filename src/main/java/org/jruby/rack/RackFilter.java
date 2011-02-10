@@ -24,7 +24,7 @@ import java.io.IOException;
 public class RackFilter implements Filter {
     private RackContext context;
     private RackDispatcher dispatcher;
-    private boolean convertSlashToIndex = false;
+    private boolean filterAddsHtml, filterVerifiesResource;
 
     /** Default constructor for servlet container */
     public RackFilter() {
@@ -34,18 +34,14 @@ public class RackFilter implements Filter {
     public RackFilter(RackDispatcher dispatcher, RackContext context) {
         this.context = context;
         this.dispatcher = dispatcher;
+        configure();
     }
 
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
         this.context = (RackContext) config.getServletContext().getAttribute(RackApplicationFactory.RACK_CONTEXT);
         this.dispatcher = new DefaultRackDispatcher(this.context);
-        this.convertSlashToIndex = shouldConvertSlashToIndex(config.getServletContext());
-    }
-
-    private boolean shouldConvertSlashToIndex(ServletContext context) {
-        return this.context.getConfig().isSlashIndex()
-                || context.getServerInfo().contains("jetty");  // JRUBY_RACK-35
+        configure();
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -64,6 +60,11 @@ public class RackFilter implements Filter {
     }
 
     public void destroy() {
+    }
+
+    private void configure() {
+        this.filterAddsHtml = context.getConfig().isFilterAddsHtml();
+        this.filterVerifiesResource = context.getConfig().isFilterVerifiesResource();
     }
 
     private static class ResponseStatusCapture extends HttpServletResponseWrapper {
@@ -113,16 +114,17 @@ public class RackFilter implements Filter {
 
     private HttpServletRequest maybeAppendHtmlToPath(ServletRequest request, RackEnvironment env) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String path                     = env.getPathInfo();
+        String path = env.getPathInfo();
 
         if (path.lastIndexOf('.') <= path.lastIndexOf('/')) {
-            boolean endsWithSlash = path.endsWith("/");
-            if (endsWithSlash) {
-                path += "index";
+            if (filterAddsHtml) {
+                if (path.endsWith("/")) {
+                    path += "index";
+                }
+                path += ".html";
             }
-            path += ".html";
 
-            if ((!endsWithSlash || !convertSlashToIndex) && !resourceExists(path)) {
+            if (filterVerifiesResource && !resourceExists(path)) {
                 return httpRequest;
             }
 

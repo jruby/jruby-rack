@@ -37,8 +37,12 @@ public interface RackConfig {
     /** Create a logger based on the configuration. */
     RackLogger getLogger();
 
-    /** Return true if "slash" should be mapped to the index or index.html URI. */
-    boolean isSlashIndex();
+    /** Return true if passing through the filter should append '.html' or 'index.html' to the path. */
+    boolean isFilterAddsHtml();
+
+    /** Return true if the filter should verify the resource exists with
+     * ServletContext#getResource before adding .html on the request. */
+    boolean isFilterVerifiesResource();
 
     /** Return true if large request bodies should be spooled in the background. */
     boolean isBackgroundSpooling();

@@ -171,12 +171,19 @@ web.xml.
   `production`.
 - `jruby.rack.logging`: Specify the logging device to use. Defaults to
   `servlet_context`. See below.
-- `jruby.rack.slash.index`: Force rewriting of requests that end in
-  '/' to be passed through to the container as '/index.html'. Default
-  is false, but is turned on for Jetty by default to avoid triggering
-  directory index pages.
 - `jruby.rack.background.spool`: (EXPERIMENTAL) Enable large request
   bodies to be spooled to a tempfile in the background.
+- `jruby.rack.filter.adds.html`: The default behavior for Rails and
+  many other Ruby applications is to add an .html extension to the
+  resource and attempt to handle it before serving a dynamic request
+  on the original URI. However, this behavior may confuse other
+  servlets in your application that have a wildcard mapping. Defaults to true.
+- `jruby.rack.filter.verify.resource.exists`: If
+  `jruby.rack.filter.adds.html` is true, then this setting, when true,
+  adds an additional check using `ServletContext#getResource` to
+  verify that the .html resource exists. Default is false. (Note that
+  apparently some servers may not implement `getResource` in the way
+  that is expected here, so in that case this setting won't matter.)
 
 ## Logging
 
