@@ -179,10 +179,16 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     private boolean getBoolean(String key, boolean defValue) {
+        String value = getProperty(key);
+        if (value == null) {
+            return defValue;
+        }
+
         try {
-            return Boolean.parseBoolean(getProperty(key));
+            return Boolean.parseBoolean(value);
         } catch (Exception e) {
         }
+
         return defValue;
     }
 }

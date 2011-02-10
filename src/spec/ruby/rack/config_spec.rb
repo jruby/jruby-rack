@@ -19,27 +19,27 @@ describe ServletRackConfig do
       java.lang.System.clearProperty("jruby.rack.logging")
     end
 
-    it "should construct a logger from the context init params over system properties" do
+    it "constructs a logger from the context init params over system properties" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.rack.logging").and_return "clogging"
       java.lang.System.setProperty("jruby.rack.logging", "stdout")
       logger.should be_kind_of(org.jruby.rack.logging.CommonsLoggingLogger)
     end
 
-    it "should construct a standard out logger when the logging attribute is unrecognized" do
+    it "constructs a standard out logger when the logging attribute is unrecognized" do
       java.lang.System.setProperty("jruby.rack.logging", "other")
       logger.should be_kind_of(org.jruby.rack.logging.StandardOutLogger)
     end
 
-    it "should constct a standard out logger when the logger can't be instantiated" do
+    it "constructs a standard out logger when the logger can't be instantiated" do
       java.lang.System.setProperty("jruby.rack.logging", "java.lang.String")
       logger.should be_kind_of(org.jruby.rack.logging.StandardOutLogger)
     end
 
-    it "should construct a servlet context logger by default" do
+    it "constructs a servlet context logger by default" do
       logger.should be_kind_of(org.jruby.rack.logging.ServletContextLogger)
     end
 
-    it "should allow specifying a class name in the logging attribute" do
+    it "allows specifying a class name in the logging attribute" do
       java.lang.System.setProperty("jruby.rack.logging", "org.jruby.rack.logging.CommonsLoggingLogger")
       logger.should be_kind_of(org.jruby.rack.logging.CommonsLoggingLogger)
     end
@@ -58,6 +58,17 @@ describe ServletRackConfig do
       @servlet_context.should_receive(:getInitParameter).with("jruby.pool.maxActive").and_return "2"
       config.initial_runtimes.should == 1
       config.maximum_runtimes.should == 2
+    end
+  end
+
+  describe "rewindable" do
+    it "defaults to true" do
+      config.should be_rewindable
+    end
+
+    it "is false when overridden by jruby.rack.input.rewindable" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.rack.input.rewindable").and_return "false"
+      config.should_not be_rewindable
     end
   end
 end
