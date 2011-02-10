@@ -87,7 +87,6 @@ module JRuby::Rack
                ensure
                  stream.close rescue nil
                end
-        logger.info("* Loading from #{url.path}:\n#{code}") if LoadPathDebugging.enabled?
         eval code, TOPLEVEL_BINDING, url.path
       end
     end

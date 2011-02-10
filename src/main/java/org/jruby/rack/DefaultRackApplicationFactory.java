@@ -11,6 +11,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ClassCache;
 
@@ -192,6 +193,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                     try {
                         setApplication(appfact.create(runtime));
                     } catch (RaiseException re) {
+                        captureMessage(re);
                         throw new RackInitializationException(re);
                     }
                 }
@@ -204,6 +206,17 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             throw rie;
         } catch (RaiseException re) {
             throw new RackInitializationException(re);
+        }
+    }
+
+    private void captureMessage(RaiseException rex) {
+        try {
+            IRubyObject rubyException = rex.getException();
+            ThreadContext context = rubyException.getRuntime().getCurrentContext();
+            rubyException.callMethod(context, "capture");
+            rubyException.callMethod(context, "store");
+        } catch (Exception e) {
+            // won't be able to capture anything
         }
     }
 
