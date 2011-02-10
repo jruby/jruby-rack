@@ -4,6 +4,7 @@ if defined?(JRuby::Rack::Capture)
     include JRuby::Rack::Capture::Base
     include JRuby::Rack::Capture::RubyGems
     include JRuby::Rack::Capture::Bundler
+    include JRuby::Rack::Capture::JRubyRackConfig
     include JRuby::Rack::Capture::Environment
     include JRuby::Rack::Capture::JavaEnvironment
     include JRuby::Rack::Capture::LoadPath

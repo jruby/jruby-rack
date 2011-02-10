@@ -12,6 +12,7 @@ class StandardError
   include JRuby::Rack::Capture::Exception
   include JRuby::Rack::Capture::RubyGems
   include JRuby::Rack::Capture::Bundler
+  include JRuby::Rack::Capture::JRubyRackConfig
 end
 
 class LoadError
