@@ -26,9 +26,10 @@ module DemoHelpers
 
   def write_environment(content = nil, exception = nil)
     require 'socket'
-    env_keys = %w(ENV_HOST ENV_OUTPUT)
-    if defined?(::WARBLER_CONFIG) && (WARBLER_CONFIG.keys & env_keys) == env_keys && WARBLER_CONFIG['ENV_HOST'] == Socket.gethostname
-      server_name = $servlet_context.server_info[/(.*?)\(?/, 1].strip.gsub(/[^a-zA-Z0-9]+/, '-')
+    if defined?(WARBLER_CONFIG) &&
+        File.directory?(WARBLER_CONFIG['ENV_OUTPUT']) &&
+        WARBLER_CONFIG['ENV_HOST'] == Socket.gethostname
+      server_name = $servlet_context.server_info[/(.*)\(?/, 1].strip.gsub(/[^a-zA-Z0-9]+/, '-')
       file_name = File.join(WARBLER_CONFIG['ENV_OUTPUT'], server_name + '.txt')
       File.open(file_name, "wb") do |f|
         if content
