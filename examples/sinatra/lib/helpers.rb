@@ -1,30 +1,14 @@
-module DemoHelpers
-  @@capture = []
+module DemoCaptureHelper
   def capture
-    @@capture
+    super
+    output.puts("\n--- Request Environment", *(request.env.keys.sort.map do |k|
+                                                 "#{k} = #{request.env[k]}"
+                                               end))
   end
+end
 
-  def pre_capture_paths
-    require 'rbconfig'
-    @@capture += ["jruby.home: #{Config::CONFIG['prefix']}",
-                  "Gem.dir: #{Gem.dir}",
-                  "Gem.path: #{Gem.path}",
-                  "$LOAD_PATH:"
-                 ] + $LOAD_PATH
-  end
-
-  def post_capture_paths
-    @@capture += ["",
-                  "After Bundler.setup",
-                  "Bundler.bundle_path: #{Bundler.bundle_path}",
-                  "Bundler.root: #{Bundler.root}",
-                  "Gem.dir: #{Gem.dir}",
-                  "Gem.path: #{Gem.path}",
-                  "$LOAD_PATH:"
-                 ] + $LOAD_PATH
-  end
-
-  def write_environment(content = nil, exception = nil)
+module FileStoreHelper
+  def store
     require 'socket'
     if defined?(WARBLER_CONFIG) &&
         File.directory?(WARBLER_CONFIG['ENV_OUTPUT']) &&
@@ -32,21 +16,30 @@ module DemoHelpers
       server_name = $servlet_context.server_info[/(.*)\(?/, 1].strip.gsub(/[^a-zA-Z0-9]+/, '-')
       file_name = File.join(WARBLER_CONFIG['ENV_OUTPUT'], server_name + '.txt')
       File.open(file_name, "wb") do |f|
-        if content
-          f.puts content
-        else
-          f.puts "Server: #{$servlet_context.server_info}"
-          f.puts "Ruby: #{RUBY_DESCRIPTION}"
-          f.puts "Generated: #{Time.now.to_s}"
-          f.puts
-          f.puts "--- Boot variables"
-          f.puts *@@capture
-        end
-        if exception
-          f.puts "--- Exception"
-          f.puts e, *e.backtrace
-        end
+        f << output.string
       end rescue $stderr.puts("Couldn't write environment to #{file_name}: #{$!}")
     end
+    super rescue nil
+  end
+end
+
+module DemoDummyHelper
+  def output
+    @output ||= begin; require 'stringio'; StringIO.new; end
+  end
+
+  def capture
+    output.puts erb(:env)
+  end
+
+  def store
+  end
+end
+
+if defined?(JRuby::Rack::Capture)
+  class StandardError
+    include JRuby::Rack::Capture::Environment
+    include JRuby::Rack::Capture::JavaEnvironment
+    include FileStoreHelper
   end
 end
