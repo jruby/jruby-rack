@@ -1,0 +1,292 @@
+--- System
+jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
+Time: Thu Feb 10 14:16:42 -0600 2011
+Server: GlassFish v3
+jruby.home: classpath:/META-INF/jruby.home
+
+--- Context Init Parameters:
+ENV_HOST = vanguard.local
+ENV_OUTPUT = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
+com.sun.faces.forceLoadConfiguration = true
+com.sun.faces.validateXml = true
+public.root = /
+rails.env = production
+
+--- RubyGems
+Gem.dir: classpath:/META-INF/jruby.home/lib/ruby/gems/1.8
+Gem.path:
+/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems
+classpath:/META-INF/jruby.home/lib/ruby/gems/1.8
+Activated gems:
+  bundler-1.0.10
+  rack-1.2.1
+  sinatra-1.0
+
+--- Bundler
+Bundler.bundle_path: classpath:/META-INF/jruby.home/lib/ruby/gems/1.8
+Bundler.root: /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF
+Gemfile: /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/Gemfile
+Settings:
+  without = development:test
+  bin_path = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+  gemfile = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/Gemfile
+
+--- JRuby-Rack Config
+background_spooling = false
+compat_version = 
+initial_runtimes = 
+jms_connection_factory = 
+jms_jndi_properties = 
+logger = org.jruby.rack.logging.ServletContextLogger@1906c58a
+logger_class_name = servlet_context
+logger_name = jruby.rack
+maximum_runtimes = 
+memory_buffer_size = 65536
+num_initializer_threads = 
+rackup = 
+rackup_path = 
+rewindable = true
+runtime_timeout_seconds = 
+serial_initialization = false
+servlet_context = org.apache.catalina.core.ApplicationContextFacade@1038aa1e
+slash_index = true
+
+--- Environment Variables
+Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
+BUNDLE_BIN_PATH = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+BUNDLE_GEMFILE = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/Gemfile
+BUNDLE_WITHOUT = development:test
+COMMAND_MODE = unix2003
+CVSROOT = 
+CVS_RSH = ssh
+DISPLAY = /tmp/launch-yYgQ1w/org.x:0
+EDITOR = emacs_wait
+GEM_PATH = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems
+GLASSFISH = /Users/nicksieger/Projects/java/glassfishv3/glassfish
+GLOBAL_PROJFILE = /Users/nicksieger/.global.env-vanguard.local
+GLOBAL_VARFILE = /Users/nicksieger/.global.vars-vanguard.local
+HISTFILE = /Users/nicksieger/.bash_history-vanguard.local
+HOME = /Users/nicksieger
+J2EE_HOME = 
+JAVA_ARCH = x86_64
+JAVA_LIBDIR = /Users/nicksieger/java
+JAVA_MAIN_CLASS_31062 = com.sun.enterprise.admin.cli.AsadminMain
+JAVA_MAIN_CLASS_31065 = com.sun.enterprise.glassfish.bootstrap.ASMain
+JAVA_OPTS = -d32
+JRUBY_RACK_SRC = true
+LANG = en_US.UTF-8
+LAST_SESSION = /Users/nicksieger/.last_session-vanguard.local
+LESS = -rqFX
+LOGNAME = nicksieger
+MANPATH = /usr/local/man
+PAGER = less
+PATH = classpath:/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
+PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
+PROJ_EXIT = 
+PWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+RACK_ENV = production
+RUBYOPT = -I/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
+SECURITYSESSIONID = 301e55
+SESSIONDIR = /Users/nicksieger
+SHELL = /bin/bash
+SHLVL = 1
+SSH_AUTH_SOCK = /tmp/launch-AYXflR/Listeners
+TERM = xterm-color
+TERM_PROGRAM = Apple_Terminal
+TERM_PROGRAM_VERSION = 273
+TITLE = Bash 3.2.48(1)-release
+TITLE_BASE = ${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}
+TMPDIR = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
+USER = nicksieger
+__CF_USER_TEXT_ENCODING = 0x1F5:0:0
+com.apple.java.jvmMode = client
+rvm_path = /Users/nicksieger/.rvm
+rvm_selfcontained = 1
+rvm_version = 1.2.5
+
+--- System Properties
+ANTLR_USE_DIRECT_CLASS_LOADING = true
+AS_CONFIG = /Users/nicksieger/Projects/java/glassfishv3/glassfish/config/../config
+AS_DEF_DOMAINS_PATH = /Users/nicksieger/Projects/java/glassfishv3/glassfish/config/../domains
+AS_DERBY_INSTALL = /Users/nicksieger/Projects/java/glassfishv3/glassfish/config/../../javadb
+AS_IMQ_BIN = /Users/nicksieger/Projects/java/glassfishv3/glassfish/config/../../mq/bin
+AS_IMQ_LIB = /Users/nicksieger/Projects/java/glassfishv3/glassfish/config/../../mq/lib
+AS_INSTALL = /Users/nicksieger/Projects/java/glassfishv3/glassfish/config/..
+GlassFish_Platform = Felix
+appclient.home = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/appclient
+awt.nativeDoubleBuffering = true
+awt.toolkit = apple.awt.CToolkit
+catalina.base = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1
+catalina.home = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1
+catalina.useNaming = false
+com.sun.aas.configRoot = /Users/nicksieger/Projects/java/glassfishv3/glassfish/config
+com.sun.aas.derbyRoot = /Users/nicksieger/Projects/java/glassfishv3/javadb
+com.sun.aas.domainsRoot = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains
+com.sun.aas.hostName = vanguard.local
+com.sun.aas.imqBin = /Users/nicksieger/Projects/java/glassfishv3/mq/bin
+com.sun.aas.imqLib = /Users/nicksieger/Projects/java/glassfishv3/mq/lib
+com.sun.aas.installRoot = /Users/nicksieger/Projects/java/glassfishv3/glassfish
+com.sun.aas.installRootURI = file:/Users/nicksieger/Projects/java/glassfishv3/glassfish/
+com.sun.aas.instanceName = server
+com.sun.aas.instanceRoot = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1
+com.sun.aas.instanceRootURI = file:/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/
+com.sun.aas.javaRoot = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home
+com.sun.enterprise.config.config_environment_factory_class = com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory
+com.sun.enterprise.hk2.cacheDir = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/osgi-cache/felix
+com.sun.enterprise.jaccprovider.property.repository = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/generated/policy
+com.sun.enterprise.security.httpsOutboundKeyAlias = s1as
+common.loader = ${catalina.home}/common/classes,${catalina.home}/common/endorsed/*.jar,${catalina.home}/common/lib/*.jar
+felix.config.properties = file:/Users/nicksieger/Projects/java/glassfishv3/glassfish/osgi/felix/conf/config.properties
+felix.fileinstall.bundles.new.start = true
+felix.fileinstall.debug = 1
+felix.fileinstall.dir = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/autostart/
+felix.fileinstall.poll = 5000
+felix.system.properties = file:/Users/nicksieger/Projects/java/glassfishv3/glassfish/osgi/felix/conf/system.properties
+file.encoding = MacRoman
+file.encoding.pkg = sun.io
+file.separator = /
+ftp.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
+glassfish.version = GlassFish v3 (build 74.2)
+gopherProxySet = false
+hk2.startup.context.args = #Thu Feb 10 14:15:11 CST 2011
+-domainname=domain1
+-verbose=false
+-domaindir=/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1
+-asadmin-classpath=/Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/admin-cli.jar
+-asadmin-classname=com.sun.enterprise.admin.cli.AsadminMain
+-instancename=server
+-read-stdin=true
+-asadmin-args=start-domain
+-debug=false
+hk2.startup.context.mainModule=org.glassfish.core.kernel
+__time_zero=1297368911313
+-upgrade=false
+hk2.startup.context.root = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules
+http.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
+java.awt.graphicsenv = apple.awt.CGraphicsEnvironment
+java.awt.headles = true
+java.awt.printerjob = apple.awt.CPrinterJob
+java.class.path = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/glassfish.jar:/Users/nicksieger/Projects/java/glassfishv3/glassfish/lib/monitor/btrace-agent.jar
+java.class.version = 50.0
+java.endorsed.dirs = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/endorsed:/Users/nicksieger/Projects/java/glassfishv3/glassfish/lib/endorsed
+java.ext.dirs = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/lib/ext:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/jre/lib/ext:/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/lib/ext
+java.home = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home
+java.io.tmpdir = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
+java.library.path = /Users/nicksieger/Projects/java/glassfishv3/glassfish/lib:/Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
+java.rmi.server.randomIDs = true
+java.runtime.name = Java(TM) SE Runtime Environment
+java.runtime.version = 1.6.0_22-b04-307-10M3261
+java.security.auth.login.config = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/config/login.conf
+java.security.policy = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/config/server.policy
+java.specification.name = Java Platform API Specification
+java.specification.vendor = Sun Microsystems Inc.
+java.specification.version = 1.6
+java.util.logging.config.file = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/config/logging.properties
+java.vendor = Apple Inc.
+java.vendor.url = http://www.apple.com/
+java.vendor.url.bug = http://bugreport.apple.com/
+java.version = 1.6.0_22
+java.vm.info = mixed mode
+java.vm.name = Java HotSpot(TM) 64-Bit Server VM
+java.vm.specification.name = Java Virtual Machine Specification
+java.vm.specification.vendor = Sun Microsystems Inc.
+java.vm.specification.version = 1.0
+java.vm.vendor = Apple Inc.
+java.vm.version = 17.1-b03-307
+javax.net.ssl.keyStore = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/config/keystore.jks
+javax.net.ssl.keyStorePassword = changeit
+javax.net.ssl.trustStore = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/config/cacerts.jks
+javax.net.ssl.trustStorePassword = changeit
+javax.rmi.CORBA.PortableRemoteObjectClass = com.sun.corba.ee.impl.javax.rmi.PortableRemoteObject
+javax.rmi.CORBA.StubClass = com.sun.corba.ee.impl.javax.rmi.CORBA.StubDelegateImpl
+javax.rmi.CORBA.UtilClass = com.sun.corba.ee.impl.javax.rmi.CORBA.Util
+javax.security.jacc.PolicyConfigurationFactory.provider = com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl
+jdbc.drivers = org.apache.derby.jdbc.ClientDriver
+jruby.management.enabled = true
+jrubyhub.home = /Users/nicksieger/Projects/jruby/jrubyhub/tmp/production
+line.separator = 
+mrj.build = 10M3261
+mrj.version = 1060.1.6.0_22-307
+org.glassfish.web.rfc2109_cookie_names_enforced = false
+org.jvnet.hk2.osgimain.autostartBundles = osgi-adapter.jar, org.apache.felix.shell.jar, org.apache.felix.shell.remote.jar, org.apache.felix.configadmin.jar, org.apache.felix.fileinstall.jar
+org.jvnet.hk2.osgimain.bundlesDir = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules
+org.jvnet.hk2.osgimain.excludedSubDirs = autostart/
+org.omg.CORBA.ORBClass = com.sun.corba.ee.impl.orb.ORBImpl
+org.omg.CORBA.ORBSingletonClass = com.sun.corba.ee.impl.orb.ORBSingleton
+org.osgi.framework.storage = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/osgi-cache/felix
+os.arch = x86_64
+os.name = Mac OS X
+os.version = 10.6.6
+osgi.shell.telnet.ip = 127.0.0.1
+osgi.shell.telnet.maxconn = 1
+osgi.shell.telnet.port = 6666
+package.access = 
+package.definition = 
+path.separator = :
+security.home = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/security
+server.loader = ${catalina.home}/server/classes,${catalina.home}/server/lib/*.jar
+shared.loader = ${catalina.home}/shared/classes,${catalina.home}/shared/lib/*.jar
+socksNonProxyHosts = local|*.local|169.254/16|*.169.254/16
+sun.arch.data.model = 64
+sun.boot.class.path = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/endorsed/javax.annotation.jar:/Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/endorsed/jaxb-api-osgi.jar:/Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/endorsed/webservices-api-osgi.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsfd.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/classes.jar:/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Resources/Java/JavaRuntimeSupport.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/ui.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/laf.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/sunrsasign.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsse.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jce.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/charsets.jar:/Users/nicksieger/Projects/java/glassfishv3/glassfish/lib/monitor/btrace-boot.jar
+sun.boot.library.path = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Libraries
+sun.cpu.endian = little
+sun.cpu.isalist = 
+sun.io.unicode.encoding = UnicodeLittle
+sun.java.launcher = SUN_STANDARD
+sun.jnu.encoding = MacRoman
+sun.management.compiler = HotSpot 64-Bit Server Compiler
+sun.os.patch.level = unknown
+user.country = US
+user.dir = /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/config
+user.home = /Users/nicksieger
+user.language = en
+user.name = nicksieger
+user.timezone = America/Chicago
+web.home = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/web
+
+--- $LOAD_PATH:
+/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/sinatra-1.0/lib
+/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/rack-1.2.1/lib
+/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/generated/jsp/sinatra/loader_2056230917/vendor/rack-1.2.1
+/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib
+classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8
+classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared
+classpath:/META-INF/jruby.home/lib/ruby/1.8
+.
+
+--- Request Environment
+HTTP_ACCEPT = application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+HTTP_ACCEPT_ENCODING = gzip, deflate
+HTTP_ACCEPT_LANGUAGE = en-us
+HTTP_CONNECTION = keep-alive
+HTTP_COOKIE = __utmc=111872281; __utma=111872281.937288940.1258574061.1294697219.1297282370.26; __utmz=111872281.1292187687.24.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _mkto_trk=id:422-MTH-535&token:_mch-localhost-1286296323340-33293
+HTTP_HOST = localhost:8080
+HTTP_REFERER = http://localhost:8080/sinatra/index.html
+HTTP_USER_AGENT = Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
+PATH_INFO = /env
+QUERY_STRING = 
+REMOTE_ADDR = 0:0:0:0:0:0:0:1%0
+REMOTE_HOST = 0:0:0:0:0:0:0:1%0
+REMOTE_USER = 
+REQUEST_METHOD = GET
+REQUEST_URI = /sinatra/env
+SCRIPT_NAME = /sinatra
+SERVER_NAME = localhost
+SERVER_PORT = 8080
+SERVER_SOFTWARE = GlassFish v3
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@4e2c2c36
+java.servlet_request = org.apache.catalina.connector.RequestFacade@1506291d
+jruby.rack.dynamic.requests.only = true
+jruby.rack.jruby.version = 1.6.0.RC1
+jruby.rack.rack.release = 1.2
+jruby.rack.version = 1.0.6
+rack.errors = #<JRuby::Rack::ServletLog:0x78289fe3>
+rack.input = #<JRuby::RackRewindableInput:0x33192db6>
+rack.multiprocess = false
+rack.multithread = true
+rack.request.query_hash = 
+rack.request.query_string = 
+rack.run_once = false
+rack.url_scheme = http
+rack.version = 11

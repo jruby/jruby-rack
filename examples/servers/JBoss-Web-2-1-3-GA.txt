@@ -1,0 +1,270 @@
+--- System
+jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
+Time: Thu Feb 10 14:35:57 -0600 2011
+Server: JBoss Web/2.1.3.GA
+jruby.home: classpath:/META-INF/jruby.home
+
+--- Context Init Parameters:
+ENV_HOST = vanguard.local
+ENV_OUTPUT = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
+com.sun.faces.duplicateJARPattern = ^tmp\d+(\S*\.jar)
+com.sun.faces.injectionProvider = org.jboss.web.jsf.integration.injection.JBossDelegatingInjectionProvider
+public.root = /
+rails.env = production
+
+--- RubyGems
+Gem.dir: classpath:/META-INF/jruby.home/lib/ruby/gems/1.8
+Gem.path:
+/Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/gems
+classpath:/META-INF/jruby.home/lib/ruby/gems/1.8
+Activated gems:
+  bundler-1.0.10
+  rack-1.2.1
+  sinatra-1.0
+
+--- Bundler
+Bundler.bundle_path: classpath:/META-INF/jruby.home/lib/ruby/gems/1.8
+Bundler.root: /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF
+Gemfile: /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/Gemfile
+Settings:
+  without = development:test
+  bin_path = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+  gemfile = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/Gemfile
+
+--- JRuby-Rack Config
+background_spooling = false
+compat_version = 
+initial_runtimes = 
+jms_connection_factory = 
+jms_jndi_properties = 
+logger = org.jruby.rack.logging.ServletContextLogger@41d85e69
+logger_class_name = servlet_context
+logger_name = jruby.rack
+maximum_runtimes = 
+memory_buffer_size = 65536
+num_initializer_threads = 
+rackup = 
+rackup_path = 
+rewindable = true
+runtime_timeout_seconds = 
+serial_initialization = false
+servlet_context = org.apache.catalina.core.ApplicationContextFacade@348a85b4
+slash_index = true
+
+--- Environment Variables
+Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
+BUNDLE_BIN_PATH = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+BUNDLE_GEMFILE = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/Gemfile
+BUNDLE_WITHOUT = development:test
+COMMAND_MODE = unix2003
+CVSROOT = 
+CVS_RSH = ssh
+DISPLAY = /tmp/launch-yYgQ1w/org.x:0
+EDITOR = emacs_wait
+GEM_PATH = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/gems
+GLASSFISH = /Users/nicksieger/Projects/java/glassfishv3/glassfish
+GLOBAL_PROJFILE = /Users/nicksieger/.global.env-vanguard.local
+GLOBAL_VARFILE = /Users/nicksieger/.global.vars-vanguard.local
+HISTFILE = /Users/nicksieger/.bash_history-vanguard.local
+HOME = /Users/nicksieger
+J2EE_HOME = 
+JAVA_ARCH = x86_64
+JAVA_LIBDIR = /Users/nicksieger/java
+JAVA_MAIN_CLASS_33210 = org.jboss.Main
+JBOSS_HOME = /Users/nicksieger/Projects/java/jboss-5.1.0.GA
+JRUBY_RACK_SRC = true
+LANG = en_US.UTF-8
+LAST_SESSION = /Users/nicksieger/.last_session-vanguard.local
+LESS = -rqFX
+LOGNAME = nicksieger
+MANPATH = /usr/local/man
+PAGER = less
+PATH = classpath:/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
+PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
+PROJ_EXIT = 
+PWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+RACK_ENV = production
+RUBYOPT = -I/Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
+SECURITYSESSIONID = 301e55
+SESSIONDIR = /Users/nicksieger
+SHELL = /bin/bash
+SHLVL = 2
+SSH_AUTH_SOCK = /tmp/launch-AYXflR/Listeners
+TERM = xterm-color
+TERM_PROGRAM = Apple_Terminal
+TERM_PROGRAM_VERSION = 273
+TITLE = Bash 3.2.48(1)-release
+TITLE_BASE = ${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}
+TMPDIR = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
+USER = nicksieger
+_ = /usr/bin/java
+__CF_USER_TEXT_ENCODING = 0x1F5:0:0
+com.apple.java.jvmMode = client
+rvm_path = /Users/nicksieger/.rvm
+rvm_selfcontained = 1
+rvm_version = 1.2.5
+
+--- System Properties
+PROPERTIES_FILE = tsmx.properties
+TSMX_VERSION = unknown
+awt.nativeDoubleBuffering = true
+awt.toolkit = apple.awt.CToolkit
+catalina.ext.dirs = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/lib
+catalina.home = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default
+com.arjuna.ats.arjuna.objectstore.objectStoreDir = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/data/tx-object-store
+com.arjuna.ats.jta.lastResourceOptimisationInterface = org.jboss.tm.LastResource
+com.arjuna.ats.tsmx.agentimpl = com.arjuna.ats.internal.jbossatx.agent.LocalJBossAgentImpl
+com.arjuna.common.util.logger = log4j_releveler
+com.arjuna.common.util.logging.DebugLevel = 0x00000000
+com.arjuna.common.util.logging.FacilityLevel = 0xffffffff
+com.arjuna.common.util.logging.VisibilityLevel = 0xffffffff
+file.encoding = MacRoman
+file.encoding.pkg = sun.io
+file.separator = /
+ftp.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
+gopherProxySet = false
+http.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
+java.awt.graphicsenv = apple.awt.CGraphicsEnvironment
+java.awt.printerjob = apple.awt.CPrinterJob
+java.class.path = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/bin/run.jar
+java.class.version = 50.0
+java.endorsed.dirs = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed
+java.ext.dirs = /Library/Java/Extensions:/System/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/lib/ext
+java.home = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home
+java.io.tmpdir = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
+java.library.path = .:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
+java.naming.factory.initial = org.jnp.interfaces.NamingContextFactory
+java.naming.factory.url.pkgs = org.jboss.naming:org.jnp.interfaces
+java.protocol.handler.pkgs = org.jboss.net.protocol|org.jboss.virtual.protocol
+java.rmi.server.RMIClassLoaderSpi = org.jboss.system.JBossRMIClassLoader
+java.rmi.server.codebase = http://127.0.0.1:8083/
+java.rmi.server.hostname = 127.0.0.1
+java.runtime.name = Java(TM) SE Runtime Environment
+java.runtime.version = 1.6.0_22-b04-307-10M3261
+java.specification.name = Java Platform API Specification
+java.specification.vendor = Sun Microsystems Inc.
+java.specification.version = 1.6
+java.util.logging.manager = org.jboss.logmanager.LogManager
+java.vendor = Apple Inc.
+java.vendor.url = http://www.apple.com/
+java.vendor.url.bug = http://bugreport.apple.com/
+java.version = 1.6.0_22
+java.vm.info = mixed mode
+java.vm.name = Java HotSpot(TM) 64-Bit Server VM
+java.vm.specification.name = Java Virtual Machine Specification
+java.vm.specification.vendor = Sun Microsystems Inc.
+java.vm.specification.version = 1.0
+java.vm.vendor = Apple Inc.
+java.vm.version = 17.1-b03-307
+javax.management.builder.initial = org.jboss.mx.server.MBeanServerBuilderImpl
+jbm.remoting.netty.port = 5445
+jbm.remoting.netty.ssl.port = 5446
+jboss.bind.address = 127.0.0.1
+jboss.common.base.url = file:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/common/
+jboss.common.lib.url = file:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/common/lib/
+jboss.home.dir = /Users/nicksieger/Projects/java/jboss-5.1.0.GA
+jboss.home.url = file:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/
+jboss.lib.url = file:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/
+jboss.messaging.connector.bisocket.port = 4457
+jboss.remoting.version = 22
+jboss.server.base.dir = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server
+jboss.server.base.url = file:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/
+jboss.server.config.url = file:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/conf/
+jboss.server.data.dir = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/data
+jboss.server.home.dir = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default
+jboss.server.home.url = file:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/
+jboss.server.lib.url = file:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/lib/
+jboss.server.log.dir = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/log
+jboss.server.log.threshold = INFO
+jboss.server.name = default
+jboss.server.temp.dir = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp
+jboss.vfs.forceCopy = true
+jbossmx.loader.repository.class = org.jboss.mx.loading.UnifiedLoaderRepository3
+jgroups.bind_addr = 127.0.0.1
+jruby.management.enabled = true
+line.separator = 
+mrj.build = 10M3261
+mrj.version = 1060.1.6.0_22-307
+org.apache.catalina.STRICT_SERVLET_COMPLIANCE = true
+org.apache.catalina.connector.Request.SESSION_ID_CHECK = true
+org.apache.catalina.core.StandardHost.autoDeploy = false
+org.apache.catalina.core.StandardHost.configClass = org.jboss.web.tomcat.service.deployers.JBossContextConfig
+org.apache.catalina.core.StandardHost.deployOnStartup = false
+org.apache.catalina.core.StandardHost.deployXML = false
+org.apache.catalina.core.StandardHost.startChildren = false
+org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP = true
+org.apache.commons.logging.Log = org.apache.commons.logging.impl.Log4JLogger
+org.apache.jasper.runtime.BodyContentImpl.LIMIT_BUFFER = true
+org.jboss.resolver.warning = true
+os.arch = x86_64
+os.name = Mac OS X
+os.version = 10.6.6
+path.separator = :
+program.name = run.sh
+socksNonProxyHosts = local|*.local|169.254/16|*.169.254/16
+sun.arch.data.model = 64
+sun.boot.class.path = /Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/activation.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/jaxb-api.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/jbossws-native-jaxrpc.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/jbossws-native-jaxws-ext.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/jbossws-native-jaxws.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/jbossws-native-saaj.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/resolver.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/serializer.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/stax-api.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/xalan.jar:/Users/nicksieger/Projects/java/jboss-5.1.0.GA/lib/endorsed/xercesImpl.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsfd.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/classes.jar:/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Resources/Java/JavaRuntimeSupport.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/ui.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/laf.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/sunrsasign.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsse.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jce.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/charsets.jar
+sun.boot.library.path = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Libraries
+sun.cpu.endian = little
+sun.cpu.isalist = 
+sun.io.unicode.encoding = UnicodeLittle
+sun.java.launcher = SUN_STANDARD
+sun.jnu.encoding = MacRoman
+sun.management.compiler = HotSpot 64-Bit Server Compiler
+sun.os.patch.level = unknown
+sun.rmi.dgc.client.gcInterval = 3600000
+sun.rmi.dgc.server.gcInterval = 3600000
+tomcat.util.buf.StringCache.byte.enabled = true
+user.country = US
+user.dir = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+user.home = /Users/nicksieger
+user.language = en
+user.name = nicksieger
+user.timezone = America/Chicago
+xb.builder.useUnorderedSequence = true
+
+--- $LOAD_PATH:
+/Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/gems/gems/sinatra-1.0/lib
+/Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/gems/gems/rack-1.2.1/lib
+classpath:/./vendor/rack-1.2.1
+/Users/nicksieger/Projects/java/jboss-5.1.0.GA/server/default/tmp/5c4o15r-qtbzbc-gk04mzsr-1-gk04nxek-9p/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/lib
+classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8
+classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared
+classpath:/META-INF/jruby.home/lib/ruby/1.8
+.
+
+--- Request Environment
+HTTP_ACCEPT = application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
+HTTP_ACCEPT_ENCODING = gzip, deflate
+HTTP_ACCEPT_LANGUAGE = en-us
+HTTP_CONNECTION = keep-alive
+HTTP_COOKIE = __utmc=111872281; __utma=111872281.937288940.1258574061.1294697219.1297282370.26; __utmz=111872281.1292187687.24.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _mkto_trk=id:422-MTH-535&token:_mch-localhost-1286296323340-33293
+HTTP_HOST = localhost:8080
+HTTP_REFERER = http://localhost:8080/sinatra/index.html
+HTTP_USER_AGENT = Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
+PATH_INFO = /env
+QUERY_STRING = 
+REMOTE_ADDR = 127.0.0.1
+REMOTE_HOST = 127.0.0.1
+REMOTE_USER = 
+REQUEST_METHOD = GET
+REQUEST_URI = /sinatra/env
+SCRIPT_NAME = /sinatra
+SERVER_NAME = localhost
+SERVER_PORT = 8080
+SERVER_SOFTWARE = JBoss Web/2.1.3.GA
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@133a2d5f
+java.servlet_request = org.apache.catalina.connector.RequestFacade@2caefab3
+jruby.rack.dynamic.requests.only = true
+jruby.rack.jruby.version = 1.6.0.RC1
+jruby.rack.rack.release = 1.2
+jruby.rack.version = 1.0.6
+rack.errors = #<JRuby::Rack::ServletLog:0x7250075e>
+rack.input = #<JRuby::RackRewindableInput:0x6413e6f3>
+rack.multiprocess = false
+rack.multithread = true
+rack.request.query_hash = 
+rack.request.query_string = 
+rack.run_once = false
+rack.url_scheme = http
+rack.version = 11
