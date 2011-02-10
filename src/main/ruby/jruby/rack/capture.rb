@@ -14,11 +14,12 @@ module JRuby::Rack
 
       def capture
         require 'rbconfig'
-        output.puts(RUBY_DESCRIPTION, "Time: #{Time.now}", "Server: #{$servlet_context.getServerInfo}",
-                    "OS: #{Config::CONFIG['host_os']}", "jruby.home: #{Config::CONFIG['prefix']}")
-        output.puts("Context Init Parameters:",
+        output.puts("--- System", RUBY_DESCRIPTION, "Time: #{Time.now}",
+                    "Server: #{$servlet_context.getServerInfo}",
+                    "jruby.home: #{Config::CONFIG['prefix']}")
+        output.puts("\n--- Context Init Parameters:",
                     *($servlet_context.init_parameter_names.sort.map do |k|
-                        "  #{k} = #{$servlet_context.get_init_parameter(k)}"
+                        "#{k} = #{$servlet_context.get_init_parameter(k)}"
                       end))
       end
 
@@ -30,13 +31,13 @@ module JRuby::Rack
     module Exception
       def output
         @output ||= begin; require 'stringio'; StringIO.new.tap do |s|
-          s.puts "An exception happened during JRuby-Rack startup", self.to_s
-        end; end
+            s.puts "An exception happened during JRuby-Rack startup", self.to_s
+          end; end
       end
 
       def capture
         super
-        output.puts "Backtrace:", *(backtrace.map {|t| "  #{t}"}) if backtrace
+        output.puts("\n--- Backtrace", *backtrace) if backtrace
       end
     end
 
@@ -44,9 +45,8 @@ module JRuby::Rack
       def capture
         super
         if defined?(::Gem)
-          output.puts("Gem.dir: #{Gem.dir}",
-                      "Gem.path:", *(Gem.path.map{|path| "  #{path}"})) rescue nil
-          output.puts("Activated gems:", *(Gem.loaded_specs.map {|spec| "  #{spec.full_name}" })) rescue nil
+          output.puts("\n--- RubyGems", "Gem.dir: #{Gem.dir}", "Gem.path:", Gem.path) rescue nil
+          output.puts("Activated gems:", *(Gem.loaded_specs.map {|k,spec| "  #{spec.full_name}" })) rescue nil
         end
       end
     end
@@ -55,25 +55,45 @@ module JRuby::Rack
       def capture
         super
         if defined?(::Bundler)
-          output.puts("Bundler.bundle_path: #{Bundler.bundle_path}",
-                      "Bundler.root: #{Bundler.root}",
-                      "Gemfile: #{Bundler.default_gemfile}",
-                      "Settings:", *(Bundler.settings.all.map {|k| "  #{Bundler.settings[k]}" })) rescue nil
+          output.puts("\n--- Bundler")
+          output.puts("Bundler.bundle_path: #{::Bundler.bundle_path}",
+                      "Bundler.root: #{::Bundler.root}",
+                      "Gemfile: #{::Bundler.default_gemfile}",
+                      "Settings:", *(::Bundler.settings.all.map {|k| "  #{k} = #{::Bundler.settings[k]}" })) rescue output.puts($!)
         end
+      end
+    end
+
+    module Environment
+      def capture
+        super
+        output.puts("\n--- Environment Variables", *(ENV.keys.sort.map do |k|
+                                                  "#{k} = #{ENV[k]}"
+                                                end))
+      end
+    end
+
+    module JavaEnvironment
+      def capture
+        super
+        output.puts("\n--- System Properties", *(ENV_JAVA.keys.sort.map do |k|
+                                              "#{k} = #{ENV_JAVA[k]}"
+                                            end))
       end
     end
 
     module LoadPath
       def capture
         super
-        output.puts "$LOAD_PATH:", *($LOAD_PATH.map{|lp| "  #{lp}"})
+        output.puts "\n--- $LOAD_PATH:", *$LOAD_PATH
       end
     end
 
     module Native
       def capture
         super
-        output.puts "Java Exception: #{cause.toString}"
+        output.puts "\n--- Java Exception"
+        cause.printStackTrace java.io.PrintStream.new(output.to_outputstream)
       end
     end
   end
