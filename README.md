@@ -61,22 +61,9 @@ runtime pool as you wish.
 
 ## For Other Rack Applications
 
-Here's a sample web.xml configuration for a Sinatra application. The
-main difference is to place the rackup script for assembling the
-Rack-based application in the 'rackup' parameter. Be sure to escape
-angle-brackets for XML.
-
-    <context-param>
-      <param-name>rackup</param-name>
-      <param-value>
-        require 'rubygems'
-        gem 'sinatra', '~&gt; 1.0'
-        require './lib/demo'
-        set :run, false
-        set :environment, :production
-        run Sinatra::Application
-      </param-value>
-    </context-param>
+Here's a sample web.xml configuration for a Rack application. The main
+difference is that JRuby-Rack looks for a "rackup" file named
+`config.ru` in `WEB-INF/config.ru` or `WEB-INF/*/config.ru`.
 
     <filter>
       <filter-name>RackFilter</filter-name>
@@ -90,6 +77,23 @@ angle-brackets for XML.
     <listener>
       <listener-class>org.jruby.rack.RackServletContextListener</listener-class>
     </listener>
+
+If you don't have a config.ru or don't want to include it in your web
+app, you can embed it in web.xml as follows (using Sinatra as an
+example). Be sure to escape angle-brackets for XML!
+
+    <context-param>
+      <param-name>rackup</param-name>
+      <param-value>
+        require 'rubygems'
+        gem 'sinatra', '~&gt; 1.0'
+        require './lib/demo'
+        set :run, false
+        set :environment, :production
+        run Sinatra::Application
+      </param-value>
+    </context-param>
+
 
 # Features
 
@@ -135,10 +139,10 @@ framework. In the case of Rails, runtimes are pooled. For Merb and
 other Rack applications, a single runtime is created and shared for
 every request.
 
-## Servlet Context Init Parameters
+## JRuby-Rack Configuration
 
-JRuby-Rack can be configured by setting context init parameters in
-web.xml.
+JRuby-Rack can be configured by setting these key value pairs either
+as context init parameters in web.xml or as VM-wide system properties.
 
 - `rackup`: Rackup script for configuring how the Rack application is
   mounted. Required for Rack-based applications other than Rails or
@@ -189,8 +193,8 @@ web.xml.
 
 JRuby-Rack sets up a delegate logger for Rails that sends logging
 output to `javax.servlet.ServletContext#log` by default. If you wish
-to use a different logging system, set the `jruby.rack.logging`
-context parameter as follows:
+to use a different logging system, configure `jruby.rack.logging` as
+follows:
 
 - `servlet_context` (default): Sends log messages to the servlet
   context.
@@ -202,7 +206,7 @@ context parameter as follows:
   left up to you.
 
 For those loggers that require a specific named logger, set it in the
-`jruby.rack.logging.name` context parameter.
+`jruby.rack.logging.name` option.
 
 # Building
 
