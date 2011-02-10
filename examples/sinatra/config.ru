@@ -1,5 +1,6 @@
 # -*- mode: ruby -*-
 
+require 'rubygems'
 require './lib/helpers'
 extend DemoHelpers
 begin
