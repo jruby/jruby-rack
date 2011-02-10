@@ -90,8 +90,12 @@ public class DefaultRackConfig implements RackConfig {
         }
     }
 
-    public boolean isSlashIndex() {
-        return getBoolean("jruby.rack.slash.index", false);
+    public boolean isFilterAddsHtml() {
+        return getBoolean("jruby.rack.filter.adds.html", true);
+    }
+
+    public boolean isFilterVerifiesResource() {
+        return getBoolean("jruby.rack.filter.verifies.resource", false);
     }
 
     public boolean isBackgroundSpooling() {
