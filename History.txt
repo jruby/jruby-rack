@@ -24,6 +24,15 @@
   exceptions
 - GH#5: Experimental background spooling enabled by
   `jruby.rack.background.spool` context parameter
+- JRUBY_RACK-39: Proper routing of / => /index.html (if it exists).
+  New config properties `jruby.rack.filter.adds.html` and
+  `jruby.rack.filter.verify.resource.exists` to tweak this behavior.
+- Improved error and environment capture when something goes wrong,
+  e.g., `no such file to load` errors. Now a status dump will be put
+  in the server log. In the future, we may hook up a remote bug
+  submission capture process.
+- Add env['SERVER_SOFTWARE'] to Rack environment.
+- Hack around Bundler bug #1033
 
 == 1.0.5 (01/11/11)
 
