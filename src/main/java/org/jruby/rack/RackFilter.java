@@ -132,11 +132,11 @@ public class RackFilter implements Filter {
             httpRequest = new HttpServletRequestWrapper(httpRequest) {
                 @Override
                 public String getPathInfo() {
-                    return "";
+                    return uri;
                 }
                 @Override
                 public String getServletPath() {
-                    return uri;
+                    return "";
                 }
                 @Override
                 public String getRequestURI() {

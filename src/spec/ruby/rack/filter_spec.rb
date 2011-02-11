@@ -88,8 +88,8 @@ describe RackFilter do
   it "should convert / to /index.html" do
     stub_request("/")
     chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getServletPath.should == "/some/uri/index.html"
-      req.getPathInfo.should == ""
+      req.getPathInfo.should == "/some/uri/index.html"
+      req.getServletPath.should == ""
       resp.setStatus(200)
     end
     @response.should_receive(:setStatus).ordered.with(200)
@@ -99,8 +99,8 @@ describe RackFilter do
   it "should add .html to the path" do
     stub_request("")
     chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getServletPath.should == "/some/uri.html"
-      req.getPathInfo.should == ""
+      req.getPathInfo.should == "/some/uri.html"
+      req.getServletPath.should == ""
       resp.setStatus(200)
     end
     @response.should_receive(:setStatus).ordered.with(200)
@@ -152,8 +152,8 @@ describe RackFilter do
       @rack_context.should_receive(:getResource).with("/some/uri.html").and_return java.net.URL.new("file://some/uri.html")
       stub_request("")
       chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-        req.getServletPath.should == "/some/uri.html"
-        req.getPathInfo.should == ""
+        req.getPathInfo.should == "/some/uri.html"
+        req.getServletPath.should == ""
         resp.setStatus(200)
       end
       @response.should_receive(:setStatus).ordered.with(200)
