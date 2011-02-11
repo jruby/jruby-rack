@@ -1,0 +1,15 @@
+<p>Oops! Something's not right.<br/>You should be seeing <a href='index.html'>index.html</a> instead.</p>
+
+<h2>Request Environment</h2>
+<ul>
+<% request.env.keys.sort.each do |k| %>
+<li><%= k %> = <%= env[k] %></li>
+<% end %>
+</ul>
+
+<h2>Servlet Request</h2>
+<ul>
+<% %w(ContextPath PathInfo PathTranslated QueryString RequestURI ServletPath).each do |m| %>
+<li><%= m %> = <%= request.env['java.servlet_request'].send("get#{m}") %></li>
+<% end %>
+</ul>
