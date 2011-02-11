@@ -1,8 +1,8 @@
 --- System
 jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
-Time: Thu Feb 10 14:02:34 -0600 2011
+Time: Thu Feb 10 16:14:26 -0600 2011
 Server: Winstone Servlet Engine v0.9.10
-jruby.home: file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
+jruby.home: file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
 
 --- Context Init Parameters:
 ENV_HOST = vanguard.local
@@ -11,31 +11,33 @@ public.root = /
 rails.env = production
 
 --- RubyGems
-Gem.dir: file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Gem.dir: file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
 Gem.path:
-/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/gems
-file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/gems
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
 Activated gems:
   bundler-1.0.10
   rack-1.2.1
   sinatra-1.0
 
 --- Bundler
-Bundler.bundle_path: file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
-Bundler.root: /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF
-Gemfile: /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/Gemfile
+Bundler.bundle_path: file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Bundler.root: /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF
+Gemfile: /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/Gemfile
 Settings:
   without = development:test
-  bin_path = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
-  gemfile = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/Gemfile
+  bin_path = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+  gemfile = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/Gemfile
 
 --- JRuby-Rack Config
 background_spooling = false
 compat_version = 
+filter_adds_html = true
+filter_verifies_resource = false
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@4d29dcc0
+logger = org.jruby.rack.logging.ServletContextLogger@498b5a73
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -46,20 +48,19 @@ rackup_path =
 rewindable = true
 runtime_timeout_seconds = 
 serial_initialization = false
-servlet_context = winstone.WebAppConfiguration@204b7b1
-slash_index = true
+servlet_context = winstone.WebAppConfiguration@305f387c
 
 --- Environment Variables
 Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
-BUNDLE_BIN_PATH = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
-BUNDLE_GEMFILE = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/Gemfile
+BUNDLE_BIN_PATH = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+BUNDLE_GEMFILE = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/Gemfile
 BUNDLE_WITHOUT = development:test
 COMMAND_MODE = unix2003
 CVSROOT = 
 CVS_RSH = ssh
 DISPLAY = /tmp/launch-yYgQ1w/org.x:0
 EDITOR = emacs_wait
-GEM_PATH = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/gems
+GEM_PATH = /private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/gems
 GLASSFISH = /Users/nicksieger/Projects/java/glassfishv3/glassfish
 GLOBAL_PROJFILE = /Users/nicksieger/.global.env-vanguard.local
 GLOBAL_VARFILE = /Users/nicksieger/.global.vars-vanguard.local
@@ -68,7 +69,7 @@ HOME = /Users/nicksieger
 J2EE_HOME = 
 JAVA_ARCH = x86_64
 JAVA_LIBDIR = /Users/nicksieger/java
-JAVA_MAIN_CLASS_30536 = WarMain
+JAVA_MAIN_CLASS_36793 = WarMain
 JAVA_OPTS = -d32
 JRUBY_RACK_SRC = true
 LANG = en_US.UTF-8
@@ -78,12 +79,12 @@ LOGNAME = nicksieger
 MANPATH = /usr/local/man
 OLDPWD = /Users/nicksieger/Projects/ruby/kirk
 PAGER = less
-PATH = file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
+PATH = file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
 PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
 PROJ_EXIT = 
 PWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
 RACK_ENV = production
-RUBYOPT = -I/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
+RUBYOPT = -I/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
 SECURITYSESSIONID = 301e55
 SESSIONDIR = /Users/nicksieger
 SHELL = /bin/bash
@@ -164,13 +165,13 @@ user.name = nicksieger
 user.timezone = America/Chicago
 
 --- $LOAD_PATH:
-/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/gems/gems/sinatra-1.0/lib
-/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/gems/gems/rack-1.2.1/lib
-file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/lib/jruby-rack-1.0.6.jar!/vendor/rack-1.2.1
-/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/lib
-file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
-file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
-file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone8033455632190680900webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/1.8
+/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/gems/gems/sinatra-1.0/lib
+/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/gems/gems/rack-1.2.1/lib
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/lib/jruby-rack-1.0.6.jar!/vendor/rack-1.2.1
+/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/gems/gems/bundler-1.0.10/lib
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
+file:/private/var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/winstone5659941227142401431webroot/sinatra.war/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/1.8
 .
 
 --- Request Environment
@@ -193,14 +194,14 @@ SCRIPT_NAME =
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = Winstone Servlet Engine v0.9.10
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@2f8bbc98
-java.servlet_request = winstone.WinstoneRequest@7b76fb04
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@552297d7
+java.servlet_request = winstone.WinstoneRequest@47ac1adf
 jruby.rack.dynamic.requests.only = true
 jruby.rack.jruby.version = 1.6.0.RC1
 jruby.rack.rack.release = 1.2
 jruby.rack.version = 1.0.6
-rack.errors = #<JRuby::Rack::ServletLog:0x3b7c680>
-rack.input = #<JRuby::RackRewindableInput:0x1648ff68>
+rack.errors = #<JRuby::Rack::ServletLog:0x3b756db3>
+rack.input = #<JRuby::RackRewindableInput:0x1a752144>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 

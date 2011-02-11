@@ -12,21 +12,8 @@ directory.
 
 ### Notes
 
-- Handling of / => index.html seems to work differently depending on
-  the server. It would be nice for JRuby-Rack to normalize them but I
-  haven't figured out the proper magic yet.
-
-    winstone	redirect to /index.html
-    tomcat 6	dynamic dispatch to /
-    tomcat 7	dynamic dispatch to /
-    gf 3.1	dynamic dispatch to /
-    jetty 6	shows index.html
-    jetty 7	shows index.html
-    resin 4	shows index.html
-    jboss 5.1	dynamic dispatch to /
-    jboss 6.0	dynamic dispatch to /
-
-- Jetty 7 notes: Apps fail to load unless the following is set in etc/jetty-deploy.xml:
+- Jetty 7 notes: Apps fail to load unless the following is set in
+  etc/jetty-deploy.xml:
      <Set name="extractWars">true</Set>
    
 

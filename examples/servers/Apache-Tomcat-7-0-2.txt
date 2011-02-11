@@ -1,6 +1,6 @@
 --- System
 jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) Client VM 1.6.0_22) [darwin-i386-java]
-Time: Thu Feb 10 14:22:44 -0600 2011
+Time: Thu Feb 10 23:38:11 -0600 2011
 Server: Apache Tomcat/7.0.2
 jruby.home: file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
 
@@ -32,10 +32,12 @@ Settings:
 --- JRuby-Rack Config
 background_spooling = false
 compat_version = 
+filter_adds_html = true
+filter_verifies_resource = false
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@cfd22a
+logger = org.jruby.rack.logging.ServletContextLogger@a574b2
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -46,8 +48,7 @@ rackup_path =
 rewindable = true
 runtime_timeout_seconds = 
 serial_initialization = false
-servlet_context = org.apache.catalina.core.ApplicationContextFacade@88a80e
-slash_index = true
+servlet_context = org.apache.catalina.core.ApplicationContextFacade@daa6a6
 
 --- Environment Variables
 Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
@@ -68,7 +69,7 @@ HOME = /Users/nicksieger
 J2EE_HOME = 
 JAVA_HOME = /System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home
 JAVA_LIBDIR = /Users/nicksieger/java
-JAVA_MAIN_CLASS_32026 = org.apache.catalina.startup.Bootstrap
+JAVA_MAIN_CLASS_40378 = org.apache.catalina.startup.Bootstrap
 JAVA_OPTS = -d32 -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
 JRUBY_RACK_SRC = true
 LANG = en_US.UTF-8
@@ -80,13 +81,13 @@ PAGER = less
 PATH = file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
 PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
 PROJ_EXIT = 
-PWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+PWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
 RACK_ENV = production
 RUBYOPT = -I/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
 SECURITYSESSIONID = 301e55
 SESSIONDIR = /Users/nicksieger
 SHELL = /bin/bash
-SHLVL = 2
+SHLVL = 3
 SSH_AUTH_SOCK = /tmp/launch-AYXflR/Listeners
 TERM = xterm-color
 TERM_PROGRAM = Apple_Terminal
@@ -169,7 +170,7 @@ sun.os.patch.level = unknown
 tomcat.util.buf.StringCache.byte.enabled = true
 tomcat.util.scan.DefaultJarScanner.jarsToSkip = bootstrap.jar,commons-daemon.jar,tomcat-juli.jar,annotations-api.jar,el-api.jar,jsp-api.jar,servlet-api.jar,catalina.jar,catalina-ant.jar,catalina-ha.jar,catalina-tribes.jar,jasper.jar,jasper-el.jar,ecj-3.6.jar,tomcat-api.jar,tomcat-util.jar,tomcat-coyote.jar,tomcat-dbcp.jar,tomcat-i18n-en.jar,tomcat-i18n-es.jar,tomcat-i18n-fr.jar,tomcat-i18n-ja.jar,commons-beanutils.jar,commons-collections.jar,commons-dbcp.jar,commons-digester.jar,commons-fileupload-1.0.jar,commons-logging.jar,commons-pool.jar,ant.jar,jmx.jar,jmx-tools.jar,xercesImpl.jar,xmlParserAPIs.jar,xml-apis.jar,dnsns.jar,ldapsec.jar,localedata.jar,sunjce_provider.jar,sunpkcs11.jar,tools.jar,apple_provider.jar,AppleScriptEngine.jar,CoreAudio.jar,dns_sd.jar,j3daudio.jar,j3dcore.jar,j3dutils.jar,jai_core.jar,jai_codec.jar,mlibwrapper_jai.jar,MRJToolkit.jar,vecmath.jar
 user.country = US
-user.dir = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+user.dir = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
 user.home = /Users/nicksieger
 user.language = en
 user.name = nicksieger
@@ -192,7 +193,7 @@ HTTP_ACCEPT_LANGUAGE = en-us
 HTTP_CONNECTION = keep-alive
 HTTP_COOKIE = __utmc=111872281; __utma=111872281.937288940.1258574061.1294697219.1297282370.26; __utmz=111872281.1292187687.24.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _mkto_trk=id:422-MTH-535&token:_mch-localhost-1286296323340-33293
 HTTP_HOST = localhost:8080
-HTTP_REFERER = http://localhost:8080/sinatra/index.html
+HTTP_REFERER = http://localhost:8080/sinatra/
 HTTP_USER_AGENT = Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
 PATH_INFO = /env
 QUERY_STRING = 
@@ -205,16 +206,16 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = Apache Tomcat/7.0.2
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@d9799d
-java.servlet_request = org.apache.catalina.connector.RequestFacade@1f10df7
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@354093
+java.servlet_request = org.apache.catalina.connector.RequestFacade@1eeeaed
 jruby.rack.dynamic.requests.only = true
 jruby.rack.jruby.version = 1.6.0.RC1
 jruby.rack.rack.release = 1.2
 jruby.rack.version = 1.0.6
 org.apache.catalina.ASYNC_SUPPORTED = 
-org.apache.catalina.valves.AccessLogValve.t1 = 1297369364155
-rack.errors = #<JRuby::Rack::ServletLog:0x1d1358f>
-rack.input = #<JRuby::RackRewindableInput:0x13706e>
+org.apache.catalina.valves.AccessLogValve.t1 = 1297402691112
+rack.errors = #<JRuby::Rack::ServletLog:0xf2f973>
+rack.input = #<JRuby::RackRewindableInput:0x1d6fad7>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 
