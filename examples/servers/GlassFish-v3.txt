@@ -1,6 +1,6 @@
 --- System
 jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
-Time: Thu Feb 10 14:16:42 -0600 2011
+Time: Thu Feb 10 23:40:39 -0600 2011
 Server: GlassFish v3
 jruby.home: classpath:/META-INF/jruby.home
 
@@ -34,10 +34,12 @@ Settings:
 --- JRuby-Rack Config
 background_spooling = false
 compat_version = 
+filter_adds_html = true
+filter_verifies_resource = false
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@1906c58a
+logger = org.jruby.rack.logging.ServletContextLogger@64eac235
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -48,8 +50,7 @@ rackup_path =
 rewindable = true
 runtime_timeout_seconds = 
 serial_initialization = false
-servlet_context = org.apache.catalina.core.ApplicationContextFacade@1038aa1e
-slash_index = true
+servlet_context = org.apache.catalina.core.ApplicationContextFacade@301f9d62
 
 --- Environment Variables
 Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
@@ -70,8 +71,8 @@ HOME = /Users/nicksieger
 J2EE_HOME = 
 JAVA_ARCH = x86_64
 JAVA_LIBDIR = /Users/nicksieger/java
-JAVA_MAIN_CLASS_31062 = com.sun.enterprise.admin.cli.AsadminMain
-JAVA_MAIN_CLASS_31065 = com.sun.enterprise.glassfish.bootstrap.ASMain
+JAVA_MAIN_CLASS_40441 = com.sun.enterprise.admin.cli.AsadminMain
+JAVA_MAIN_CLASS_40444 = com.sun.enterprise.glassfish.bootstrap.ASMain
 JAVA_OPTS = -d32
 JRUBY_RACK_SRC = true
 LANG = en_US.UTF-8
@@ -83,13 +84,13 @@ PAGER = less
 PATH = classpath:/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
 PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
 PROJ_EXIT = 
-PWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+PWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
 RACK_ENV = production
 RUBYOPT = -I/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
 SECURITYSESSIONID = 301e55
 SESSIONDIR = /Users/nicksieger
 SHELL = /bin/bash
-SHLVL = 1
+SHLVL = 2
 SSH_AUTH_SOCK = /tmp/launch-AYXflR/Listeners
 TERM = xterm-color
 TERM_PROGRAM = Apple_Terminal
@@ -148,7 +149,7 @@ file.separator = /
 ftp.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
 glassfish.version = GlassFish v3 (build 74.2)
 gopherProxySet = false
-hk2.startup.context.args = #Thu Feb 10 14:15:11 CST 2011
+hk2.startup.context.args = #Thu Feb 10 23:38:34 CST 2011
 -domainname=domain1
 -verbose=false
 -domaindir=/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1
@@ -159,7 +160,7 @@ hk2.startup.context.args = #Thu Feb 10 14:15:11 CST 2011
 -asadmin-args=start-domain
 -debug=false
 hk2.startup.context.mainModule=org.glassfish.core.kernel
-__time_zero=1297368911313
+__time_zero=1297402714204
 -upgrade=false
 hk2.startup.context.root = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules
 http.nonProxyHosts = local|*.local|169.254/16|*.169.254/16
@@ -172,7 +173,7 @@ java.endorsed.dirs = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modul
 java.ext.dirs = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/lib/ext:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/jre/lib/ext:/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/lib/ext
 java.home = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home
 java.io.tmpdir = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
-java.library.path = /Users/nicksieger/Projects/java/glassfishv3/glassfish/lib:/Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
+java.library.path = /Users/nicksieger/Projects/java/glassfishv3/glassfish/lib:/Users/nicksieger/Projects/ruby/jruby-rack/examples/servers:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
 java.rmi.server.randomIDs = true
 java.runtime.name = Java(TM) SE Runtime Environment
 java.runtime.version = 1.6.0_22-b04-307-10M3261
@@ -248,7 +249,7 @@ web.home = /Users/nicksieger/Projects/java/glassfishv3/glassfish/modules/web
 --- $LOAD_PATH:
 /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/sinatra-1.0/lib
 /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/rack-1.2.1/lib
-/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/generated/jsp/sinatra/loader_2056230917/vendor/rack-1.2.1
+/Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/generated/jsp/sinatra/loader_934846515/vendor/rack-1.2.1
 /Users/nicksieger/Projects/java/glassfishv3/glassfish/domains/domain1/applications/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib
 classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8
 classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared
@@ -262,7 +263,7 @@ HTTP_ACCEPT_LANGUAGE = en-us
 HTTP_CONNECTION = keep-alive
 HTTP_COOKIE = __utmc=111872281; __utma=111872281.937288940.1258574061.1294697219.1297282370.26; __utmz=111872281.1292187687.24.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _mkto_trk=id:422-MTH-535&token:_mch-localhost-1286296323340-33293
 HTTP_HOST = localhost:8080
-HTTP_REFERER = http://localhost:8080/sinatra/index.html
+HTTP_REFERER = http://localhost:8080/sinatra/
 HTTP_USER_AGENT = Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
 PATH_INFO = /env
 QUERY_STRING = 
@@ -275,14 +276,14 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = GlassFish v3
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@4e2c2c36
-java.servlet_request = org.apache.catalina.connector.RequestFacade@1506291d
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@64f8de72
+java.servlet_request = org.apache.catalina.connector.RequestFacade@3181809a
 jruby.rack.dynamic.requests.only = true
 jruby.rack.jruby.version = 1.6.0.RC1
 jruby.rack.rack.release = 1.2
 jruby.rack.version = 1.0.6
-rack.errors = #<JRuby::Rack::ServletLog:0x78289fe3>
-rack.input = #<JRuby::RackRewindableInput:0x33192db6>
+rack.errors = #<JRuby::Rack::ServletLog:0x6b95a59c>
+rack.input = #<JRuby::RackRewindableInput:0x2dabdbf2>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 

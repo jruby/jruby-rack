@@ -1,6 +1,6 @@
 --- System
 jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
-Time: Thu Feb 10 14:24:18 -0600 2011
+Time: Thu Feb 10 23:44:35 -0600 2011
 Server: jetty/6.1.25
 jruby.home: file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
 
@@ -33,10 +33,12 @@ Settings:
 --- JRuby-Rack Config
 background_spooling = false
 compat_version = 
+filter_adds_html = true
+filter_verifies_resource = false
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@7ffccfe3
+logger = org.jruby.rack.logging.ServletContextLogger@bc6f1f4
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -47,8 +49,7 @@ rackup_path =
 rewindable = true
 runtime_timeout_seconds = 
 serial_initialization = false
-servlet_context = ServletContext@6a07348e{/sinatra,file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/}
-slash_index = true
+servlet_context = ServletContext@1330b682{/sinatra,file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/}
 
 --- Environment Variables
 Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
@@ -69,7 +70,7 @@ HOME = /Users/nicksieger
 J2EE_HOME = 
 JAVA_ARCH = x86_64
 JAVA_LIBDIR = /Users/nicksieger/java
-JAVA_MAIN_CLASS_32253 = org.mortbay.start.Main
+JAVA_MAIN_CLASS_40570 = org.mortbay.start.Main
 JAVA_OPTS = -d32
 JRUBY_RACK_SRC = true
 LANG = en_US.UTF-8
@@ -77,7 +78,7 @@ LAST_SESSION = /Users/nicksieger/.last_session-vanguard.local
 LESS = -rqFX
 LOGNAME = nicksieger
 MANPATH = /usr/local/man
-OLDPWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/sinatra
+OLDPWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
 PAGER = less
 PATH = file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
 PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
@@ -88,7 +89,7 @@ RUBYOPT = -I/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/
 SECURITYSESSIONID = 301e55
 SESSIONDIR = /Users/nicksieger
 SHELL = /bin/bash
-SHLVL = 2
+SHLVL = 3
 SSH_AUTH_SOCK = /tmp/launch-AYXflR/Listeners
 TERM = xterm-color
 TERM_PROGRAM = Apple_Terminal
@@ -197,7 +198,7 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = jetty/6.1.25
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@307a140f
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@3f649b1a
 java.servlet_request = GET /sinatra/env HTTP/1.1
 Host: localhost:8080
 User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
@@ -212,8 +213,8 @@ jruby.rack.dynamic.requests.only = true
 jruby.rack.jruby.version = 1.6.0.RC1
 jruby.rack.rack.release = 1.2
 jruby.rack.version = 1.0.6
-rack.errors = #<JRuby::Rack::ServletLog:0x7f0b8d03>
-rack.input = #<JRuby::RackRewindableInput:0x4f57011e>
+rack.errors = #<JRuby::Rack::ServletLog:0x631e1aa5>
+rack.input = #<JRuby::RackRewindableInput:0x4d677979>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 
