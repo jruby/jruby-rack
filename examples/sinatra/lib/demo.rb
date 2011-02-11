@@ -16,7 +16,7 @@ else
 end
 
 get '/' do
-  "Oops! Something's not right.<br/>\nYou should be seeing <a href='index.html'>index.html</a> instead."
+  erb :root
 end
 
 post '/body' do
