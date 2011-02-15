@@ -119,32 +119,42 @@ public class RackFilter implements Filter {
         }
 
         String path = env.getPathInfo();
+        String additional = "";
 
         if (path.lastIndexOf('.') <= path.lastIndexOf('/')) {
             if (path.endsWith("/")) {
-                path += "index";
+                additional += "index";
             }
-            path += ".html";
+            additional += ".html";
 
-            if (filterVerifiesResource && !resourceExists(path)) {
+            if (filterVerifiesResource && !resourceExists(path + additional)) {
                 return httpRequest;
             }
 
-            final String uri = path;
-            httpRequest = new HttpServletRequestWrapper(httpRequest) {
-                @Override
-                public String getPathInfo() {
-                    return uri;
-                }
-                @Override
-                public String getServletPath() {
-                    return "";
-                }
-                @Override
-                public String getRequestURI() {
-                    return uri;
-                }
-            };
+            final String modifiedPath = additional;
+            if (httpRequest.getPathInfo() != null) {
+                httpRequest = new HttpServletRequestWrapper(httpRequest) {
+                        @Override
+                        public String getPathInfo() {
+                            return super.getPathInfo() + modifiedPath;
+                        }
+                        @Override
+                        public String getRequestURI() {
+                            return super.getRequestURI() + modifiedPath;
+                        }
+                    };
+            } else {
+                httpRequest = new HttpServletRequestWrapper(httpRequest) {
+                        @Override
+                        public String getServletPath() {
+                            return super.getServletPath() + modifiedPath;
+                        }
+                        @Override
+                        public String getRequestURI() {
+                            return super.getRequestURI() + modifiedPath;
+                        }
+                    };
+            }
         }
         return httpRequest;
     }

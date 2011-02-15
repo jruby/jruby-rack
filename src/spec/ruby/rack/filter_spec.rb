@@ -24,6 +24,12 @@ describe RackFilter do
   def stub_request(path_info)
     @request = javax.servlet.http.HttpServletRequest.impl {}
     @request.stub!(:setAttribute)
+    if block_given?
+      yield @request, path_info
+    else
+      @request.stub!(:getPathInfo).and_return nil
+      @request.stub!(:getServletPath).and_return "/some/uri#{path_info}"
+    end
     @request.stub!(:getRequestURI).and_return "/some/uri#{path_info}"
   end
 
@@ -88,8 +94,7 @@ describe RackFilter do
   it "should convert / to /index.html" do
     stub_request("/")
     chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getPathInfo.should == "/some/uri/index.html"
-      req.getServletPath.should == ""
+      req.getServletPath.should == "/some/uri/index.html"
       resp.setStatus(200)
     end
     @response.should_receive(:setStatus).ordered.with(200)
@@ -99,8 +104,22 @@ describe RackFilter do
   it "should add .html to the path" do
     stub_request("")
     chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getPathInfo.should == "/some/uri.html"
-      req.getServletPath.should == ""
+      req.getServletPath.should == "/some/uri.html"
+      resp.setStatus(200)
+    end
+    @response.should_receive(:setStatus).ordered.with(200)
+    filter.doFilter(@request, @response, chain)
+  end
+
+  it "should only add to path info if it already was non-null" do
+    stub_request("/index") do |r,path_info|
+      r.stub!(:getPathInfo).and_return path_info
+      r.stub!(:getServletPath).and_return "/some/uri"
+    end
+    chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+      req.getPathInfo.should == "/index.html"
+      req.getServletPath.should == "/some/uri"
+      req.getRequestURI.should == "/some/uri/index.html"
       resp.setStatus(200)
     end
     @response.should_receive(:setStatus).ordered.with(200)
@@ -109,11 +128,12 @@ describe RackFilter do
 
   context "when the filter is configured to not add .html on the path" do
     before :each do
-      @rack_config.stub!(:isFilterVerifiesResource).and_return true
+      @rack_config.stub!(:isFilterAddsHtml).and_return false
     end
 
     it "dispatches /some/uri/index unchanged" do
       chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+        req.getServletPath.should == "/some/uri/index"
         req.getRequestURI.should == "/some/uri/index"
         resp.setStatus(200)
       end
@@ -125,6 +145,15 @@ describe RackFilter do
   context "when the filter verifies resources" do
     before :each do
       @rack_config.stub!(:isFilterVerifiesResource).and_return true
+    end
+
+    it "dispatches /some/uri/index unchanged if the resource does not exist" do
+      chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+        req.getRequestURI.should == "/some/uri/index"
+        resp.setStatus(200)
+      end
+      @response.should_receive(:setStatus).ordered.with(200)
+      filter.doFilter(@request, @response, chain)
     end
 
     it "should dispatch /some/uri/index to the filter chain as /some/uri/index.html if the resource exists" do
@@ -152,8 +181,7 @@ describe RackFilter do
       @rack_context.should_receive(:getResource).with("/some/uri.html").and_return java.net.URL.new("file://some/uri.html")
       stub_request("")
       chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-        req.getPathInfo.should == "/some/uri.html"
-        req.getServletPath.should == ""
+        req.getServletPath.should == "/some/uri.html"
         resp.setStatus(200)
       end
       @response.should_receive(:setStatus).ordered.with(200)
