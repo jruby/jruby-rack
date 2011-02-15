@@ -181,7 +181,8 @@ as context init parameters in web.xml or as VM-wide system properties.
   many other Ruby applications is to add an .html extension to the
   resource and attempt to handle it before serving a dynamic request
   on the original URI. However, this behavior may confuse other
-  servlets in your application that have a wildcard mapping. Defaults to true.
+  servlets in your application that have a wildcard mapping. Defaults
+  to true.
 - `jruby.rack.filter.verify.resource.exists`: If
   `jruby.rack.filter.adds.html` is true, then this setting, when true,
   adds an additional check using `ServletContext#getResource` to
