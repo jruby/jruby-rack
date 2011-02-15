@@ -114,15 +114,17 @@ public class RackFilter implements Filter {
 
     private HttpServletRequest maybeAppendHtmlToPath(ServletRequest request, RackEnvironment env) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
+        if (!filterAddsHtml) {
+            return httpRequest;
+        }
+
         String path = env.getPathInfo();
 
         if (path.lastIndexOf('.') <= path.lastIndexOf('/')) {
-            if (filterAddsHtml) {
-                if (path.endsWith("/")) {
-                    path += "index";
-                }
-                path += ".html";
+            if (path.endsWith("/")) {
+                path += "index";
             }
+            path += ".html";
 
             if (filterVerifiesResource && !resourceExists(path)) {
                 return httpRequest;
