@@ -127,6 +127,11 @@ public class RackFilter implements Filter {
             }
             additional += ".html";
 
+            // Welcome file list already triggered mapping to index.html, so don't modify the request any further
+            if (httpRequest.getServletPath().equals(path + additional)) {
+                return httpRequest;
+            }
+
             if (filterVerifiesResource && !resourceExists(path + additional)) {
                 return httpRequest;
             }

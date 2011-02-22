@@ -101,6 +101,21 @@ describe RackFilter do
     filter.doFilter(@request, @response, chain)
   end
 
+  it "should dispatch the request unwrapped if servlet path already contains the welcome filename" do
+    stub_request("/") do |r,path_info|
+      r.stub!(:getPathInfo).and_return nil
+      r.stub!(:getServletPath).and_return "/some/uri/index.html"
+    end
+    chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+      req.getPathInfo.should == nil
+      req.getServletPath.should == "/some/uri/index.html"
+      req.getRequestURI.should == "/some/uri/"
+      resp.setStatus(200)
+    end
+    @response.should_receive(:setStatus).ordered.with(200)
+    filter.doFilter(@request, @response, chain)
+  end
+
   it "should add .html to the path" do
     stub_request("")
     chain.should_receive(:doFilter).ordered.and_return do |req,resp|
