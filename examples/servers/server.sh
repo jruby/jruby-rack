@@ -34,7 +34,12 @@ if [ -z "$RESIN" ]; then
     RESIN=~/Projects/java/resin-4.0.13
 fi
 
+if [ -z "$APPENGINE" ]; then
+    APPENGINE=~/Projects/appengine/appengine-java-sdk-1.4.2
+fi
+
 start_cmd=
+debug_cmd=
 stop_cmd=
 deploy_dir=
 
@@ -45,7 +50,7 @@ fi
 
 start_stop=$2
 case $start_stop in
-    start|stop|redeploy)
+    start|stop|redeploy|debug)
 	;;
     *)
 	echo "Specify 'start' or 'stop' for the first argument."
@@ -56,11 +61,13 @@ esac
 case $server in
     tc6|tomcat6)
 	start_cmd="$TC6/bin/catalina.sh start"
+	debug_cmd="$TC6/bin/catalina.sh jpda start"
 	stop_cmd="$TC6/bin/catalina.sh stop"
 	deploy_dir=$TC6/webapps
 	;;
     tc7|tomcat7)
 	start_cmd="$TC7/bin/catalina.sh start"
+	debug_cmd="$TC7/bin/catalina.sh jpda start"
 	stop_cmd="$TC7/bin/catalina.sh stop"
 	deploy_dir=$TC7/webapps
 	;;
@@ -94,9 +101,14 @@ case $server in
 	stop_cmd="$RESIN/bin/resin.sh stop"
 	deploy_dir=$RESIN/webapps
 	;;
+    appengine|gae)
+	start_cmd='cd $deploy_dir && mkdir $war_base && cd $war_base && jar xf ../$war_base.war && $APPENGINE/bin/dev_appserver.sh . &'
+	stop_cmd='kill $(jps -ml | grep DevAppServer | awk "{ print \$1 }")'
+	deploy_dir="$TMPDIR"
+	;;
     *)
 	echo Unknown server $server.
-	echo Servers are: tc6 tc7 jetty6 jetty7 glassfish jboss5 jboss6 resin
+	echo Servers are: tc6 tc7 jetty6 jetty7 glassfish jboss5 jboss6 resin appengine
 	exit 1
 esac
 
@@ -109,15 +121,19 @@ fi
 war_base=$(basename $war .war)
 
 case $start_stop in
-    start)
+    start|debug)
 	rm -rf $deploy_dir/${war_base}*
 	echo "Copying $war to $deploy_dir"
 	cp $war $deploy_dir
-	eval "$start_cmd"
+	if [ $start_stop = debug -a "$debug_cmd" ]; then
+	    eval "$debug_cmd"
+	else
+	    eval "$start_cmd"
+	fi
 	;;
     stop)
-	rm -rf $deploy_dir/${war_base}*
 	eval "$stop_cmd"
+	rm -rf $deploy_dir/${war_base}*
 	;;
     redeploy)
 	rm -rf $deploy_dir/${war_base}*
