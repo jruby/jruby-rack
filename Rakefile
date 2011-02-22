@@ -133,6 +133,11 @@ task :jar => [:spec, "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"]
 
 task :default => :jar
 
+task :debug do
+  ENV['DEBUG'] = 'true'
+  Rake::Task['jar'].invoke
+end
+
 task :install => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" do |t|
   repos_dir = File.expand_path "~/.m2/repository/org/jruby/rack/jruby-rack/#{JRuby::Rack::VERSION}"
   mkdir_p repos_dir
