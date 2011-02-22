@@ -112,11 +112,18 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         try { // try to set jruby home to jar file path
             URL resource = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
             if (resource.getProtocol().equals("jar")) {
+                String home;
                 try { // http://weblogs.java.net/blog/2007/04/25/how-convert-javaneturl-javaiofile
-                    config.setJRubyHome(resource.toURI().getSchemeSpecificPart());
+                    home = resource.toURI().getSchemeSpecificPart();
                 } catch (URISyntaxException urise) {
-                    config.setJRubyHome(resource.getPath());
+                    home = resource.getPath();
+                } 
+                
+                // Cut of trailing slash. It confuses OSGi containers...
+                if (home.endsWith("/")) {
+                    home = home.substring(0, home.length() - 1);
                 }
+                config.setJRubyHome(home);
             }
         } catch (Exception e) { }
         return config;
