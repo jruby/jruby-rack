@@ -117,9 +117,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                     home = resource.toURI().getSchemeSpecificPart();
                 } catch (URISyntaxException urise) {
                     home = resource.getPath();
-                } 
-                
-                // Cut of trailing slash. It confuses OSGi containers...
+                }
+
+                // Trim trailing slash. It confuses OSGi containers...
                 if (home.endsWith("/")) {
                     home = home.substring(0, home.length() - 1);
                 }
