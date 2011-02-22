@@ -33,6 +33,7 @@ describe JRuby::Rack::RailsBooter do
   end
 
   it "should determine RAILS_ENV from the 'rails.env' init parameter" do
+    ENV['RAILS_ENV'] = nil
     @rack_context.should_receive(:getInitParameter).with("rails.env").and_return "test"
     create_booter(JRuby::Rack::RailsBooter).boot!
     @booter.rails_env.should == "test"
