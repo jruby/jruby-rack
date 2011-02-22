@@ -104,7 +104,7 @@ class JRuby::Rack::Response
       retry
     rescue NativeException => e
       # Don't needlessly raise errors because of client abort exceptions
-      raise unless e.cause.to_s =~ /(clientabortexception|broken pipe)/i
+      raise unless e.cause.toString =~ /(clientabortexception|broken pipe)/i
     ensure
       @body.close if @body.respond_to?(:close)
     end
