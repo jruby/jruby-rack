@@ -184,7 +184,6 @@ module JRuby::Rack
 
     def call(env)
       @booter.set_session_options_for_request(env)
-      env['HTTPS'] = 'on' if env['rack.url_scheme'] == 'https'
       @app.call(env)
     end
   end

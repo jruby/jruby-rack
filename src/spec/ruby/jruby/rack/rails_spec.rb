@@ -234,21 +234,3 @@ describe JRuby::Rack, "Rails controller extensions" do
     @controller.response.headers['Forward'].call(@servlet_response)
   end
 end
-
-describe JRuby::Rack::RailsRequestSetup do
-  it "should set env['HTTPS'] == 'on' if env['rack.url_scheme] == 'https'" do
-    @app = mock "app"
-    @servlet_request = mock "servlet request"
-    @servlet_request.stub!(:getContextPath).and_return "/blah"
-    @booter = mock "servlet helper"
-    @options = mock "options"
-    @rs = JRuby::Rack::RailsRequestSetup.new @app, @booter
-    @env = {}
-    @env['java.servlet_request'] = @servlet_request
-    @booter.should_receive(:set_session_options_for_request)
-    @app.should_receive(:call).with(@env)
-    @env['rack.url_scheme'] = 'https'
-    @rs.call(@env)
-    @env['HTTPS'].should == 'on'
-  end
-end

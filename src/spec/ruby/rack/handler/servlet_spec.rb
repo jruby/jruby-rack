@@ -153,6 +153,13 @@ describe Rack::Handler::Servlet, "create_env" do
     env['java.servlet_request'].should == @servlet_env
   end
 
+  it "should set env['HTTPS'] = 'on' if scheme is https" do
+    stub_env :getScheme => "https"
+    env = @servlet.create_lazy_env @env
+    env['rack.url_scheme']
+    env['HTTPS'].should == 'on'
+  end
+
   it "should add cgi variables" do
     stub_env({ :getMethod => "GET",
                :getContextPath => "/app",

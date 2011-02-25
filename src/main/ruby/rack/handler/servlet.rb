@@ -116,7 +116,9 @@ module Rack
         when 'rack.run_once'        then env[key] = false
         when 'rack.input'           then env[key] = @servlet_env.to_io
         when 'rack.errors'          then env[key] = JRuby::Rack::ServletLog.new
-        when 'rack.url_scheme'      then env[key] = @servlet_env.getScheme
+        when 'rack.url_scheme'
+          scheme = env[key] = @servlet_env.getScheme
+          env['HTTPS'] = 'on' if scheme == 'https'
         when 'java.servlet_request' then env[key] = @servlet_env.getRequest rescue @servlet_env
         when 'java.servlet_context' then env[key] = $servlet_context
         when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
