@@ -62,6 +62,9 @@ public interface RackConfig {
     /** Return true if the request body is rewindable. */
     boolean isRewindable();
 
+    /** Returns true if the outer environment (variables) should not be used. */
+    boolean isIgnoreEnvironment();
+
     /** General property retrieval for custom configuration values. */
     String getProperty(String key);
 

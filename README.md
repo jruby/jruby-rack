@@ -189,6 +189,8 @@ as context init parameters in web.xml or as VM-wide system properties.
   verify that the .html resource exists. Default is false. (Note that
   apparently some servers may not implement `getResource` in the way
   that is expected here, so in that case this setting won't matter.)
+- `jruby.rack.ignore.env`: Clears out the ENV hash in each runtime to
+  insulate the application from the environment.
 
 ## Logging
 
