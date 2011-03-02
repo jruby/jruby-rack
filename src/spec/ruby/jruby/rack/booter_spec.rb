@@ -60,6 +60,7 @@ describe JRuby::Rack::Booter do
   end
 
   it "should get rack environment from rack.env" do
+    ENV['RACK_ENV'] = nil
     @rack_context.should_receive(:getInitParameter).with("rack.env").and_return "production"
     create_booter.boot!
     ENV['RACK_ENV'].should == "production"
