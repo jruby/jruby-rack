@@ -11,7 +11,7 @@ module JRuby::Rack
 
     def initialize(rack_context = nil)
       @rack_context = rack_context || $servlet_context
-      @rack_env = @rack_context.getInitParameter('rack.env') || 'production'
+      @rack_env = ENV['RACK_ENV'] || @rack_context.getInitParameter('rack.env') || 'production'
       JRuby::Rack.booter = self
     end
 

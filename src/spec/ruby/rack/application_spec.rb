@@ -111,6 +111,15 @@ describe DefaultRackApplicationFactory do
         runtime = app_factory.newRuntime
         runtime.instance_config.compat_version.should == org.jruby.CompatVersion::RUBY1_9
       end
+
+      it "should have environment variables cleared if the configuration ignores the environment" do
+        ENV["HOME"].should_not == ""
+        runtime = app_factory.newRuntime
+        app_factory.verify(runtime, 'ENV["HOME"]').should == ENV["HOME"]
+        @rack_config.stub!(:isIgnoreEnvironment).and_return true
+        runtime = app_factory.newRuntime
+        app_factory.verify(runtime, 'ENV["HOME"]').should == ""
+      end
     end
   end
 

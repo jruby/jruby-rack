@@ -142,6 +142,10 @@ public class DefaultRackConfig implements RackConfig {
         return getBoolean("jruby.rack.input.rewindable", true);
     }
 
+    public boolean isIgnoreEnvironment() {
+        return getBoolean("jruby.rack.ignore.env", false);
+    }
+
     public String getProperty(String key) {
         return getProperty(key, null);
     }

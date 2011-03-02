@@ -83,6 +83,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 setupJRubyManagement();
                 runtime = JavaEmbedUtils.initialize(new ArrayList(), createRuntimeConfig());
             }
+            if (rackContext.getConfig().isIgnoreEnvironment()) {
+                runtime.evalScriptlet("ENV.clear");
+            }
             runtime.getGlobalVariables().set("$servlet_context",
                     JavaEmbedUtils.javaToRuby(runtime, rackContext));
             runtime.evalScriptlet("require 'rack/handler/servlet'");

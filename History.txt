@@ -1,3 +1,8 @@
+== 1.0.7
+
+- GH#10: Add `jruby.rack.ignore.env` property which clears out the ENV
+  hash in each runtime to insulate the application from the environment.
+
 == 1.0.6 (01/20/11)
 
 - GH#4: Related to JRUBY-5281 and spaces in the path. Copy jruby.home
