@@ -305,7 +305,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
 
         if (rackup != null) {
-            rackupLocation = rackup;
+            rackupLocation = rackContext.getRealPath(rackup);
             rackup = inputStreamToString(rackContext.getResourceAsStream(rackup));
         }
 
