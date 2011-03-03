@@ -106,6 +106,11 @@ case $server in
 	stop_cmd='kill $(jps -ml | grep DevAppServer | awk "{ print \$1 }")'
 	deploy_dir="$TMPDIR"
 	;;
+    winstone)
+	start_cmd='java -jar $war --prefix=/$war_base &'
+	stop_cmd='kill $(jps -ml | grep $war_base | awk "{ print \$1 }")'
+	deploy_dir="$TMPDIR"
+	;;
     *)
 	echo Unknown server $server.
 	echo Servers are: tc6 tc7 jetty6 jetty7 glassfish jboss5 jboss6 resin appengine
