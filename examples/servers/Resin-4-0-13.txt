@@ -1,12 +1,13 @@
 --- System
 jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
-Time: Thu Feb 10 23:46:31 -0600 2011
+Time: Thu Mar 03 13:34:40 -0600 2011
 Server: Resin/4.0.13
 jruby.home: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
 
 --- Context Init Parameters:
-ENV_HOST = vanguard.local
+ENV_HOST = vanguard
 ENV_OUTPUT = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
+jruby.rack.ignore.env = true
 public.root = /
 rails.env = production
 
@@ -34,10 +35,11 @@ background_spooling = false
 compat_version = 
 filter_adds_html = true
 filter_verifies_resource = false
+ignore_environment = true
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@72b9dc79
+logger = org.jruby.rack.logging.ServletContextLogger@4b800ce8
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -51,61 +53,13 @@ serial_initialization = false
 servlet_context = WebApp[production/webapp/default/sinatra]
 
 --- Environment Variables
-Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
 BUNDLE_BIN_PATH = /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
 BUNDLE_GEMFILE = /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/Gemfile
 BUNDLE_WITHOUT = development:test
-CLASSPATH = /Users/nicksieger/Projects/java/resin-4.0.13/bin/../lib/resin.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/resin.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/activation.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/eclipselink.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/hibernate-validator-4.0.2.GA.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/javaee-16.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/javamail-141.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/jsf-api.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/jsf-impl.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/slf4j-api-1.6.1.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/validation-api-1.0.0.GA.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/webservices-api.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/webservices-extra-api.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/webutil.jar
-COMMAND_MODE = unix2003
-CVSROOT = 
-CVS_RSH = ssh
-DISPLAY = /tmp/launch-yYgQ1w/org.x:0
-DYLD_LIBRARY_PATH = /Users/nicksieger/Projects/java/resin-4.0.13/libexec64:/Users/nicksieger/Projects/java/resin-4.0.13/libexec64
-EDITOR = emacs_wait
 GEM_PATH = /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems
-GLASSFISH = /Users/nicksieger/Projects/java/glassfishv3/glassfish
-GLOBAL_PROJFILE = /Users/nicksieger/.global.env-vanguard.local
-GLOBAL_VARFILE = /Users/nicksieger/.global.vars-vanguard.local
-HISTFILE = /Users/nicksieger/.bash_history-vanguard.local
-HOME = /Users/nicksieger
-J2EE_HOME = 
-JAVA_ARCH = x86_64
-JAVA_LIBDIR = /Users/nicksieger/java
-JAVA_MAIN_CLASS_40878 = com.caucho.boot.ResinBoot
-JAVA_MAIN_CLASS_40883 = com.caucho.boot.WatchdogManager
-JAVA_MAIN_CLASS_40907 = com.caucho.server.resin.Resin
-JAVA_OPTS = -d32
-JRUBY_RACK_SRC = true
-LANG = en_US.UTF-8
-LAST_SESSION = /Users/nicksieger/.last_session-vanguard.local
-LD_LIBRARY_PATH = /Users/nicksieger/Projects/java/resin-4.0.13/libexec64:/Users/nicksieger/Projects/java/resin-4.0.13/libexec64
-LESS = -rqFX
-LOGNAME = nicksieger
-MANPATH = /usr/local/man
-PAGER = less
-PATH = file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
-PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
-PROJ_EXIT = 
-PWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
+PATH = file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin
 RACK_ENV = production
 RUBYOPT = -I/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
-SECURITYSESSIONID = 301e55
-SESSIONDIR = /Users/nicksieger
-SHELL = /bin/bash
-SHLVL = 2
-SSH_AUTH_SOCK = /tmp/launch-AYXflR/Listeners
-TERM = xterm-color
-TERM_PROGRAM = Apple_Terminal
-TERM_PROGRAM_VERSION = 273
-TITLE = Bash 3.2.48(1)-release
-TITLE_BASE = ${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}
-TMPDIR = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
-USER = nicksieger
-__CF_USER_TEXT_ENCODING = 0x1F5:0:0
-com.apple.java.jvmMode = client
-rvm_path = /Users/nicksieger/.rvm
-rvm_selfcontained = 1
-rvm_version = 1.2.5
 
 --- System Properties
 awt.nativeDoubleBuffering = true
@@ -182,7 +136,7 @@ user.timezone = America/Chicago
 --- $LOAD_PATH:
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/sinatra-1.0/lib
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/rack-1.2.1/lib
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-rack-1.0.6.jar!/vendor/rack-1.2.1
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-rack-1.0.7.dev.jar!/vendor/rack-1.2.1
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib
 file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
 file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
@@ -190,14 +144,9 @@ file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jr
 .
 
 --- Request Environment
-HTTP_ACCEPT = application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
-HTTP_ACCEPT_ENCODING = gzip, deflate
-HTTP_ACCEPT_LANGUAGE = en-us
-HTTP_CONNECTION = keep-alive
-HTTP_COOKIE = __utmc=111872281; __utma=111872281.937288940.1258574061.1294697219.1297282370.26; __utmz=111872281.1292187687.24.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _mkto_trk=id:422-MTH-535&token:_mch-localhost-1286296323340-33293
+HTTP_ACCEPT = */*
 HTTP_HOST = localhost:8080
-HTTP_REFERER = http://localhost:8080/sinatra/
-HTTP_USER_AGENT = Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
+HTTP_USER_AGENT = curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8l zlib/1.2.3
 PATH_INFO = /env
 QUERY_STRING = 
 REMOTE_ADDR = 127.0.0.1
@@ -209,14 +158,14 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = Resin/4.0.13
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@4e0c2b07
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@3a9d04dc
 java.servlet_request = HttpServletRequestImpl[HttpRequest[default, 1]]
 jruby.rack.dynamic.requests.only = true
 jruby.rack.jruby.version = 1.6.0.RC1
 jruby.rack.rack.release = 1.2
-jruby.rack.version = 1.0.6
-rack.errors = #<JRuby::Rack::ServletLog:0x47254e47>
-rack.input = #<JRuby::RackRewindableInput:0x62363bce>
+jruby.rack.version = 1.0.7.dev
+rack.errors = #<JRuby::Rack::ServletLog:0x77655fb9>
+rack.input = #<JRuby::RackRewindableInput:0x206fa7ec>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 

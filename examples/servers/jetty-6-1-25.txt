@@ -1,12 +1,13 @@
 --- System
 jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
-Time: Thu Feb 10 23:44:35 -0600 2011
+Time: Thu Mar 03 13:33:28 -0600 2011
 Server: jetty/6.1.25
 jruby.home: file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
 
 --- Context Init Parameters:
-ENV_HOST = vanguard.local
+ENV_HOST = vanguard
 ENV_OUTPUT = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
+jruby.rack.ignore.env = true
 org.mortbay.jetty.webapp.NoTLDJarPattern = start.jar|ant-.*\.jar|dojo-.*\.jar|jetty-.*\.jar|jsp-api-.*\.jar|junit-.*\.jar|servlet-api-.*\.jar|dnsns\.jar|rt\.jar|jsse\.jar|tools\.jar|sunpkcs11\.jar|sunjce_provider\.jar|xerces.*\.jar
 public.root = /
 rails.env = production
@@ -35,10 +36,11 @@ background_spooling = false
 compat_version = 
 filter_adds_html = true
 filter_verifies_resource = false
+ignore_environment = true
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@bc6f1f4
+logger = org.jruby.rack.logging.ServletContextLogger@2e4f7bc2
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -49,61 +51,16 @@ rackup_path =
 rewindable = true
 runtime_timeout_seconds = 
 serial_initialization = false
-servlet_context = ServletContext@1330b682{/sinatra,file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/}
+servlet_context = ServletContext@26f04d94{/sinatra,file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/}
 
 --- Environment Variables
-Apple_PubSub_Socket_Render = /tmp/launch-3lxrMB/Render
 BUNDLE_BIN_PATH = /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
 BUNDLE_GEMFILE = /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/Gemfile
 BUNDLE_WITHOUT = development:test
-COMMAND_MODE = unix2003
-CVSROOT = 
-CVS_RSH = ssh
-DISPLAY = /tmp/launch-yYgQ1w/org.x:0
-EDITOR = emacs_wait
 GEM_PATH = /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems
-GLASSFISH = /Users/nicksieger/Projects/java/glassfishv3/glassfish
-GLOBAL_PROJFILE = /Users/nicksieger/.global.env-vanguard.local
-GLOBAL_VARFILE = /Users/nicksieger/.global.vars-vanguard.local
-HISTFILE = /Users/nicksieger/.bash_history-vanguard.local
-HOME = /Users/nicksieger
-J2EE_HOME = 
-JAVA_ARCH = x86_64
-JAVA_LIBDIR = /Users/nicksieger/java
-JAVA_MAIN_CLASS_40570 = org.mortbay.start.Main
-JAVA_OPTS = -d32
-JRUBY_RACK_SRC = true
-LANG = en_US.UTF-8
-LAST_SESSION = /Users/nicksieger/.last_session-vanguard.local
-LESS = -rqFX
-LOGNAME = nicksieger
-MANPATH = /usr/local/man
-OLDPWD = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
-PAGER = less
-PATH = file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin:/usr/local/bin:/usr/local/mysql/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/Users/nicksieger/.rvm/bin:/Users/nicksieger/.gem/ruby/1.8/bin:/Users/nicksieger/Projects/ruby/jruby/bin/:/Users/nicksieger/bin:/Users/nicksieger/Projects/java/glassfishv3/glassfish/bin
-PROJ = /Users/nicksieger/Projects/ruby/jruby-rack
-PROJ_EXIT = 
-PWD = /Users/nicksieger/Projects/java/jetty-6.1.25
+PATH = file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin
 RACK_ENV = production
 RUBYOPT = -I/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
-SECURITYSESSIONID = 301e55
-SESSIONDIR = /Users/nicksieger
-SHELL = /bin/bash
-SHLVL = 3
-SSH_AUTH_SOCK = /tmp/launch-AYXflR/Listeners
-TERM = xterm-color
-TERM_PROGRAM = Apple_Terminal
-TERM_PROGRAM_VERSION = 273
-TITLE = Bash 3.2.48(1)-release
-TITLE_BASE = ${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}
-TMPDIR = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
-USER = nicksieger
-_ = /usr/bin/java
-__CF_USER_TEXT_ENCODING = 0x1F5:0:0
-com.apple.java.jvmMode = client
-rvm_path = /Users/nicksieger/.rvm
-rvm_selfcontained = 1
-rvm_version = 1.2.5
 
 --- System Properties
 awt.nativeDoubleBuffering = true
@@ -171,7 +128,7 @@ user.timezone = America/Chicago
 --- $LOAD_PATH:
 /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/sinatra-1.0/lib
 /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/rack-1.2.1/lib
-file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-rack-1.0.6.jar!/vendor/rack-1.2.1
+file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-rack-1.0.7.dev.jar!/vendor/rack-1.2.1
 /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/bundler-1.0.10/lib
 file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
 file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
@@ -179,14 +136,9 @@ file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF
 .
 
 --- Request Environment
-HTTP_ACCEPT = application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
-HTTP_ACCEPT_ENCODING = gzip, deflate
-HTTP_ACCEPT_LANGUAGE = en-us
-HTTP_CONNECTION = keep-alive
-HTTP_COOKIE = __utmc=111872281; __utma=111872281.937288940.1258574061.1294697219.1297282370.26; __utmz=111872281.1292187687.24.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _mkto_trk=id:422-MTH-535&token:_mch-localhost-1286296323340-33293
+HTTP_ACCEPT = */*
 HTTP_HOST = localhost:8080
-HTTP_REFERER = http://localhost:8080/sinatra/
-HTTP_USER_AGENT = Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
+HTTP_USER_AGENT = curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8l zlib/1.2.3
 PATH_INFO = /env
 QUERY_STRING = 
 REMOTE_ADDR = 0:0:0:0:0:0:0:1%0
@@ -198,23 +150,18 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = jetty/6.1.25
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@3f649b1a
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@678a270a
 java.servlet_request = GET /sinatra/env HTTP/1.1
+User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8l zlib/1.2.3
 Host: localhost:8080
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; en-us) AppleWebKit/533.19.4 (KHTML, like Gecko) Version/5.0.3 Safari/533.19.4
-Accept: application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5
-Accept-Language: en-us
-Accept-Encoding: gzip, deflate
-Cookie: __utmc=111872281; __utma=111872281.937288940.1258574061.1294697219.1297282370.26; __utmz=111872281.1292187687.24.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); _mkto_trk=id:422-MTH-535&token:_mch-localhost-1286296323340-33293
-Connection: keep-alive
-Referer: http://localhost:8080/sinatra/
+Accept: */*
 
 jruby.rack.dynamic.requests.only = true
 jruby.rack.jruby.version = 1.6.0.RC1
 jruby.rack.rack.release = 1.2
-jruby.rack.version = 1.0.6
-rack.errors = #<JRuby::Rack::ServletLog:0x631e1aa5>
-rack.input = #<JRuby::RackRewindableInput:0x4d677979>
+jruby.rack.version = 1.0.7.dev
+rack.errors = #<JRuby::Rack::ServletLog:0x6a754384>
+rack.input = #<JRuby::RackRewindableInput:0x38a3c5b6>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 
