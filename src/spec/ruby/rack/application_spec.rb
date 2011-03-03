@@ -54,6 +54,7 @@ describe DefaultRackApplicationFactory do
   it "should look for a config.ru rackup script below /WEB-INF" do
     @rack_context.should_receive(:getResourcePaths).with('/WEB-INF/').and_return(
       java.util.HashSet.new(%w(app/ config/ config.ru lib/ vendor/).map{|f| "/WEB-INF/#{f}"}))
+    @rack_context.should_receive(:getRealPath).with('/WEB-INF/config.ru')
     @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/config.ru').and_return StubInputStream.new("run MyRackApp")
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == 'run MyRackApp'
