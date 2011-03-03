@@ -136,29 +136,31 @@ public class RackFilter implements Filter {
                 return httpRequest;
             }
 
-            final String modifiedPath = additional;
+            final String requestURI = httpRequest.getRequestURI() + additional;
             if (httpRequest.getPathInfo() != null) {
+                final String pathInfo = httpRequest.getPathInfo() + additional;
                 httpRequest = new HttpServletRequestWrapper(httpRequest) {
-                        @Override
-                        public String getPathInfo() {
-                            return super.getPathInfo() + modifiedPath;
-                        }
-                        @Override
-                        public String getRequestURI() {
-                            return super.getRequestURI() + modifiedPath;
-                        }
-                    };
+                    @Override
+                    public String getPathInfo() {
+                        return pathInfo;
+                    }
+                    @Override
+                    public String getRequestURI() {
+                        return requestURI;
+                    }
+                };
             } else {
+                final String servletPath = httpRequest.getServletPath() + additional;
                 httpRequest = new HttpServletRequestWrapper(httpRequest) {
-                        @Override
-                        public String getServletPath() {
-                            return super.getServletPath() + modifiedPath;
-                        }
-                        @Override
-                        public String getRequestURI() {
-                            return super.getRequestURI() + modifiedPath;
-                        }
-                    };
+                    @Override
+                    public String getServletPath() {
+                        return servletPath;
+                    }
+                    @Override
+                    public String getRequestURI() {
+                        return requestURI;
+                    }
+                };
             }
         }
         return httpRequest;
