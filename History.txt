@@ -1,7 +1,12 @@
 == 1.0.7
 
+- JRUBY_RACK-36: Always set env['HTTPS'] according to request.getScheme
 - GH#10: Add `jruby.rack.ignore.env` property which clears out the ENV
   hash in each runtime to insulate the application from the environment.
+- GH#12: Another fix to suppress client abort exceptions
+- GH#14: Remove trailing slash from jruby.home
+- GH#15: Fix infinite redirect issue with Winstone
+- GH#17: __FILE__ constant inside config.ru is not absolute
 
 == 1.0.6 (01/20/11)
 
