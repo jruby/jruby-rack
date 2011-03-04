@@ -17,33 +17,20 @@
         <% if defined?($servlet_context) %>
         <p>
           Current Server Time: <span id="servertime">Unknown</span>
-        </p>
-        <input id="starttime" type="button" name="starttime" value="Click to stream server time"/>
-        <script type="text/javascript">
-          $('#starttime').click(function() {
-            $(this).fadeOut();
-            var timeStream = new DUI.Stream();
-            timeStream.listen('application/json', function(payload) {
-              var t = jQuery.parseJSON(payload);
-              $('#servertime').text(t.currentTime);
+          <input id="starttime" type="button" name="starttime" value="Click to stream server time"/>
+          <script type="text/javascript">
+            $('#starttime').click(function() {
+              $(this).fadeOut();
+              var timeStream = new DUI.Stream();
+              timeStream.listen('application/json', function(payload) {
+                var t = jQuery.parseJSON(payload);
+                $('#servertime').text(t.currentTime);
+              });
+              timeStream.load('servertime');
+              $(this).data('stream', timeStream);
             });
-            timeStream.load('servertime');
-            $(this).data('stream', timeStream);
-          });
-        </script>
-        <div>
-          <form id="upload" enctype="multipart/form-data" action="upload" method="post">
-            <input name="file" type="file"/>
-            <input type="submit" value="Upload"/>
-          </form>
-          
-          <div id="uploading">
-            <div id="progress" class="bar">
-              <div id="progressbar">&nbsp;</div>
-              <div id="percents"></div>
-            </div>
-          </div>
-        </div>
+          </script>
+        </p>
         <% else %>
           <p>In order to run this demo, you need to run Trinidad or some other JRuby-Rack-enabled application.</p>
         <% end %>
