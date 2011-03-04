@@ -3,7 +3,8 @@
 require './lib/helpers'
 require 'rubygems'
 require 'bundler/setup'
-require './lib/demo'
+require './lib/env'
+require './lib/stream'
 
 set :run, false
 set :public, './public'
