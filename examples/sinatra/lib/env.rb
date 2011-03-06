@@ -1,5 +1,5 @@
 require 'sinatra'
-if defined?(JRuby::Rack::Capture)
+if EnvCaptureHelper.jruby_rack_capture_on?
   helpers do
     include JRuby::Rack::Capture::Base
     include JRuby::Rack::Capture::RubyGems
@@ -8,11 +8,11 @@ if defined?(JRuby::Rack::Capture)
     include JRuby::Rack::Capture::Environment
     include JRuby::Rack::Capture::JavaEnvironment
     include JRuby::Rack::Capture::LoadPath
-    include DemoCaptureHelper
+    include EnvCaptureHelper
     include FileStoreHelper
   end
 else
-  helpers DemoDummyHelper
+  helpers EnvDummyHelper
 end
 
 get '/' do
