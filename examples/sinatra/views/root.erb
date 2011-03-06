@@ -7,9 +7,11 @@
 <% end %>
 </ul>
 
+<% if request.env['java.servlet_request'] %>
 <h2>Servlet Request</h2>
 <ul>
 <% %w(ContextPath PathInfo PathTranslated QueryString RequestURI ServletPath).each do |m| %>
 <li><%= m %> = <%= request.env['java.servlet_request'].send("get#{m}") %></li>
 <% end %>
 </ul>
+<% end %>

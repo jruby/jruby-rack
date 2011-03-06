@@ -1,4 +1,9 @@
-module DemoCaptureHelper
+module EnvCaptureHelper
+  def self.jruby_rack_capture_on?
+    defined?(JRuby::Rack::Capture) && defined?($servlet_context) &&
+      $servlet_context.getConfig.getProperty('jruby.rack.capture.off').nil?
+  end
+
   def capture
     super
     output.puts("\n--- Request Environment", *(request.env.keys.sort.map do |k|
@@ -23,7 +28,7 @@ module FileStoreHelper
   end
 end
 
-module DemoDummyHelper
+module EnvDummyHelper
   def output
     @output ||= begin; require 'stringio'; StringIO.new; end
   end
@@ -36,7 +41,7 @@ module DemoDummyHelper
   end
 end
 
-if defined?(JRuby::Rack::Capture)
+if EnvCaptureHelper.jruby_rack_capture_on?
   class StandardError
     include JRuby::Rack::Capture::Environment
     include JRuby::Rack::Capture::JavaEnvironment
