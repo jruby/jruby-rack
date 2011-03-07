@@ -1,0 +1,8 @@
+rack "config.ru" do
+  listen 9292
+  watch *Dir['config.ru', 'lib/**/*', 'views/**/*'].to_a
+end
+
+# Local Variables:
+# mode: ruby
+# End:

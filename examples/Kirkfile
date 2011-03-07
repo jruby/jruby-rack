@@ -1,0 +1,15 @@
+rack "rails3/config.ru" do
+  listen 9090
+end
+
+rack "sinatra/config.ru" do
+  listen 9091
+end
+
+rack "camping/config.ru" do
+  listen 9092
+end
+
+# Local Variables:
+# mode: ruby
+# End:
