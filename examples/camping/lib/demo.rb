@@ -1,5 +1,3 @@
-require 'rubygems'
-gem 'camping'
 require 'camping'
 
 Camping.goes :Demo
@@ -38,14 +36,14 @@ module Demo::Views
   def dl_hash(hash)
     dl {
       hash.keys.each do |k|
-        dt { text(k.to_s.humanize + "&nbsp;"); tt {k.to_s}}
+        dt { tt {k.to_s} }
         dd {
           if Hash === hash[k]
             dl_hash(hash[k])
           elsif Array === hash[k]
             ul { hash[k].each {|v| li { v }} }
           else
-            text("  " + hash[k] + "\n")
+            text("  " + hash[k].to_s + "\n")
           end
         }
       end
@@ -54,6 +52,6 @@ module Demo::Views
 
   def snoop
     h1 "Snoop"
-    div dl_hash(@snoop)
+    div { dl_hash(@snoop) }
   end
 end

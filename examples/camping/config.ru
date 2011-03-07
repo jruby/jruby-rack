@@ -1,2 +1,5 @@
+require 'rubygems'
+require 'bundler/setup'
+require 'rack'
 require './lib/demo'
-run Rack::Adapter::Camping.new(Demo)
+run Demo
