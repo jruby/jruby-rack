@@ -1,4 +1,7 @@
-<p>Oops! Something's not right.<br/>You should be seeing <a href='index.html'>index.html</a> instead.</p>
+<% if request.env['java.servlet_request'] %>
+<p>Oops! Something's not right.<br/>The servlet filter should be
+sending you to <a href='index.html'>index.html</a> instead.</p>
+<% end %>
 
 <h2>Request Environment</h2>
 <ul>
