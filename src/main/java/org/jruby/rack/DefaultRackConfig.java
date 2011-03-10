@@ -21,6 +21,7 @@ public class DefaultRackConfig implements RackConfig {
         put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
         put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
         put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
+        put("log4j", "org.jruby.rack.logging.Log4jLogger");
         put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");
         put("stdout", "org.jruby.rack.logging.StandardOutLogger");
     }});
