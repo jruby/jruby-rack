@@ -207,6 +207,8 @@ follows:
   still need to configure commons-logging with additional details.
 - `slf4j`: Sends log messages to SLF4J. Again, SLF4J configuration is
   left up to you.
+- `log4j`: Sends log messages to log4J. Again, log4J configuration is
+  left up to you.
 
 For those loggers that require a specific named logger, set it in the
 `jruby.rack.logging.name` option.
