@@ -304,6 +304,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             rackup = findConfigRuPathInSubDirectories("/WEB-INF/", 1);
         }
 
+        if (rackup == null) { // google-appengine gem prefers it at /config.ru
+            rackup = findConfigRuPathInSubDirectories("/", 0);
+        }
+
         if (rackup != null) {
             rackupLocation = rackContext.getRealPath(rackup);
             rackup = inputStreamToString(rackContext.getResourceAsStream(rackup));
