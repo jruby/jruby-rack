@@ -55,6 +55,7 @@ public class DeferredInitializationRackApplication implements RackApplication {
             } catch (InterruptedException ie) {
                 throw new RuntimeException(ie);
             }
+            done.set(true);
             executorService.shutdownNow();
             return inner;
         }

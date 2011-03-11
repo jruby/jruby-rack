@@ -4,7 +4,6 @@ package org.jruby.rack;
  *
  */
 public class DeferredInitializationRackApplicationFactory extends DefaultRackApplicationFactory {
-
     
     @Override
     public RackApplication getApplication() throws RackInitializationException {
