@@ -10,7 +10,7 @@ package org.jruby.rack.merb;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackServletContextListener;
-import org.jruby.rack.SharedRackApplicationFactory;
+import org.jruby.rack.DeferredInitializationRackApplicationFactory;
 
 /**
  *
@@ -19,7 +19,7 @@ import org.jruby.rack.SharedRackApplicationFactory;
 public class MerbServletContextListener extends RackServletContextListener {
     @Override
     protected RackApplicationFactory newApplicationFactory(RackConfig config) {
-        return new SharedRackApplicationFactory(
+        return new DeferredInitializationRackApplicationFactory(
             new MerbRackApplicationFactory()
         );
     }
