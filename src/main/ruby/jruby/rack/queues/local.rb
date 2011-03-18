@@ -48,6 +48,18 @@ module JRuby
         end
       end
 
+      class LocalConfig < java.lang.Object
+        include Java::OrgJrubyRack::RackConfig
+        
+        def getJmsJndiProperties
+          LocalContext.init_parameters['jms.jndi.properties']
+        end
+        
+        def getJmsConnectionFactory
+          LocalContext.init_parameters['jms.connection.factory']
+        end
+      end
+      
       class LocalContext < java.lang.Object
         include Java::OrgJrubyRack::RackContext
 
@@ -57,6 +69,10 @@ module JRuby
 
         def self.init_parameters=(params)
           @params = params
+        end
+        
+        def getConfig
+          @rack_config ||= LocalConfig.new
         end
 
         def getInitParameter(k)
