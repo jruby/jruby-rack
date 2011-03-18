@@ -5,6 +5,8 @@
 # See the file LICENSE.txt for details.
 #++
 
+require 'jruby'
+
 module JRuby::Rack
   module Capture
     module Base
@@ -37,7 +39,14 @@ module JRuby::Rack
 
       def capture
         super
-        output.puts("\n--- Backtrace", *backtrace) if backtrace
+        if backtrace
+          if JRuby.runtime.instance_config.respond_to?(:trace_type)
+            full_trace = JRuby.runtime.instance_config.trace_type.print_backtrace(self)
+          else
+            full_trace = backtrace.join("\n")
+          end
+          output.puts("\n--- Backtrace", full_trace)
+        end
       end
     end
 
