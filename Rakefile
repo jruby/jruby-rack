@@ -179,6 +179,7 @@ task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
     abort "Too many jars! #{jars.map{|j| File.basename(j)}.inspect}\nRun a clean build first"
   end
   Dir.chdir("target/gem") do
+    rm_f 'jruby-rack.gemspec'
     gemspec = Gem::Specification.new do |s|
       s.name = %q{jruby-rack}
       s.version = JRuby::Rack::VERSION.sub(/-SNAPSHOT/, '')
@@ -193,6 +194,7 @@ task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
       s.rubyforge_project = %q{jruby-extras}
     end
     Gem::Builder.new(gemspec).build
+    File.open('jruby-rack.gemspec', 'w') {|f| f << gemspec.to_ruby }
     mv FileList['*.gem'], '..'
   end
 end
