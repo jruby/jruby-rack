@@ -81,7 +81,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             Ruby runtime = (Ruby) rackContext.getAttribute("jruby.runtime");
             if (runtime == null) {
                 setupJRubyManagement();
-                runtime = JavaEmbedUtils.initialize(new ArrayList(), createRuntimeConfig());
+                RubyInstanceConfig config = createRuntimeConfig();
+                runtime = JavaEmbedUtils.initialize(config.loadPaths(), config);
             }
             if (rackContext.getConfig().isIgnoreEnvironment()) {
                 runtime.evalScriptlet("ENV.clear");
@@ -129,6 +130,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 config.setJRubyHome(home);
             }
         } catch (Exception e) { }
+
+        // Process arguments, namely any that might be in RUBYOPT
+        config.processArguments(new String[0]);
         return config;
     }
 
