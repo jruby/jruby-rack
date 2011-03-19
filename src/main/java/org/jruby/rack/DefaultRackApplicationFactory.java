@@ -10,6 +10,8 @@ package org.jruby.rack;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.embed.ScriptingContainer;
+import org.jruby.embed.LocalContextScope;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -81,8 +83,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             Ruby runtime = (Ruby) rackContext.getAttribute("jruby.runtime");
             if (runtime == null) {
                 setupJRubyManagement();
-                RubyInstanceConfig config = createRuntimeConfig();
-                runtime = JavaEmbedUtils.initialize(config.loadPaths(), config);
+                ScriptingContainer container = newContainer();
+
+                runtime = container.getProvider().getRuntime();
             }
             if (rackContext.getConfig().isIgnoreEnvironment()) {
                 runtime.evalScriptlet("ENV.clear");
@@ -195,6 +198,23 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     private interface ApplicationObjectFactory {
         IRubyObject create(Ruby runtime);
+    }
+
+    private ScriptingContainer newContainer() {
+        RubyInstanceConfig config = createRuntimeConfig();
+
+        ScriptingContainer container = new ScriptingContainer(LocalContextScope.SINGLETHREAD);
+
+        container.setClassLoader(Thread.currentThread().getContextClassLoader());
+        container.setHomeDirectory(config.getJRubyHome());
+        container.setEnvironment(config.getEnvironment());
+        container.setLoadPaths(config.loadPaths());
+
+        if (rackContext.getConfig().getCompatVersion() != null) {
+            container.setCompatVersion(config.getCompatVersion());
+        }
+
+        return container;
     }
 
     private RackApplication createApplication(final ApplicationObjectFactory appfact)
