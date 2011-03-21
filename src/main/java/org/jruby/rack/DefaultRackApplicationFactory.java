@@ -78,67 +78,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return rackContext;
     }
 
-    public Ruby newRuntime() throws RackInitializationException {
-        try {
-            Ruby runtime = (Ruby) rackContext.getAttribute("jruby.runtime");
-            if (runtime == null) {
-                setupJRubyManagement();
-                ScriptingContainer container = newContainer();
-
-                runtime = container.getProvider().getRuntime();
-            }
-            if (rackContext.getConfig().isIgnoreEnvironment()) {
-                runtime.evalScriptlet("ENV.clear");
-            }
-            runtime.getGlobalVariables().set("$servlet_context",
-                    JavaEmbedUtils.javaToRuby(runtime, rackContext));
-            runtime.evalScriptlet("require 'rack/handler/servlet'");
-            return runtime;
-        } catch (RaiseException re) {
-            throw new RackInitializationException(re);
-        }
-    }
-
-    /**
-     * JRuby 1.5 flips this setting to false by default for quicker
-     * startup. Appserver startup time probably doesn't matter.
-     */
-    private void setupJRubyManagement() {
-        if (!"false".equalsIgnoreCase(System.getProperty("jruby.management.enabled"))) {
-            System.setProperty("jruby.management.enabled", "true");
-        }
-    }
-
-    private RubyInstanceConfig createRuntimeConfig() {
-        RubyInstanceConfig config = new RubyInstanceConfig();
-        config.setClassCache(classCache);
-        if (rackContext.getConfig().getCompatVersion() != null) {
-            config.setCompatVersion(rackContext.getConfig().getCompatVersion());
-        }
-
-        try { // try to set jruby home to jar file path
-            URL resource = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
-            if (resource.getProtocol().equals("jar")) {
-                String home;
-                try { // http://weblogs.java.net/blog/2007/04/25/how-convert-javaneturl-javaiofile
-                    home = resource.toURI().getSchemeSpecificPart();
-                } catch (URISyntaxException urise) {
-                    home = resource.getPath();
-                }
-
-                // Trim trailing slash. It confuses OSGi containers...
-                if (home.endsWith("/")) {
-                    home = home.substring(0, home.length() - 1);
-                }
-                config.setJRubyHome(home);
-            }
-        } catch (Exception e) { }
-
-        // Process arguments, namely any that might be in RUBYOPT
-        config.processArguments(new String[0]);
-        return config;
-    }
-
     public IRubyObject createApplicationObject(Ruby runtime) {
         if (rackupScript == null) {
             rackContext.log("WARNING: no rackup script found. Starting empty Rack application.");
