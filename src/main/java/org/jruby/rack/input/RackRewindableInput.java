@@ -161,6 +161,10 @@ public class RackRewindableInput extends RackBaseInput {
             return getRuntime().getNil();
         }
 
+        public IRubyObject size(ThreadContext context) {
+            return getRuntime().newFixnum(memoryBuffer.limit());
+        }
+
         public void close() {
         }
 

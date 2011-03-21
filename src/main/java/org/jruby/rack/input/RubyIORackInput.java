@@ -7,6 +7,9 @@
 
 package org.jruby.rack.input;
 
+import java.nio.channels.Channel;
+import java.nio.channels.FileChannel;
+
 import org.jruby.Ruby;
 import org.jruby.RubyIO;
 import org.jruby.rack.RackInput;
@@ -43,6 +46,20 @@ public class RubyIORackInput implements RackInput {
 
     public IRubyObject rewind(ThreadContext context) {
         return io.rewind(context);
+    }
+
+    public IRubyObject size(ThreadContext context) {
+        Channel channel = io.getChannel();
+        try {
+            if (channel instanceof FileChannel) {
+                return context.getRuntime().newFixnum(((FileChannel) channel).size());
+            }
+        } catch (Exception e) {
+            if (context.getRuntime().isDebug()) {
+                e.printStackTrace();
+            }
+        }
+        throw context.getRuntime().newNotImplementedError("not supported");
     }
 
     public void close() {

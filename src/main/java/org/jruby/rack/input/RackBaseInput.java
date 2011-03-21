@@ -81,6 +81,11 @@ public abstract class RackBaseInput extends RubyObject implements RackInput {
         return getDelegateInput().rewind(context);
     }
 
+    @JRubyMethod()
+    public IRubyObject size(ThreadContext context) {
+        return getDelegateInput().size(context);
+    }
+
     public void close() {
         if (delegateInput != null) {
             delegateInput.close();

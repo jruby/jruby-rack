@@ -36,7 +36,7 @@ public interface RackInput {
     /**
      * each must be called without arguments and only yield Strings.
      */
-    public IRubyObject each(ThreadContext context, Block block);
+    IRubyObject each(ThreadContext context, Block block);
 
     /**
      * rewind must be called without arguments. It rewinds the input stream back
@@ -44,11 +44,16 @@ public interface RackInput {
      * a pipe or a socket. Therefore, handler developers must buffer the input
      * data into some rewindable object if the underlying input stream is not rewindable.
      */
-    public IRubyObject rewind(ThreadContext context);
+    IRubyObject rewind(ThreadContext context);
+
+    /**
+     * Returns the size of the input.
+     */
+    IRubyObject size(ThreadContext context);
 
     /**
      * Close the input. Exposed only to the Java side because the Rack spec says
      * that application code must not call close, so we don't expose a close method to Ruby.
      */
-    public void close();
+    void close();
 }
