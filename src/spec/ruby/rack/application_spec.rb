@@ -91,35 +91,30 @@ describe DefaultRackApplicationFactory do
       end
     end
 
-    describe "newRuntime" do
-      it "should create a new Ruby runtime with the rack environment pre-loaded" do
-        runtime = app_factory.newRuntime
-        lazy_string = proc {|v| "(begin; #{v}; rescue Exception => e; e.class; end).name"}
-        @app_factory.verify(runtime, lazy_string.call("Rack")).should == "Rack"
-        @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Servlet")
-        ).should == "Rack::Handler::Servlet"
-        @app_factory.verify(runtime, lazy_string.call("Rack::Handler::Bogus")
-        ).should_not == "Rack::Handler::Bogus"
+    describe "newContainer" do
+      it "should create a new Ruby container with the rack environment pre-loaded" do
+        container = app_factory.newContainer
+        container.runScriptlet("defined?(::Rack)").should be_true
+        container.runScriptlet("defined?(::Rack::Handler::Servlet)").should be_true
+        container.runScriptlet("defined?(Rack::Handler::Bogus)").should_not be_true
       end
 
       it "should initialize the $servlet_context global variable" do
-        runtime = app_factory.newRuntime
-        app_factory.verify(runtime, "defined?($servlet_context)").should_not be_empty
+        container = app_factory.newContainer
+        container.runScriptlet("defined?($servlet_context)").should_not be_empty
       end
 
       it "should handle jruby.compat.version == '1.9' and start up in 1.9 mode" do
         @rack_config.stub!(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
-        runtime = app_factory.newRuntime
-        runtime.instance_config.compat_version.should == org.jruby.CompatVersion::RUBY1_9
+        container = app_factory.newContainer
+        container.compat_version.should == org.jruby.CompatVersion::RUBY1_9
       end
 
       it "should have environment variables cleared if the configuration ignores the environment" do
         ENV["HOME"].should_not == ""
-        runtime = app_factory.newRuntime
-        app_factory.verify(runtime, 'ENV["HOME"]').should == ENV["HOME"]
         @rack_config.stub!(:isIgnoreEnvironment).and_return true
-        runtime = app_factory.newRuntime
-        app_factory.verify(runtime, 'ENV["HOME"]').should == ""
+        container = app_factory.newContainer
+        container.runScriptlet('ENV["HOME"]').should be_nil
       end
     end
   end
