@@ -1,3 +1,14 @@
+== 1.0.8
+
+- Add a check for /config.ru if not found in /WEB-INF (for appengine gem)
+- Modify LocalContext to support minimal LocalConfig for JMS (Garret Conaty)
+- JRUBY-5573: Add support for log4j
+- Process RUBYOPT variable if it's set
+- Change application factory to use ScriptingContainer API for
+  creating runtimes
+- Upgrade to Rack 1.2.2
+- GH#21: Implement RackInput#size
+
 == 1.0.7
 
 - JRUBY_RACK-36: Always set env['HTTPS'] according to request.getScheme
