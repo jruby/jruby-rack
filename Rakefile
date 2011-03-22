@@ -103,7 +103,17 @@ task :resources => ["target/classes", :unpack_gem, :update_version, :test_resour
   cp "src/main/tld/jruby-rack.tld", meta_inf
 end
 
-task :speconly do
+file 'target/spec' do # workaround for jruby-complete-1.6.0.jar bug finding spec
+  ENV['PATH'].split(File::PATH_SEPARATOR).each do |p|
+    if File.exist?(File.join(p, 'spec'))
+      cp File.join(p, 'spec'), 'target/spec'
+      break
+    end
+  end
+  fail "Could not find RSpec 1.3.x `spec' executable" unless File.exist?('target/spec')
+end
+
+task :speconly => 'target/spec' do
   if ENV['SKIP_SPECS'] && ENV['SKIP_SPECS'] == "true"
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
@@ -113,7 +123,7 @@ task :speconly do
     spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
     opts.push *FileList[spec].to_a
     ENV['CLASSPATH'] = test_classpath.join(File::PATH_SEPARATOR)
-    ruby "-Isrc/spec/ruby", "-S", "spec", *opts
+    ruby "-Isrc/spec/ruby", "-S", "target/spec", *opts
   end
 end
 
