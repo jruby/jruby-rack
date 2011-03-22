@@ -10,7 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>1.0.8.dev</version>
+  <version>1.0.8</version>
   <name>JRuby-Rack</name>
   <url>http://github.com/nicksieger/jruby-rack/</url>
   <description>
@@ -65,12 +65,6 @@
         <enabled>false</enabled>
       </snapshots>
       <url>http://repository.codehaus.org</url>
-    </repository>
-    <repository>
-      <id>maven2-repository.dev.java.net</id>
-      <name>Java.net Repository for Maven</name>
-      <url>http://download.java.net/maven/2/</url>
-      <layout>default</layout>
     </repository>
   </repositories>
   
@@ -139,6 +133,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
