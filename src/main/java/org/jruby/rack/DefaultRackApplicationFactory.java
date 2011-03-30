@@ -201,15 +201,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return container;
     }
 
-    private Ruby getRuntimeFrom(ScriptingContainer container) {
-        Ruby runtime = (Ruby) rackContext.getAttribute("jruby.runtime");
-        if (runtime == null) {
-            return container.getProvider().getRuntime();
-        } else {
-            return runtime;
-        }
-    }
-
     private RackApplication createApplication(final ApplicationObjectFactory appfact)
             throws RackInitializationException {
         try {
@@ -218,7 +209,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 @Override
                 public void init() throws RackInitializationException {
                     try {
-                        setApplication(appfact.create(getRuntimeFrom(container)));
+                        setApplication(appfact.create(container.getProvider().getRuntime()));
                     } catch (RaiseException re) {
                         captureMessage(re);
                         throw new RackInitializationException(re);
