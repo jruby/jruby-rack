@@ -12,6 +12,8 @@ import org.jruby.rack.RackEnvironment;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -27,9 +29,11 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
     private String requestURIWithoutQuery;
     private String pathInfo;
     private RackContext rackContext;
+    private HttpServletResponse servletResponse;
 
-    public ServletRackEnvironment(HttpServletRequest request, RackContext rackContext) {
+    public ServletRackEnvironment(HttpServletRequest request, HttpServletResponse response, RackContext rackContext) {
         super(request);
+        this.servletResponse = response;
         this.rackContext = rackContext;
     }
 
@@ -39,6 +43,14 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
 
     public InputStream getInput() throws IOException {
         return getInputStream();
+    }
+    
+    /**
+     * The underlying HttpServletResponse
+     * @return
+     */
+    public HttpServletResponse getResponse() {
+    	return servletResponse;
     }
 
     /**

@@ -14,7 +14,8 @@ describe Rack::Handler::Servlet, "create_env" do
   before :each do
     @servlet = Rack::Handler::Servlet.new(nil)
     @servlet_env = mock "servlet request"
-    @env = org.jruby.rack.servlet.ServletRackEnvironment.new @servlet_env, @rack_context
+    @servlet_response = mock "servlet response"
+    @env = org.jruby.rack.servlet.ServletRackEnvironment.new @servlet_env, @servlet_response, @rack_context
     @servlet_env.stub!(:getAttributeNames).and_return enumeration([])
   end
 
@@ -310,6 +311,11 @@ describe Rack::Handler::Servlet, "create_env" do
     env["HTTP_IF_NONE_MATCH"].should == "abcdef"
     env["HTTP_IF_MODIFIED_SINCE"].should == "today"
     env["HTTP_X_SOME_REALLY_LONG_HEADER"].should == "yeap"
+  end
+
+  it "should return the servlet response when queried with java.servlet_response" do
+    env = @servlet.create_lazy_env @env
+    env['java.servlet_response'].should == @servlet_response
   end
 end
 

@@ -30,8 +30,8 @@ module Rack
 
     class Env
       BUILTINS = %w(rack.version rack.multithread rack.multiprocess rack.run_once
-        rack.input rack.errors rack.url_scheme java.servlet_request java.servlet_context
-        jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release)
+        rack.input rack.errors rack.url_scheme java.servlet_request java.servlet_response 
+        java.servlet_context jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release)
 
       REQUEST = %w(CONTENT_TYPE CONTENT_LENGTH REQUEST_METHOD SCRIPT_NAME REQUEST_URI
         PATH_INFO QUERY_STRING SERVER_NAME SERVER_SOFTWARE REMOTE_HOST REMOTE_ADDR REMOTE_USER SERVER_PORT)
@@ -120,6 +120,7 @@ module Rack
           scheme = env[key] = @servlet_env.getScheme
           env['HTTPS'] = 'on' if scheme == 'https'
         when 'java.servlet_request' then env[key] = @servlet_env.getRequest rescue @servlet_env
+        when 'java.servlet_response' then env[key] = @servlet_env.getResponse rescue @servlet_env
         when 'java.servlet_context' then env[key] = $servlet_context
         when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
         when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
