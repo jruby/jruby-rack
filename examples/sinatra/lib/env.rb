@@ -41,3 +41,11 @@ get '/env' do
   store
   output.string
 end
+
+get '/jsp_forward' do
+  request.forward_to "/jsp/index.jsp", {"message" => "Hello from JSP"}
+end
+
+get '/jsp_include' do
+  erb :jsp_include
+end
