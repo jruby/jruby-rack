@@ -146,6 +146,7 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	 */
 	private final static class ByteArrayServletOutputStream extends ServletOutputStream {
 		
+		private final static String LINE_SEPARATOR = System.getProperty("line.separator");
 		private final DataOutputStream dataOutputStream;
 		private final String charSet;
 		
@@ -192,7 +193,7 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 
 		@Override
 		public void println() throws IOException {
-			dataOutputStream.write("\n".getBytes(charSet));
+			dataOutputStream.write(LINE_SEPARATOR.getBytes(charSet));
 		}
 
 		@Override
