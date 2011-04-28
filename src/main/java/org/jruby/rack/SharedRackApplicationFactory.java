@@ -57,5 +57,6 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
 
     public void destroy() {
         application.destroy();
+        realFactory.destroy();
     }
 }

@@ -77,8 +77,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public void destroy() {
-        errorApplication.destroy();
-        errorApplication = null;
+        if (errorApplication != null) {
+	        errorApplication.destroy();
+	        errorApplication = null;
+        }
     }
 
     public RackContext getRackContext() {

@@ -204,6 +204,7 @@ describe PoolingRackApplicationFactory do
     @pool.finishedWithApplication app2
     app1.should_receive(:destroy)
     app2.should_receive(:destroy)
+    @factory.should_receive(:destroy)
     @pool.destroy
   end
 
@@ -310,6 +311,7 @@ describe SharedRackApplicationFactory do
     @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
     @factory.should_receive(:getApplication).and_return app
+    @factory.should_receive(:destroy)
     app.should_receive(:destroy)
     @shared.init(@rack_context)
     @shared.destroy

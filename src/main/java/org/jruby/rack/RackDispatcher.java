@@ -17,4 +17,5 @@ import java.io.IOException;
 public interface RackDispatcher {
     void process(RackEnvironment request, RackResponseEnvironment response)
         throws ServletException, IOException;
+    void destroy();
 }
