@@ -91,30 +91,34 @@ describe DefaultRackApplicationFactory do
       end
     end
 
-    describe "newContainer" do
-      it "should create a new Ruby container with the rack environment pre-loaded" do
-        container = app_factory.newContainer
-        container.runScriptlet("defined?(::Rack)").should be_true
-        container.runScriptlet("defined?(::Rack::Handler::Servlet)").should be_true
-        container.runScriptlet("defined?(Rack::Handler::Bogus)").should_not be_true
+    describe "newRuntime" do
+      it "should create a new Ruby runtime with the rack environment pre-loaded" do
+        runtime = app_factory.new_runtime
+        lambda { runtime.evalScriptlet("defined?(::Rack)") != nil }.should be_true
+        lambda { runtime.evalScriptlet("defined?(::Rack::Handler::Servlet)") != nil }.should be_true
+        lambda { runtime.evalScriptlet("defined?(Rack::Handler::Bogus)") == nil }.should be_true
       end
 
       it "should initialize the $servlet_context global variable" do
-        container = app_factory.newContainer
-        container.runScriptlet("defined?($servlet_context)").should_not be_empty
+        runtime = app_factory.new_runtime
+        lambda { runtime.evalScriptlet("defined?($servlet_context)") != nil }.should be_true
       end
 
       it "should handle jruby.compat.version == '1.9' and start up in 1.9 mode" do
         @rack_config.stub!(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
-        container = app_factory.newContainer
-        container.compat_version.should == org.jruby.CompatVersion::RUBY1_9
+        runtime = app_factory.new_runtime
+        runtime.is1_9.should be_true
       end
 
       it "should have environment variables cleared if the configuration ignores the environment" do
         ENV["HOME"].should_not == ""
         @rack_config.stub!(:isIgnoreEnvironment).and_return true
-        container = app_factory.newContainer
-        container.runScriptlet('ENV["HOME"]').should be_nil
+        runtime = app_factory.new_runtime
+        lambda { runtime.evalScriptlet('ENV["HOME"]') == nil }.should be_true
+      end
+
+      def eval_should_be_true(value, expected)
+        (value == expected).should be_true
       end
     end
   end
