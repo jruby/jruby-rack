@@ -29,6 +29,10 @@ public class DefaultRackApplication implements RackApplication {
     public DefaultRackApplication() {
     }
 
+    public DefaultRackApplication(IRubyObject application) {
+      this.application = application;
+    }
+
     public RackResponse call(final RackEnvironment env) {
         Ruby runtime = getRuntime();
         try {

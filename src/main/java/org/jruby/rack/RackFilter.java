@@ -12,7 +12,6 @@ import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
@@ -22,9 +21,8 @@ import java.io.IOException;
  * @author nicksieger
  */
 public class RackFilter implements Filter {
-    private RackContext context;
-    private RackDispatcher dispatcher;
-    private boolean filterAddsHtml, filterVerifiesResource;
+    protected RackContext context;
+    protected RackDispatcher dispatcher;
 
     /** Default constructor for servlet container */
     public RackFilter() {
@@ -34,21 +32,19 @@ public class RackFilter implements Filter {
     public RackFilter(RackDispatcher dispatcher, RackContext context) {
         this.context = context;
         this.dispatcher = dispatcher;
-        configure();
     }
 
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
         this.context = (RackContext) config.getServletContext().getAttribute(RackApplicationFactory.RACK_CONTEXT);
         this.dispatcher = new DefaultRackDispatcher(this.context);
-        configure();
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         RackEnvironment env = new ServletRackEnvironment((HttpServletRequest) request, context);
         RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment((HttpServletResponse) response);
-        HttpServletRequest    httpRequest  = maybeAppendHtmlToPath(request, env);
+        HttpServletRequest    httpRequest  = getHttpServletRequest(request, env);
         HttpServletResponse   httpResponse = (HttpServletResponse) response;
         ResponseStatusCapture capture      = new ResponseStatusCapture(httpResponse);
         chain.doFilter(httpRequest, capture);
@@ -59,13 +55,14 @@ public class RackFilter implements Filter {
         }
     }
 
+    protected HttpServletRequest getHttpServletRequest(ServletRequest request,
+        RackEnvironment env) {
+      return (HttpServletRequest) request;
+    }
+
     public void destroy() {
     }
 
-    private void configure() {
-        this.filterAddsHtml = context.getConfig().isFilterAddsHtml();
-        this.filterVerifiesResource = context.getConfig().isFilterVerifiesResource();
-    }
 
     private static class ResponseStatusCapture extends HttpServletResponseWrapper {
         private int status = 200;
@@ -112,65 +109,4 @@ public class RackFilter implements Filter {
         }
     }
 
-    private HttpServletRequest maybeAppendHtmlToPath(ServletRequest request, RackEnvironment env) {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        if (!filterAddsHtml) {
-            return httpRequest;
-        }
-
-        String path = env.getPathInfo();
-        String additional = "";
-
-        if (path.lastIndexOf('.') <= path.lastIndexOf('/')) {
-            if (path.endsWith("/")) {
-                additional += "index";
-            }
-            additional += ".html";
-
-            // Welcome file list already triggered mapping to index.html, so don't modify the request any further
-            if (httpRequest.getServletPath().equals(path + additional)) {
-                return httpRequest;
-            }
-
-            if (filterVerifiesResource && !resourceExists(path + additional)) {
-                return httpRequest;
-            }
-
-            final String requestURI = httpRequest.getRequestURI() + additional;
-            if (httpRequest.getPathInfo() != null) {
-                final String pathInfo = httpRequest.getPathInfo() + additional;
-                httpRequest = new HttpServletRequestWrapper(httpRequest) {
-                    @Override
-                    public String getPathInfo() {
-                        return pathInfo;
-                    }
-                    @Override
-                    public String getRequestURI() {
-                        return requestURI;
-                    }
-                };
-            } else {
-                final String servletPath = httpRequest.getServletPath() + additional;
-                httpRequest = new HttpServletRequestWrapper(httpRequest) {
-                    @Override
-                    public String getServletPath() {
-                        return servletPath;
-                    }
-                    @Override
-                    public String getRequestURI() {
-                        return requestURI;
-                    }
-                };
-            }
-        }
-        return httpRequest;
-    }
-
-    private boolean resourceExists(String path) {
-        try {
-            return context.getResource(path) != null;
-        } catch (Exception e) {
-            return false;
-        }
-    }
 }

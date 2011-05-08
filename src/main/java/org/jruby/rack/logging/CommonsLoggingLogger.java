@@ -27,12 +27,10 @@ public class CommonsLoggingLogger implements RackLogger {
         }
     }
 
-    @Override
     public void log(String message) {
         logger.info(message);
     }
 
-    @Override
     public void log(String message, Throwable ex) {
         logger.error(message,ex);
     }
