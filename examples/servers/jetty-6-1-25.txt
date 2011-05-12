@@ -1,6 +1,6 @@
 --- System
-jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
-Time: Thu Mar 03 13:33:28 -0600 2011
+jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_24) [darwin-x86_64-java]
+Time: Thu May 12 09:27:08 -0500 2011
 Server: jetty/6.1.25
 jruby.home: file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
 
@@ -40,7 +40,7 @@ ignore_environment = true
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@2e4f7bc2
+logger = org.jruby.rack.logging.ServletContextLogger@5a64cd4b
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -51,7 +51,7 @@ rackup_path =
 rewindable = true
 runtime_timeout_seconds = 
 serial_initialization = false
-servlet_context = ServletContext@26f04d94{/sinatra,file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/}
+servlet_context = ServletContext@dd41677{/sinatra,file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/}
 
 --- Environment Variables
 BUNDLE_BIN_PATH = /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
@@ -77,40 +77,40 @@ java.awt.graphicsenv = apple.awt.CGraphicsEnvironment
 java.awt.printerjob = apple.awt.CPrinterJob
 java.class.path = /Users/nicksieger/Projects/java/jetty-6.1.25/lib/jetty-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/jetty-util-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/servlet-api-2.5-20081211.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/jsp-2.1/ant-1.6.5.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/jsp-2.1/core-3.1.1.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/jsp-2.1/jsp-2.1-glassfish-2.1.v20091210.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/jsp-2.1/jsp-2.1-jetty-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/jsp-2.1/jsp-api-2.1-glassfish-2.1.v20091210.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/management/jetty-management-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/naming/jetty-naming-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/naming/mail-1.4.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/plus/jetty-plus-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/xbean/jetty-xbean-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/grizzly/framework-1.6.1.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/annotations/geronimo-annotation_1.0_spec-1.0.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/annotations/jetty-annotations-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/jre1.5/jetty-util5-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-ajp-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-client-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-html-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-java5-stats-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-java5-threadpool-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-ldap-jaas-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-rewrite-handler-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-servlet-tester-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-setuid-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/lib/ext/jetty-sslengine-6.1.25.jar:/Users/nicksieger/Projects/java/jetty-6.1.25/resources
 java.class.version = 50.0
-java.endorsed.dirs = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/lib/endorsed
-java.ext.dirs = /Library/Java/Extensions:/System/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/lib/ext
-java.home = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home
+java.endorsed.dirs = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/endorsed
+java.ext.dirs = /Library/Java/Extensions:/System/Library/Java/Extensions:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext
+java.home = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home
 java.io.tmpdir = /tmp
 java.library.path = .:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
 java.runtime.name = Java(TM) SE Runtime Environment
-java.runtime.version = 1.6.0_22-b04-307-10M3261
+java.runtime.version = 1.6.0_24-b07-334-10M3326
 java.specification.name = Java Platform API Specification
 java.specification.vendor = Sun Microsystems Inc.
 java.specification.version = 1.6
 java.vendor = Apple Inc.
 java.vendor.url = http://www.apple.com/
 java.vendor.url.bug = http://bugreport.apple.com/
-java.version = 1.6.0_22
+java.version = 1.6.0_24
 java.vm.info = mixed mode
 java.vm.name = Java HotSpot(TM) 64-Bit Server VM
 java.vm.specification.name = Java Virtual Machine Specification
 java.vm.specification.vendor = Sun Microsystems Inc.
 java.vm.specification.version = 1.0
 java.vm.vendor = Apple Inc.
-java.vm.version = 17.1-b03-307
+java.vm.version = 19.1-b02-334
 jetty.home = /Users/nicksieger/Projects/java/jetty-6.1.25
 jruby.management.enabled = true
 line.separator = 
-mrj.build = 10M3261
-mrj.version = 1060.1.6.0_22-307
+mrj.build = 10M3326
+mrj.version = 1060.1.6.0_24-334
 os.arch = x86_64
 os.name = Mac OS X
-os.version = 10.6.6
+os.version = 10.6.7
 path.separator = :
 socksNonProxyHosts = local|*.local|169.254/16|*.169.254/16
 sun.arch.data.model = 64
-sun.boot.class.path = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsfd.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/classes.jar:/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Resources/Java/JavaRuntimeSupport.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/ui.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/laf.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/sunrsasign.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsse.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jce.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/charsets.jar
-sun.boot.library.path = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Libraries
+sun.boot.class.path = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jsfd.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar:/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Resources/Java/JavaRuntimeSupport.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/ui.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/laf.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/sunrsasign.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jsse.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jce.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/charsets.jar
+sun.boot.library.path = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Libraries
 sun.cpu.endian = little
 sun.cpu.isalist = 
 sun.io.unicode.encoding = UnicodeLittle
@@ -128,7 +128,7 @@ user.timezone = America/Chicago
 --- $LOAD_PATH:
 /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/sinatra-1.0/lib
 /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/rack-1.2.1/lib
-file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-rack-1.0.7.dev.jar!/vendor/rack-1.2.1
+file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-rack-1.0.7.jar!/vendor/rack-1.2.1
 /private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/gems/gems/bundler-1.0.10/lib
 file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
 file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/webapp/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
@@ -150,7 +150,7 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = jetty/6.1.25
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@678a270a
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@7ef7bf2d
 java.servlet_request = GET /sinatra/env HTTP/1.1
 User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 OpenSSL/0.9.8l zlib/1.2.3
 Host: localhost:8080
@@ -159,9 +159,9 @@ Accept: */*
 jruby.rack.dynamic.requests.only = true
 jruby.rack.jruby.version = 1.6.0.RC1
 jruby.rack.rack.release = 1.2
-jruby.rack.version = 1.0.7.dev
-rack.errors = #<JRuby::Rack::ServletLog:0x6a754384>
-rack.input = #<JRuby::RackRewindableInput:0x38a3c5b6>
+jruby.rack.version = 1.0.7
+rack.errors = #<JRuby::Rack::ServletLog:0x5f0ee5b8>
+rack.input = #<JRuby::RackRewindableInput:0x4b0bc3c9>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 

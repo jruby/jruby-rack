@@ -1,6 +1,6 @@
 --- System
-jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
-Time: Thu Mar 03 13:35:58 -0600 2011
+jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_24) [darwin-x86_64-java]
+Time: Thu May 12 09:18:51 -0500 2011
 Server: Apache Tomcat/7.0.2
 jruby.home: file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
 
@@ -39,7 +39,7 @@ ignore_environment = true
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@18ba2b6b
+logger = org.jruby.rack.logging.ServletContextLogger@4726cdd1
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -50,7 +50,7 @@ rackup_path =
 rewindable = true
 runtime_timeout_seconds = 
 serial_initialization = false
-servlet_context = org.apache.catalina.core.ApplicationContextFacade@6c3b0b1e
+servlet_context = org.apache.catalina.core.ApplicationContextFacade@6dbe2b55
 
 --- Environment Variables
 BUNDLE_BIN_PATH = /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
@@ -86,7 +86,7 @@ java.library.path = .:/Library/Java/Extensions:/System/Library/Java/Extensions:/
 java.naming.factory.initial = org.apache.naming.java.javaURLContextFactory
 java.naming.factory.url.pkgs = org.apache.naming
 java.runtime.name = Java(TM) SE Runtime Environment
-java.runtime.version = 1.6.0_22-b04-307-10M3261
+java.runtime.version = 1.6.0_24-b07-334-10M3326
 java.specification.name = Java Platform API Specification
 java.specification.vendor = Sun Microsystems Inc.
 java.specification.version = 1.6
@@ -95,21 +95,21 @@ java.util.logging.manager = org.apache.juli.ClassLoaderLogManager
 java.vendor = Apple Inc.
 java.vendor.url = http://www.apple.com/
 java.vendor.url.bug = http://bugreport.apple.com/
-java.version = 1.6.0_22
+java.version = 1.6.0_24
 java.vm.info = mixed mode
 java.vm.name = Java HotSpot(TM) 64-Bit Server VM
 java.vm.specification.name = Java Virtual Machine Specification
 java.vm.specification.vendor = Sun Microsystems Inc.
 java.vm.specification.version = 1.0
 java.vm.vendor = Apple Inc.
-java.vm.version = 17.1-b03-307
+java.vm.version = 19.1-b02-334
 jruby.management.enabled = true
 line.separator = 
-mrj.build = 10M3261
-mrj.version = 1060.1.6.0_22-307
+mrj.build = 10M3326
+mrj.version = 1060.1.6.0_24-334
 os.arch = x86_64
 os.name = Mac OS X
-os.version = 10.6.6
+os.version = 10.6.7
 package.access = sun.,org.apache.catalina.,org.apache.coyote.,org.apache.tomcat.,org.apache.jasper.,sun.beans.
 package.definition = sun.,java.,org.apache.catalina.,org.apache.coyote.,org.apache.tomcat.,org.apache.jasper.
 path.separator = :
@@ -138,7 +138,7 @@ user.timezone = America/Chicago
 --- $LOAD_PATH:
 /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/sinatra-1.0/lib
 /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/rack-1.2.1/lib
-file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-rack-1.0.7.dev.jar!/vendor/rack-1.2.1
+file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-rack-1.0.7.jar!/vendor/rack-1.2.1
 /Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib
 file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
 file:/Users/nicksieger/Projects/java/apache-tomcat-7.0.2/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
@@ -160,16 +160,16 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = Apache Tomcat/7.0.2
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@42b7141a
-java.servlet_request = org.apache.catalina.connector.RequestFacade@3f363271
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@224478fe
+java.servlet_request = org.apache.catalina.connector.RequestFacade@419829a9
 jruby.rack.dynamic.requests.only = true
 jruby.rack.jruby.version = 1.6.0.RC1
 jruby.rack.rack.release = 1.2
-jruby.rack.version = 1.0.7.dev
+jruby.rack.version = 1.0.7
 org.apache.catalina.ASYNC_SUPPORTED = 
-org.apache.catalina.valves.AccessLogValve.t1 = 1299180958054
-rack.errors = #<JRuby::Rack::ServletLog:0x18571615>
-rack.input = #<JRuby::RackRewindableInput:0x7d6ac92e>
+org.apache.catalina.valves.AccessLogValve.t1 = 1305209931210
+rack.errors = #<JRuby::Rack::ServletLog:0x600f11bc>
+rack.input = #<JRuby::RackRewindableInput:0x7d557ee8>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 
