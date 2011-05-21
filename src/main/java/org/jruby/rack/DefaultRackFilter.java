@@ -8,12 +8,12 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.jruby.rack.servlet.ServletRackContext;
 
-public class ContainerRackFilter extends RackFilter {
+public class DefaultRackFilter extends RackFilter {
 
   private boolean filterAddsHtml, filterVerifiesResource;
   private ServletRackContext containerContext;
 
-  public ContainerRackFilter() {
+  public DefaultRackFilter() {
   }
 
   @Override
