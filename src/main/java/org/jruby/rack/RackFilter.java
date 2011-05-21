@@ -7,9 +7,6 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.servlet.ServletRackEnvironment;
-import org.jruby.rack.servlet.ServletRackResponseEnvironment;
-
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,7 +17,7 @@ import java.io.IOException;
  *
  * @author nicksieger
  */
-public class RackFilter implements Filter {
+public class RackFilter extends AbstractFilter {
     protected RackContext context;
     protected RackDispatcher dispatcher;
 
@@ -36,23 +33,33 @@ public class RackFilter implements Filter {
 
     /** Construct a new dispatcher with the servlet context */
     public void init(FilterConfig config) throws ServletException {
-        this.context = (RackContext) config.getServletContext().getAttribute(RackApplicationFactory.RACK_CONTEXT);
-        this.dispatcher = new DefaultRackDispatcher(this.context);
+          this.context = (RackContext) config.getServletContext().getAttribute(RackApplicationFactory.RACK_CONTEXT);
+          this.dispatcher = new DefaultRackDispatcher(this.context);
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-        RackEnvironment env = new ServletRackEnvironment((HttpServletRequest) request, context);
-        RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment((HttpServletResponse) response);
-        HttpServletRequest    httpRequest  = getHttpServletRequest(request, env);
-        HttpServletResponse   httpResponse = (HttpServletResponse) response;
-        ResponseStatusCapture capture      = new ResponseStatusCapture(httpResponse);
-        chain.doFilter(httpRequest, capture);
-        if (capture.isError()) {
-            httpResponse.reset();
-            request.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
-            dispatcher.process(env, responseEnv);
-        }
+    @Override
+    protected RackDispatcher getDispatcher() {
+      return this.dispatcher;
+    }
+
+    @Override
+    protected RackContext getContext() {
+      return this.context;
+    }
+
+    @Override
+    protected boolean doDispatch(HttpServletRequest req, HttpServletResponse resp,
+        FilterChain chain, RackEnvironment env, RackResponseEnvironment respEnv) throws IOException, ServletException {
+
+      HttpServletRequest httpRequest = getHttpServletRequest(req, env);
+      ResponseStatusCapture capture = new ResponseStatusCapture(resp);
+      chain.doFilter(httpRequest, capture);
+
+      if (capture.isError()) {
+        resp.reset();
+      }
+
+      return capture.isError();
     }
 
     protected HttpServletRequest getHttpServletRequest(ServletRequest request,

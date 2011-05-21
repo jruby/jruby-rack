@@ -7,8 +7,8 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.servlet.ServletRackConfig;
 import org.jruby.rack.servlet.ServletRackContext;
+import org.jruby.rack.servlet.ServletRackConfig;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;

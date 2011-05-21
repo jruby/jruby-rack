@@ -11,11 +11,11 @@ import org.jruby.rack.RackInitializationException;
 import org.jruby.rack.RackResponseEnvironment;
 import org.jruby.runtime.builtin.IRubyObject;
 
-public class EmbeddedDispatcher extends AbstractRackDispatcher {
+public class Dispatcher extends AbstractRackDispatcher {
 
   private final DefaultRackApplication rackApplication;
 
-  public EmbeddedDispatcher(RackContext rackContext, IRubyObject application) {
+  public Dispatcher(RackContext rackContext, IRubyObject application) {
     super(rackContext);
     this.rackApplication = new DefaultRackApplication(application);
   }
@@ -24,6 +24,7 @@ public class EmbeddedDispatcher extends AbstractRackDispatcher {
   protected void afterException(RackEnvironment request, Exception re,
       RackResponseEnvironment response) throws IOException {
     // TODO print out a 500 or something?
+    re.printStackTrace(System.err);
   }
 
   @Override

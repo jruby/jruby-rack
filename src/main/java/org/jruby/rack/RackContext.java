@@ -14,4 +14,5 @@ package org.jruby.rack;
  */
 public interface RackContext extends RackLogger {
     RackConfig getConfig();
+    String getServerInfo();
 }
