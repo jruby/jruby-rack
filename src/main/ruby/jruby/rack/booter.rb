@@ -93,9 +93,9 @@ module JRuby::Rack
 
     def path_to_file(url)
       begin
-        return java.io.File.new(url.toURI()).to_s
+        url.toURI.toString
       rescue java.net.URISyntaxException => e
-        return java.io.File.new(url.getPath()).to_s
+        url.toString
       end
     end
   end
