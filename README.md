@@ -192,6 +192,15 @@ as context init parameters in web.xml or as VM-wide system properties.
 - `jruby.rack.ignore.env`: Clears out the ENV hash in each runtime to
   insulate the application from the environment.
 
+## Initialization
+
+There are often cases where you need to perform custom initialization
+of the Ruby environment before booting the application. You can create
+a file called `META-INF/init.rb` or `WEB-INF/init.rb` inside the war
+file for this purpose. These files, if found, will be evaluated before
+booting the Rack environment, allowing you to set environment
+variables, load scripts, etc.
+
 ## Logging
 
 JRuby-Rack sets up a delegate logger for Rails that sends logging
