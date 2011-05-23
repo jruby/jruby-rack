@@ -1,6 +1,6 @@
 --- System
-jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_24) [darwin-x86_64-java]
-Time: Thu May 12 09:26:00 -0500 2011
+jruby 1.6.1 (ruby-1.8.7-p330) (2011-04-12 85838f6) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_24) [darwin-x86_64-java]
+Time: Mon May 23 16:58:50 -0500 2011
 Server: JBoss Web/3.0.0-CR1
 jruby.home: classpath:/META-INF/jruby.home
 
@@ -15,7 +15,7 @@ resteasy.unwrapped.exceptions = javax.ejb.EJBException
 --- RubyGems
 Gem.dir: classpath:/META-INF/jruby.home/lib/ruby/gems/1.8
 Gem.path:
-/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/gems
+/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/gems
 classpath:/META-INF/jruby.home/lib/ruby/gems/1.8
 Activated gems:
   bundler-1.0.10
@@ -24,12 +24,12 @@ Activated gems:
 
 --- Bundler
 Bundler.bundle_path: classpath:/META-INF/jruby.home/lib/ruby/gems/1.8
-Bundler.root: /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF
-Gemfile: /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/Gemfile
+Bundler.root: /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF
+Gemfile: /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/Gemfile
 Settings:
   without = development:test
-  bin_path = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
-  gemfile = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/Gemfile
+  bin_path = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+  gemfile = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/Gemfile
 
 --- JRuby-Rack Config
 background_spooling = false
@@ -40,7 +40,7 @@ ignore_environment = true
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@68b8acae
+logger = org.jruby.rack.logging.ServletContextLogger@15b346d0
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -51,16 +51,16 @@ rackup_path =
 rewindable = true
 runtime_timeout_seconds = 
 serial_initialization = false
-servlet_context = org.apache.catalina.core.ApplicationContextFacade@2e50daed
+servlet_context = org.apache.catalina.core.ApplicationContextFacade@60850fc
 
 --- Environment Variables
-BUNDLE_BIN_PATH = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
-BUNDLE_GEMFILE = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/Gemfile
+BUNDLE_BIN_PATH = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/gems/gems/bundler-1.0.10/bin/bundle
+BUNDLE_GEMFILE = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/Gemfile
 BUNDLE_WITHOUT = development:test
-GEM_PATH = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/gems
+GEM_PATH = /Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/gems
 PATH = classpath:/META-INF/jruby.home/lib/ruby/gems/1.8/bin
 RACK_ENV = production
-RUBYOPT = -I/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
+RUBYOPT = -I/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
 
 --- System Properties
 awt.nativeDoubleBuffering = true
@@ -202,10 +202,10 @@ xb.builder.repeatableParticleHandlers = false
 xb.builder.useUnorderedSequence = true
 
 --- $LOAD_PATH:
-/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/gems/gems/sinatra-1.0/lib
-/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/gems/gems/rack-1.2.1/lib
-classpath:/./vendor/rack-1.2.1
-/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automountdaa2bab3bfc0c4c7/sinatra.war-79190985a25da288/WEB-INF/gems/gems/bundler-1.0.10/lib
+/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/gems/gems/sinatra-1.0/lib
+/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/gems/gems/rack-1.2.1/lib
+classpath:/./vendor/rack-1.2.2
+/Users/nicksieger/Projects/java/jboss-6.0.0.Final/server/default/tmp/vfs/automount9ede3c02e04eab77/sinatra.war-57df99e9e078559e/WEB-INF/gems/gems/bundler-1.0.10/lib
 classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8
 classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared
 classpath:/META-INF/jruby.home/lib/ruby/1.8
@@ -226,14 +226,14 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = JBoss Web/3.0.0-CR1
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@759b6377
-java.servlet_request = org.apache.catalina.connector.RequestFacade@5aba18ff
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@6065605d
+java.servlet_request = org.apache.catalina.connector.RequestFacade@27e65b5c
 jruby.rack.dynamic.requests.only = true
-jruby.rack.jruby.version = 1.6.0.RC1
+jruby.rack.jruby.version = 1.6.1
 jruby.rack.rack.release = 1.2
-jruby.rack.version = 1.0.7
-rack.errors = #<JRuby::Rack::ServletLog:0x3e55155c>
-rack.input = #<JRuby::RackRewindableInput:0x43ed6afc>
+jruby.rack.version = 1.0.9.dev
+rack.errors = #<JRuby::Rack::ServletLog:0xbfcd37c>
+rack.input = #<JRuby::RackRewindableInput:0x3a0780a>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 

@@ -1,8 +1,8 @@
 --- System
-jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_24) [darwin-x86_64-java]
-Time: Thu May 12 09:28:23 -0500 2011
+jruby 1.6.1 (ruby-1.8.7-p330) (2011-04-12 85838f6) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_24) [darwin-x86_64-java]
+Time: Mon May 23 17:01:04 -0500 2011
 Server: Resin/4.0.13
-jruby.home: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
+jruby.home: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home
 
 --- Context Init Parameters:
 ENV_HOST = vanguard
@@ -12,17 +12,17 @@ public.root = /
 rails.env = production
 
 --- RubyGems
-Gem.dir: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Gem.dir: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
 Gem.path:
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
 Activated gems:
   bundler-1.0.10
   rack-1.2.1
   sinatra-1.0
 
 --- Bundler
-Bundler.bundle_path: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Bundler.bundle_path: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
 Bundler.root: /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF
 Gemfile: /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/Gemfile
 Settings:
@@ -39,7 +39,7 @@ ignore_environment = true
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@315a5aff
+logger = org.jruby.rack.logging.ServletContextLogger@27b7516d
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -57,7 +57,7 @@ BUNDLE_BIN_PATH = /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/W
 BUNDLE_GEMFILE = /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/Gemfile
 BUNDLE_WITHOUT = development:test
 GEM_PATH = /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems
-PATH = file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin
+PATH = file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin
 RACK_ENV = production
 RUBYOPT = -I/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
 
@@ -136,11 +136,11 @@ user.timezone = America/Chicago
 --- $LOAD_PATH:
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/sinatra-1.0/lib
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/rack-1.2.1/lib
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-rack-1.0.7.jar!/vendor/rack-1.2.1
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-rack-1.0.9.dev.jar!/vendor/rack-1.2.2
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/1.8
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/1.8
 .
 
 --- Request Environment
@@ -158,14 +158,14 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = Resin/4.0.13
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@403525a2
-java.servlet_request = HttpServletRequestImpl[HttpRequest[default, 1]]
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@34de4588
+java.servlet_request = HttpServletRequestImpl[HttpRequest[default, 2]]
 jruby.rack.dynamic.requests.only = true
-jruby.rack.jruby.version = 1.6.0.RC1
+jruby.rack.jruby.version = 1.6.1
 jruby.rack.rack.release = 1.2
-jruby.rack.version = 1.0.7
-rack.errors = #<JRuby::Rack::ServletLog:0x290f7ec9>
-rack.input = #<JRuby::RackRewindableInput:0x384cd32e>
+jruby.rack.version = 1.0.9.dev
+rack.errors = #<JRuby::Rack::ServletLog:0x5978bb14>
+rack.input = #<JRuby::RackRewindableInput:0x5424bf0>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 
