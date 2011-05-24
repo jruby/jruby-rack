@@ -10,7 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>1.0.9.dev</version>
+  <version>1.0.9</version>
   <name>JRuby-Rack</name>
   <url>http://github.com/nicksieger/jruby-rack/</url>
   <description>
@@ -19,7 +19,7 @@
   </description>
 
   <properties>
-    <jruby.version>1.6.0</jruby.version>
+    <jruby.version>1.6.1</jruby.version>
   </properties>
 
   <issueManagement>

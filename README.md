@@ -237,6 +237,13 @@ following two will suffice (but see the NOTE below).
 
 The generated jar should be located here: target/jruby-rack-*.jar.
 
+# Issues
+
+Please use GitHub to file bugs, patches and pull requests.
+
+- https://github.com/nicksieger/jruby-rack
+- https://github.com/nicksieger/jruby-rack/issues
+
 ## Rails Step-by-step
 
 This example shows how to create and deploy a simple Rails app using
