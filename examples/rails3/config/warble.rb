@@ -3,13 +3,13 @@
 
 # Warbler web application assembly configuration file
 Warbler::Config.new do |config|
-  config.features << 'executable' if defined?(config.features)
+  config.features = [ 'gemjar' ]
 
   # Application directories to be included in the webapp.
   config.dirs = %w(app config lib log vendor tmp)
 
   # Additional files/directories to include, above those in config.dirs
-  # config.includes = FileList["db"]
+  config.includes = FileList["appengine-web.xml"]
 
   # Additional files/directories to exclude
   # config.excludes = FileList["lib/tasks/*"]
