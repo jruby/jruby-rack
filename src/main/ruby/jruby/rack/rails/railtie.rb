@@ -8,6 +8,9 @@
 require 'rails/railtie'
 require 'pathname'
 
+require 'rails/version'
+require 'active_support/concern' if Rails::VERSION::MINOR > 0
+
 module JRuby::Rack
   class Railtie < ::Rails::Railtie
     initializer "set_webapp_public_path", :before => "action_controller.set_configs" do |app|
