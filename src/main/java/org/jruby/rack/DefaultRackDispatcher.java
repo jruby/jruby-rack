@@ -55,4 +55,9 @@ public class DefaultRackDispatcher implements RackDispatcher {
             response.sendError(500);
         }
     }
+
+    public void destroy() {
+        final RackApplicationFactory rackFactory = context.getRackFactory();
+        rackFactory.destroy();
+    }
 }

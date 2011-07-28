@@ -1,8 +1,8 @@
 --- System
-jruby 1.6.0.RC1 (ruby 1.8.7 patchlevel 330) (2011-02-07 08164a8) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_22) [darwin-x86_64-java]
-Time: Thu Mar 03 13:34:40 -0600 2011
+jruby 1.6.1 (ruby-1.8.7-p330) (2011-04-12 85838f6) (Java HotSpot(TM) 64-Bit Server VM 1.6.0_24) [darwin-x86_64-java]
+Time: Mon May 23 17:01:04 -0500 2011
 Server: Resin/4.0.13
-jruby.home: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home
+jruby.home: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home
 
 --- Context Init Parameters:
 ENV_HOST = vanguard
@@ -12,17 +12,17 @@ public.root = /
 rails.env = production
 
 --- RubyGems
-Gem.dir: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Gem.dir: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
 Gem.path:
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
 Activated gems:
   bundler-1.0.10
   rack-1.2.1
   sinatra-1.0
 
 --- Bundler
-Bundler.bundle_path: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
+Bundler.bundle_path: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8
 Bundler.root: /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF
 Gemfile: /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/Gemfile
 Settings:
@@ -39,7 +39,7 @@ ignore_environment = true
 initial_runtimes = 
 jms_connection_factory = 
 jms_jndi_properties = 
-logger = org.jruby.rack.logging.ServletContextLogger@4b800ce8
+logger = org.jruby.rack.logging.ServletContextLogger@27b7516d
 logger_class_name = servlet_context
 logger_name = jruby.rack
 maximum_runtimes = 
@@ -57,7 +57,7 @@ BUNDLE_BIN_PATH = /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/W
 BUNDLE_GEMFILE = /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/Gemfile
 BUNDLE_WITHOUT = development:test
 GEM_PATH = /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems
-PATH = file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin
+PATH = file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/gems/1.8/bin
 RACK_ENV = production
 RUBYOPT = -I/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib -rbundler/setup
 
@@ -75,15 +75,15 @@ java.awt.headless = true
 java.awt.printerjob = apple.awt.CPrinterJob
 java.class.path = /Users/nicksieger/Projects/java/resin-4.0.13/bin/../lib/resin.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/resin.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/activation.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/eclipselink.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/hibernate-validator-4.0.2.GA.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/javaee-16.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/javamail-141.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/jsf-api.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/jsf-impl.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/slf4j-api-1.6.1.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/validation-api-1.0.0.GA.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/webservices-api.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/webservices-extra-api.jar:/Users/nicksieger/Projects/java/resin-4.0.13/lib/webutil.jar
 java.class.version = 50.0
-java.endorsed.dirs = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/lib/endorsed
-java.ext.dirs = /Library/Java/Extensions:/System/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home/lib/ext
-java.home = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Home
+java.endorsed.dirs = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/endorsed
+java.ext.dirs = /Library/Java/Extensions:/System/Library/Java/Extensions:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/lib/ext
+java.home = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home
 java.io.tmpdir = /var/folders/CA/CAMqlEcnEmSLCKPW5k22oE+++TI/-Tmp-/
 java.library.path = /Users/nicksieger/Projects/java/resin-4.0.13/libexec64:/Users/nicksieger/Projects/java/resin-4.0.13/libexec64:.:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java
 java.naming.factory.initial = com.caucho.naming.InitialContextFactoryImpl
 java.naming.factory.url.pkgs = com.caucho.naming
 java.runtime.name = Java(TM) SE Runtime Environment
-java.runtime.version = 1.6.0_22-b04-307-10M3261
+java.runtime.version = 1.6.0_24-b07-334-10M3326
 java.specification.name = Java Platform API Specification
 java.specification.vendor = Sun Microsystems Inc.
 java.specification.version = 1.6
@@ -92,24 +92,24 @@ java.util.logging.manager = com.caucho.log.LogManagerImpl
 java.vendor = Apple Inc.
 java.vendor.url = http://www.apple.com/
 java.vendor.url.bug = http://bugreport.apple.com/
-java.version = 1.6.0_22
+java.version = 1.6.0_24
 java.vm.info = mixed mode
 java.vm.name = Java HotSpot(TM) 64-Bit Server VM
 java.vm.specification.name = Java Virtual Machine Specification
 java.vm.specification.vendor = Sun Microsystems Inc.
 java.vm.specification.version = 1.0
 java.vm.vendor = Apple Inc.
-java.vm.version = 17.1-b03-307
+java.vm.version = 19.1-b02-334
 javax.management.builder.initial = com.caucho.jmx.MBeanServerBuilderImpl
 jruby.management.enabled = true
 line.separator = 
 mail.smtp.host = 127.0.0.1
 mail.smtp.port = 25
-mrj.build = 10M3261
-mrj.version = 1060.1.6.0_22-307
+mrj.build = 10M3326
+mrj.version = 1060.1.6.0_24-334
 os.arch = x86_64
 os.name = Mac OS X
-os.version = 10.6.6
+os.version = 10.6.7
 path.separator = :
 resin.home = /Users/nicksieger/Projects/java/resin-4.0.13/
 resin.root = /Users/nicksieger/Projects/java/resin-4.0.13/
@@ -117,8 +117,8 @@ resin.server = 1
 resin.watchdog = 
 socksNonProxyHosts = local|*.local|169.254/16|*.169.254/16
 sun.arch.data.model = 64
-sun.boot.class.path = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsfd.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/classes.jar:/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Resources/Java/JavaRuntimeSupport.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/ui.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/laf.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/sunrsasign.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jsse.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/jce.jar:/Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Classes/charsets.jar
-sun.boot.library.path = /Library/Java/JavaVirtualMachines/1.6.0_22-b04-307.jdk/Contents/Libraries
+sun.boot.class.path = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jsfd.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/classes.jar:/System/Library/Frameworks/JavaVM.framework/Frameworks/JavaRuntimeSupport.framework/Resources/Java/JavaRuntimeSupport.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/ui.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/laf.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/sunrsasign.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jsse.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/jce.jar:/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Classes/charsets.jar
+sun.boot.library.path = /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Libraries
 sun.cpu.endian = little
 sun.cpu.isalist = 
 sun.io.unicode.encoding = UnicodeLittle
@@ -136,11 +136,11 @@ user.timezone = America/Chicago
 --- $LOAD_PATH:
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/sinatra-1.0/lib
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/rack-1.2.1/lib
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-rack-1.0.7.dev.jar!/vendor/rack-1.2.1
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-rack-1.0.9.dev.jar!/vendor/rack-1.2.2
 /Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/gems/gems/bundler-1.0.10/lib
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
-file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.0.RC1.jar!/META-INF/jruby.home/lib/ruby/1.8
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/1.8
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/site_ruby/shared
+file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WEB-INF/lib/jruby-stdlib-1.6.1.jar!/META-INF/jruby.home/lib/ruby/1.8
 .
 
 --- Request Environment
@@ -158,14 +158,14 @@ SCRIPT_NAME = /sinatra
 SERVER_NAME = localhost
 SERVER_PORT = 8080
 SERVER_SOFTWARE = Resin/4.0.13
-java.servlet_context = org.jruby.rack.servlet.ServletRackContext@3a9d04dc
-java.servlet_request = HttpServletRequestImpl[HttpRequest[default, 1]]
+java.servlet_context = org.jruby.rack.servlet.ServletRackContext@34de4588
+java.servlet_request = HttpServletRequestImpl[HttpRequest[default, 2]]
 jruby.rack.dynamic.requests.only = true
-jruby.rack.jruby.version = 1.6.0.RC1
+jruby.rack.jruby.version = 1.6.1
 jruby.rack.rack.release = 1.2
-jruby.rack.version = 1.0.7.dev
-rack.errors = #<JRuby::Rack::ServletLog:0x77655fb9>
-rack.input = #<JRuby::RackRewindableInput:0x206fa7ec>
+jruby.rack.version = 1.0.9.dev
+rack.errors = #<JRuby::Rack::ServletLog:0x5978bb14>
+rack.input = #<JRuby::RackRewindableInput:0x5424bf0>
 rack.multiprocess = false
 rack.multithread = true
 rack.request.query_hash = 

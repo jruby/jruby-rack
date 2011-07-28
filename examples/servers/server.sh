@@ -38,6 +38,11 @@ if [ -z "$APPENGINE" ]; then
     APPENGINE=~/Projects/appengine/appengine-java-sdk-1.4.2
 fi
 
+usage() {
+    echo 'usage: server.sh <server> <(start|stop)> [warfile]'
+    echo Servers are: tc6 tc7 jetty6 jetty7 glassfish jboss5 jboss6 resin appengine
+}
+
 start_cmd=
 debug_cmd=
 stop_cmd=
@@ -45,7 +50,7 @@ deploy_dir=
 
 server=$1
 if [ -z "$server" ]; then
-    echo 'usage: server.sh <(start|stop)> <server> [warfile]'
+    usage
 fi
 
 start_stop=$2
@@ -53,7 +58,7 @@ case $start_stop in
     start|stop|redeploy|debug)
 	;;
     *)
-	echo "Specify 'start' or 'stop' for the first argument."
+	echo "Specify 'start' or 'stop' for the second argument."
 	exit 1
 	;;
 esac
@@ -82,7 +87,7 @@ case $server in
 	deploy_dir=$JETTY7/webapps
 	;;
     glassfish|gf|gfv3)
-	start_cmd="$GFV3/bin/asadmin start-domain"
+	start_cmd="$GFV3/bin/asadmin start-domain && sleep 2"
 	stop_cmd="$GFV3/bin/asadmin stop-domain"
 	deploy_dir=$GFV3/domains/domain1/autodeploy
 	;;
@@ -113,7 +118,7 @@ case $server in
 	;;
     *)
 	echo Unknown server $server.
-	echo Servers are: tc6 tc7 jetty6 jetty7 glassfish jboss5 jboss6 resin appengine
+	usage
 	exit 1
 esac
 

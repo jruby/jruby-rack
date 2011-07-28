@@ -120,6 +120,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
                 app.destroy();
             }
         }
+        realFactory.destroy();
     }
 
     /** Used only by unit tests */

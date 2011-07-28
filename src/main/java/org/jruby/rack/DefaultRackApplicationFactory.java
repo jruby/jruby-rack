@@ -10,13 +10,10 @@ package org.jruby.rack;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
-import org.jruby.embed.ScriptingContainer;
-import org.jruby.embed.LocalContextScope;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.util.ClassCache;
 
-import java.lang.reflect.Method;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,20 +32,13 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private String rackupScript, rackupLocation;
     private RackContext rackContext;
     private RubyInstanceConfig defaultConfig;
-    private ClassCache classCache;
     private RackApplication errorApplication;
-    private Method getRequiredLibraries;
 
     public void init(RackContext rackContext) {
         this.rackContext = rackContext;
         this.rackupScript = findRackupScript();
         this.defaultConfig = createDefaultConfig();
         rackContext.log(defaultConfig.getVersionString());
-        try {
-            this.getRequiredLibraries = RubyInstanceConfig.class.getMethod("requiredLibraries", new Class[0]);
-        } catch (Exception e) {
-            throw (Error) (new NoSuchMethodError("JRuby is missing RubyInstanceConfig#requiredLibraries").initCause(e));
-        }
     }
 
     public RackApplication newApplication() throws RackInitializationException {
@@ -77,8 +67,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public void destroy() {
-        errorApplication.destroy();
-        errorApplication = null;
+        if (errorApplication != null) {
+	        errorApplication.destroy();
+	        errorApplication = null;
+        }
     }
 
     public RackContext getRackContext() {
@@ -178,54 +170,35 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return config;
     }
 
-    @SuppressWarnings("unchecked")
-    private void configureContainer(ScriptingContainer container) throws RackInitializationException {
-        container.setClassLoader(defaultConfig.getLoader());
-        container.setClassCache(defaultConfig.getClassCache());
-        container.setCompatVersion(defaultConfig.getCompatVersion());
-        container.setHomeDirectory(defaultConfig.getJRubyHome());
-        container.setEnvironment(defaultConfig.getEnvironment());
-        container.setLoadPaths(defaultConfig.loadPaths());
-        // Reflection hack due to sig change of requiredLibraries between
-        // 1.5 and 1.6: remove when JRuby 1.7 is available
+    private void initializeRuntime(Ruby runtime) throws RackInitializationException {
         try {
-            Collection defLibraries = (Collection) getRequiredLibraries.invoke(defaultConfig, new Object[0]);
-            Collection containerLibraries = (Collection) getRequiredLibraries.invoke(container.getProvider().getRubyInstanceConfig(), new Object[0]);
-            containerLibraries.addAll(defLibraries);
-        } catch (Exception e) {
-            throw new RackInitializationException("Error configuring new scripting container", e);
-        }
-    }
-
-    private void initializeContainer(ScriptingContainer container) throws RackInitializationException {
-        try {
-            container.put("$servlet_context", rackContext);
+            IRubyObject context = JavaUtil.convertJavaToRuby(runtime, rackContext);
+            runtime.getGlobalVariables().set("$servlet_context", context);
             if (rackContext.getConfig().isIgnoreEnvironment()) {
-                container.runScriptlet("ENV.clear");
+                runtime.evalScriptlet("ENV.clear");
             }
-            container.runScriptlet("require 'rack/handler/servlet'");
+            runtime.evalScriptlet("require 'rack/handler/servlet'");
         } catch (RaiseException re) {
             throw new RackInitializationException(re);
         }
     }
 
     /** This method is only public for unit tests */
-    public ScriptingContainer newContainer() throws RackInitializationException {
-        ScriptingContainer container = new ScriptingContainer(LocalContextScope.SINGLETHREAD);
-        configureContainer(container);
-        initializeContainer(container);
-        return container;
+    public Ruby newRuntime() throws RackInitializationException {
+        Ruby runtime = Ruby.newInstance(defaultConfig);
+        initializeRuntime(runtime);
+        return runtime;
     }
 
     private RackApplication createApplication(final ApplicationObjectFactory appfact)
             throws RackInitializationException {
         try {
-            final ScriptingContainer container = newContainer();
+            final Ruby runtime = newRuntime();
             return new DefaultRackApplication() {
                 @Override
                 public void init() throws RackInitializationException {
                     try {
-                        setApplication(appfact.create(container.getProvider().getRuntime()));
+                        setApplication(appfact.create(runtime));
                     } catch (RaiseException re) {
                         captureMessage(re);
                         throw new RackInitializationException(re);
@@ -233,7 +206,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 }
                 @Override
                 public void destroy() {
-                    container.terminate();
+                    runtime.tearDown(false);
                 }
             };
         } catch (RackInitializationException rie) {

@@ -87,7 +87,15 @@ module JRuby::Rack
                ensure
                  stream.close rescue nil
                end
-        eval code, TOPLEVEL_BINDING, url.path
+        eval code, TOPLEVEL_BINDING, path_to_file(url)
+      end
+    end
+
+    def path_to_file(url)
+      begin
+        url.toURI.toString
+      rescue java.net.URISyntaxException => e
+        url.toString
       end
     end
   end

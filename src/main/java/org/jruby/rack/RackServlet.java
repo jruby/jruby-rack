@@ -55,4 +55,10 @@ public class RackServlet extends HttpServlet {
         throws ServletException, IOException {
         service((HttpServletRequest) request, (HttpServletResponse) response);
     }
+
+	@Override
+	public void destroy() {
+		super.destroy();
+		dispatcher.destroy();
+	}
 }
