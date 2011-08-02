@@ -1,4 +1,12 @@
-== 1.0.8
+== 1.0.9 (05/24/11)
+
+- Bugfix release for Trinidad 1.2.x
+- GH#27: Deal with incompatible signature change between JRuby 1.5.6
+  and 1.6.
+- Properly convert URLs to files for __FILE__ binding when evaluating
+  init.rb (Ketan Padegaonkar)
+
+== 1.0.8 (03/21/11)
 
 - Add a check for /config.ru if not found in /WEB-INF (for appengine gem)
 - Modify LocalContext to support minimal LocalConfig for JMS (Garret Conaty)
@@ -9,7 +17,7 @@
 - Upgrade to Rack 1.2.2
 - GH#21: Implement RackInput#size
 
-== 1.0.7
+== 1.0.7 (03/04/11)
 
 - JRUBY_RACK-36: Always set env['HTTPS'] according to request.getScheme
 - GH#10: Add `jruby.rack.ignore.env` property which clears out the ENV
