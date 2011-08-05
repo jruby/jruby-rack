@@ -108,6 +108,8 @@ module JRuby::Rack
 
     def close_session(env)
       (session = get_servlet_session(env)) and session.invalidate
+    rescue => exception
+      nil
     end
 
     def current_session_id(env)
