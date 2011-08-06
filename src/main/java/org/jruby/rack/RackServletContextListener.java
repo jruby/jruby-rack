@@ -7,8 +7,9 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.servlet.ServletRackContext;
+import org.jruby.rack.servlet.DefaultServletRackContext;
 import org.jruby.rack.servlet.ServletRackConfig;
+import org.jruby.rack.servlet.ServletRackContext;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -38,7 +39,7 @@ public class RackServletContextListener implements ServletContextListener {
         ServletRackConfig config = new ServletRackConfig(ctx);
         final RackApplicationFactory fac = newApplicationFactory(config);
         ctx.setAttribute(RackApplicationFactory.FACTORY, fac);
-        ServletRackContext rackContext = new ServletRackContext(config);
+        ServletRackContext rackContext = new DefaultServletRackContext(config);
         ctx.setAttribute(RackApplicationFactory.RACK_CONTEXT, rackContext);
         try {
             fac.init(rackContext);

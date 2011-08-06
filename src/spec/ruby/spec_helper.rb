@@ -16,6 +16,7 @@ WD_START = Dir.getwd
 java_import org.jruby.rack.RackContext
 java_import org.jruby.rack.RackConfig
 java_import org.jruby.rack.RackServletContextListener
+java_import org.jruby.rack.servlet.ServletRackContext
 java_import javax.servlet.ServletContext
 
 Spec::Runner.configure do |config|
@@ -23,14 +24,17 @@ Spec::Runner.configure do |config|
     @rack_config ||= RackConfig.impl {}
     @rack_context ||= RackContext.impl {}
     @servlet_context ||= ServletContext.impl {}
-    [@rack_context, @servlet_context].each do |context|
-      context.stub!(:log)
-      context.stub!(:getInitParameter).and_return nil
-      context.stub!(:getRealPath).and_return "/"
-      context.stub!(:getResource).and_return nil
-      context.stub!(:getContextPath).and_return "/"
-    end
+    @servlet_rack_context ||= ServletRackContext.impl {}
+
+    @servlet_context.stub!(:log)
+    @servlet_context.stub!(:getInitParameter).and_return nil
+    @servlet_context.stub!(:getRealPath).and_return "/"
+    @servlet_context.stub!(:getResource).and_return nil
+    @servlet_context.stub!(:getContextPath).and_return "/"
+
+    @rack_context.stub!(:log)
     @rack_context.stub!(:getConfig).and_return @rack_config
+
     @servlet_config ||= mock("servlet config")
     @servlet_config.stub!(:getServletName).and_return "A Servlet"
     @servlet_config.stub!(:getServletContext).and_return @servlet_context
