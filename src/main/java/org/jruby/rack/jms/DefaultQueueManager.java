@@ -16,6 +16,7 @@ import org.jruby.rack.RackApplication;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackContext;
 import org.jruby.rack.servlet.DefaultServletRackContext;
+import org.jruby.rack.servlet.ServletRackContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import javax.jms.*;
@@ -33,7 +34,7 @@ import java.util.Properties;
  */
 public class DefaultQueueManager implements QueueManager {
     private ConnectionFactory connectionFactory = null;
-    private DefaultServletRackContext context;
+    private ServletRackContext context;
     private Context jndiContext;
     private Map<String,Connection> queues = new HashMap<String,Connection>();
     private RubyRuntimeAdapter rubyRuntimeAdapter = JavaEmbedUtils.newRuntimeAdapter();
@@ -48,7 +49,7 @@ public class DefaultQueueManager implements QueueManager {
     }
 
     public void init(RackContext context) throws Exception {
-        this.context = (DefaultServletRackContext) context;
+        this.context = (ServletRackContext) context;
         String jndiName = context.getConfig().getJmsConnectionFactory();
         if (jndiName != null && connectionFactory == null) {
             Properties properties = new Properties();

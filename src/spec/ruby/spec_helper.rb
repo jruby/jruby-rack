@@ -23,8 +23,7 @@ Spec::Runner.configure do |config|
   def mock_servlet_context
     @rack_config ||= RackConfig.impl {}
     @rack_context ||= RackContext.impl {}
-    @servlet_context ||= ServletContext.impl {}
-    @servlet_rack_context ||= ServletRackContext.impl {}
+    @servlet_context ||= ServletRackContext.impl {}
 
     @servlet_context.stub!(:log)
     @servlet_context.stub!(:getInitParameter).and_return nil

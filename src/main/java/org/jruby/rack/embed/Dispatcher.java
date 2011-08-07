@@ -37,4 +37,9 @@ public class Dispatcher extends AbstractRackDispatcher {
     return rackApplication;
   }
 
+  public void destroy() {
+    this.rackApplication.destroy();
+  }
+
+
 }
