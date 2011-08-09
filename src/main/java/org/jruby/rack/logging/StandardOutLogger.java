@@ -16,12 +16,12 @@ public class StandardOutLogger implements RackLogger {
     }
 
     public void log(String message) {
-        out.println(message);
+        out.println(message.replaceFirst("\n$", ""));
         out.flush();
     }
 
     public void log(String message, Throwable ex) {
-        out.println(message);
+        out.println(message.replaceFirst("\n$", ""));
         ex.printStackTrace(out);
         out.flush();
     }
