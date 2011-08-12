@@ -13,7 +13,7 @@ module JRuby
     # hierarchy here is just for implementation sharing; if you
     # override the app layout by [insert mechanism here], then you
     # only need to accept a rack context in your initializer and
-    # provide the three *_path methods.
+    # provide the three *_uri methods.
     class AppLayout
       attr_reader :app_uri, :public_uri, :gem_uri
 
