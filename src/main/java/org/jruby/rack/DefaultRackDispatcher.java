@@ -20,8 +20,7 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
 
   @Override
   protected RackApplication getApplication(RackContext context) throws RackInitializationException {
-    final RackApplicationFactory rackFactory = servletRackContext.getRackFactory();
-    return rackFactory.getApplication();
+    return getRackFactory().getApplication();
   }
 
   @Override
