@@ -13,7 +13,7 @@ describe DefaultRackDispatcher do
   before :each do
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
     @rack_context.should_receive(:getRackFactory).and_return @rack_factory
-    @dispatcher = DefaultRackDispatcher.new @rack_context
+    @dispatcher = DefaultRackDispatcher.new @servlet_context
   end
 
   describe "process" do

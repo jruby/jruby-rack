@@ -7,11 +7,11 @@
 
 require 'spec_helper'
 
-import org.jruby.rack.RackFilter
+import org.jruby.rack.DefaultRackFilter
 
-describe RackFilter do
+describe DefaultRackFilter do
   let(:dispatcher) { mock "dispatcher" }
-  let(:filter) { RackFilter.new dispatcher, @rack_context }
+  let(:filter) { DefaultRackFilter.new dispatcher, @servlet_context }
   let(:chain) { mock "filter chain" }
 
   before :each do
@@ -19,6 +19,7 @@ describe RackFilter do
     @response = javax.servlet.http.HttpServletResponse.impl {}
     @rack_context.stub!(:getResource).and_return nil
     @rack_config.stub!(:isFilterAddsHtml).and_return true
+    filter.configure
   end
 
   def stub_request(path_info)
@@ -144,6 +145,8 @@ describe RackFilter do
   context "when the filter is configured to not add .html on the path" do
     before :each do
       @rack_config.stub!(:isFilterAddsHtml).and_return false
+      # get the filter to look up the setting again - bit shit
+      filter.configure
     end
 
     it "dispatches /some/uri/index unchanged" do

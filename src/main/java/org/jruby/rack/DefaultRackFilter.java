@@ -11,16 +11,22 @@ import org.jruby.rack.servlet.ServletRackContext;
 public class DefaultRackFilter extends RackFilter {
 
   private boolean filterAddsHtml, filterVerifiesResource;
-  private ServletRackContext containerContext;
+  private ServletRackContext servletContext;
 
+  /** Default constructor for servlet container */
   public DefaultRackFilter() {
+  }
+
+  /** Dependency-injected constructor for testing */
+  public DefaultRackFilter(RackDispatcher dispatcher, RackContext context) {
+    super(dispatcher, context);
   }
 
   @Override
   public void init(FilterConfig config) throws ServletException {
     super.init(config);
     configure();
-    this.containerContext = (ServletRackContext) context;
+    this.servletContext = (ServletRackContext) context;
   }
 
   private void configure() {
@@ -90,7 +96,7 @@ public class DefaultRackFilter extends RackFilter {
 
 private boolean resourceExists(String path) {
     try {
-        return containerContext.getResource(path) != null;
+        return servletContext.getResource(path) != null;
     } catch (Exception e) {
         return false;
     }
