@@ -11,6 +11,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+
 import java.io.IOException;
 
 /**
@@ -48,6 +49,7 @@ public class RackFilter extends AbstractFilter {
     }
 
     @Override
+    // FIXME: Rename to isDoDispatch
     protected boolean doDispatch(HttpServletRequest req, HttpServletResponse resp,
         FilterChain chain, RackEnvironment env, RackResponseEnvironment respEnv) throws IOException, ServletException {
 
@@ -57,6 +59,7 @@ public class RackFilter extends AbstractFilter {
 
       if (capture.isError()) {
         resp.reset();
+        httpRequest.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
       }
 
       return capture.isError();
