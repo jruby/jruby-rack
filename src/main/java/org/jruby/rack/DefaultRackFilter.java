@@ -20,16 +20,17 @@ public class DefaultRackFilter extends RackFilter {
   /** Dependency-injected constructor for testing */
   public DefaultRackFilter(RackDispatcher dispatcher, RackContext context) {
     super(dispatcher, context);
+    configure();
   }
 
   @Override
   public void init(FilterConfig config) throws ServletException {
     super.init(config);
     configure();
-    this.servletContext = (ServletRackContext) context;
   }
 
   private void configure() {
+    this.servletContext = (ServletRackContext) context;
     this.filterAddsHtml = context.getConfig().isFilterAddsHtml();
     this.filterVerifiesResource = context.getConfig().isFilterVerifiesResource();
   }
@@ -42,6 +43,7 @@ public class DefaultRackFilter extends RackFilter {
 
   private HttpServletRequest maybeAppendHtmlToPath(ServletRequest request, RackEnvironment env) {
     HttpServletRequest httpRequest = (HttpServletRequest) request;
+
     if (!filterAddsHtml) {
         return httpRequest;
     }
@@ -94,12 +96,13 @@ public class DefaultRackFilter extends RackFilter {
     return httpRequest;
 }
 
-private boolean resourceExists(String path) {
+  private boolean resourceExists(String path) {
     try {
-        return servletContext.getResource(path) != null;
+      return servletContext.getResource(path) != null;
+      // FIXME: Should we really be swallowing *all* exceptions here?
     } catch (Exception e) {
         return false;
     }
-}
+  }
 
 }
