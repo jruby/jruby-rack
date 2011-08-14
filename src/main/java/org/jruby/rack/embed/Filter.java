@@ -8,9 +8,15 @@ import org.jruby.rack.AbstractFilter;
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackDispatcher;
 
+/**
+ * There isn't anything particularly embedded about this filter
+ * FIXME perhaps make this one the base implementation?
+ * @author nick
+ *
+ */
 public class Filter extends AbstractFilter {
 
-  private Dispatcher dispatcher;
+  private final Dispatcher dispatcher;
   private final Context context;
 
   public Filter(Dispatcher dispatcher, Context context) {
