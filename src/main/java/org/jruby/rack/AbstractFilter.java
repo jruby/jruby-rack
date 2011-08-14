@@ -24,13 +24,24 @@ public abstract class AbstractFilter implements Filter {
     RackEnvironment env = new ServletRackEnvironment(httpReq, getContext());
     RackResponseEnvironment respEnv = new ServletRackResponseEnvironment(httpResp);
 
-    if (doDispatch(httpReq, httpResp, chain, env, respEnv)) {
+    if (isDoDispatch(httpReq, httpResp, chain, env, respEnv)) {
         getDispatcher().process(env, respEnv);
     }
 
   }
 
-  protected boolean doDispatch(HttpServletRequest req, HttpServletResponse resp,
+  /**
+   * Some filters may want to by-pass the rack application.  By default, all
+   * requests are given to the {@link RackDispatcher}, but you can extend
+   * this method and return false if you want to signal that you don't want
+   * the {@link RackDispatcher} to see the request.
+
+   * @return true if the dispatcher should handle the request, false if it
+   * shouldn't.
+   * @throws IOException
+   * @throws ServletException
+   */
+  protected boolean isDoDispatch(HttpServletRequest req, HttpServletResponse resp,
       FilterChain chain, RackEnvironment env, RackResponseEnvironment respEnv) throws IOException, ServletException {
     return true;
   }

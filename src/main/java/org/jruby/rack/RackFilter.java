@@ -49,8 +49,7 @@ public class RackFilter extends AbstractFilter {
     }
 
     @Override
-    // FIXME: Rename to isDoDispatch
-    protected boolean doDispatch(HttpServletRequest req, HttpServletResponse resp,
+    protected boolean isDoDispatch(HttpServletRequest req, HttpServletResponse resp,
         FilterChain chain, RackEnvironment env, RackResponseEnvironment respEnv) throws IOException, ServletException {
 
       HttpServletRequest httpRequest = getHttpServletRequest(req, env);
