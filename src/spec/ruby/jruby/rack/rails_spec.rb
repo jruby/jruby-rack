@@ -164,12 +164,10 @@ describe JRuby::Rack::RailsBooter do
       app = mock "app"
       public_path = Pathname.new(@booter.public_path)
       app.stub_chain(:config, :paths).and_return(paths)
-      paths.stub_chain(:public, :to_a, :first).and_return("public")
-      paths.public.stub_chain(:javascripts, :to_a, :first).and_return("public/javascripts")
-      paths.public.stub_chain(:stylesheets, :to_a, :first).and_return("public/stylesheets")
-      paths.should_receive(:public=).with(public_path.to_s)
-      paths.public.should_receive(:javascripts=).with(public_path.join("javascripts").to_s)
-      paths.public.should_receive(:stylesheets=).with(public_path.join("stylesheets").to_s)
+      paths.stub!(:[]).and_return {|arg| arg }
+      paths.should_receive(:[]=).with('public', public_path.to_s)
+      paths.should_receive(:[]=).with('public/javascripts', public_path.join("javascripts").to_s)
+      paths.should_receive(:[]=).with('public/stylesheets', public_path.join("stylesheets").to_s)
       init = Rails::Railtie.initializers.detect {|i| i.first =~ /public_path/}
       init.should_not be_nil
       init[1].should == [{:before => "action_controller.set_configs"}]
