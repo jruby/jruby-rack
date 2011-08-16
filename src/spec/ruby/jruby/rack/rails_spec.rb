@@ -160,18 +160,18 @@ describe JRuby::Rack::RailsBooter do
     end
 
     it "should set the application configuration's public path" do
-      paths = mock "paths"
+      paths = {}
+      %w(public public/javascripts public/stylesheets).each {|p| paths[p] = [p] }
       app = mock "app"
       public_path = Pathname.new(@booter.public_path)
       app.stub_chain(:config, :paths).and_return(paths)
-      paths.stub!(:[]).and_return {|arg| arg }
-      paths.should_receive(:[]=).with('public', public_path.to_s)
-      paths.should_receive(:[]=).with('public/javascripts', public_path.join("javascripts").to_s)
-      paths.should_receive(:[]=).with('public/stylesheets', public_path.join("stylesheets").to_s)
       init = Rails::Railtie.initializers.detect {|i| i.first =~ /public_path/}
       init.should_not be_nil
       init[1].should == [{:before => "action_controller.set_configs"}]
       init.last.call(app)
+      paths['public'].should == public_path.to_s
+      paths['public/javascripts'].should == public_path.join("javascripts").to_s
+      paths['public/stylesheets'].should == public_path.join("stylesheets").to_s
     end
 
     it "should switch out the logging device" do

@@ -12,15 +12,8 @@ module JRuby::Rack
   class Railtie < ::Rails::Railtie
     initializer "set_webapp_public_path", :before => "action_controller.set_configs" do |app|
       paths = app.config.paths
-      if defined?(Rails::Paths::PathParent) # Rails 3.0: old paths.app.controllers style
-        old_public  = Pathname.new(paths.public.to_a.first)
-        new_public  = Pathname.new(JRuby::Rack.booter.public_path)
-        javascripts = Pathname.new(paths.public.javascripts.to_a.first)
-        stylesheets = Pathname.new(paths.public.stylesheets.to_a.first)
-        paths.public = new_public.to_s
-        paths.public.javascripts = new_public.join(javascripts.relative_path_from(old_public)).to_s
-        paths.public.stylesheets = new_public.join(stylesheets.relative_path_from(old_public)).to_s
-      else                      # Rails 3.1: paths["app/controllers"] style
+      if Hash === paths
+        # Rails 3.1: paths["app/controllers"] style
         old_public  = Pathname.new(paths['public'].to_a.first)
         new_public  = Pathname.new(JRuby::Rack.booter.public_path)
         javascripts = Pathname.new(paths['public/javascripts'].to_a.first)
@@ -28,6 +21,15 @@ module JRuby::Rack
         paths['public'] = new_public.to_s
         paths['public/javascripts'] = new_public.join(javascripts.relative_path_from(old_public)).to_s
         paths['public/stylesheets'] = new_public.join(stylesheets.relative_path_from(old_public)).to_s
+      else
+        # Rails 3.0: old paths.app.controllers style
+        old_public  = Pathname.new(paths.public.to_a.first)
+        new_public  = Pathname.new(JRuby::Rack.booter.public_path)
+        javascripts = Pathname.new(paths.public.javascripts.to_a.first)
+        stylesheets = Pathname.new(paths.public.stylesheets.to_a.first)
+        paths.public = new_public.to_s
+        paths.public.javascripts = new_public.join(javascripts.relative_path_from(old_public)).to_s
+        paths.public.stylesheets = new_public.join(stylesheets.relative_path_from(old_public)).to_s
       end
     end
 
