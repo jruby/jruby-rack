@@ -1,4 +1,4 @@
-class AssetsController < ApplicationController
+class ImagesController < ApplicationController
   def show
     image_name, image_type = params[:id], params[:format]
     filename = Rails.public_path + "/images/#{image_name}.#{image_type}"

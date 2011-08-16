@@ -1,11 +1,23 @@
 source 'http://rubygems.org'
 
-gem 'rails', '~> 3.0.0'
-# gem 'jruby-openssl'
+gem 'rails', '3.1.0.rc5'
 
 # Bundle edge Rails instead:
-# gem 'rails', :git => 'git://github.com/rails/rails.git'
+# gem 'rails',     :git => 'git://github.com/rails/rails.git'
 
+
+gem 'jruby-openssl'
+gem 'json'
+
+# Gems used only for assets and not required
+# in production environments by default.
+group :assets do
+  gem 'sass-rails', "~> 3.1.0.rc"
+  gem 'coffee-rails', "~> 3.1.0.rc"
+  gem 'uglifier'
+end
+
+gem 'jquery-rails'
 
 # Use unicorn as the web server
 # gem 'unicorn'
@@ -13,14 +25,6 @@ gem 'rails', '~> 3.0.0'
 # Deploy with Capistrano
 # gem 'capistrano'
 
-# Bundle the extra gems:
-# gem 'bj'
-# gem 'nokogiri', '1.4.1'
-# gem 'sqlite3-ruby', :require => 'sqlite3'
-# gem 'aws-s3', :require => 'aws/s3'
+# To use debugger
+# gem 'ruby-debug'
 
-# Bundle gems for certain environments:
-# gem 'rspec', :group => :test
-# group :test do
-#   gem 'webrat'
-# end

@@ -10,7 +10,7 @@ class SnoopController < ApplicationController
     @snoop[:cookies]           = request.cookies
     @snoop[:session_options]   = request.session_options
     @snoop[:session]           = request.session.inspect
-    @snoop[:middleware]        = Rails.configuration.middleware.active.map(&:inspect)
+    @snoop[:middleware]        = Rails.configuration.middleware.map(&:inspect)
     @snoop[:load_path]         = $LOAD_PATH
     @snoop[:system_properties] = Hash[*Java::JavaLang::System.getProperties.to_a.flatten] if defined?(JRUBY_VERSION)
   end
