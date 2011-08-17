@@ -7,16 +7,16 @@ module Rack
   class Request
     def forward_to(path, params={})
       servlet_request = env['java.servlet_request']
-      params.each { |k,v| servlet_request[k] = v}
+      params.each { |k,v| servlet_request[k.to_s] = v}
       servlet_response = env['java.servlet_response']
       servlet_request.getRequestDispatcher(path).forward(servlet_request, servlet_response)
     end
 
     # Returns the output of the server-side include as a string, honoring the character
     # encoding set on the response.
-    def include(path, params={})
+    def render(path, params={})
       servlet_request = env['java.servlet_request']
-      params.each { |k,v| servlet_request[k] = v}
+      params.each { |k,v| servlet_request[k.to_s] = v}
       servlet_response = ServletRackIncludedResponse.new(env['java.servlet_response'])
       servlet_request.getRequestDispatcher(path).include(servlet_request, servlet_response)
       servlet_response.getOutput

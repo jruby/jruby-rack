@@ -7,7 +7,7 @@
     <div id="content">
       <div>This line of text came from ERB.</div>
       <br/>
-      <div>And this is content from a JSP: <br\> <%= request.include "/jsp/include.jsp", {"message" => "Hello I am inside a JSP!"} %></div>
+      <div>And this is content from a JSP: <br\> <%= request.render "/jsp/include.jsp", {"message" => "I'm a message that came from Sinatra!"} %></div>
     </div>
   </body>
 </html>

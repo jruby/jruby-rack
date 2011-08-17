@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * Response wrapper used to buffer the output of a server-side include. 
- * @author bhaidri
  */
 public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 

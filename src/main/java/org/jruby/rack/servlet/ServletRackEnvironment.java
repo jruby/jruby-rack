@@ -24,6 +24,7 @@ import java.io.InputStream;
 @SuppressWarnings("deprecation")
 public class ServletRackEnvironment extends HttpServletRequestWrapper
         implements HttpServletRequest, RackEnvironment {
+    
     private String scriptName;
     private String requestURI;
     private String requestURIWithoutQuery;
