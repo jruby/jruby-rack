@@ -16,12 +16,13 @@ WD_START = Dir.getwd
 java_import org.jruby.rack.RackContext
 java_import org.jruby.rack.RackConfig
 java_import org.jruby.rack.RackServletContextListener
+java_import org.jruby.rack.servlet.ServletRackContext
 java_import javax.servlet.ServletContext
 
 Spec::Runner.configure do |config|
   def mock_servlet_context
     @rack_config ||= RackConfig.impl {}
-    @rack_context ||= RackContext.impl {}
+    @rack_context ||= ServletRackContext.impl {}
     @servlet_context ||= ServletContext.impl {}
     [@rack_context, @servlet_context].each do |context|
       context.stub!(:log)

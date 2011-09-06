@@ -12,7 +12,7 @@ import org.jruby.rack.DefaultRackDispatcher
 describe DefaultRackDispatcher do
   before :each do
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
-    @rack_context.should_receive(:getRackFactory).and_return @rack_factory
+    @rack_context.should_receive(:getRackFactory).at_least(1).and_return @rack_factory
     @dispatcher = DefaultRackDispatcher.new @rack_context
   end
 

@@ -8,7 +8,7 @@
 require 'spec_helper'
 
 import org.jruby.rack.RackServlet
-import org.jruby.rack.servlet.ServletRackContext
+import org.jruby.rack.servlet.DefaultServletRackContext
 import org.jruby.rack.servlet.ServletRackConfig
 
 describe RackServlet, "service" do
@@ -24,7 +24,7 @@ end
 
 describe ServletRackContext, "getRealPath" do
   before :each do
-    @context = ServletRackContext.new(ServletRackConfig.new(@servlet_context))
+    @context = DefaultServletRackContext.new(ServletRackConfig.new(@servlet_context))
   end
 
   it "should use getResource when getRealPath returns nil" do
