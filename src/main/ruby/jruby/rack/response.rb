@@ -42,9 +42,7 @@ class JRuby::Rack::Response
   end
 
   def respond(response)
-    if (fwd = @headers["Forward"]) && fwd.respond_to?(:call)
-      fwd.call(response)
-    else
+    unless response.committed?
       write_status(response)
       write_headers(response)
       write_body(response)
