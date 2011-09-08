@@ -100,17 +100,19 @@ describe JRuby::Rack::Response do
   end
 
   it "should write the status first, followed by the headers, and the body last" do
+    @servlet_response.should_receive(:committed?).and_return false
     @response.should_receive(:write_status).ordered
     @response.should_receive(:write_headers).ordered
     @response.should_receive(:write_body).ordered
     @response.respond(@servlet_response)
   end
 
-  it "should forward the request if the special 'Forward' header is present" do
-    response = nil
-    @headers.should_receive(:[]).with("Forward").and_return(proc {|resp| response = resp})
+  it "should not write the status, the headers, or the body if the request was forwarded" do
+    @servlet_response.should_receive(:committed?).and_return true
+    @response.should_not_receive(:write_status)
+    @response.should_not_receive(:write_headers)
+    @response.should_not_receive(:write_body)
     @response.respond(@servlet_response)
-    response.should == @servlet_response
   end
 
   it "#getBody should call close on the body if the body responds to close" do

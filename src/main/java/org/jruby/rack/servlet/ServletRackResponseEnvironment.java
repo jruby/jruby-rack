@@ -25,7 +25,7 @@ public class ServletRackResponseEnvironment extends HttpServletResponseWrapper
     public ServletRackResponseEnvironment(HttpServletResponse response) {
         super(response);
     }
-
+    
     public void defaultRespond(RackResponse response) throws IOException {
         setStatus(response.getStatus());
         for (Iterator it = response.getHeaders().entrySet().iterator(); it.hasNext();) {

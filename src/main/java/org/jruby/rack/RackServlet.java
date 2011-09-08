@@ -47,7 +47,7 @@ public class RackServlet extends HttpServlet {
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-        dispatcher.process(new ServletRackEnvironment(request, rackContext), new ServletRackResponseEnvironment(response));
+        dispatcher.process(new ServletRackEnvironment(request, response, rackContext), new ServletRackResponseEnvironment(response));
     }
 
     @Override
