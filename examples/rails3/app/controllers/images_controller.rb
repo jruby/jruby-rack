@@ -1,7 +1,7 @@
 class ImagesController < ApplicationController
   def show
     image_name, image_type = params[:id], params[:format]
-    filename = Rails.public_path + "/images/#{image_name}.#{image_type}"
+    filename = Rails.root.to_s + "/app/assets/images/#{image_name}.#{image_type}"
     if File.file?(filename)
       image_data = File.read filename
       response.headers['Content-Description'] = "This is #{image_name}.#{image_type}"
