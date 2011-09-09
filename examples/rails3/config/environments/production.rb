@@ -11,8 +11,21 @@ Rails3::Application.configure do
   # Disable Rails's static asset server (Apache or nginx will already do this)
   config.serve_static_assets = false
 
+  # Fallback to assets pipeline if a precompiled asset is missed
+  config.assets.compile = true
+
   # Compress JavaScripts and CSS
   config.assets.compress = true
+
+  # Customize your compressors
+  # config.assets.js_compressor = :closure
+  # config.assets.css_compressor = :yui
+
+  # Generate digests for assets URLs
+  config.assets.digest = true
+
+  # Defaults to Rails.root.join("public/assets")
+  # config.assets.manifest = YOUR_PATH
 
   # Specifies the header that your server uses for sending files
   # (comment out if your front-end server doesn't support this)
