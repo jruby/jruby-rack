@@ -229,8 +229,11 @@ Checkout the JRuby Rack code and cd to that directory.
     git clone git://github.com/nicksieger/jruby-rack.git
     cd jruby-rack
 
+Ensure you have Maven installed. It is required for downloading jar
+artifacts that JRuby-Rack depends on.
+
 You can choose to build with either Maven or Rake. Either of the
-following two will suffice (but see the NOTE below).
+following two will suffice.
 
     mvn install
     jruby -S rake

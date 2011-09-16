@@ -7,31 +7,35 @@
 
 raise "JRuby-Rack must be built with JRuby: try again with `jruby -S rake'" unless defined?(JRUBY_VERSION)
 
+begin
+  require 'bundler/setup'
+rescue
+  puts "Please install Bundler and run 'bundle install' to ensure you have all dependencies"
+end
+
 require 'rake/clean'
 require 'date'
 require 'java'
 
 def compile_classpath
-  if ENV['JRUBY_PARENT_CLASSPATH']
-    classpath = []
-    ENV['JRUBY_PARENT_CLASSPATH'].split(File::PATH_SEPARATOR).each {|p| classpath << p}
-  else
-    java_classpath = Java::JavaLang::System.getProperty("java.class.path").split(File::PATH_SEPARATOR)
-    java_classpath += Java::JavaLang::System.getProperty("sun.boot.class.path").split(File::PATH_SEPARATOR)
-    classpath = Dir["#{File.expand_path 'src/main/lib'}/*.jar"] + java_classpath
-  end
+  test_classpath.reject {|p| p =~ /target\/(test-)?classes$/}
 end
 
 def test_classpath
-  compile_classpath + [File.expand_path("target/classes") + "/", File.expand_path("target/test-classes/") + "/"]
+  require './target/classpath'
+  Maven.classpath
 end
 
 CLEAN << 'target'
 
 directory 'target/classes'
 
+file 'target/classpath.rb' do
+  sh 'mvn org.jruby.plugins:jruby-rake-plugin:classpath -Djruby.classpath.scope=test'
+end
+
 desc "Compile java classes"
-task :compile => "target/classes" do |t|
+task :compile => ["target/classes", "target/classpath.rb"] do |t|
   debug = ENV['DEBUG'] ? '-g' : ''
   sh "javac -Xlint:deprecation -Xlint:unchecked #{debug} -classpath \"" + compile_classpath.join(File::PATH_SEPARATOR) + '" -source 1.5 ' +
     '-target 1.5 -d ' + t.prerequisites.first + ' ' + Dir["src/main/java/**/*.java"].join(" ")
@@ -40,30 +44,29 @@ end
 directory 'target/test-classes'
 
 desc "Compile classes used for test/spec"
-task :compilespec => "target/test-classes" do |t|
+task :compilespec => ["target/test-classes", "target/classpath.rb"] do |t|
   sh 'javac -classpath "' + test_classpath.join(File::PATH_SEPARATOR) + '" -source 1.5 ' +
     '-target 1.5 -d ' + t.prerequisites.first + ' ' + Dir["src/spec/java/**/*.java"].join(" ")
 end
 
 desc "Unpack the rack gem"
 task :unpack_gem => "target" do |t|
-  Dir.chdir(t.prerequisites.first) do
-    gem_file = FileList["../src/main/lib/rack*.gem"].first
-    unless uptodate?("vendor/rack.rb", [__FILE__, gem_file])
-      mkdir_p "vendor"
-      require 'rubygems/installer'
-      path = File.basename(gem_file).sub(/\.gem$/, '')
-      Gem::Installer.new(gem_file, :unpack => true, :install_dir => path).unpack path
-      rack_dir = FileList["rack-*"].first
-      File.open("vendor/rack.rb", "w") do |f|
-        f << "dir = File.dirname(__FILE__)\n"
-        f << "if dir =~ /.jar!/ && dir !~ /^file:/\n"
-        f << "$LOAD_PATH.unshift 'file:' + dir + '/#{rack_dir}'\n"
-        f << "else\n"
-        f << "$LOAD_PATH.unshift dir + '/#{rack_dir}'\n"
-        f << "end\n"
-        f << "require 'rack'"
-      end
+  target = File.expand_path(t.prerequisites.first)
+  gem_file = Gem.loaded_specs["rack"].cache_file
+  p gem_file
+  unless uptodate?("#{target}/vendor/rack.rb", [__FILE__, gem_file])
+    mkdir_p "target/vendor"
+    require 'rubygems/installer'
+    rack_dir = File.basename(gem_file).sub(/\.gem$/, '')
+    Gem::Installer.new(gem_file, :unpack => true, :install_dir => rack_dir).unpack "#{target}/#{rack_dir}"
+    File.open("#{target}/vendor/rack.rb", "w") do |f|
+      f << "dir = File.dirname(__FILE__)\n"
+      f << "if dir =~ /.jar!/ && dir !~ /^file:/\n"
+      f << "$LOAD_PATH.unshift 'file:' + dir + '/#{rack_dir}'\n"
+      f << "else\n"
+      f << "$LOAD_PATH.unshift dir + '/#{rack_dir}'\n"
+      f << "end\n"
+      f << "require 'rack'"
     end
   end
 end
@@ -113,17 +116,15 @@ file 'target/spec' do # workaround for jruby-complete-1.6.0.jar bug finding spec
   fail "Could not find RSpec 1.3.x `spec' executable" unless File.exist?('target/spec')
 end
 
-task :speconly => 'target/spec' do
+task :speconly => ['target/spec', 'target/classpath.rb'] do
   if ENV['SKIP_SPECS'] && ENV['SKIP_SPECS'] == "true"
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
-    test_classpath.each {|p| $CLASSPATH << p }
     opts = ["--format", "specdoc"]
     opts << ENV['SPEC_OPTS'] if ENV['SPEC_OPTS']
     spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
     opts.push *FileList[spec].to_a
-    ENV['CLASSPATH'] = test_classpath.join(File::PATH_SEPARATOR)
-    ruby "-Isrc/spec/ruby", "-S", "target/spec", *opts
+    ruby "-Isrc/spec/ruby", "-rtarget/classpath", "-S", "target/spec", *opts
   end
 end
 

@@ -7,6 +7,7 @@
 
 require 'java'
 require 'spec'
+Maven.set_classpath
 
 # add to load path for stubbed out action_controller, railtie classes
 $LOAD_PATH.unshift File.expand_path('../rails', __FILE__)
