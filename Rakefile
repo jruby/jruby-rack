@@ -52,8 +52,12 @@ end
 desc "Unpack the rack gem"
 task :unpack_gem => "target" do |t|
   target = File.expand_path(t.prerequisites.first)
-  gem_file = Gem.loaded_specs["rack"].cache_file
-  p gem_file
+  specification = Gem.loaded_specs["rack"]
+  if specification.respond_to?(:cache_file)
+    gem_file = specification.cache_file
+  else
+    gem_file = File.join(specification.installation_path, 'cache', specification.file_name)
+  end
   unless uptodate?("#{target}/vendor/rack.rb", [__FILE__, gem_file])
     mkdir_p "target/vendor"
     require 'rubygems/installer'

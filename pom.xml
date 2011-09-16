@@ -147,6 +147,22 @@
         <version>${jruby.version}</version>
         <executions>
           <execution>
+            <id>install-gems</id>
+            <phase>generate-resources</phase>
+            <goals><goal>install-gems</goal></goals>
+            <configuration>
+              <gems>bundler</gems>
+            </configuration>
+          </execution>
+          <execution>
+            <id>bundle-install</id>
+            <phase>generate-resources</phase>
+            <goals><goal>jruby</goal></goals>
+            <configuration>
+              <args>-S bundle install</args>
+            </configuration>
+          </execution>
+          <execution>
             <id>unpack-gem</id>
             <phase>generate-resources</phase>
             <goals><goal>rake</goal></goals>
