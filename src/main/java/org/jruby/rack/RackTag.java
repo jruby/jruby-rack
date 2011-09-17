@@ -11,6 +11,7 @@ import org.jruby.rack.servlet.ServletRackEnvironment;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
@@ -43,7 +44,7 @@ public class RackTag extends TagSupport {
                     @Override public String getQueryString() { return params; }
                     @Override public String getServletPath() { return ""; }
                 };
-                RackResponse result = app.call(new ServletRackEnvironment(request, context));
+                RackResponse result = app.call(new ServletRackEnvironment(request, (HttpServletResponse) pageContext.getResponse(), context));
                 pageContext.getOut().write(result.getBody());
             } finally {
               factory.finishedWithApplication(app);

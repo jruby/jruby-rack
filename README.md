@@ -226,7 +226,7 @@ For those loggers that require a specific named logger, set it in the
 
 Checkout the JRuby Rack code and cd to that directory.
 
-    git clone git://github.com/nicksieger/jruby-rack.git
+    git clone git://github.com/jruby/jruby-rack.git
     cd jruby-rack
 
 Ensure you have Maven installed. It is required for downloading jar
@@ -244,8 +244,8 @@ The generated jar should be located here: target/jruby-rack-*.jar.
 
 Please use GitHub to file bugs, patches and pull requests.
 
-- https://github.com/nicksieger/jruby-rack
-- https://github.com/nicksieger/jruby-rack/issues
+- https://github.com/jruby/jruby-rack
+- https://github.com/jruby/jruby-rack/issues
 
 ## Rails Step-by-step
 

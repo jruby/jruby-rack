@@ -11,6 +11,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.rack.servlet.ServletRackContext;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -30,12 +31,12 @@ import java.util.regex.Pattern;
  */
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private String rackupScript, rackupLocation;
-    private RackContext rackContext;
+    private ServletRackContext rackContext;
     private RubyInstanceConfig defaultConfig;
     private RackApplication errorApplication;
 
     public void init(RackContext rackContext) {
-        this.rackContext = rackContext;
+        this.rackContext = (ServletRackContext) rackContext;
         this.rackupScript = findRackupScript();
         this.defaultConfig = createDefaultConfig();
         rackContext.log(defaultConfig.getVersionString());

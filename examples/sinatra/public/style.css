@@ -6,4 +6,4 @@ p {margin: 20px 0px;}
 ul, ol {margin:0 1.5em 1.5em 1.5em;}
 ul {list-style-type:disc;}
 ol {list-style-type:decimal;}
-
+.inside_jsp {border: dotted 1px; margin-left: 20px;}

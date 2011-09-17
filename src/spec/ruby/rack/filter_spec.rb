@@ -7,11 +7,11 @@
 
 require 'spec_helper'
 
-import org.jruby.rack.RackFilter
+import org.jruby.rack.DefaultRackFilter
 
-describe RackFilter do
+describe DefaultRackFilter do
   let(:dispatcher) { mock "dispatcher" }
-  let(:filter) { RackFilter.new dispatcher, @rack_context }
+  let(:filter) { DefaultRackFilter.new dispatcher, @rack_context }
   let(:chain) { mock "filter chain" }
 
   before :each do

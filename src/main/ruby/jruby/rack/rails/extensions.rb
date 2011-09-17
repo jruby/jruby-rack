@@ -29,19 +29,9 @@ module ActionController
     def servlet_request
       request.env['java.servlet_request']
     end
-
-    def render_with_servlet_response(&block)
-      if block
-        @performed_render = true
-        response.headers['Forward'] = block
-      end
-    end
-
+    
     def forward_to(url)
-      req = servlet_request
-      render_with_servlet_response do |resp|
-        req.getRequestDispatcher(url).forward(req, resp)
-      end
+      request.forward_to(url)
     end
   end
 

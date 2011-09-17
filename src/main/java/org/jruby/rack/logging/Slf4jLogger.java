@@ -22,12 +22,10 @@ public class Slf4jLogger implements RackLogger {
         logger = LoggerFactory.getLogger(loggerName);
     }
 
-    @Override
     public void log(String message) {
         logger.info(message);
     }
 
-    @Override
     public void log(String message, Throwable ex) {
         logger.error(message, ex);
     }
