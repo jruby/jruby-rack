@@ -83,3 +83,13 @@ class StubOutputStream < java.io.OutputStream
     String.from_java_bytes @os.to_byte_array
   end
 end
+
+class StubServletInputStream < javax.servlet.ServletInputStream
+  def initialize(val = "")
+    @delegate = StubInputStream.new(val)
+  end
+
+  def method_missing(meth, *args)
+    @delegate.send(meth, *args)
+  end
+end

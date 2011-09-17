@@ -7,6 +7,9 @@
 
 package org.jruby.rack;
 
+import org.jruby.rack.servlet.RequestCapture;
+import org.jruby.rack.servlet.ResponseCapture;
+
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,19 +52,19 @@ public class RackFilter extends AbstractFilter {
     }
 
     @Override
-    protected boolean isDoDispatch(HttpServletRequest req, HttpServletResponse resp,
+    protected boolean isDoDispatch(RequestCapture req, ResponseCapture resp,
         FilterChain chain, RackEnvironment env, RackResponseEnvironment respEnv) throws IOException, ServletException {
 
-      HttpServletRequest httpRequest = getHttpServletRequest(req, env);
-      ResponseStatusCapture capture = new ResponseStatusCapture(resp);
-      chain.doFilter(httpRequest, capture);
+      HttpServletRequest mappedRequest = getHttpServletRequest(req, env);
+      chain.doFilter(mappedRequest, resp);
 
-      if (capture.isError()) {
-        resp.reset();
-        httpRequest.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
+      if (resp.isError()) {
+          req.reset();
+          resp.reset();
+          mappedRequest.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
       }
 
-      return capture.isError();
+      return resp.isError();
     }
 
     protected HttpServletRequest getHttpServletRequest(ServletRequest request,
@@ -71,51 +74,4 @@ public class RackFilter extends AbstractFilter {
 
     public void destroy() {
     }
-
-
-    private static class ResponseStatusCapture extends HttpServletResponseWrapper {
-        private int status = 200;
-
-        public ResponseStatusCapture(HttpServletResponse response) {
-            super(response);
-        }
-
-        @Override public void sendError(int status, String message) throws IOException {
-            this.status = status;
-        }
-
-        @Override public void sendError(int status) throws IOException {
-            this.status = status;
-        }
-
-        @Override public void sendRedirect(String path) throws IOException {
-            this.status = 302;
-            super.sendRedirect(path);
-        }
-
-        @Override public void setStatus(int status) {
-            this.status = status;
-            if (!isError()) {
-                super.setStatus(status);
-            }
-        }
-
-        @Override public void setStatus(int status, String message) {
-            this.status = status;
-            if (!isError()) {
-                super.setStatus(status, message);
-            }
-        }
-
-        @Override public void flushBuffer() throws IOException {
-            if (!isError()) {
-                super.flushBuffer();
-            }
-        }
-
-        private boolean isError() {
-            return status >= 400;
-        }
-    }
-
 }

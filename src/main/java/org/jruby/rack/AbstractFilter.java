@@ -10,6 +10,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jruby.rack.servlet.RequestCapture;
+import org.jruby.rack.servlet.ResponseCapture;
 import org.jruby.rack.servlet.ServletRackEnvironment;
 import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 
@@ -18,16 +20,15 @@ public abstract class AbstractFilter implements Filter {
   public final void doFilter(ServletRequest req, ServletResponse resp,
       FilterChain chain) throws IOException, ServletException {
 
-    HttpServletRequest httpReq = (HttpServletRequest) req;
-    HttpServletResponse httpResp = (HttpServletResponse) resp;
+    RequestCapture httpReq   = new RequestCapture((HttpServletRequest) req);
+    ResponseCapture httpResp = new ResponseCapture((HttpServletResponse) resp);
 
-    RackEnvironment env = new ServletRackEnvironment(httpReq, httpResp, getContext());
+    RackEnvironment env             = new ServletRackEnvironment(httpReq, httpResp, getContext());
     RackResponseEnvironment respEnv = new ServletRackResponseEnvironment(httpResp);
 
     if (isDoDispatch(httpReq, httpResp, chain, env, respEnv)) {
         getDispatcher().process(env, respEnv);
     }
-
   }
 
   /**
@@ -41,7 +42,7 @@ public abstract class AbstractFilter implements Filter {
    * @throws IOException
    * @throws ServletException
    */
-  protected boolean isDoDispatch(HttpServletRequest req, HttpServletResponse resp,
+  protected boolean isDoDispatch(RequestCapture req, ResponseCapture resp,
       FilterChain chain, RackEnvironment env, RackResponseEnvironment respEnv) throws IOException, ServletException {
     return true;
   }
