@@ -11,9 +11,6 @@ import org.jruby.Ruby;
 import org.jruby.RubyObjectAdapter;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
-import org.jruby.rack.input.RackBaseInput;
-import org.jruby.rack.input.RackNonRewindableInput;
-import org.jruby.rack.input.RackRewindableInput;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import java.io.IOException;
@@ -36,7 +33,7 @@ public class DefaultRackApplication implements RackApplication {
     public RackResponse call(final RackEnvironment env) {
         Ruby runtime = getRuntime();
         try {
-            RackBaseInput io = createRackInput(runtime, env);
+            RackInput io = new RackInput(runtime, env);
             try {
                 IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
                 adapter.setInstanceVariable(servlet_env, "@_io", io);
@@ -67,13 +64,5 @@ public class DefaultRackApplication implements RackApplication {
     /** Only used for testing. */
     public IRubyObject __call(final IRubyObject env) {
         return adapter.callMethod(application, "call", env);
-    }
-
-    private RackBaseInput createRackInput(Ruby runtime, RackEnvironment env) throws IOException {
-        if (env.getContext().getConfig().isRewindable()) {
-            return new RackRewindableInput(runtime, env);
-        } else {
-            return new RackNonRewindableInput(runtime, env);
-        }
     }
 }

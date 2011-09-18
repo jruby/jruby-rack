@@ -7,19 +7,95 @@
 
 package org.jruby.rack;
 
+import com.strobecorp.kirk.RewindableInputStream;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.jruby.Ruby;
+import org.jruby.RubyClass;
+import org.jruby.RubyModule;
+import org.jruby.RubyObject;
+import org.jruby.RubyString;
+import org.jruby.anno.JRubyMethod;
+import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.rack.RackEnvironment;
+import org.jruby.rack.RackInput;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 
 /**
  * Specification for Rack input, translated to a Java interface.
  * @author nicksieger
  */
-public interface RackInput {
+public class RackInput extends RubyObject {
+    private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
+        public IRubyObject allocate(Ruby runtime, RubyClass klass) {
+            return new RackInput(runtime, klass);
+        }
+    };
+
+    public static RubyClass getClass(Ruby runtime, String name, RubyClass parent,
+                                     ObjectAllocator allocator, Class annoClass) {
+        RubyModule jrubyMod = runtime.getOrCreateModule("JRuby");
+        RubyClass klass = jrubyMod.getClass(name);
+        if (klass == null) {
+            klass = jrubyMod.defineClassUnder(name, parent, allocator);
+            klass.defineAnnotatedMethods(annoClass);
+        }
+        return klass;
+    }
+
+    public static RubyClass getRackInputClass(Ruby runtime) {
+        return getClass(runtime, "RackInput", runtime.getObject(),
+                        ALLOCATOR, RackInput.class);
+    }
+
+    private InputStream inputStream;
+    private int length;
+
+    public RackInput(Ruby runtime, RubyClass klass) {
+        super(runtime, klass);
+    }
+
+    public RackInput(Ruby runtime, RackEnvironment env) throws IOException {
+        super(runtime, getRackInputClass(runtime));
+        this.inputStream = env.getInput();
+        this.length = env.getContentLength();
+    }
+
+    @JRubyMethod(required = 1)
+    public IRubyObject initialize(ThreadContext context, IRubyObject arg) {
+        Object obj = JavaEmbedUtils.rubyToJava(arg);
+        if (obj instanceof InputStream) {
+            this.inputStream = (InputStream) obj;
+        }
+        this.length = 0;
+        return getRuntime().getNil();
+    }
+
     /**
      * gets must be called without arguments and return a string, or nil on EOF.
      */
-    IRubyObject gets(ThreadContext context);
+    @JRubyMethod()
+    public IRubyObject gets(ThreadContext context) {
+        try {
+            final int NEWLINE = 10;
+            byte[] bytes = readUntil(NEWLINE, 0);
+            if (bytes != null) {
+                return getRuntime().newString(new ByteList(bytes));
+            } else {
+                return getRuntime().getNil();
+            }
+        } catch (IOException io) {
+            throw getRuntime().newIOErrorFromException(io);
+        }
+    }
 
     /**
      * read behaves like IO#read. Its signature is read([length, [buffer]]). If given,
@@ -31,12 +107,50 @@ public interface RackInput {
      * given or is nil. If buffer is given, then the read data will be placed into
      * buffer instead of a newly created String object.
      */
-    IRubyObject read(ThreadContext context, IRubyObject[] args);
+    @JRubyMethod(optional = 2)
+    public IRubyObject read(ThreadContext context, IRubyObject[] args) {
+        long count = 0;
+        if (args.length > 0) {
+            count = args[0].convertToInteger("to_i").getLongValue();
+        }
+        RubyString string = null;
+        if (args.length == 2) {
+            string = args[1].convertToString();
+        }
+
+        try {
+            byte[] bytes = readUntil(Integer.MAX_VALUE, count);
+            if (bytes != null) {
+                if (string != null) {
+                    string.clear();
+                    string.cat(bytes);
+                    return string;
+                }
+                return getRuntime().newString(new ByteList(bytes));
+            } else {
+                if (count > 0) {
+                    return getRuntime().getNil();
+                } else {
+                    return RubyString.newEmptyString(getRuntime());
+                }
+            }
+        } catch (IOException io) {
+            throw getRuntime().newIOErrorFromException(io);
+        }
+    }
 
     /**
      * each must be called without arguments and only yield Strings.
      */
-    IRubyObject each(ThreadContext context, Block block);
+    @JRubyMethod()
+    public IRubyObject each(ThreadContext context, Block block) {
+        IRubyObject nil = getRuntime().getNil();
+        IRubyObject line = null;
+        while ((line = gets(context)) != nil) {
+            block.yield(context, line);
+        }
+        return nil;
+    }
 
     /**
      * rewind must be called without arguments. It rewinds the input stream back
@@ -44,16 +158,58 @@ public interface RackInput {
      * a pipe or a socket. Therefore, handler developers must buffer the input
      * data into some rewindable object if the underlying input stream is not rewindable.
      */
-    IRubyObject rewind(ThreadContext context);
+    @JRubyMethod()
+    public IRubyObject rewind(ThreadContext context) {
+        if (inputStream instanceof RewindableInputStream) {
+            try {
+                ((RewindableInputStream) inputStream).rewind();
+            } catch (IOException e) {
+            }
+        }
+
+        return getRuntime().getNil();
+    }
 
     /**
      * Returns the size of the input.
      */
-    IRubyObject size(ThreadContext context);
+    @JRubyMethod()
+    public IRubyObject size(ThreadContext context) {
+        return getRuntime().newFixnum(length);
+    }
 
     /**
      * Close the input. Exposed only to the Java side because the Rack spec says
      * that application code must not call close, so we don't expose a close method to Ruby.
      */
-    void close();
+    public void close() {
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+        }
+    }
+
+    private byte[] readUntil(int match, long count) throws IOException {
+        ByteArrayOutputStream bs = null;
+        int b;
+        long i = 0;
+        do {
+            b = inputStream.read();
+            if (b == -1) {
+                break;
+            }
+            if (bs == null) {
+                bs = new ByteArrayOutputStream();
+            }
+            bs.write(b);
+            if (count > 0 && ++i == count) {
+                break;
+            }
+        } while (b != match);
+
+        if (bs == null) {
+            return null;
+        }
+        return bs.toByteArray();
+    }
 }

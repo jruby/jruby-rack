@@ -6,6 +6,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -15,11 +16,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jruby.rack.RackConfig;
+
 public class RequestCapture extends HttpServletRequestWrapper {
-    private RewindableInputStream inputStream;
+    private InputStream inputStream;
     private Map<String,String[]> requestParams;
-    public RequestCapture(HttpServletRequest request) {
+    private boolean rewindable;
+
+    public RequestCapture(HttpServletRequest request, RackConfig config) {
         super(request);
+        rewindable = config.isRewindable();
     }
 
     @Override public BufferedReader getReader() throws IOException {
@@ -35,6 +41,12 @@ public class RequestCapture extends HttpServletRequestWrapper {
     }
 
     @Override public ServletInputStream getInputStream() throws IOException {
+        if (!rewindable) {
+            ServletInputStream stream = super.getInputStream();
+            inputStream = stream;
+            return stream;
+        }
+
         if (inputStream == null) {
             inputStream = new RewindableInputStream(super.getInputStream());
         }
@@ -181,8 +193,8 @@ public class RequestCapture extends HttpServletRequestWrapper {
     }
 
     public void reset() throws IOException {
-        if (inputStream != null) {
-            inputStream.rewind();
+        if (inputStream instanceof RewindableInputStream) {
+            ((RewindableInputStream) inputStream).rewind();
         }
     }
 }

@@ -20,7 +20,7 @@ public abstract class AbstractFilter implements Filter {
   public final void doFilter(ServletRequest req, ServletResponse resp,
       FilterChain chain) throws IOException, ServletException {
 
-    RequestCapture httpReq   = new RequestCapture((HttpServletRequest) req);
+    RequestCapture httpReq   = new RequestCapture((HttpServletRequest) req, getContext().getConfig());
     ResponseCapture httpResp = new ResponseCapture((HttpServletResponse) resp);
 
     RackEnvironment env             = new ServletRackEnvironment(httpReq, httpResp, getContext());

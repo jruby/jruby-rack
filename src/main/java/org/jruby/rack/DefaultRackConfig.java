@@ -1,7 +1,8 @@
 package org.jruby.rack;
 
+import com.strobecorp.kirk.RewindableInputStream;
+
 import org.jruby.CompatVersion;
-import org.jruby.rack.input.RackRewindableInput;
 import org.jruby.rack.logging.StandardOutLogger;
 import org.jruby.util.SafePropertyAccessor;
 
@@ -114,7 +115,7 @@ public class DefaultRackConfig implements RackConfig {
     public int getMemoryBufferSize() {
         Integer i = getPositiveInteger("jruby.rack.request.size.threshold.bytes");
         if (i == null) {
-            i = RackRewindableInput.getDefaultThreshold();
+            i = RewindableInputStream.DEFAULT_BUFFER_SIZE;
         }
         return i;
     }

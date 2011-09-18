@@ -1,4 +1,4 @@
-// Temporarily borrowed from Kirk
+// Borrowed from Kirk
 package com.strobecorp.kirk;
 
 import java.io.File;
@@ -125,6 +125,7 @@ public class RewindableInputStream extends FilterInputStream {
         return -1;
       }
       else if ( len == 1 ) {
+        position += 1;
         return buf.get();
       }
 
