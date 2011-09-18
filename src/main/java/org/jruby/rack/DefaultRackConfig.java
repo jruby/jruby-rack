@@ -100,10 +100,6 @@ public class DefaultRackConfig implements RackConfig {
         return getBoolean("jruby.rack.filter.verifies.resource", false);
     }
 
-    public boolean isBackgroundSpooling() {
-        return getBoolean("jruby.rack.background.spool", false);
-    }
-
     public String getJmsConnectionFactory() {
         return getProperty("jms.connection.factory");
     }

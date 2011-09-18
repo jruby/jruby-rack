@@ -44,9 +44,6 @@ public interface RackConfig {
      * ServletContext#getResource before adding .html on the request. */
     boolean isFilterVerifiesResource();
 
-    /** Return true if large request bodies should be spooled in the background. */
-    boolean isBackgroundSpooling();
-
     /** Return the JNDI name of the JMS connection factory.*/
     String getJmsConnectionFactory();
 
