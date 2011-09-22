@@ -20,14 +20,16 @@ public abstract class AbstractFilter implements Filter {
   public final void doFilter(ServletRequest req, ServletResponse resp,
       FilterChain chain) throws IOException, ServletException {
 
-    RequestCapture httpReq   = new RequestCapture((HttpServletRequest) req, getContext().getConfig());
-    ResponseCapture httpResp = new ResponseCapture((HttpServletResponse) resp);
+    HttpServletRequest httpReq   = (HttpServletRequest) req;
+    HttpServletResponse httpResp = (HttpServletResponse) resp;
+    RequestCapture reqCapture    = new RequestCapture(httpReq, getContext().getConfig());
+    ResponseCapture respCapture  = new ResponseCapture(httpResp);
 
     RackEnvironment env             = new ServletRackEnvironment(httpReq, httpResp, getContext());
     RackResponseEnvironment respEnv = new ServletRackResponseEnvironment(httpResp);
 
-    if (isDoDispatch(httpReq, httpResp, chain, env, respEnv)) {
-        getDispatcher().process(env, respEnv);
+    if (isDoDispatch(reqCapture, respCapture, chain, env, respEnv)) {
+      getDispatcher().process(env, respEnv);
     }
   }
 

@@ -1,77 +1,108 @@
-/*
- * Copyright (c) 2010-2011 Engine Yard, Inc.
- * Copyright (c) 2007-2009 Sun Microsystems, Inc.
- * This source code is available under the MIT license.
- * See the file LICENSE.txt for details.
- */
-
 package org.jruby.rack;
 
-import org.jruby.rack.servlet.RequestCapture;
-import org.jruby.rack.servlet.ResponseCapture;
-
-import javax.servlet.*;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import javax.servlet.http.HttpServletRequestWrapper;
 
-import java.io.IOException;
+import org.jruby.rack.servlet.ServletRackContext;
 
-/**
- *
- * @author nicksieger
- */
-public class RackFilter extends AbstractFilter {
-    protected RackContext context;
-    protected RackDispatcher dispatcher;
+public class RackFilter extends UnmappedRackFilter {
 
-    /** Default constructor for servlet container */
-    public RackFilter() {
+  private boolean filterAddsHtml, filterVerifiesResource;
+  private ServletRackContext servletContext;
+
+  /** Default constructor for servlet container */
+  public RackFilter() {
+  }
+
+  /** Dependency-injected constructor for testing */
+  public RackFilter(RackDispatcher dispatcher, RackContext context) {
+    super(dispatcher, context);
+    configure();
+  }
+
+  @Override
+  public void init(FilterConfig config) throws ServletException {
+    super.init(config);
+    configure();
+  }
+
+  private void configure() {
+    this.servletContext = (ServletRackContext) context;
+    this.filterAddsHtml = context.getConfig().isFilterAddsHtml();
+    this.filterVerifiesResource = context.getConfig().isFilterVerifiesResource();
+  }
+
+  @Override
+  protected HttpServletRequest getHttpServletRequest(ServletRequest request,
+      RackEnvironment env) {
+    return maybeAppendHtmlToPath(request, env);
+  }
+
+  private HttpServletRequest maybeAppendHtmlToPath(ServletRequest request, RackEnvironment env) {
+    HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+    if (!filterAddsHtml) {
+        return httpRequest;
     }
 
-    /** Dependency-injected constructor for testing */
-    public RackFilter(RackDispatcher dispatcher, RackContext context) {
-        this.context = context;
-        this.dispatcher = dispatcher;
+    String path = env.getPathInfo();
+    String additional = "";
+
+    if (path.lastIndexOf('.') <= path.lastIndexOf('/')) {
+        if (path.endsWith("/")) {
+            additional += "index";
+        }
+        additional += ".html";
+
+        // Welcome file list already triggered mapping to index.html, so don't modify the request any further
+        if (httpRequest.getServletPath().equals(path + additional)) {
+            return httpRequest;
+        }
+
+        if (filterVerifiesResource && !resourceExists(path + additional)) {
+            return httpRequest;
+        }
+
+        final String requestURI = httpRequest.getRequestURI() + additional;
+        if (httpRequest.getPathInfo() != null) {
+            final String pathInfo = httpRequest.getPathInfo() + additional;
+            httpRequest = new HttpServletRequestWrapper(httpRequest) {
+                @Override
+                public String getPathInfo() {
+                    return pathInfo;
+                }
+                @Override
+                public String getRequestURI() {
+                    return requestURI;
+                }
+            };
+        } else {
+            final String servletPath = httpRequest.getServletPath() + additional;
+            httpRequest = new HttpServletRequestWrapper(httpRequest) {
+                @Override
+                public String getServletPath() {
+                    return servletPath;
+                }
+                @Override
+                public String getRequestURI() {
+                    return requestURI;
+                }
+            };
+        }
     }
+    return httpRequest;
+}
 
-    /** Construct a new dispatcher with the servlet context */
-    public void init(FilterConfig config) throws ServletException {
-          this.context = (RackContext) config.getServletContext().getAttribute(RackApplicationFactory.RACK_CONTEXT);
-          this.dispatcher = new DefaultRackDispatcher(this.context);
+  private boolean resourceExists(String path) {
+    try {
+      return servletContext.getResource(path) != null;
+      // FIXME: Should we really be swallowing *all* exceptions here?
+    } catch (Exception e) {
+        return false;
     }
+  }
 
-    @Override
-    protected RackDispatcher getDispatcher() {
-      return this.dispatcher;
-    }
-
-    @Override
-    protected RackContext getContext() {
-      return this.context;
-    }
-
-    @Override
-    protected boolean isDoDispatch(RequestCapture req, ResponseCapture resp,
-        FilterChain chain, RackEnvironment env, RackResponseEnvironment respEnv) throws IOException, ServletException {
-
-      HttpServletRequest mappedRequest = getHttpServletRequest(req, env);
-      chain.doFilter(mappedRequest, resp);
-
-      if (resp.isError()) {
-          req.reset();
-          resp.reset();
-          mappedRequest.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
-      }
-
-      return resp.isError();
-    }
-
-    protected HttpServletRequest getHttpServletRequest(ServletRequest request,
-        RackEnvironment env) {
-      return (HttpServletRequest) request;
-    }
-
-    public void destroy() {
-    }
 }

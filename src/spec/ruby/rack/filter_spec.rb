@@ -7,11 +7,11 @@
 
 require 'spec_helper'
 
-import org.jruby.rack.DefaultRackFilter
+import org.jruby.rack.RackFilter
 
-describe DefaultRackFilter do
+describe RackFilter do
   let(:dispatcher) { mock "dispatcher" }
-  let(:filter) { DefaultRackFilter.new dispatcher, @rack_context }
+  let(:filter) { RackFilter.new dispatcher, @rack_context }
   let(:chain) { mock "filter chain" }
 
   before :each do
@@ -140,6 +140,20 @@ describe DefaultRackFilter do
     @response.should_receive(:setStatus).ordered.with(200)
     filter.doFilter(@request, @response, chain)
   end
+
+  it "should set status to 404 when dispatcher's status is not found" do
+    chain.should_receive(:doFilter).ordered.and_return do |_, resp|
+      resp.sendError(404)
+    end
+    @response.should_receive(:reset).ordered
+    @request.should_receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
+    dispatcher.should_receive(:process).ordered.and_return do |_, resp|
+      resp.setStatus(404)
+    end
+    @response.should_receive(:setStatus).ordered.with(404)
+    filter.doFilter(@request, @response, chain)
+  end
+
 
   context "when the filter is configured to not add .html on the path" do
     before :each do
