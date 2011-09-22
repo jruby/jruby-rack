@@ -32,7 +32,8 @@ for server in ${servers[*]}; do
     echo OK >> results.txt
   else
     echo FAIL >> results.txt
-    echo Server $server FAILED $prefix/
+    echo Server $server FAILED $prefix/ | tee -a errors.txt
+    cat index.out >> errors.txt
   fi
 
   curl -i -L --max-redirs 3 -s -vvv http://localhost:8080$prefix/sub/ | tee sub.out
@@ -41,7 +42,8 @@ for server in ${servers[*]}; do
     echo OK >> results.txt
   else
     echo FAIL >> results.txt
-    echo Server $server FAILED $prefix/sub/
+    echo Server $server FAILED $prefix/sub/ | tee -a errors.txt
+    cat sub.out >> errors.txt
   fi
 
   curl -i -L --max-redirs 3 -s -vvv http://localhost:8080$prefix/sub/path | tee path.out
@@ -50,7 +52,8 @@ for server in ${servers[*]}; do
     echo OK >> results.txt
   else
     echo FAIL >> results.txt
-    echo Server $server FAILED $prefix/sub/path
+    echo Server $server FAILED $prefix/sub/path | tee -a errors.txt
+    cat path.out >> errors.txt
   fi
 
   curl -i -L --max-redirs 3 -s -vvv http://localhost:8080$prefix/env | tee env.out
@@ -59,7 +62,18 @@ for server in ${servers[*]}; do
     echo OK >> results.txt
   else
     echo FAIL >> results.txt
-    echo Server $server FAILED $prefix/env
+    echo Server $server FAILED $prefix/env | tee -a errors.txt
+    cat env.out >> errors.txt
+  fi
+
+  curl -i -L --max-redirs 3 -s -vvv http://localhost:8080$prefix/sub/path/notfound | tee notfound.out
+  echo -n "$server: $prefix/sub/path/notfound " >> results.txt
+  if grep '404' notfound.out; then
+    echo OK >> results.txt
+  else
+    echo FAIL >> results.txt
+    echo Server $server FAILED $prefix/sub/path/notfound | tee -a errors.txt
+    cat env.out >> errors.txt
   fi
 
   echo Stopping $server...
