@@ -40,6 +40,7 @@ describe JRuby::Rack::RailsBooter do
   end
 
   it "should default RAILS_ENV to 'production'" do
+    ENV['RAILS_ENV'] = nil
     create_booter(JRuby::Rack::RailsBooter).boot!
     @booter.rails_env.should == "production"
   end
