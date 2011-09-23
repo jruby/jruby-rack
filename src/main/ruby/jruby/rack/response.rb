@@ -59,7 +59,9 @@ class JRuby::Rack::Response
       when /^Content-Type$/i
         response.setContentType(v.to_s)
       when /^Content-Length$/i
-        response.setContentLength(v.to_i) unless chunked?
+        length = v.to_i
+        # setContentLength accepts only int, addHeader must be used for large files (>2GB)
+        response.setContentLength(length) unless chunked? || length >= 2_147_483_648
       else
         if v.respond_to?(:each_line)
           v.each_line {|val| response.addHeader(k.to_s, val.chomp("\n")) }
