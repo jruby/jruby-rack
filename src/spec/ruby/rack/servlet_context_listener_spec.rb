@@ -65,4 +65,19 @@ describe RackServletContextListener do
       @listener.contextDestroyed @servlet_context_event
     end
   end
+  
+  it "should have default constructor (for servlet container)" do
+    lambda { RackServletContextListener.new }.should_not raise_error
+  end
+  
+end
+
+import org.jruby.rack.rails.RailsServletContextListener
+
+describe RailsServletContextListener do
+
+  it "should have default constructor (for servlet container)" do
+    lambda { RailsServletContextListener.new }.should_not raise_error
+  end
+  
 end
