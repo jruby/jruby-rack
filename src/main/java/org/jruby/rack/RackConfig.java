@@ -31,6 +31,9 @@ public interface RackConfig {
     /** Get the number of maximum runtimes, or null if unspecified. */
     Integer getMaximumRuntimes();
 
+    /** Return (optional) command line arguments to be used to configure runtimes. */
+    String[] getRuntimeArguments();
+    
     /** Get the number of initializer threads, or null if unspecified. */
     Integer getNumInitializerThreads();
 

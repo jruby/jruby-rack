@@ -58,6 +58,11 @@ public class DefaultRackConfig implements RackConfig {
         return getPositiveInteger("jruby.runtime.timeout.sec");
     }
 
+    public String[] getRuntimeArguments() {
+        final String args = getProperty("jruby.runtime.arguments");
+        return args == null ? null : args.trim().split("\\s+");
+    }
+    
     public Integer getNumInitializerThreads() {
         return getPositiveInteger("jruby.runtime.initializer.threads");
     }
