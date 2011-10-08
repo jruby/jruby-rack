@@ -5,51 +5,76 @@
 # See the file LICENSE.txt for details.
 #++
 
-module JRuby::Rack
-  module SessionStore
+# as of rails 3.1.x the rack session hash implementation is used
+# rather than the custom rails AbstractStore::SessionHash class
+require 'rack/session/abstract/id' unless defined? Rack::Session::Abstract::ID
+
+module JRuby::Rack::Session
+
+  class SessionHash < Rack::Session::Abstract::SessionHash
+
+    def initialize(by, env)
+      super(by, env)
+    end
+
+    def finish_save()
+      if @loaded || !@env[Rack::Session::Abstract::ENV_SESSION_KEY].equal?(self)
+        unless @env[Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY][:id].nil?
+          @by.save_session(@env, self.to_hash)
+        else
+          @by.close_session(@env)
+        end
+      end
+    end
+
+    # Allows direct delegation to servlet session methods when session is active
+    def method_missing(meth, *args, &block)
+      servlet_session = @by.get_servlet_session(@env)
+      if servlet_session && servlet_session.respond_to?(meth)
+        servlet_session.send(meth, *args, &block)
+      else
+        super
+      end
+    end
+
+  end
+
+  class SessionStore < Rack::Session::Abstract::ID
+
     RAILS_SESSION_KEY = "__current_rails_session"
 
-    def self.included(base)
-      const_set(:AbstractStore, base.const_get(:Store))
-      session_hash_class = Class.new(AbstractStore::SessionHash) do
-        def finish_save
-          if @loaded || !@env[AbstractStore::ENV_SESSION_KEY].equal?(self)
-            if !@env[AbstractStore::ENV_SESSION_OPTIONS_KEY][:id].nil?
-              @by.save_session(@env, to_hash)
-            else
-              @by.close_session(@env)
-            end
-          end
-        end
-
-        # Allows direct delegation to servlet session methods when session is active
-        def method_missing(meth, *args, &block)
-          servlet_session = @by.get_servlet_session(@env, false)
-          if servlet_session && servlet_session.respond_to?(meth)
-            servlet_session.send(meth, *args, &block)
-          else
-            super
-          end
-        end
-      end
-      const_set(:JavaServletSessionHash, session_hash_class)
+    def initialize(app, options={})
+      super(app, options.merge!(:cookie_only => false, :defer => true))
     end
 
-    def initialize(app, *ignored)
-      @app = app
+    def get_servlet_session(env, create = false)
+      env['java.servlet_session'] = env['java.servlet_request'].getSession(create) unless env['java.servlet_session']
+      env['java.servlet_session']
     end
 
-    def call(env)
+    def save_session(env, data)
+      set_session(env, nil, data, self.default_options)
+    end
+
+    def close_session(env)
+      (session = get_servlet_session(env)) and session.invalidate
+    rescue => exception
+      nil
+    end
+
+    private
+
+    def prepare_session(env)
       raise "JavaServletStore should only be used with JRuby-Rack" unless env['java.servlet_request']
+      super(env)
+      existing = env[Rack::Session::Abstract::ENV_SESSION_KEY]
+      env[Rack::Session::Abstract::ENV_SESSION_KEY] = SessionHash.new(self, env)
+      env[Rack::Session::Abstract::ENV_SESSION_KEY].merge! existing if existing
+    end
 
-      session = JavaServletSessionHash.new(self, env)
-      begin
-        env[AbstractStore::ENV_SESSION_KEY] = session
-        env[AbstractStore::ENV_SESSION_OPTIONS_KEY] = {:id => false}
-        @app.call(env)
-      ensure
-        session.finish_save
-      end
+    def extract_session_id(env)
+      servlet_session = get_servlet_session(env)
+      servlet_session.getId if servlet_session
     end
 
     def load_session(env)
@@ -71,57 +96,44 @@ module JRuby::Rack
       [session_id, session]
     end
 
-    def save_session(env, data)
-      servlet_session = get_servlet_session(env, true)
-      servlet_session.getAttributeNames.select {|key| !data.has_key?(key)}.each do |key|
-        servlet_session.removeAttribute(key)
-      end
-      data.delete_if do |key,value|
-        if String === key
-          case value
-          when String, Numeric, true, false, nil
-            servlet_session.setAttribute key, value
-            true
-          else
-            if value.respond_to?(:java_object)
+    def set_session(env, session_id, hash, options)
+      if servlet_session = get_servlet_session(env, true)
+        servlet_session.getAttributeNames.select {|key| !hash.has_key?(key)}.each do |key|
+          servlet_session.removeAttribute(key)
+        end
+        hash.delete_if do |key,value|
+          if String === key
+            case value
+            when String, Numeric, true, false, nil
               servlet_session.setAttribute key, value
               true
             else
-              false
+              if value.respond_to?(:java_object)
+                servlet_session.setAttribute key, value
+                true
+              else
+                false
+              end
             end
           end
         end
+        if !hash.empty?
+          marshalled_string = Marshal.dump(hash)
+          marshalled_bytes = marshalled_string.to_java_bytes
+          servlet_session.setAttribute(RAILS_SESSION_KEY, marshalled_bytes)
+        elsif servlet_session.getAttribute(RAILS_SESSION_KEY)
+          servlet_session.removeAttribute(RAILS_SESSION_KEY)
+        end
+        true
+      else
+        false
       end
-      marshalled_string = Marshal.dump(data)
-      marshalled_bytes = marshalled_string.to_java_bytes
-      servlet_session.setAttribute(RAILS_SESSION_KEY, marshalled_bytes)
     end
 
-    def get_servlet_session(env, create = false)
-      unless env['java.servlet_session']
-        servlet_session = env['java.servlet_request'].getSession(create)
-        (env[AbstractStore::ENV_SESSION_OPTIONS_KEY] ||= {})[:id] = servlet_session.getId if create
-        env['java.servlet_session'] = servlet_session
-      end
-      env['java.servlet_session']
-    end
-
-    def close_session(env)
-      (session = get_servlet_session(env)) and session.invalidate
-    rescue => exception
-      nil
-    end
-
-    def current_session_id(env)
-      env[AbstractStore::ENV_SESSION_OPTIONS_KEY][:id]
-    end
-
-    def exists?(env)
-      current_session_id(env).present?
-    end
-
-    def destroy(env)
+    def destroy_session(env, session_id, options)
       close_session(env)
     end
+
   end
+
 end
