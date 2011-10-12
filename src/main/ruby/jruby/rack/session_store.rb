@@ -77,6 +77,11 @@ module JRuby::Rack::Session
       servlet_session.getId if servlet_session
     end
 
+    def generate_sid(secure = @sid_secure)
+      # we do not allow random session id generation - we always defer to servlet api
+      nil
+    end
+
     def load_session(env)
       session_id, session = false, {}
       if servlet_session = get_servlet_session(env)
@@ -97,6 +102,10 @@ module JRuby::Rack::Session
     end
 
     def set_session(env, session_id, hash, options)
+      if session_id.nil? && hash.empty?
+        close_session(env)
+        return false
+      end
       if servlet_session = get_servlet_session(env, true)
         servlet_session.getAttributeNames.select {|key| !hash.has_key?(key)}.each do |key|
           servlet_session.removeAttribute(key)

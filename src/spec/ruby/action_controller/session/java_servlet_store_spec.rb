@@ -162,18 +162,19 @@ describe "ActionController::Session::JavaServletStore" do
     @session_store.call(@env)
   end
 
-# it "should invalidate the servlet session" do
-#   @request.should_receive(:getSession).with(false).and_return @session
-#   @session.should_receive(:invalidate).ordered
-#   @app.should_receive(:call).ordered.and_return do |env|
-#     env['rack.session.options'].delete(:id)
-#     env['rack.session'] = {}
-#   end
-#   @session_store.call(@env)
-# end
+  it "should invalidate the servlet session" do
+    @request.should_receive(:getSession).with(false).and_return @session
+    @session.stub!(:getId).and_return(nil)
+    @session.should_receive(:invalidate).ordered
+    @app.should_receive(:call).ordered.and_return do |env|
+      env['rack.session.options'].delete(:id)
+      env['rack.session'] = {}
+    end
+    @session_store.call(@env)
+  end
 
   it "should do nothing on session reset if no session is established" do
-    @request.should_receive(:getSession).any_number_of_times.and_return nil
+    @request.should_receive(:getSession).with(false).any_number_of_times.and_return nil
     @app.should_receive(:call).ordered.and_return do |env|
       env['rack.session.options'].delete(:id)
       env['rack.session'] = {}
