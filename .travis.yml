@@ -3,3 +3,6 @@ rvm:
 branches:
   only:
     - master
+env:
+  - JRUBY_OPTS="--1.8"
+  - JRUBY_OPTS="--1.9"

@@ -12,6 +12,7 @@ import org.jruby.rack.servlet.DefaultServletRackContext
 import org.jruby.rack.servlet.ServletRackConfig
 
 describe RackServlet, "service" do
+  
   it "should delegate to process" do
     request = javax.servlet.http.HttpServletRequest.impl {}
     response = javax.servlet.http.HttpServletResponse.impl {}
@@ -20,6 +21,11 @@ describe RackServlet, "service" do
     @servlet = RackServlet.new dispatcher
     @servlet.service request, response
   end
+  
+  it "should have default constructor (for servlet container)" do
+    lambda { RackServlet.new }.should_not raise_error
+  end
+  
 end
 
 describe ServletRackContext, "getRealPath" do

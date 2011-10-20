@@ -217,4 +217,9 @@ describe RackFilter do
       filter.doFilter(@request, @response, chain)
     end
   end
+  
+  it "should have default constructor (for servlet container)" do
+    lambda { RackFilter.new }.should_not raise_error
+  end
+  
 end
