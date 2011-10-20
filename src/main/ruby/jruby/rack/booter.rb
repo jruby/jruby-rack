@@ -69,9 +69,17 @@ module JRuby::Rack
     def adjust_load_path
       require 'jruby'
       if JRuby.runtime.instance_config.jruby_home == java.lang.System.getProperty('java.io.tmpdir')
-        $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
-        $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/1.8'
-        $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/shared'
+        # Mirroring code in org.jruby.runtime.load.LoadService#init
+        if JRuby.runtime.is1_9
+          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.9'
+          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/shared'
+          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
+          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/1.9'
+        else
+          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
+          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/shared'
+          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/1.8'
+        end
       end
     end
 
