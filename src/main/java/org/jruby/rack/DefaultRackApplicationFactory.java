@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -303,7 +304,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
 
         if (rackup == null) { // google-appengine gem prefers it at /config.ru
-            rackup = findConfigRuPathInSubDirectories("/", 0);
+            // appengine misses "/" resources. Search for it directly.
+            File f = new File(rackContext.getRealPath("/config.ru"));
+            if (f.exists()){
+                rackup = "/config.ru";
+            }
         }
 
         if (rackup != null) {
