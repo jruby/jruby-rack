@@ -53,8 +53,21 @@ describe "ActionController::Session::JavaServletStore" do
       env['rack.session']['a']
     end
     @session_store.call(@env)
+    @env[Rack::Session::Abstract::ENV_SESSION_KEY].should_not be_nil
+    @env[Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY].should_not be_nil
+    @env[Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY][:id].should_not be_nil
   end
 
+  it "should use custom session hash when loading session" do
+    @request.should_receive(:getSession).with(false).and_return @session
+    @session.stub!(:setAttribute)
+    @app.should_receive(:call).and_return do |env|
+      env['rack.session']["foo"] = "bar"
+    end
+    @session_store.call(@env)
+    @env[Rack::Session::Abstract::ENV_SESSION_KEY].should be_instance_of JRuby::Rack::Session::SessionHash
+  end
+  
   it "should retrieve the marshalled session from the java session" do
     hash = {"foo" => 1, "bar" => true}
     marshal_data = Marshal.dump hash
@@ -173,6 +186,26 @@ describe "ActionController::Session::JavaServletStore" do
     @session_store.call(@env)
   end
 
+  it "should attempt to invalidate an invalid servlet session" do
+    @request.should_receive(:getSession).with(false).and_return session = mock_http_session
+    session.stub!(:getId).and_return(nil)
+    session.invalidate
+    @app.should_receive(:call).ordered.and_return do |env|
+      env['rack.session.options'].delete(:id)
+      env['rack.session'] = {}
+    end
+    lambda { @session_store.call(@env) }.should_not raise_error
+  end
+  
+  it "should handle session for invalid servlet session" do
+    @request.should_receive(:getSession).with(false).and_return session = mock_http_session
+    session.invalidate
+    @app.should_receive(:call).ordered.and_return do |env|
+      env['rack.session']["foo"] = 'bar'
+    end
+    lambda { @session_store.call(@env) }.should_not raise_error
+  end
+  
   it "should do nothing on session reset if no session is established" do
     @request.should_receive(:getSession).with(false).any_number_of_times.and_return nil
     @app.should_receive(:call).ordered.and_return do |env|
@@ -193,4 +226,11 @@ describe "ActionController::Session::JavaServletStore" do
     end
     @session_store.call(@env)
   end
+  
+  private
+  
+    def mock_http_session
+      Java::OrgJrubyRack::MockHttpSession.new
+    end
+  
 end

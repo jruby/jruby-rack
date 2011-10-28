@@ -58,7 +58,7 @@ module JRuby::Rack::Session
 
     def close_session(env)
       (session = get_servlet_session(env)) and session.invalidate
-    rescue => exception
+    rescue # java.lang.IllegalStateException if session invalid
       nil
     end
 
@@ -74,7 +74,7 @@ module JRuby::Rack::Session
 
     def extract_session_id(env)
       servlet_session = get_servlet_session(env)
-      servlet_session.getId if servlet_session
+      servlet_session.getId rescue nil if servlet_session
     end
 
     def generate_sid(secure = @sid_secure)
@@ -85,7 +85,7 @@ module JRuby::Rack::Session
     def load_session(env)
       session_id, session = false, {}
       if servlet_session = get_servlet_session(env)
-        session_id = servlet_session.getId
+        session_id = servlet_session.getId rescue nil
         servlet_session.getAttributeNames.each do |key|
           if key == RAILS_SESSION_KEY
             marshalled_bytes = servlet_session.getAttribute(RAILS_SESSION_KEY)
@@ -96,7 +96,7 @@ module JRuby::Rack::Session
           else
             session[key] = servlet_session.getAttribute key
           end
-        end
+        end if session_id
       end
       [session_id, session]
     end
@@ -107,6 +107,9 @@ module JRuby::Rack::Session
         return false
       end
       if servlet_session = get_servlet_session(env, true)
+        unless ( servlet_session.getId rescue nil )
+          return false # java.lang.IllegalStateException - session invalid
+        end
         servlet_session.getAttributeNames.select {|key| !hash.has_key?(key)}.each do |key|
           servlet_session.removeAttribute(key)
         end
