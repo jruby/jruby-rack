@@ -2,12 +2,14 @@ reports
 target
 *.log
 log
-examples/*/tmp
 activemq-data
+examples/*/tmp
+examples/*/work
 examples/merb/merb.war
 examples/rails/rails.war
 examples/rails3/rails3.war
 examples/camping/camping.war
 examples/sinatra/sinatra.war
+examples/*/nbproject
 nbproject/private/*
 /.rakeTasks
