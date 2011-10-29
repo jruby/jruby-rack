@@ -6,16 +6,23 @@
 #++
 
 require 'spec_helper'
+
 require 'action_controller'
+begin # help Rails 3.0 up
+  require 'action_dispatch/middleware/session/abstract_store'
+rescue LoadError
+end
+begin # a Rails 2.3 require
+  require 'action_controller/session/abstract_store'
+rescue LoadError
+end
+
+require 'jruby/rack/session_store'
 
 describe "ActionController::Session::JavaServletStore" do
+  
   before :all do
-    require 'action_controller/session'
     require 'action_controller/session/java_servlet_store'
-  end
-
-  after :all do
-    ActionController::Session.instance_eval { remove_const(:AbstractStore) }
   end
 
   before :each do
@@ -35,13 +42,11 @@ describe "ActionController::Session::JavaServletStore" do
 
   it "should do nothing if the session is not accessed" do
     @app.should_receive(:call)
-    @request.should_receive(:getSession).and_return @session
     @session_store.call(@env)
   end
 
   it "should pass the application response untouched" do
     response = [200, {}, ["body"]]
-    @request.should_receive(:getSession).and_return @session
     @app.should_receive(:call).and_return response
     @session_store.call(@env).should == response
   end
@@ -53,9 +58,9 @@ describe "ActionController::Session::JavaServletStore" do
       env['rack.session']['a']
     end
     @session_store.call(@env)
-    @env[Rack::Session::Abstract::ENV_SESSION_KEY].should_not be_nil
-    @env[Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY].should_not be_nil
-    @env[Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY][:id].should_not be_nil
+    @env['rack.session'].should_not be_nil
+    @env['rack.session.options'].should_not be_nil
+    @env['rack.session.options'][:id].should_not be_nil
   end
 
   it "should use custom session hash when loading session" do
@@ -65,7 +70,7 @@ describe "ActionController::Session::JavaServletStore" do
       env['rack.session']["foo"] = "bar"
     end
     @session_store.call(@env)
-    @env[Rack::Session::Abstract::ENV_SESSION_KEY].should be_instance_of JRuby::Rack::Session::SessionHash
+    @env['rack.session'].should be_instance_of JRuby::Rack::Session::SessionHash
   end
   
   it "should retrieve the marshalled session from the java session" do
@@ -119,7 +124,7 @@ describe "ActionController::Session::JavaServletStore" do
   end
 
   it "should create the session if it doesn't exist" do
-    @request.should_receive(:getSession).with(false).ordered.and_return nil
+    @request.should_receive(:getSession).with(false).ordered.at_most(:twice).and_return nil
     @request.should_receive(:getSession).with(true).ordered.and_return @session
     @session.should_receive(:setAttribute).with(ActionController::Session::JavaServletStore::RAILS_SESSION_KEY,
                                                 an_instance_of(Java::byte[]))
