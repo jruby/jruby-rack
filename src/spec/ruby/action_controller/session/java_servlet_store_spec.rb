@@ -27,7 +27,7 @@ describe "ActionController::Session::JavaServletStore" do
 
   before :each do
     @session = mock "servlet session"
-    @session.stub!(:getId).and_return("random-session-id")
+    @session.stub!(:getId).and_return @session_id = "random-session-id"
     @session.stub!(:getAttribute).and_return nil
     @session.stub!(:getAttributeNames).and_return []
     @request = mock "servlet request"
@@ -45,6 +45,13 @@ describe "ActionController::Session::JavaServletStore" do
     @session_store.call(@env)
   end
 
+  it "should report session not loaded if not accessed" do
+    @app.should_receive(:call)
+    @session_store.call(@env)
+    session = @env['rack.session']
+    @session_store.send(:loaded_session?, session).should == false
+  end
+  
   it "should pass the application response untouched" do
     response = [200, {}, ["body"]]
     @app.should_receive(:call).and_return response
@@ -55,7 +62,7 @@ describe "ActionController::Session::JavaServletStore" do
     @request.should_receive(:getSession).with(false).and_return @session
     @session.stub!(:setAttribute)
     @app.should_receive(:call).and_return do |env|
-      env['rack.session']['a']
+      env['rack.session']['foo']
     end
     @session_store.call(@env)
     @env['rack.session'].should_not be_nil
@@ -63,6 +70,17 @@ describe "ActionController::Session::JavaServletStore" do
     @env['rack.session.options'][:id].should_not be_nil
   end
 
+  it "should report session loaded when accessed" do
+    @request.should_receive(:getSession).with(false).and_return @session
+    @session.stub!(:setAttribute)
+    @app.should_receive(:call).and_return do |env|
+      env['rack.session']['foo']
+    end
+    @session_store.call(@env)
+    session = @env['rack.session']
+    @session_store.send(:loaded_session?, session).should == true
+  end
+  
   it "should use custom session hash when loading session" do
     @request.should_receive(:getSession).with(false).and_return @session
     @session.stub!(:setAttribute)
@@ -71,6 +89,13 @@ describe "ActionController::Session::JavaServletStore" do
     end
     @session_store.call(@env)
     @env['rack.session'].should be_instance_of JRuby::Rack::Session::SessionHash
+  end
+  
+  it "should extract session id" do
+    @request.should_receive(:getSession).with(false).and_return @session
+    @app.should_receive(:call)
+    @session_store.call(@env)
+    @session_store.send(:extract_session_id, @env).should == @session_id
   end
   
   it "should retrieve the marshalled session from the java session" do
@@ -219,7 +244,7 @@ describe "ActionController::Session::JavaServletStore" do
     end
     @session_store.call(@env)
   end
-
+  
   it "should forward calls that look like they're directed at the java servlet session" do
     time = Time.now.to_i*1000
     @request.should_receive(:getSession).and_return @session

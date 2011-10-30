@@ -84,10 +84,6 @@ module JRuby::Rack
         servlet_session
       end
 
-      def save_session(env, data)
-        set_session(env, nil, data, self.default_options)
-      end
-
       private # Rack::Session::Abstract::ID overrides :
 
         def initialize_sid
@@ -141,7 +137,7 @@ module JRuby::Rack
         alias :exists? :session_exists? # for AbstractStore::SessionHash compatibility
         
         def loaded_session?(session)
-          ! session.is_a?(SessionHash) || session.loaded?
+          ! session.is_a?(JRuby::Rack::Session::SessionHash) || session.loaded?
         end
         
         def commit_session(env, status, headers, body)
