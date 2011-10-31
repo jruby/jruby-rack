@@ -3,6 +3,11 @@ rvm:
 branches:
   only:
     - master
+gemfile:
+  - Gemfile
+  - gemfiles/rails23.gemfile
+  - gemfiles/rails30.gemfile
+  - gemfiles/rails31.gemfile
 env:
   - JRUBY_OPTS="--1.8"
   - JRUBY_OPTS="--1.9"
