@@ -142,9 +142,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     private RubyInstanceConfig createDefaultConfig() {
         setupJRubyManagement();
-        RubyInstanceConfig config = new RubyInstanceConfig();
+        final RubyInstanceConfig config = new RubyInstanceConfig();
         config.setLoader(Thread.currentThread().getContextClassLoader());
-
+        // Process arguments, namely any that might be in RUBYOPT
+        config.processArguments(rackContext.getConfig().getRuntimeArguments());
+        
         if (rackContext.getConfig().getCompatVersion() != null) {
             config.setCompatVersion(rackContext.getConfig().getCompatVersion());
         }
@@ -167,8 +169,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             }
         } catch (Exception e) { }
 
-        // Process arguments, namely any that might be in RUBYOPT
-        config.processArguments(new String[0]);
         return config;
     }
 

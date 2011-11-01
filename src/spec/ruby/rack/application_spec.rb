@@ -117,6 +117,13 @@ describe DefaultRackApplicationFactory do
         lambda { runtime.evalScriptlet('ENV["HOME"]') == nil }.should be_true
       end
 
+      it "should handle jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
+        @rack_config.stub!(:getRuntimeArguments).and_return ['-X+O', '-Ke'].to_java(:String)
+        runtime = app_factory.new_runtime
+        runtime.object_space_enabled.should be_true
+        runtime.kcode.should == Java::OrgJrubyUtil::KCode::EUC
+      end
+      
       def eval_should_be_true(value, expected)
         (value == expected).should be_true
       end

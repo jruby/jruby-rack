@@ -61,6 +61,32 @@ describe ServletRackConfig do
     end
   end
 
+  describe "runtime arguments" do
+    it "should retrieve single argument from jruby.runtime.arguments" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.runtime.arguments").and_return nil
+      config.runtime_arguments.should be_nil
+    end
+    
+    it "should retrieve single argument from jruby.runtime.arguments" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.runtime.arguments").and_return "--profile"
+      args = config.runtime_arguments
+      args.should_not be_nil
+      args.length.should == 1
+      args[0].should == "--profile"
+    end
+    
+    it "should retrieve multiple argument from jruby.runtime.arguments" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.runtime.arguments").and_return " --compat RUBY1_8 \n --profile.api  --debug  \n\r"
+      args = config.runtime_arguments
+      args.should_not be_nil
+      args.length.should == 4
+      args[0].should == "--compat"
+      args[1].should == "RUBY1_8"
+      args[2].should == "--profile.api"
+      args[3].should == "--debug"
+    end
+  end
+  
   describe "rewindable" do
     it "defaults to true" do
       config.should be_rewindable
