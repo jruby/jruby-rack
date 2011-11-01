@@ -76,9 +76,11 @@ describe JRuby::Rack::RailsBooter do
     @rack_context.should_receive(:log).with(/hello/)
     @booter.logdev.write "hello"
   end
-
+  
   it "should setup java servlet-based sessions if the session store is the default" do
     create_booter(JRuby::Rack::RailsBooter).boot!
+    @booter.should_receive(:rack_based_sessions?).and_return false
+    
     @booter.session_options[:database_manager] = ::CGI::Session::PStore
     @booter.setup_sessions
     @booter.session_options[:database_manager].should == ::CGI::Session::JavaServletStore
@@ -86,13 +88,17 @@ describe JRuby::Rack::RailsBooter do
 
   it "should turn off Ruby CGI cookies if the java servlet store is used" do
     create_booter(JRuby::Rack::RailsBooter).boot!
+    @booter.should_receive(:rack_based_sessions?).and_return false
+    
     @booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
     @booter.setup_sessions
     @booter.session_options[:no_cookies].should == true
   end
-
+    
   it "should provide the servlet request in the session options if the java servlet store is used" do
     create_booter(JRuby::Rack::RailsBooter).boot!
+    @booter.should_receive(:rack_based_sessions?).twice.and_return false
+    
     @booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
     @booter.setup_sessions
     env = {"java.servlet_request" => mock("servlet request")}
