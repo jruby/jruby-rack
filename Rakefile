@@ -12,6 +12,7 @@ begin
 rescue
   puts "Please install Bundler and run 'bundle install' to ensure you have all dependencies"
 end
+require 'appraisal'
 
 require 'rake/clean'
 require 'date'
@@ -75,8 +76,7 @@ task :unpack_gem => "target" do |t|
   end
 end
 
-version_file = 'src/main/ruby/jruby/rack/version.rb'
-load version_file
+load version_file = 'src/main/ruby/jruby/rack/version.rb'
 
 task :update_version do
   if ENV["VERSION"] && ENV["VERSION"] != JRuby::Rack::VERSION
