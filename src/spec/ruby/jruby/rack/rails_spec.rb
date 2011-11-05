@@ -231,7 +231,6 @@ describe JRuby::Rack, "Rails controller extensions" do
 
   it "should add a #forward_to method for forwarding to another servlet" do
     @servlet_response = mock "servlet response"
-    dispatcher = mock "dispatcher"
     @controller.request.should_receive(:forward_to).with("/forward.jsp")
 
     @controller.forward_to "/forward.jsp"
