@@ -48,5 +48,16 @@ module JRuby::Rack
         ActionController::Base.config.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT']
       end
     end
+    
+    initializer "action_dispatch.autoload_java_servlet_store", :after => "action_dispatch.configure" do
+      # if it's loaded up front with a require 'action_controller'/'action_dispatch' then
+      # it might fire up before 'active_record' has been required causing sweeping issues
+      # @see https://github.com/jruby/jruby-rack/issues/42
+      # loading it after the environment boots is too late as it might be set in a user
+      # config/initializer: MyApp::Application.config.session_store :java_servlet_store
+      ActionDispatch::Session.module_eval do
+        autoload :JavaServletStore, "action_dispatch/session/java_servlet_store"
+      end
+    end
   end
 end
