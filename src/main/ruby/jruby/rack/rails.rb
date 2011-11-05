@@ -89,7 +89,7 @@ module JRuby::Rack
             asset_tag_helper.const_set("STYLESHEETS_DIR", "#{PUBLIC_ROOT}/stylesheets")
           end
         end
-        require 'jruby/rack/rails/extensions'
+        require 'jruby/rack/rails/extensions2'
       end
 
       def rack_based_sessions?
@@ -130,7 +130,7 @@ module JRuby::Rack
       end
 
       def session_options
-        @session_options ||= SESSION_OPTIONS
+        @session_options ||= ActionController::CgiRequest::DEFAULT_SESSION_OPTIONS
       end
 
       def set_session_options_for_request(env)
@@ -164,9 +164,8 @@ module JRuby::Rack
       def load_environment
         require File.join(app_path, 'config', 'boot')
         require 'jruby/rack/rails/railtie'
-        require 'jruby/rack/rails/extensions'
-        require 'jruby/rack/rails/extensions3'
         require File.join(app_path, 'config', 'environment')
+        require 'jruby/rack/rails/extensions3'
       end
 
       def to_app
