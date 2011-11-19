@@ -12,6 +12,7 @@ require 'cgi/session/java_servlet_store'
 class ::CGI::Session::PStore; end
 
 describe JRuby::Rack::RailsBooter do
+  
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"

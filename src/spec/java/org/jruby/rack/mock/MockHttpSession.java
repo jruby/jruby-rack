@@ -1,5 +1,5 @@
 
-package org.jruby.rack;
+package org.jruby.rack.mock;
 
 import java.util.Collections;
 import java.util.Enumeration;

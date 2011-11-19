@@ -9,8 +9,13 @@ require 'java'
 require 'spec'
 Maven.set_classpath
 
-# add to load path for stubbed out action_controller, railtie classes
-$LOAD_PATH.unshift File.expand_path('../rails', __FILE__)
+#begin
+#  require 'rails' # attempt to load rails - for "real life" testing
+#  require 'rails/version' # use Rails::VERSION to detect current env
+#rescue LoadError
+# add to load path for stubbed out action_controller, railtie etc
+$LOAD_PATH.unshift File.expand_path('../rails/stub', __FILE__) 
+#end
 
 WD_START = Dir.getwd
 

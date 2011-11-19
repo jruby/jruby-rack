@@ -260,7 +260,7 @@ describe "ActionController::Session::JavaServletStore" do
   private
   
     def mock_http_session
-      Java::OrgJrubyRack::MockHttpSession.new
+      Java::OrgJrubyRackMock::MockHttpSession.new
     end
   
 end
