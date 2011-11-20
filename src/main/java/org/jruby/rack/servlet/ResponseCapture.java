@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public class ResponseCapture extends HttpServletResponseWrapper {
+    
     private int status = 200;
 
     public ResponseCapture(HttpServletResponse response) {
@@ -49,9 +50,10 @@ public class ResponseCapture extends HttpServletResponseWrapper {
 
     @Override public ServletOutputStream getOutputStream() throws IOException {
         if (isError()) {
-            // swallow output, because we're going to discard it
             return new ServletOutputStream() {
-                @Override public void write(int b) throws IOException {
+                @Override 
+                public void write(int b) throws IOException {
+                    // swallow output, because we're going to discard it
                 }
             };
         } else {
@@ -62,11 +64,12 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     @Override
     public PrintWriter getWriter() throws IOException {
         if (isError()) {
-            // swallow output, because we're going to discard it
             return new PrintWriter(new OutputStream() {
-                    @Override public void write(int i) throws IOException {
-                    }
-                });
+                @Override 
+                public void write(int i) throws IOException {
+                    // swallow output, because we're going to discard it
+                }
+            });
         } else {
             return super.getWriter();
         }
@@ -75,4 +78,5 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     public boolean isError() {
         return status >= 400;
     }
+    
 }

@@ -7,8 +7,6 @@
 
 package org.jruby.rack;
 
-import com.strobecorp.kirk.RewindableInputStream;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,12 +18,10 @@ import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaEmbedUtils;
-import org.jruby.rack.RackEnvironment;
-import org.jruby.rack.RackInput;
+import org.jruby.rack.io.RewindableInputStream;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 
@@ -52,13 +48,12 @@ public class RackInput extends RubyObject {
     }
 
     public static RubyClass getRackInputClass(Ruby runtime) {
-        return getClass(runtime, "RackInput", runtime.getObject(),
-                        ALLOCATOR, RackInput.class);
+        return getClass(runtime, "RackInput", runtime.getObject(), ALLOCATOR, RackInput.class);
     }
 
     private InputStream inputStream;
     private int length;
-
+    
     public RackInput(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
@@ -109,9 +104,10 @@ public class RackInput extends RubyObject {
      */
     @JRubyMethod(optional = 2)
     public IRubyObject read(ThreadContext context, IRubyObject[] args) {
-        long count = 0;
+        int count = 0;
         if (args.length > 0) {
-            count = args[0].convertToInteger("to_i").getLongValue();
+            long arg = args[0].convertToInteger("to_i").getLongValue();
+            count = (int) Math.min(arg, Integer.MAX_VALUE);
         }
         RubyString string = null;
         if (args.length == 2) {
@@ -163,10 +159,9 @@ public class RackInput extends RubyObject {
         if (inputStream instanceof RewindableInputStream) {
             try {
                 ((RewindableInputStream) inputStream).rewind();
-            } catch (IOException e) {
-            }
+            } 
+            catch (IOException e) { }
         }
-
         return getRuntime().getNil();
     }
 
@@ -185,21 +180,22 @@ public class RackInput extends RubyObject {
     public void close() {
         try {
             inputStream.close();
-        } catch (IOException e) {
-        }
+        } 
+        catch (IOException e) { /* ignore */ }
     }
 
-    private byte[] readUntil(int match, long count) throws IOException {
+    private byte[] readUntil(int match, int count) throws IOException {
         ByteArrayOutputStream bs = null;
         int b;
         long i = 0;
         do {
             b = inputStream.read();
+            
             if (b == -1) {
                 break;
             }
             if (bs == null) {
-                bs = new ByteArrayOutputStream();
+                bs = new ByteArrayOutputStream( count == 0 ? 128 : count );
             }
             bs.write(b);
             if (count > 0 && ++i == count) {
@@ -207,9 +203,7 @@ public class RackInput extends RubyObject {
             }
         } while (b != match);
 
-        if (bs == null) {
-            return null;
-        }
-        return bs.toByteArray();
+        return bs == null ? null : bs.toByteArray();
     }
+    
 }

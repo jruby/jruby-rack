@@ -1,7 +1,5 @@
 package org.jruby.rack.servlet;
 
-import com.strobecorp.kirk.RewindableInputStream;
-
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -17,11 +15,13 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.jruby.rack.RackConfig;
+import org.jruby.rack.io.RewindableInputStream;
 
 public class RequestCapture extends HttpServletRequestWrapper {
-    private InputStream inputStream;
+
     private Map<String,String[]> requestParams;
-    private boolean rewindable;
+    private final boolean rewindable;
+    private InputStream inputStream;
 
     public RequestCapture(HttpServletRequest request, RackConfig config) {
         super(request);
@@ -35,18 +35,17 @@ public class RequestCapture extends HttpServletRequestWrapper {
                 enc = "UTF-8";
             }
             return new BufferedReader(new InputStreamReader(inputStream, enc));
-        } else {
+        } 
+        else {
             return super.getReader();
         }
     }
-
-    @Override public ServletInputStream getInputStream() throws IOException {
-        if (!rewindable) {
-            ServletInputStream stream = super.getInputStream();
-            inputStream = stream;
-            return stream;
+    
+    @Override 
+    public ServletInputStream getInputStream() throws IOException {
+        if ( ! rewindable ) {
+            return super.getInputStream();
         }
-
         if (inputStream == null) {
             inputStream = new RewindableInputStream(super.getInputStream());
         }
@@ -100,7 +99,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     @Override
     public String getParameter(String name) {
-        if (getReParsedParameterMap() != null) {
+        if ( parseRequestParams() ) {
             String[] values = requestParams.get(name);
             if (values != null) {
                 return values[0];
@@ -113,7 +112,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     @Override
     public Map getParameterMap() {
-        if (getReParsedParameterMap() != null) {
+        if ( parseRequestParams() ) {
             return requestParams;
         } else {
             return super.getParameterMap();
@@ -122,7 +121,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     @Override
     public Enumeration getParameterNames() {
-        if (getReParsedParameterMap() != null) {
+        if ( parseRequestParams() ) {
             return new Enumeration() {
                 Iterator keys = requestParams.keySet().iterator();
                 public boolean hasMoreElements() {
@@ -140,30 +139,30 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     @Override
     public String[] getParameterValues(String name) {
-        if (getReParsedParameterMap() != null) {
+        if ( parseRequestParams() ) {
             return requestParams.get(name);
         } else {
             return super.getParameterValues(name);
         }
     }
 
-    private Map getReParsedParameterMap() {
-        if (requestParams != null) {
-            return requestParams;
-        }
-        if (inputStream == null || getContentType() == null ||
-            !getContentType().equals("application/x-www-form-urlencoded")) {
-            return null;
+    private boolean parseRequestParams() {
+        if ( this.requestParams != null ) return true;
+        if ( ! "application/x-www-form-urlencoded".equals(getContentType()) ) {
+            return false;
         }
         // Need to re-parse form params from the request
         // All this because you can't mix use of request#getParameter
         // and request#getInputStream in the Servlet API.
-        requestParams = new HashMap<String,String[]>();
         String line = "";
         try {
             line = getReader().readLine();
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
         }
+        
+        Map<String,String[]> params = new HashMap<String,String[]>();
+        
         String[] pairs = line.split("\\&");
         for (int i = 0; i < pairs.length; i++) {
             try {
@@ -175,8 +174,8 @@ public class RequestCapture extends HttpServletRequestWrapper {
                 }
                 if (value != null) {
                     String[] newValues;
-                    if (requestParams.containsKey(key)) {
-                        String[] values = requestParams.get(key);
+                    if (params.containsKey(key)) {
+                        String[] values = params.get(key);
                         newValues = new String[values.length + 1];
                         System.arraycopy(values, 0, newValues, 0, values.length);
                         newValues[values.length] = value;
@@ -184,12 +183,15 @@ public class RequestCapture extends HttpServletRequestWrapper {
                         newValues = new String[1];
                         newValues[0] = value;
                     }
-                    requestParams.put(key, newValues);
+                    params.put(key, newValues);
                 }
-            } catch (UnsupportedEncodingException e) {
-            }
+            } 
+            catch (UnsupportedEncodingException e) { /* UTF-8 should be fine */ }
         }
-        return requestParams;
+        
+        this.requestParams = params;
+        
+        return true;
     }
 
     public void reset() throws IOException {

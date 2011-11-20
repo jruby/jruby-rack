@@ -1,7 +1,5 @@
 package org.jruby.rack;
 
-import com.strobecorp.kirk.RewindableInputStream;
-
 import org.jruby.CompatVersion;
 import org.jruby.rack.logging.StandardOutLogger;
 import org.jruby.util.SafePropertyAccessor;
@@ -12,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jruby.rack.io.RewindableInputStream;
 
 /**
  * Base implementation of RackConfig that retrieves settings from system properties.
@@ -114,11 +113,11 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     public int getMemoryBufferSize() {
-        Integer i = getPositiveInteger("jruby.rack.request.size.threshold.bytes");
-        if (i == null) {
-            i = RewindableInputStream.DEFAULT_BUFFER_SIZE;
+        Integer t = getPositiveInteger("jruby.rack.request.size.threshold.bytes");
+        if (t == null) {
+            t = RewindableInputStream.MAX_BUFFER_SIZE;
         }
-        return i;
+        return t;
     }
 
     public boolean isSerialInitialization() {
