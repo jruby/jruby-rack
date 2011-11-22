@@ -12,23 +12,97 @@ import org.jruby.rack.DefaultRackApplication
 require 'jruby/rack/environment'
 
 describe DefaultRackApplication, "call" do
-  it "should invoke the call method on the ruby object and return the rack response" do
-    server_request = mock("server request")
-    server_request.stub!(:getContext).and_return @rack_context
-    server_request.stub!(:getInput).and_return(StubInputStream.new("hello"))
-    server_request.stub!(:getContentLength).and_return(-1)
-    rack_response = org.jruby.rack.RackResponse.impl {}
-
+  
+  before :each do
+    @rack_env = mock("rack_request_env")
+    @rack_env.stub!(:getContext).and_return @rack_context
+    @rack_env.stub!(:getInput).and_return(StubInputStream.new("hello world!"))
+    @rack_env.stub!(:getContentLength).and_return(12)
+    @rack_response = org.jruby.rack.RackResponse.impl {}
+  end
+  
+  it "should invoke the call method on the ruby object and return rack response" do
     ruby_object = mock "application"
-    ruby_object.should_receive(:call).with(server_request).and_return do |servlet_env|
-      servlet_env.to_io.read.should == "hello"
-      rack_response
+    ruby_object.should_receive(:call).with(@rack_env).and_return do |servlet_env|
+      servlet_env.to_io.read.should == "hello world!"
+      @rack_response
     end
 
     application = DefaultRackApplication.new
     application.setApplication(ruby_object)
-    application.call(server_request).should == rack_response
+    application.call(@rack_env).should == @rack_response
   end
+
+  context "with filter setup (using captures)" do
+    
+    before :each do
+      servlet_context = mock("servlet_context")
+      servlet_context.stub!(:getInitParameter).and_return do |name|
+        name && nil # return null
+      end
+      
+      @servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
+      @servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
+
+      rack_config = org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)
+      rack_context = org.jruby.rack.servlet.DefaultServletRackContext.new(rack_config)
+      request_capture = org.jruby.rack.servlet.RequestCapture.new(@servlet_request, rack_config)
+      response_capture = org.jruby.rack.servlet.ResponseCapture.new(@servlet_response)
+
+      @rack_env = org.jruby.rack.servlet.ServletRackEnvironment.new(request_capture, response_capture, rack_context)
+    end
+    
+    it "should rewind body" do
+      it_should_rewind_body
+    end
+    
+  end
+  
+  context "with servlet setup (no captures)" do
+    
+    before :each do
+      servlet_context = mock("servlet_context")
+      servlet_context.stub!(:getInitParameter).and_return do |name|
+        name && nil # return null
+      end
+      
+      @servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
+      @servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
+
+      rack_config = org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)
+      rack_context = org.jruby.rack.servlet.DefaultServletRackContext.new(rack_config)
+
+      @rack_env = org.jruby.rack.servlet.ServletRackEnvironment.new(@servlet_request, @servlet_response, rack_context)
+    end
+    
+    it "should rewind body" do
+      it_should_rewind_body
+    end
+    
+  end
+  
+  def it_should_rewind_body
+    content = "Answer to the Ultimate Question of Life, the Universe, and Everything ..." # ''
+    #42.times { content << "Answer to the Ultimate Question of Life, the Universe, and Everything ...\n" }
+    @servlet_request.setContent content.to_java_bytes
+
+    ruby_object = mock "application"
+    ruby_object.should_receive(:call).with(@rack_env).and_return do |servlet_env|
+      body = servlet_env.to_io
+
+      body.read.should == content
+      body.read.should == ""
+      body.rewind
+      body.read.should == content
+
+      org.jruby.rack.RackResponse.impl {}
+    end
+
+    application = DefaultRackApplication.new
+    application.setApplication(ruby_object)
+    application.call(@rack_env)
+  end
+  
 end
 
 import org.jruby.rack.DefaultRackApplicationFactory

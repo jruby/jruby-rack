@@ -10,6 +10,8 @@ package org.jruby.rack;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
@@ -18,6 +20,7 @@ import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaEmbedUtils;
+
 import org.jruby.rack.servlet.RewindableInputStream;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
@@ -51,7 +54,8 @@ public class RackInput extends RubyObject {
         return getClass(runtime, "RackInput", runtime.getObject(), ALLOCATOR, RackInput.class);
     }
 
-    private InputStream inputStream;
+    private boolean rewindable;
+    private InputStream input;
     private int length;
     
     public RackInput(Ruby runtime, RubyClass klass) {
@@ -60,7 +64,8 @@ public class RackInput extends RubyObject {
 
     public RackInput(Ruby runtime, RackEnvironment env) throws IOException {
         super(runtime, getRackInputClass(runtime));
-        this.inputStream = env.getInput();
+        this.rewindable = env.getContext().getConfig().isRewindable();
+        setInput( env.getInput() );
         this.length = env.getContentLength();
     }
 
@@ -68,7 +73,7 @@ public class RackInput extends RubyObject {
     public IRubyObject initialize(ThreadContext context, IRubyObject arg) {
         Object obj = JavaEmbedUtils.rubyToJava(arg);
         if (obj instanceof InputStream) {
-            this.inputStream = (InputStream) obj;
+            setInput( (InputStream) obj );
         }
         this.length = 0;
         return getRuntime().getNil();
@@ -156,12 +161,24 @@ public class RackInput extends RubyObject {
      */
     @JRubyMethod()
     public IRubyObject rewind(ThreadContext context) {
-        if (inputStream instanceof RewindableInputStream) {
-            try {
-                ((RewindableInputStream) inputStream).rewind();
+        if (input != null) {
+            try { // inputStream.rewind if inputStream.respond_to?(:rewind)
+                final Method rewind = getRewindMethod(input);
+                if (rewind != null) rewind.invoke(input, (Object[]) null);
             } 
-            catch (IOException e) { }
+            catch (IllegalArgumentException e) {
+                throw getRuntime().newArgumentError(e.getMessage());
+            } 
+            catch (InvocationTargetException e) {
+                final Throwable target = e.getCause();
+                if (target instanceof IOException) {
+                    throw getRuntime().newIOErrorFromException((IOException) target);
+                }
+                throw getRuntime().newRuntimeError(target.getMessage());
+            }
+            catch (IllegalAccessException e) { /* NOOP */ }
         }
+        
         return getRuntime().getNil();
     }
 
@@ -179,17 +196,35 @@ public class RackInput extends RubyObject {
      */
     public void close() {
         try {
-            inputStream.close();
+            input.close();
         } 
         catch (IOException e) { /* ignore */ }
     }
-
+    
+    private void setInput(InputStream input) {
+        if ( input != null && rewindable && getRewindMethod(input) == null ) {
+            input = new RewindableInputStream(input);
+        }
+        this.input = input;
+    }
+    
+    // NOTE: a bit useless now since we're only using RewindableInputStream
+    // but it should work with a custom stream as well thus left as is ...
+    private static Method getRewindMethod(InputStream input) {
+        try {
+            return input.getClass().getMethod("rewind", (Class<?>[]) null);
+        } 
+        catch (NoSuchMethodException e) { /* NOOP */ }
+        catch (SecurityException e) { /* NOOP */ }
+        return null;
+    }
+    
     private byte[] readUntil(int match, int count) throws IOException {
         ByteArrayOutputStream bs = null;
         int b;
         long i = 0;
         do {
-            b = inputStream.read();
+            b = input.read();
             
             if (b == -1) {
                 break;
