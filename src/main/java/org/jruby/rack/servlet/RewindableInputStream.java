@@ -1,12 +1,13 @@
 
-package org.jruby.rack.io;
+package org.jruby.rack.servlet;
 
 import java.io.File;
-import java.io.FilterInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+
+import javax.servlet.ServletInputStream;
 
 /**
  * Originally inspired by Kirk's RewindableInputStream ...
@@ -14,8 +15,8 @@ import java.nio.ByteBuffer;
  * 
  * @author kares
  */
-public class RewindableInputStream extends FilterInputStream {
-
+public class RewindableInputStream extends ServletInputStream {
+    
     /**
      * Initial (default) buffer size for a new stream.
      */
@@ -29,6 +30,8 @@ public class RewindableInputStream extends FilterInputStream {
     private static final int TMP_READ_BUFFER_SIZE = 1024;
     
     private static final String TMP_FILE_PREFIX = "jruby-rack-input";
+    
+    private final InputStream input;
     
     // an in memory buffer, the wrapped stream will be buffered in memory 
     // until this buffer is full, then it will be written to a temp file.
@@ -68,17 +71,17 @@ public class RewindableInputStream extends FilterInputStream {
      * @param maxBufferSize maximum buffer size (when reached content gets written into a file)
      */
     public RewindableInputStream(InputStream input, int bufferSize, int maxBufferSize) {
-        super(input);
+        this.input = input; // super(input);
         this.buffer = ByteBuffer.allocate(bufferSize);
         this.buffer.limit(0); // empty
         this.maxBufferSize = maxBufferSize;
     }
 
-    /*
     @Override
     public synchronized int available() throws IOException {
-        return buffer.capacity() - buffer.limit();
-    } */
+        ensureOpen();
+        return input.available() + buffer.remaining();
+    }
 
     /**
      * @see InputStream#markSupported() 
@@ -202,7 +205,7 @@ public class RewindableInputStream extends FilterInputStream {
             while ( buffer.remaining() < count ) {
                 int read = count - buffer.remaining();
                 // read into buffer from the underlying stream :
-                read = in.read(buffer.array(), buffer.limit(), read);
+                read = input.read(buffer.array(), buffer.limit(), read);
                 if ( read == -1 ) { 
                     if ( buffer.remaining() == 0 ) return -1;
                     else break;
@@ -261,7 +264,7 @@ public class RewindableInputStream extends FilterInputStream {
             while ( bufferFile.length() - position < read ) { // mostly an if
                 // attempt to fill in from underlying stream :
                 final byte[] data = new byte[TMP_READ_BUFFER_SIZE];
-                final int dataLen = in.read(data);
+                final int dataLen = input.read(data);
                 
                 if ( dataLen != -1 ) {
                     bufferFile.seek(bufferFile.length());

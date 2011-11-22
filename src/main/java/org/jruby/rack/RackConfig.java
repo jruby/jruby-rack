@@ -54,7 +54,7 @@ public interface RackConfig {
     String getJmsJndiProperties();
 
     /** Return the threshold/size of the in-memory buffer used for request bodies. */
-    int getMemoryBufferSize();
+    //int getMemoryBufferSize();
 
     /** Return true if the runtimes should be initialized in serial (e.g, if threads cannot be created). */
     boolean isSerialInitialization();

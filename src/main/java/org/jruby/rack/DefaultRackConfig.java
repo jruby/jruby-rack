@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jruby.rack.io.RewindableInputStream;
 
 /**
  * Base implementation of RackConfig that retrieves settings from system properties.
@@ -110,14 +109,6 @@ public class DefaultRackConfig implements RackConfig {
 
     public String getJmsJndiProperties() {
         return getProperty("jms.jndi.properties");
-    }
-
-    public int getMemoryBufferSize() {
-        Integer t = getPositiveInteger("jruby.rack.request.size.threshold.bytes");
-        if (t == null) {
-            t = RewindableInputStream.MAX_BUFFER_SIZE;
-        }
-        return t;
     }
 
     public boolean isSerialInitialization() {

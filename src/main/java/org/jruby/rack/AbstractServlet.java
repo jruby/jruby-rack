@@ -7,17 +7,16 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.servlet.ServletRackEnvironment;
-import org.jruby.rack.servlet.ServletRackResponseEnvironment;
-
-import javax.servlet.ServletConfig;
+import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import org.jruby.rack.servlet.ServletRackEnvironment;
+import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 
 /**
  *
@@ -25,15 +24,17 @@ import java.io.IOException;
  */
 public abstract class AbstractServlet extends HttpServlet {
 
-    /** Default ctor, used by servlet container */
-    public AbstractServlet() {
-    }
-
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-        getDispatcher().process(new ServletRackEnvironment((HttpServletRequest) request, (HttpServletResponse) response, getContext()),
-            new ServletRackResponseEnvironment(response));
+        
+        HttpServletRequest httpRequest   = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        RackEnvironment env                 = new ServletRackEnvironment(httpRequest, httpResponse, getContext());
+        RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment(httpResponse);
+        
+        getDispatcher().process(env, responseEnv);
     }
 
     @Override
@@ -49,5 +50,7 @@ public abstract class AbstractServlet extends HttpServlet {
     }
 
     protected abstract RackDispatcher getDispatcher();
+    
     protected abstract RackContext getContext();
+    
 }

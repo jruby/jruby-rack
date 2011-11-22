@@ -16,40 +16,56 @@ import org.jruby.rack.servlet.ServletRackEnvironment;
 import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 
 public abstract class AbstractFilter implements Filter {
+    
+    public final void doFilter(
+            ServletRequest request, ServletResponse response,
+            FilterChain chain) throws IOException, ServletException {
+        
+        RequestCapture requestCapture = wrapRequest(request);
+        ResponseCapture responseCapture = wrapResponse(response);
+        
+        RackEnvironment env = new ServletRackEnvironment(requestCapture, responseCapture, getContext());
+        RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment(responseCapture);
 
-  public final void doFilter(ServletRequest req, ServletResponse resp,
-      FilterChain chain) throws IOException, ServletException {
+        if (isDoDispatch(requestCapture, responseCapture, chain, env, responseEnv)) {
+            getDispatcher().process(env, responseEnv);
+        }
 
-    HttpServletRequest httpReq   = (HttpServletRequest) req;
-    HttpServletResponse httpResp = (HttpServletResponse) resp;
-    RequestCapture reqCapture    = new RequestCapture(httpReq, getContext().getConfig());
-    ResponseCapture respCapture  = new ResponseCapture(httpResp);
-
-    RackEnvironment env             = new ServletRackEnvironment(httpReq, httpResp, getContext());
-    RackResponseEnvironment respEnv = new ServletRackResponseEnvironment(httpResp);
-
-    if (isDoDispatch(reqCapture, respCapture, chain, env, respEnv)) {
-      getDispatcher().process(env, respEnv);
     }
-  }
 
-  /**
-   * Some filters may want to by-pass the rack application.  By default, all
-   * requests are given to the {@link RackDispatcher}, but you can extend
-   * this method and return false if you want to signal that you don't want
-   * the {@link RackDispatcher} to see the request.
+    @Override
+    public void destroy() {
+        getDispatcher().destroy();
+    }
+    
+    /**
+     * Some filters may want to by-pass the rack application.  By default, all
+     * requests are given to the {@link RackDispatcher}, but you can extend
+     * this method and return false if you want to signal that you don't want
+     * the {@link RackDispatcher} to see the request.
+    
+     * @return true if the dispatcher should handle the request, false if it
+     * shouldn't.
+     * @throws IOException
+     * @throws ServletException
+     */
+    protected boolean isDoDispatch(
+            RequestCapture request, ResponseCapture response,
+            FilterChain chain, RackEnvironment env,
+            RackResponseEnvironment respEnv) throws IOException, ServletException {
+        return true;
+    }
 
-   * @return true if the dispatcher should handle the request, false if it
-   * shouldn't.
-   * @throws IOException
-   * @throws ServletException
-   */
-  protected boolean isDoDispatch(RequestCapture req, ResponseCapture resp,
-      FilterChain chain, RackEnvironment env, RackResponseEnvironment respEnv) throws IOException, ServletException {
-    return true;
-  }
+    protected abstract RackContext getContext();
 
-  protected abstract RackContext getContext();
-  protected abstract RackDispatcher getDispatcher();
+    protected abstract RackDispatcher getDispatcher();
+    
+    protected RequestCapture wrapRequest(ServletRequest request) {
+        return new RequestCapture((HttpServletRequest) request, getContext().getConfig());
+    }
 
+    protected ResponseCapture wrapResponse(ServletResponse response) {
+        return new ResponseCapture((HttpServletResponse) response);
+    }
+    
 }

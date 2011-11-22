@@ -23,14 +23,14 @@ import java.io.InputStream;
  */
 @SuppressWarnings("deprecation")
 public class ServletRackEnvironment extends HttpServletRequestWrapper
-        implements HttpServletRequest, RackEnvironment {
+    implements HttpServletRequest, RackEnvironment {
     
     private String scriptName;
     private String requestURI;
     private String requestURIWithoutQuery;
     private String pathInfo;
-    private RackContext rackContext;
-    private HttpServletResponse servletResponse;
+    private final RackContext rackContext;
+    private final HttpServletResponse servletResponse;
 
     public ServletRackEnvironment(HttpServletRequest request, HttpServletResponse response, RackContext rackContext) {
         super(request);
@@ -63,11 +63,9 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
             return scriptName;
         }
 
-        StringBuffer buffer = new StringBuffer("");
-        if (getContextPath() != null) {
-            buffer.append(getContextPath());
-        }
-        scriptName =  buffer.toString().equals("/") ? "" : buffer.toString();
+        String contextPath = getContextPath();
+        if (contextPath == null) contextPath = "";
+        scriptName = contextPath.equals("/") ? "" : contextPath;
         return scriptName;
     }
 
@@ -76,11 +74,13 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
      * servlet path + path info.
      * @return full path info
      */
-    @Override public String getPathInfo() {
+    @Override 
+    public String getPathInfo() {
         if (pathInfo != null) {
             return pathInfo;
         }
-        StringBuffer buffer = new StringBuffer("");
+        
+        StringBuilder buffer = new StringBuilder();
         if (getRequestURIWithoutQuery().length() > 0) {
             if (getScriptName().length() > 0 && getRequestURIWithoutQuery().indexOf(getScriptName()) == 0) {
                 buffer.append(getRequestURIWithoutQuery().substring(getScriptName().length()));
@@ -101,12 +101,13 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
      * Rewrite meaning of request URI to include query string.
      * @return
      */
-    @Override public String getRequestURI() {
+    @Override 
+    public String getRequestURI() {
         if (requestURI != null) {
             return requestURI;
         }
 
-        StringBuffer buffer = new StringBuffer("");
+        StringBuilder buffer = new StringBuilder();
         buffer.append(getRequestURIWithoutQuery());
         if (super.getQueryString() != null) {
             buffer.append("?").append(super.getQueryString());
@@ -124,11 +125,11 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
         if (requestURIWithoutQuery != null) {
             return requestURIWithoutQuery;
         }
-        if (super.getRequestURI() != null) {
-            requestURIWithoutQuery = super.getRequestURI();
-        } else {
+        requestURIWithoutQuery = super.getRequestURI();
+        if (requestURIWithoutQuery == null) {
             requestURIWithoutQuery = "";
         }
         return requestURIWithoutQuery;
     }
+    
 }

@@ -150,7 +150,7 @@ describe RackFilter do
     dispatcher.should_receive(:process).ordered.and_return do |_, resp|
       resp.setStatus(404)
     end
-    @response.should_receive(:setStatus).ordered.with(404)
+    @response.should_not_receive(:setStatus).with(404)
     filter.doFilter(@request, @response, chain)
   end
 
@@ -216,6 +216,11 @@ describe RackFilter do
       @response.should_receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
+  end
+  
+  it "should destroy dispatcher on destroy" do
+    dispatcher.should_receive(:destroy)
+    filter.destroy
   end
   
   it "should have default constructor (for servlet container)" do

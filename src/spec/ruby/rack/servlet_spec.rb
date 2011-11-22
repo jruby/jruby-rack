@@ -18,8 +18,15 @@ describe RackServlet, "service" do
     response = javax.servlet.http.HttpServletResponse.impl {}
     dispatcher = mock "dispatcher"
     dispatcher.should_receive(:process)
-    @servlet = RackServlet.new dispatcher
-    @servlet.service request, response
+    servlet = RackServlet.new dispatcher, @rack_context
+    servlet.service request, response
+  end
+
+  it "should destroy dispatcher on destroy" do
+    dispatcher = mock "dispatcher"
+    dispatcher.should_receive(:destroy)
+    servlet = RackServlet.new dispatcher, @rack_context
+    servlet.destroy
   end
   
   it "should have default constructor (for servlet container)" do

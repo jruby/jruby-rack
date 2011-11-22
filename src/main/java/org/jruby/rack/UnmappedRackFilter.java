@@ -4,18 +4,15 @@
  * This source code is available under the MIT license.
  * See the file LICENSE.txt for details.
  */
-
 package org.jruby.rack;
+
+import java.io.IOException;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
 
 import org.jruby.rack.servlet.RequestCapture;
 import org.jruby.rack.servlet.ResponseCapture;
-
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-
-import java.io.IOException;
 
 /**
  * UnappedRackFilter does dispatching to Ruby but does not alter the request
@@ -23,8 +20,9 @@ import java.io.IOException;
  * @author nicksieger
  */
 public class UnmappedRackFilter extends AbstractFilter {
-    protected RackContext context;
-    protected RackDispatcher dispatcher;
+
+    private RackContext context;
+    private RackDispatcher dispatcher;
 
     /** Default constructor for servlet container */
     public UnmappedRackFilter() {
@@ -37,42 +35,42 @@ public class UnmappedRackFilter extends AbstractFilter {
     }
 
     /** Construct a new dispatcher with the servlet context */
+    @Override
     public void init(FilterConfig config) throws ServletException {
-          this.context = (RackContext) config.getServletContext().getAttribute(RackApplicationFactory.RACK_CONTEXT);
-          this.dispatcher = new DefaultRackDispatcher(this.context);
+        this.context = (RackContext) config.getServletContext().getAttribute(RackApplicationFactory.RACK_CONTEXT);
+        this.dispatcher = new DefaultRackDispatcher(this.context);
     }
 
     @Override
     protected RackDispatcher getDispatcher() {
-      return this.dispatcher;
+        return this.dispatcher;
     }
 
     @Override
     protected RackContext getContext() {
-      return this.context;
+        return this.context;
     }
 
     @Override
-    protected boolean isDoDispatch(RequestCapture req, ResponseCapture resp,
-        FilterChain chain, RackEnvironment env, RackResponseEnvironment respEnv) throws IOException, ServletException {
-
-      HttpServletRequest mappedRequest = getHttpServletRequest(req, env);
-      chain.doFilter(mappedRequest, resp);
-
-      boolean error = resp.isError();
-      if (error) {
-          req.reset();
-          resp.reset();
-          mappedRequest.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
-      }
-      return error;
+    protected boolean isDoDispatch(
+            RequestCapture requestCapture, ResponseCapture responseCapture,
+            FilterChain chain, RackEnvironment env,
+            RackResponseEnvironment respEnv) throws IOException, ServletException {
+        
+        chain.doFilter(requestCapture, responseCapture);
+        
+        return handleError(requestCapture, responseCapture);
     }
-
-    protected HttpServletRequest getHttpServletRequest(ServletRequest request,
-        RackEnvironment env) {
-      return (HttpServletRequest) request;
+    
+    protected boolean handleError(RequestCapture request, ResponseCapture response) 
+            throws IOException {
+        final boolean error = response.isError();
+        if (error) {
+            request.reset();
+            response.reset();
+            request.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
+        }
+        return error;        
     }
-
-    public void destroy() {
-    }
+    
 }

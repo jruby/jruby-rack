@@ -2,7 +2,6 @@ package org.jruby.rack;
 
 import javax.servlet.ServletConfig;
 
-
 public class RackServlet extends AbstractServlet {
 
     private RackDispatcher dispatcher;
@@ -13,8 +12,9 @@ public class RackServlet extends AbstractServlet {
     }
     
     /** dependency injection ctor, used by unit tests */
-    public RackServlet(RackDispatcher dispatcher) {
+    public RackServlet(RackDispatcher dispatcher, RackContext context) {
         this.dispatcher = dispatcher;
+        this.context = context;
     }
 
     @Override
@@ -30,6 +30,7 @@ public class RackServlet extends AbstractServlet {
         return dispatcher;
     }
 
+    @Override
     public RackContext getContext() {
         return context;
     }

@@ -9,7 +9,6 @@ package org.jruby.rack.servlet;
 
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackConfig;
-import org.jruby.rack.RackContext;
 import org.jruby.rack.RackLogger;
 
 import javax.servlet.RequestDispatcher;
@@ -27,6 +26,7 @@ import java.util.Set;
  * @author nicksieger
  */
 public class DefaultServletRackContext implements ServletRackContext {
+    
     private RackConfig config;
     private ServletContext context;
     private RackLogger logger;

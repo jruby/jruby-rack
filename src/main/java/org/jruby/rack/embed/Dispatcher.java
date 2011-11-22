@@ -13,33 +13,40 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 public class Dispatcher extends AbstractRackDispatcher {
 
-  private final DefaultRackApplication rackApplication;
+    private final IRubyObject application;
+    private RackApplication rackApplication;
 
-  public Dispatcher(RackContext rackContext, IRubyObject application) {
-    super(rackContext);
-    this.rackApplication = new DefaultRackApplication(application);
-  }
+    public Dispatcher(RackContext rackContext, IRubyObject application) {
+        super(rackContext);
+        this.application = application;
+    }
 
-  @Override
-  protected void afterException(RackEnvironment request, Exception re,
-      RackResponseEnvironment response) throws IOException {
-    // TODO print out a 500 or something?
-    re.printStackTrace(System.err);
-  }
+    @Override
+    protected RackApplication getApplication() throws RackInitializationException {
+        if (rackApplication == null) {
+            rackApplication = new DefaultRackApplication(application);
+            rackApplication.init();
+        }
+        return rackApplication;
+    }
+    
+    @Override
+    protected void afterException(
+            RackEnvironment request, Exception re,
+            RackResponseEnvironment response) throws IOException {
+        // TODO a fast draft (probably should use rack.errors) :
+        context.log("Error:", re);
+        response.sendError(500);
+    }
 
-  @Override
-  protected void afterProcess(RackApplication app) throws IOException {
-  }
+    @Override
+    protected void afterProcess(RackApplication app) throws IOException {
+        // NOOP
+    }
 
-  @Override
-  protected RackApplication getApplication(RackContext context)
-      throws RackInitializationException {
-    return rackApplication;
-  }
-
-  public void destroy() {
-    this.rackApplication.destroy();
-  }
-
-
+    @Override
+    public void destroy() {
+        rackApplication.destroy();
+    }
+    
 }

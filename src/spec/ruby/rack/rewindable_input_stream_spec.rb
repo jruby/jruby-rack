@@ -1,6 +1,6 @@
 
 require 'spec_helper'
-import org.jruby.rack.io.RewindableInputStream
+import org.jruby.rack.servlet.RewindableInputStream
 
 describe RewindableInputStream do
 

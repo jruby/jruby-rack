@@ -1,11 +1,13 @@
 package org.jruby.rack.servlet;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+
 
 public class ResponseCapture extends HttpServletResponseWrapper {
     
@@ -15,40 +17,47 @@ public class ResponseCapture extends HttpServletResponseWrapper {
         super(response);
     }
 
-    @Override public void sendError(int status, String message) throws IOException {
+    @Override 
+    public void sendError(int status, String message) throws IOException {
         this.status = status;
     }
 
-    @Override public void sendError(int status) throws IOException {
+    @Override 
+    public void sendError(int status) throws IOException {
         this.status = status;
     }
 
-    @Override public void sendRedirect(String path) throws IOException {
+    @Override 
+    public void sendRedirect(String path) throws IOException {
         this.status = 302;
         super.sendRedirect(path);
     }
 
-    @Override public void setStatus(int status) {
+    @Override 
+    public void setStatus(int status) {
         this.status = status;
         if (!isError()) {
             super.setStatus(status);
         }
     }
 
-    @Override public void setStatus(int status, String message) {
+    @Override 
+    public void setStatus(int status, String message) {
         this.status = status;
         if (!isError()) {
             super.setStatus(status, message);
         }
     }
 
-    @Override public void flushBuffer() throws IOException {
+    @Override 
+    public void flushBuffer() throws IOException {
         if (!isError()) {
             super.flushBuffer();
         }
     }
 
-    @Override public ServletOutputStream getOutputStream() throws IOException {
+    @Override 
+    public ServletOutputStream getOutputStream() throws IOException {
         if (isError()) {
             return new ServletOutputStream() {
                 @Override 

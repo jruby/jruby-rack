@@ -4,7 +4,6 @@
  * This source code is available under the MIT license.
  * See the file LICENSE.txt for details.
  */
-
 package org.jruby.rack;
 
 import org.jruby.Ruby;
@@ -20,6 +19,7 @@ import java.io.IOException;
  * @author nicksieger
  */
 public class DefaultRackApplication implements RackApplication {
+
     private final RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
     private IRubyObject application;
 
@@ -27,11 +27,11 @@ public class DefaultRackApplication implements RackApplication {
     }
 
     public DefaultRackApplication(IRubyObject application) {
-      this.application = application;
+        setApplication(application);
     }
 
     public RackResponse call(final RackEnvironment env) {
-        Ruby runtime = getRuntime();
+        final Ruby runtime = getRuntime();
         try {
             RackInput io = new RackInput(runtime, env);
             try {
@@ -54,15 +54,22 @@ public class DefaultRackApplication implements RackApplication {
     }
 
     public Ruby getRuntime() {
-        return application.getRuntime();
+        return getApplication().getRuntime();
     }
 
+    public IRubyObject getApplication() {
+        if (application == null) {
+            throw new IllegalStateException("no application set");
+        }
+        return application;
+    }
+    
     public void setApplication(IRubyObject application) {
         this.application = application;
     }
 
-    /** Only used for testing. */
     public IRubyObject __call(final IRubyObject env) {
-        return adapter.callMethod(application, "call", env);
+        return adapter.callMethod(getApplication(), "call", env);
     }
+    
 }

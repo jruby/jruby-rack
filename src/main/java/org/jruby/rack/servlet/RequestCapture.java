@@ -1,10 +1,6 @@
 package org.jruby.rack.servlet;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -14,87 +10,37 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+
 import org.jruby.rack.RackConfig;
-import org.jruby.rack.io.RewindableInputStream;
+
 
 public class RequestCapture extends HttpServletRequestWrapper {
 
     private Map<String,String[]> requestParams;
-    private final boolean rewindable;
-    private InputStream inputStream;
+    private RewindableInputStream inputStream;
 
     public RequestCapture(HttpServletRequest request, RackConfig config) {
         super(request);
-        rewindable = config.isRewindable();
     }
 
-    @Override public BufferedReader getReader() throws IOException {
-        if (inputStream != null) {
-            String enc = getCharacterEncoding();
-            if (enc == null) {
-                enc = "UTF-8";
-            }
-            return new BufferedReader(new InputStreamReader(inputStream, enc));
-        } 
-        else {
-            return super.getReader();
+    @Override 
+    public BufferedReader getReader() throws IOException {
+        String enc = getCharacterEncoding();
+        if (enc == null) {
+            enc = "UTF-8";
         }
+        return new BufferedReader(new InputStreamReader(inputStream, enc));
     }
     
     @Override 
     public ServletInputStream getInputStream() throws IOException {
-        if ( ! rewindable ) {
-            return super.getInputStream();
-        }
         if (inputStream == null) {
             inputStream = new RewindableInputStream(super.getInputStream());
         }
-        return new ServletInputStream() {
-            @Override
-            public long skip(long l) throws IOException {
-                return inputStream.skip(l);
-            }
-
-            @Override
-            public int available() throws IOException {
-                return inputStream.available();
-            }
-
-            @Override
-            public void close() throws IOException {
-                inputStream.close();
-            }
-
-            @Override
-            public void mark(int i) {
-                inputStream.mark(i);
-            }
-
-            @Override
-            public void reset() throws IOException {
-                inputStream.reset();
-            }
-
-            @Override
-            public boolean markSupported() {
-                return inputStream.markSupported();
-            }
-
-            @Override
-            public int read(byte[] bytes) throws IOException {
-                return inputStream.read(bytes);
-            }
-
-            @Override
-            public int read(byte[] bytes, int i, int i1) throws IOException {
-                return inputStream.read(bytes, i, i1);
-            }
-
-            @Override
-            public int read() throws IOException {
-                return inputStream.read();
-            }
-        };
+        return inputStream;
     }
 
     @Override
@@ -193,10 +139,11 @@ public class RequestCapture extends HttpServletRequestWrapper {
         
         return true;
     }
-
+    
     public void reset() throws IOException {
         if (inputStream instanceof RewindableInputStream) {
             ((RewindableInputStream) inputStream).rewind();
         }
     }
+    
 }

@@ -18,7 +18,7 @@ import javax.servlet.ServletContext;
  */
 public class ServletRackConfig extends DefaultRackConfig {
 
-    private ServletContext context;
+    private final ServletContext context;
 
     public ServletRackConfig(ServletContext context) {
         this.context = context;

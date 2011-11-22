@@ -87,7 +87,7 @@ module InputSpec
     ByteArrayInputStream.new(content.to_java_bytes)
   end
   
-  import 'org.jruby.rack.io.RewindableInputStream'
+  import 'org.jruby.rack.servlet.RewindableInputStream'
 
   def rewindable_input(buffer_size = nil, max_buffer_size = nil)
     buffer_size ||= RewindableInputStream::INI_BUFFER_SIZE
