@@ -32,7 +32,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
         if (enc == null) {
             enc = "UTF-8";
         }
-        return new BufferedReader(new InputStreamReader(inputStream, enc));
+        return new BufferedReader(new InputStreamReader(this.getInputStream(), enc));
     }
     
     @Override 
@@ -45,7 +45,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     @Override
     public String getParameter(String name) {
-        if ( parseRequestParams() ) {
+        if ( requestParametersParsed() ) {
             String[] values = requestParams.get(name);
             if (values != null) {
                 return values[0];
@@ -58,7 +58,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     @Override
     public Map getParameterMap() {
-        if ( parseRequestParams() ) {
+        if ( requestParametersParsed() ) {
             return requestParams;
         } else {
             return super.getParameterMap();
@@ -67,7 +67,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     @Override
     public Enumeration getParameterNames() {
-        if ( parseRequestParams() ) {
+        if ( requestParametersParsed() ) {
             return new Enumeration() {
                 Iterator keys = requestParams.keySet().iterator();
                 public boolean hasMoreElements() {
@@ -85,7 +85,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     @Override
     public String[] getParameterValues(String name) {
-        if ( parseRequestParams() ) {
+        if ( requestParametersParsed() ) {
             return requestParams.get(name);
         } else {
             return super.getParameterValues(name);
@@ -94,7 +94,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     private boolean parseRequestParams() {
         if ( this.requestParams != null ) return true;
-        if ( ! "application/x-www-form-urlencoded".equals(getContentType()) ) {
+        if ( ! "application/x-www-form-urlencoded".equals(super.getContentType()) ) {
             return false;
         }
         // Need to re-parse form params from the request
@@ -108,6 +108,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
         }
         
         Map<String,String[]> params = new HashMap<String,String[]>();
+        if (line == null) return false;
         
         String[] pairs = line.split("\\&");
         for (int i = 0; i < pairs.length; i++) {
@@ -136,7 +137,6 @@ public class RequestCapture extends HttpServletRequestWrapper {
         }
         
         this.requestParams = params;
-        
         return true;
     }
     
@@ -145,5 +145,8 @@ public class RequestCapture extends HttpServletRequestWrapper {
             ((RewindableInputStream) inputStream).rewind();
         }
     }
-    
+
+    private boolean requestParametersParsed() {
+        return parseRequestParams() && requestParams.size() >= super.getParameterMap().size();
+    }
 }
