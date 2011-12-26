@@ -42,13 +42,17 @@ module JRuby::Rack
       Rails.logger.instance_variable_set "@log", JRuby::Rack.booter.logdev
     end
 
+    def self.set_relative_url_root(controller)
+      controller.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT'] if controller.respond_to?(:relative_url_root=)
+    end
+
     initializer "set_relative_url_root", :after => "action_controller.set_configs" do |app|
       if ENV['RAILS_RELATIVE_URL_ROOT']
-        app.config.action_controller.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT']
-        ActionController::Base.config.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT']
+        set_relative_url_root(app.config.action_controller)
+        set_relative_url_root(ActionController::Base.config)
       end
     end
-    
+
     initializer "action_dispatch.autoload_java_servlet_store", :after => "action_dispatch.configure" do
       # if it's loaded up front with a require 'action_controller'/'action_dispatch' then
       # it might fire up before 'active_record' has been required causing sweeping issues
@@ -59,5 +63,6 @@ module JRuby::Rack
         autoload :JavaServletStore, "action_dispatch/session/java_servlet_store"
       end
     end
+
   end
 end

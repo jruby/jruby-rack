@@ -153,7 +153,7 @@ describe JRuby::Rack::RailsBooter do
     end
   end
 
-  describe "Rails 3 environment" do
+  describe "Rails 3.0 environment" do
     before :all do
       mock_servlet_context
       $servlet_context = @servlet_context
@@ -207,6 +207,39 @@ describe JRuby::Rack::RailsBooter do
       app = mock "app"
       app.stub_chain(:config, :action_controller, :relative_url_root)
       app.config.action_controller.should_receive(:relative_url_root=).with("/blah")
+      init = Rails::Railtie.initializers.detect {|i| i.first =~ /url/}
+      init.should_not be_nil
+      init[1].should == [{:after => "action_controller.set_configs"}]
+      init.last.call(app)
+    end
+  end
+
+  describe "Rails 3.1 environment" do
+    before :all do
+      mock_servlet_context
+      $servlet_context = @servlet_context
+      create_booter(JRuby::Rack::RailsBooter) do |b|
+        b.app_path = File.expand_path("../../../rails3", __FILE__)
+      end.boot!
+      @booter.load_environment
+    end
+
+    after :all do
+      $servlet_context = nil
+    end
+
+    #
+    # relative_url_root= has been deprecated in Rails > 3. We should not call it when it's not defined.
+    # See: https://github.com/jruby/jruby-rack/issues/73
+    #      https://github.com/rails/rails/issues/2435
+    #
+    it "should not set config.action_controller.relative_url_root if the controller doesn't respond to that method" do
+      ENV['RAILS_RELATIVE_URL_ROOT'] = '/blah'
+      app = mock "app"
+      app.stub_chain(:config, :action_controller, :respond_to?)
+      app.config.action_controller.should_receive(:respond_to?).with(:relative_url_root=).and_return(false)
+      app.config.action_controller.should_not_receive(:relative_url_root=)
+
       init = Rails::Railtie.initializers.detect {|i| i.first =~ /url/}
       init.should_not be_nil
       init[1].should == [{:after => "action_controller.set_configs"}]
