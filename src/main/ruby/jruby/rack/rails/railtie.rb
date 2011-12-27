@@ -42,14 +42,10 @@ module JRuby::Rack
       Rails.logger.instance_variable_set "@log", JRuby::Rack.booter.logdev
     end
 
-    def self.set_relative_url_root(controller)
-      controller.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT'] if controller.respond_to?(:relative_url_root=)
-    end
-
     initializer "set_relative_url_root", :after => "action_controller.set_configs" do |app|
       if ENV['RAILS_RELATIVE_URL_ROOT']
-        set_relative_url_root(app.config.action_controller)
-        set_relative_url_root(ActionController::Base.config)
+        app.config.action_controller.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT'] if app.config.action_controller.respond_to?(:relative_url_root=)
+        ActionController::Base.config.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT'] if ActionController::Base.config.respond_to?(:relative_url_root=)
       end
     end
 
