@@ -334,4 +334,11 @@ describe Rack::Handler::Servlet, "call" do
     response = @servlet.call(servlet_env)
     response.should respond_to(:respond)
   end
+
+  it "raises an error when it failed to load the application" do
+    servlet = Rack::Handler::Servlet.new(nil)
+
+    lambda { servlet.call(mock('servlet env')) }.should raise_error(RuntimeError)
+    lambda { servlet.call(mock('servlet env')) }.should_not raise_error(NoMethodError)
+  end
 end
