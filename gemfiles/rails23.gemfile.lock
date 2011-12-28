@@ -11,10 +11,10 @@ GEM
     activeresource (2.3.14)
       activesupport (= 2.3.14)
     activesupport (2.3.14)
-    appraisal (0.3.8)
+    appraisal (0.4.0)
       bundler
       rake
-    rack (1.1.2)
+    rack (1.1.3)
     rails (2.3.14)
       actionmailer (= 2.3.14)
       actionpack (= 2.3.14)

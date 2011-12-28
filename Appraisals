@@ -3,9 +3,9 @@ appraise "rails23" do
 end
 
 appraise "rails30" do
-  gem "rails", "~> 3.0.10"
+  gem "rails", "~> 3.0.11"
 end
 
 appraise "rails31" do
-  gem "rails", "~> 3.1.0"
+  gem "rails", "~> 3.1.3"
 end
