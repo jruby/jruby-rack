@@ -1,3 +1,11 @@
+== 1.1.2 (12/30/11)
+
+- GH#18: Undefined method `call' for nil:NilClass
+- GH#44: JRuby-rack POST form-urlencoded doesn't work with Jetty
+- GH#71: request.body.read stopped working
+- GH#73, GH#76: relative_url_root= called for rails > 3
+- GH#79: FileNotFoundException on WAS 8.0
+
 == 1.1.1 (11/11/11)
 
 - Support for embedding a web server using a Rack::Handler
