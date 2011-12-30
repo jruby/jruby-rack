@@ -64,21 +64,27 @@ module JRuby::Rack
       JRuby::Rack.silence_warnings(&block)
     end
 
-    # http://kenai.com/jira/browse/JRUBY_RACK-8: If some containers do
-    # not allow proper detection of jruby.home, fall back to this
     def adjust_load_path
       require 'jruby'
-      if JRuby.runtime.instance_config.jruby_home == java.lang.System.getProperty('java.io.tmpdir')
-        # Mirroring code in org.jruby.runtime.load.LoadService#init
-        if JRuby.runtime.is1_9
-          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.9'
-          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/shared'
-          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
-          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/1.9'
-        else
-          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/1.8'
-          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/site_ruby/shared'
-          $LOAD_PATH << 'META-INF/jruby.home/lib/ruby/1.8'
+      # http://kenai.com/jira/browse/JRUBY_RACK-8: If some containers do
+      # not allow proper detection of jruby.home, fall back to this
+      tmpdir = java.lang.System.getProperty('java.io.tmpdir')
+      if JRuby.runtime.instance_config.jruby_home == tmpdir
+        ruby_paths = # mirroring org.jruby.runtime.load.LoadService#init
+          if JRuby.runtime.is1_9
+            %w{ site_ruby/1.9 site_ruby/shared site_ruby/1.8 1.9 }
+          else
+            %w{ site_ruby/1.8 site_ruby/shared 1.8 }
+          end
+        ruby_paths.each do |path|
+          # NOTE: even better replace everything starting with '/tmp' ?
+          if index = $LOAD_PATH.index("#{tmpdir}/lib/ruby/#{path}")
+            $LOAD_PATH[index] = "META-INF/jruby.home/lib/ruby/#{path}"
+          else
+            # e.g. "META-INF/jruby.home/lib/ruby/site_ruby/1.8"
+            full_path = "META-INF/jruby.home/lib/ruby/#{path}"
+            $LOAD_PATH << full_path unless $LOAD_PATH.include?(full_path)
+          end
         end
       end
     end
@@ -87,14 +93,15 @@ module JRuby::Rack
       %w(META WEB).each do |where|
         url = @rack_context.getResource("/#{where}-INF/init.rb")
         next unless url
-        code = begin
-                 stream = url.openStream
-                 stream.to_io.read
-               rescue Exception
-                 next
-               ensure
-                 stream.close rescue nil
-               end
+        code = 
+          begin
+            stream = url.openStream
+            stream.to_io.read
+          rescue Exception
+            next
+          ensure
+            stream.close rescue nil
+          end
         eval code, TOPLEVEL_BINDING, path_to_file(url)
       end
     end
