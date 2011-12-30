@@ -1,5 +1,6 @@
 package org.jruby.rack;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -43,9 +44,12 @@ public class RackFilter extends UnmappedRackFilter {
             RequestCapture requestCapture, ResponseCapture responseCapture,
             FilterChain chain, RackEnvironment env,
             RackResponseEnvironment respEnv) throws IOException, ServletException {
-        
-        chain.doFilter(addHtmlToPathAndVerifyResource(requestCapture, env), responseCapture);
-        
+        try {
+            chain.doFilter(addHtmlToPathAndVerifyResource(requestCapture, env), responseCapture);
+        } // some AppServers (WAS 8.0) seems to be chained up too smart @see #79
+        catch (FileNotFoundException e) {
+            return true;
+        }
         return handleError(requestCapture, responseCapture);
     }
 

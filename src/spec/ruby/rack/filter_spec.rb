@@ -217,6 +217,15 @@ describe RackFilter do
       filter.doFilter(@request, @response, chain)
     end
   end
+
+  it "should process dispatching when chain throws a FileNotFoundException (WAS 8.0 behavior)" do
+    stub_request("/foo")
+    chain.should_receive(:doFilter).ordered.and_return do
+      raise java.io.FileNotFoundException.new("/foo.html")
+    end
+    dispatcher.should_receive(:process)
+    filter.doFilter(@request, @response, chain)
+  end
   
   it "should destroy dispatcher on destroy" do
     dispatcher.should_receive(:destroy)
