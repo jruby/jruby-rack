@@ -33,13 +33,8 @@ module JRuby::Rack
       end
     end
 
-    initializer "set_servlet_logger", :after => :initialize_logger do |app|
-      class << Rails.logger # Make these accessible to wire in the log device
-        public :instance_variable_get, :instance_variable_set
-      end
-      old_device = Rails.logger.instance_variable_get "@log"
-      old_device.close rescue nil
-      Rails.logger.instance_variable_set "@log", JRuby::Rack.booter.logdev
+    initializer "set_servlet_logger", :before => :initialize_logger do |app|
+      app.config.logger = JRuby::Rack.booter.logger
     end
 
     initializer "set_relative_url_root", :after => "action_controller.set_configs" do |app|
