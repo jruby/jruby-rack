@@ -12,7 +12,7 @@ require 'cgi/session/java_servlet_store'
 class ::CGI::Session::PStore; end
 
 describe JRuby::Rack::RailsBooter do
-  
+
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
@@ -77,11 +77,11 @@ describe JRuby::Rack::RailsBooter do
     @rack_context.should_receive(:log).with(/hello/)
     @booter.logdev.write "hello"
   end
-  
+
   it "should setup java servlet-based sessions if the session store is the default" do
     create_booter(JRuby::Rack::RailsBooter).boot!
     @booter.should_receive(:rack_based_sessions?).and_return false
-    
+
     @booter.session_options[:database_manager] = ::CGI::Session::PStore
     @booter.setup_sessions
     @booter.session_options[:database_manager].should == ::CGI::Session::JavaServletStore
@@ -90,16 +90,16 @@ describe JRuby::Rack::RailsBooter do
   it "should turn off Ruby CGI cookies if the java servlet store is used" do
     create_booter(JRuby::Rack::RailsBooter).boot!
     @booter.should_receive(:rack_based_sessions?).and_return false
-    
+
     @booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
     @booter.setup_sessions
     @booter.session_options[:no_cookies].should == true
   end
-    
+
   it "should provide the servlet request in the session options if the java servlet store is used" do
     create_booter(JRuby::Rack::RailsBooter).boot!
     @booter.should_receive(:rack_based_sessions?).twice.and_return false
-    
+
     @booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
     @booter.setup_sessions
     env = {"java.servlet_request" => mock("servlet request")}
@@ -182,18 +182,19 @@ describe JRuby::Rack::RailsBooter do
       paths['public/stylesheets'].should == public_path.join("stylesheets").to_s
     end
 
-    it "should switch out the logging device" do
+    it "should set the logger" do
+      app = mock "app"
       logger = mock "logger"
-      class << logger; attr_accessor :log; end
-      dev = mock "logdev"
-      dev.should_receive(:close)
-      logger.log = dev
-      Rails.stub!(:logger).and_return(logger)
+      @booter.should_receive(:logger).and_return(logger)
+      config = mock "config"
+      app.stub(:config).and_return(config)
+      config.should_receive(:logger=).with(logger)
+      config.should_receive(:logger).and_return(logger)
       init = Rails::Railtie.initializers.detect {|i| i.first =~ /log/}
       init.should_not be_nil
-      init[1].should == [{:after => :initialize_logger}]
-      init.last.call(nil)
-      logger.log.should be_instance_of(JRuby::Rack::ServletLog)
+      init[1].should == [{:before => :initialize_logger}]
+      init.last.call(app)
+      app.config.logger.should be(logger)
     end
 
     it "should return the Rails.application instance" do
