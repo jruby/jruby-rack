@@ -238,9 +238,14 @@ describe JRuby::Rack::RailsBooter do
       ENV['RAILS_RELATIVE_URL_ROOT'] = '/blah'
       app = mock "app"
       app.stub_chain(:config, :action_controller, :respond_to?)
-      app.config.action_controller.should_receive(:respond_to?).with(:relative_url_root=).and_return(false)
-      app.config.action_controller.should_not_receive(:relative_url_root=)
-
+      # obviously this only tests whatever rails version is loaded
+      # I'm unsure of the best way right now
+      if ActionController::Base.respond_to?(:relative_url_root=)
+        app.config.action_controller.should_receive(:relative_url_root=)
+      else
+        app.config.action_controller.should_not_receive(:relative_url_root=)
+      end
+      
       init = Rails::Railtie.initializers.detect {|i| i.first =~ /url/}
       init.should_not be_nil
       init[1].should == [{:after => "action_controller.set_configs"}]
