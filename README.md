@@ -247,6 +247,25 @@ Please use GitHub to file bugs, patches and pull requests.
 - https://github.com/jruby/jruby-rack
 - https://github.com/jruby/jruby-rack/issues
 
+# Releases
+
+For JRuby-Rack contributors, the release process goes something like
+the following:
+
+1. Ensure that release version is correct in pom.xml and `mvn install`
+   runs clean.
+2. Ensure generated changes to src/main/ruby/jruby/rack/version.rb are
+   checked in.
+3. Ensure History.txt is updated with latest release information.
+3. Tag current release in git: `git tag <version>`.
+4. Push commits and tag: `git push origin master --tags`
+5. Build gem: `rake clean gem`
+6. Push gem: `gem push target/jruby-rack-*.gem`
+7. Release jar to maven repository: `mvn -DupdateReleaseInfo=true deploy`
+8. Bump the version in pom.xml to the
+   `<next-release-version>.dev-SNAPSHOT`, run `mvn install`, and commit
+   the changes.
+
 ## Rails Step-by-step
 
 This example shows how to create and deploy a simple Rails app using
