@@ -43,7 +43,7 @@ public class RackFilter extends UnmappedRackFilter {
     protected boolean isDoDispatch(
             RequestCapture requestCapture, ResponseCapture responseCapture,
             FilterChain chain, RackEnvironment env,
-            RackResponseEnvironment respEnv) throws IOException, ServletException {
+            RackResponseEnvironment responseEnv) throws IOException, ServletException {
         try {
             chain.doFilter(addHtmlToPathAndVerifyResource(requestCapture, env), responseCapture);
         } // some AppServers (WAS 8.0) seems to be chained up too smart @see #79

@@ -55,7 +55,7 @@ public class UnmappedRackFilter extends AbstractFilter {
     protected boolean isDoDispatch(
             RequestCapture requestCapture, ResponseCapture responseCapture,
             FilterChain chain, RackEnvironment env,
-            RackResponseEnvironment respEnv) throws IOException, ServletException {
+            RackResponseEnvironment responseEnv) throws IOException, ServletException {
         
         chain.doFilter(requestCapture, responseCapture);
         

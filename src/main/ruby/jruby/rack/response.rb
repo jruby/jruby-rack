@@ -56,7 +56,7 @@ module JRuby
       end
 
       def write_headers(response)
-        @headers.each do |k,v|
+        @headers.each do |k, v|
           case k
           when /^Content-Type$/i
             response.setContentType(v.to_s)
@@ -65,10 +65,13 @@ module JRuby
             # setContentLength accepts only int, addHeader must be used for large files (>2GB)
             response.setContentLength(length) unless chunked? || length >= 2_147_483_648
           else
+            # NOTE: effectively the same as `v.split("\n").each` which is what
+            # rack handler does to guard against response splitting attacks !
+            # https://github.com/jruby/jruby-rack/issues/81
             if v.respond_to?(:each_line)
-              v.each_line {|val| response.addHeader(k.to_s, val.chomp("\n")) }
+              v.each_line { |val| response.addHeader(k.to_s, val.chomp("\n")) }
             elsif v.respond_to?(:each)
-              v.each {|val| response.addHeader(k.to_s, val.chomp("\n")) }
+              v.each { |val| response.addHeader(k.to_s, val.chomp("\n")) }
             else
               case v
               when Numeric

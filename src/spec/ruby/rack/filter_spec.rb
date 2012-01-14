@@ -143,14 +143,14 @@ describe RackFilter do
 
   it "should set status to 404 when dispatcher's status is not found" do
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
-      resp.sendError(404)
+      resp.sendError(404) # 404 status is irrelevant here !
     end
     @response.should_receive(:reset).ordered
     @request.should_receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
     dispatcher.should_receive(:process).ordered.and_return do |_, resp|
       resp.setStatus(404)
     end
-    @response.should_not_receive(:setStatus).with(404)
+    @response.should_receive(:setStatus).ordered.with(404)
     filter.doFilter(@request, @response, chain)
   end
 
