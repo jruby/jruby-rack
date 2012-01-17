@@ -8,6 +8,7 @@
 require 'spec_helper'
 require 'jruby/rack/rails'
 require 'jruby/rack/rails/extensions'
+require 'active_support'
 require 'cgi/session/java_servlet_store'
 class ::CGI::Session::PStore; end
 
@@ -181,20 +182,75 @@ describe JRuby::Rack::RailsBooter do
       paths['public/javascripts'].should == public_path.join("javascripts").to_s
       paths['public/stylesheets'].should == public_path.join("stylesheets").to_s
     end
+    
+    describe "logger" do
+      
+      before do
+        @logger = mock "logger"
+        @config = mock "config"
+        @app = mock "app"
+        @app.stub(:config).and_return(@config)
+      end
+      
+      it "has an initializer" do
+        log_initializer.should_not be_nil
+        log_initializer[1].should == [{:before => :initialize_logger}]
+      end
 
-    it "should set the logger" do
-      app = mock "app"
-      logger = mock "logger"
-      @booter.should_receive(:logger).and_return(logger)
-      config = mock "config"
-      app.stub(:config).and_return(config)
-      config.should_receive(:logger=).with(logger)
-      config.should_receive(:logger).and_return(logger)
-      init = Rails::Railtie.initializers.detect {|i| i.first =~ /log/}
-      init.should_not be_nil
-      init[1].should == [{:before => :initialize_logger}]
-      init.last.call(app)
-      app.config.logger.should be(logger)
+      it "gets set as config.logger" do
+        @config.stub(:log_level).and_return(:info)
+        @config.should_receive(:logger=).with(@logger)
+        @config.should_receive(:logger).and_return(@logger)
+        @booter.should_receive(:logger).and_return(@logger)
+        @logger.class.should_receive(:const_get).with('INFO').and_return(nil)
+        @logger.should_receive(:level=).with(nil)
+        
+        log_initializer.last.call(@app)
+        @app.config.logger.should be(@logger)
+      end
+
+      it "has a configurable log level" do
+        @config.instance_eval do
+          def logger; @logger; end
+          def logger=(logger); @logger = logger; end
+        end
+        @config.should_receive(:log_level).and_return(:debug)
+        
+        log_initializer.last.call(@app)
+        @app.config.logger.level.should be(Logger::DEBUG)
+      end
+      
+      it "is wrapped in tagged logging" do # Rails 3.2
+        tagged_logging = ActiveSupport::TaggedLogging rescue nil
+        begin
+          klass = Class.new do # TaggedLogging stub
+            def initialize(logger); @logger = logger end
+          end
+          ActiveSupport.const_set(:TaggedLogging, klass)
+          @config.instance_eval do
+            def logger; @logger; end
+            def logger=(logger); @logger = logger; end
+          end
+          @config.stub(:log_level).and_return(:info)
+          
+          log_initializer.last.call(@app)
+          @app.config.logger.should be_a(klass)
+          @app.config.logger.instance_variable_get(:@logger).should be_a(Logger)
+        ensure
+          if tagged_logging.nil?
+            ActiveSupport.send :remove_const, :TaggedLogging
+          else
+            ActiveSupport.const_set(:TaggedLogging, tagged_logging)
+          end
+        end
+      end
+      
+      private
+      
+        def log_initializer
+          Rails::Railtie.initializers.detect {|i| i.first =~ /log/}
+        end
+        
     end
 
     it "should return the Rails.application instance" do
@@ -252,6 +308,7 @@ describe JRuby::Rack::RailsBooter do
       init.last.call(app)
     end
   end
+  
 end
 
 describe JRuby::Rack, "Rails controller extensions" do
