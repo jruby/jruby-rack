@@ -25,7 +25,6 @@ module JRuby::Rack
       end
       load_settings_from_init_rb
       layout.change_working_directory if layout.respond_to?(:change_working_directory)
-      require 'vendor/rack' unless defined?(::Rack::VERSION) # already loaded?
     end
 
     def default_layout_class
