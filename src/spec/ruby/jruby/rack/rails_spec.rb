@@ -79,7 +79,9 @@ describe JRuby::Rack::RailsBooter do
     @booter.logdev.write "hello"
   end
 
-  it "should setup java servlet-based sessions if the session store is the default" do
+  it "should setup java servlet-based sessions if the session store is the default", 
+    :lib => [ :stub, :rails23 ] do
+    
     create_booter(JRuby::Rack::RailsBooter).boot!
     @booter.should_receive(:rack_based_sessions?).and_return false
 
@@ -88,7 +90,9 @@ describe JRuby::Rack::RailsBooter do
     @booter.session_options[:database_manager].should == ::CGI::Session::JavaServletStore
   end
 
-  it "should turn off Ruby CGI cookies if the java servlet store is used" do
+  it "should turn off Ruby CGI cookies if the java servlet store is used", 
+    :lib => [ :stub, :rails23 ] do
+    
     create_booter(JRuby::Rack::RailsBooter).boot!
     @booter.should_receive(:rack_based_sessions?).and_return false
 
@@ -97,7 +101,9 @@ describe JRuby::Rack::RailsBooter do
     @booter.session_options[:no_cookies].should == true
   end
 
-  it "should provide the servlet request in the session options if the java servlet store is used" do
+  it "should provide the servlet request in the session options if the java servlet store is used",
+    :lib => [ :stub, :rails23 ] do
+    
     create_booter(JRuby::Rack::RailsBooter).boot!
     @booter.should_receive(:rack_based_sessions?).twice.and_return false
 
@@ -114,13 +120,13 @@ describe JRuby::Rack::RailsBooter do
     PUBLIC_ROOT.should == @booter.public_path
   end
 
-  describe "Rails 2 environment" do
-    before :all do
-      mock_servlet_context
+  describe "Rails 2 environment", :lib => [ :rails23, :stub ] do
+    
+    before :each do
       $servlet_context = @servlet_context
       @rack_context.should_receive(:getContextPath).and_return "/foo"
-      create_booter(JRuby::Rack::RailsBooter) do |b|
-        b.app_path = File.expand_path("../../../rails", __FILE__)
+      create_booter(JRuby::Rack::RailsBooter) do |booter|
+        booter.app_path = File.expand_path("../../../rails", __FILE__)
       end.boot!
       @booter.load_environment
     end
@@ -154,9 +160,10 @@ describe JRuby::Rack::RailsBooter do
     end
   end
 
-  describe "Rails 3.0 environment" do
-    before :all do
-      mock_servlet_context
+  # NOTE: specs currently only test with a stubbed Rails::Railtie
+  describe "Rails 3 environment", :lib => [ :stub ] do
+    
+    before :each do
       $servlet_context = @servlet_context
       create_booter(JRuby::Rack::RailsBooter) do |b|
         b.app_path = File.expand_path("../../../rails3", __FILE__)
@@ -271,9 +278,10 @@ describe JRuby::Rack::RailsBooter do
     end
   end
 
-  describe "Rails 3.1 environment" do
-    before :all do
-      mock_servlet_context
+  # NOTE: specs currently only test with a stubbed Rails::Railtie
+  describe "Rails 3.1 environment", :lib => [ :stub ] do
+    
+    before :each do
       $servlet_context = @servlet_context
       create_booter(JRuby::Rack::RailsBooter) do |b|
         b.app_path = File.expand_path("../../../rails3", __FILE__)

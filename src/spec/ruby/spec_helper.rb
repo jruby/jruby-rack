@@ -9,16 +9,6 @@ require 'java'
 require 'rspec'
 Maven.set_classpath
 
-#begin
-#  require 'rails' # attempt to load rails - for "real life" testing
-#  require 'rails/version' # use Rails::VERSION to detect current env
-#rescue LoadError
-# add to load path for stubbed out action_controller, railtie etc
-$LOAD_PATH.unshift File.expand_path('../rails/stub', __FILE__) 
-#end
-
-WD_START = Dir.getwd
-
 java_import org.jruby.rack.RackContext
 java_import org.jruby.rack.RackConfig
 java_import org.jruby.rack.RackServletContextListener
@@ -54,6 +44,16 @@ module SharedHelpers
 
 end
 
+begin
+  require 'rails' # attempt to load rails - for "real life" testing
+  require 'rails/version' # use Rails::VERSION to detect current env
+rescue LoadError
+  # add to load path for stubbed out action_controller, railtie etc
+  $LOAD_PATH.unshift File.expand_path('../rails/stub', __FILE__) 
+end
+
+WD_START = Dir.getwd
+
 RSpec.configure do |config|
 
   config.include SharedHelpers
@@ -69,6 +69,24 @@ RSpec.configure do |config|
     Dir.chdir(WD_START) unless Dir.getwd == WD_START
     $servlet_context = nil
   end
+  
+  current_lib = 
+    if defined?(Rails::VERSION)
+      case Rails::VERSION::STRING
+        when /2.3/ then :rails23
+        when /3.0/ then :rails30
+        when /3.1/ then :rails31
+        # TODO setup rails 3.2 !
+        else :stub
+      end
+    else
+      :stub
+    end
+  
+  config.filter_run_excluding :lib => lambda { |lib|
+    return false if lib.nil? # no :lib => specified run with all
+    ! ( lib.is_a?(Array) ? lib : [ lib ] ).include?(current_lib)
+  }
   
 end
 
