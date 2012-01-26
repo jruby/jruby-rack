@@ -7,9 +7,9 @@
 
 require 'spec_helper'
 
-import org.jruby.rack.DefaultRackApplication
-
 require 'jruby/rack/environment'
+
+import org.jruby.rack.DefaultRackApplication
 
 describe DefaultRackApplication, "call" do
   
@@ -108,6 +108,7 @@ end
 import org.jruby.rack.DefaultRackApplicationFactory
 
 describe DefaultRackApplicationFactory do
+  
   before :each do
     @app_factory = DefaultRackApplicationFactory.new
   end
@@ -152,20 +153,25 @@ describe DefaultRackApplicationFactory do
     @app_factory.rackup_script.should == "# coding: us-ascii\nrun MyRackApp"
   end
 
-  describe "" do
+  context "initialized" do
+    
     before :each do
       @rack_context.stub!(:getInitParameter).and_return nil
       @rack_context.stub!(:getResourcePaths).and_return nil
     end
+    
     let(:app_factory) { @app_factory.init @rack_context; @app_factory }
 
     describe "init" do
+      
       it "should create an error application" do
         app_factory.getErrorApplication.should respond_to(:call)
       end
+      
     end
 
     describe "newRuntime" do
+      
       it "should create a new Ruby runtime with the rack environment pre-loaded" do
         runtime = app_factory.new_runtime
         lambda { runtime.evalScriptlet("defined?(::Rack)") != nil }.should be_true
@@ -198,15 +204,12 @@ describe DefaultRackApplicationFactory do
         runtime.kcode.should == Java::OrgJrubyUtil::KCode::EUC
       end
       
-      def eval_should_be_true(value, expected)
-        (value == expected).should be_true
-      end
     end
+    
   end
 
   describe "newApplication" do
     before :each do
-      require 'tempfile'
       @rack_context.stub!(:getRealPath).and_return Dir::tmpdir
     end
 

@@ -10,7 +10,7 @@ raise "JRuby-Rack must be built with JRuby: try again with `jruby -S rake'" unle
 begin
   require 'bundler/setup'
 rescue
-  puts "Please install Bundler and run 'bundle install' to ensure you have all dependencies"
+  puts "Please install Bundler and run `bundle install` to ensure you have all dependencies"
 end
 require 'appraisal'
 
@@ -110,25 +110,14 @@ task :resources => ["target/classes", :unpack_gem, :update_version, :test_resour
   cp "src/main/tld/jruby-rack.tld", meta_inf
 end
 
-file 'target/spec' do # workaround for jruby-complete-1.6.0.jar bug finding spec
-  ENV['PATH'].split(File::PATH_SEPARATOR).each do |p|
-    if File.exist?(File.join(p, 'spec'))
-      cp File.join(p, 'spec'), 'target/spec'
-      break
-    end
-  end
-  fail "Could not find RSpec 1.3.x `spec' executable" unless File.exist?('target/spec')
-end
-
-task :speconly => ['target/spec', 'target/classpath.rb'] do
+task :speconly => ['target/classpath.rb'] do
   if ENV['SKIP_SPECS'] && ENV['SKIP_SPECS'] == "true"
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
-    opts = ["--format", "specdoc"]
-    opts << ENV['SPEC_OPTS'] if ENV['SPEC_OPTS']
+    opts = ENV['SPEC_OPTS'] ? ENV['SPEC_OPTS'] : %q{ --format documentation --color }
     spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
-    opts.push *FileList[spec].to_a
-    ruby "-Isrc/spec/ruby", "-rtarget/classpath", "-S", "target/spec", *opts
+    opts = opts.split(' ').push *FileList[spec].to_a
+    ruby "-Isrc/spec/ruby", "-rtarget/classpath", "-S", "rspec", *opts
   end
 end
 

@@ -9,6 +9,8 @@
 # Stubbed out Rails classes for testing
 #++
 
+require 'ostruct'
+
 module ActionController
   class CgiRequest
     DEFAULT_SESSION_OPTIONS = {}

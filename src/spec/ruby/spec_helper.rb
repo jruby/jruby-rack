@@ -6,7 +6,7 @@
 #++
 
 require 'java'
-require 'spec'
+require 'rspec'
 Maven.set_classpath
 
 #begin
@@ -24,8 +24,10 @@ java_import org.jruby.rack.RackConfig
 java_import org.jruby.rack.RackServletContextListener
 java_import org.jruby.rack.servlet.ServletRackContext
 java_import javax.servlet.ServletContext
+java_import javax.servlet.ServletConfig
 
-Spec::Runner.configure do |config|
+module SharedHelpers
+
   def mock_servlet_context
     @rack_config ||= RackConfig.impl {}
     @rack_context ||= ServletRackContext.impl {}
@@ -38,7 +40,7 @@ Spec::Runner.configure do |config|
       context.stub!(:getContextPath).and_return "/"
     end
     @rack_context.stub!(:getConfig).and_return @rack_config
-    @servlet_config ||= mock("servlet config")
+    @servlet_config ||= ServletConfig.impl {}
     @servlet_config.stub!(:getServletName).and_return "A Servlet"
     @servlet_config.stub!(:getServletContext).and_return @servlet_context
   end
@@ -50,6 +52,12 @@ Spec::Runner.configure do |config|
     @booter
   end
 
+end
+
+RSpec.configure do |config|
+
+  config.include SharedHelpers
+  
   config.before :each do
     @env_save = ENV.to_hash
     mock_servlet_context
@@ -61,6 +69,7 @@ Spec::Runner.configure do |config|
     Dir.chdir(WD_START) unless Dir.getwd == WD_START
     $servlet_context = nil
   end
+  
 end
 
 

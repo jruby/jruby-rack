@@ -4,9 +4,17 @@ GEM
     appraisal (0.4.0)
       bundler
       rake
+    diff-lcs (1.1.3)
     rack (1.3.6)
     rake (0.9.2.2)
-    rspec (1.3.2)
+    rspec (2.8.0)
+      rspec-core (~> 2.8.0)
+      rspec-expectations (~> 2.8.0)
+      rspec-mocks (~> 2.8.0)
+    rspec-core (2.8.0)
+    rspec-expectations (2.8.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.8.0)
 
 PLATFORMS
   java
@@ -15,4 +23,4 @@ DEPENDENCIES
   appraisal
   rack
   rake
-  rspec (~> 1.3)
+  rspec (~> 2.7)
