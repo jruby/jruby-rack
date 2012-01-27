@@ -72,13 +72,7 @@ RSpec.configure do |config|
   
   current_lib = 
     if defined?(Rails::VERSION)
-      case Rails::VERSION::STRING
-        when /2.3/ then :rails23
-        when /3.0/ then :rails30
-        when /3.1/ then :rails31
-        # TODO setup rails 3.2 !
-        else :stub
-      end
+      :"rails#{Rails::VERSION::MAJOR}#{Rails::VERSION::MINOR}" # e.g :rails31
     else
       :stub
     end
