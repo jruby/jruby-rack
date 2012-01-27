@@ -58,7 +58,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public void finishedWithApplication(RackApplication app) {
-        app.destroy();
+        if (app != null) app.destroy();
     }
 
     public synchronized RackApplication getErrorApplication() {
@@ -293,20 +293,17 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         rackupLocation = "<web.xml>";
 
         String rackup = rackContext.getConfig().getRackup();
-        if (rackup != null) {
-            return rackup;
-        }
+        if (rackup != null) return rackup;
 
         rackup = rackContext.getConfig().getRackupPath();
 
         if (rackup == null) {
             rackup = findConfigRuPathInSubDirectories("/WEB-INF/", 1);
         }
-
         if (rackup == null) { // google-appengine gem prefers it at /config.ru
             // appengine misses "/" resources. Search for it directly.
-            File f = new File(rackContext.getRealPath("/config.ru"));
-            if (f.exists()){
+            String rackupPath = rackContext.getRealPath("/config.ru");
+            if (rackupPath != null && new File(rackupPath).exists()) {
                 rackup = "/config.ru";
             }
         }

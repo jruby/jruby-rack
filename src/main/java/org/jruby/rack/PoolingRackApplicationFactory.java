@@ -96,11 +96,17 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     }
 
     public void finishedWithApplication(RackApplication app) {
+        if (app == null) {
+            // seems to sometimes happen when an error occurs during boot
+            // and thus on destroy app.destroy(); will fail with a NPE !
+            rackContext.log("Warn: ignoring null application");
+            return;
+        }
         synchronized (applicationPool) {
             if (maximum != null && applicationPool.size() >= maximum) {
                 return;
             }
-            if (applicationPool.contains(app)){
+            if (applicationPool.contains(app)) { 
                 return;
             }
             applicationPool.add(app);

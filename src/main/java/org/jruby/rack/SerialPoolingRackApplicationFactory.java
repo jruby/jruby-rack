@@ -20,6 +20,7 @@ public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationF
         super(factory);
     }
 
+    @Override
     protected void fillInitialPool() throws RackInitializationException {
         Queue<RackApplication> apps = createApplications();
         launchInitialization(apps);
