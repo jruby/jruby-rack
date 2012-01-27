@@ -353,8 +353,7 @@ describe PoolingRackApplicationFactory do
     @pool.destroy
   end
 
-  it "should create applications during initialization according 
-  to the jruby.min.runtimes context parameter" do
+  it "should create applications during initialization according to the jruby.min.runtimes context parameter" do
     @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
