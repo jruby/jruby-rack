@@ -42,6 +42,22 @@ module SharedHelpers
     @booter
   end
 
+  # org.jruby.Ruby.evalScriptlet helpers - comparing nils from different runtimes
+
+  def should_eval_as_nil(code, runtime = @runtime)
+    nil_str = runtime.evalScriptlet(code).inspect.to_java
+    nil_str.equals('nil').should be_true, "expected eval #{code.inspect} to be nil but is #{nil_str}"
+  end
+
+  def should_eval_as_not_nil(code, runtime = @runtime)
+    nil_str = runtime.evalScriptlet(code).inspect.to_java
+    nil_str.equals('nil').should be_false, "expected eval #{code.inspect} to not be nil but is"
+  end
+  
+  def should_not_eval_as_nil(code, runtime = @runtime) # alias
+    should_eval_as_not_nil(code, runtime)
+  end
+  
 end
 
 begin
