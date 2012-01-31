@@ -20,6 +20,7 @@ import javax.servlet.ServletContextListener;
  * @author nicksieger
  */
 public class RackServletContextListener implements ServletContextListener {
+    
     private final RackApplicationFactory factory;
 
     public RackServletContextListener() {
@@ -63,7 +64,7 @@ public class RackServletContextListener implements ServletContextListener {
         if (factory != null) {
             return factory;
         }
-
         return new SharedRackApplicationFactory(new DefaultRackApplicationFactory());
     }
+    
 }

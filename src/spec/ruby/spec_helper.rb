@@ -124,6 +124,13 @@ RSpec.configure do |config|
     ! ( lib.is_a?(Array) ? lib : [ lib ] ).include?(CURRENT_LIB)
   }
   
+  config.backtrace_clean_patterns = [
+    /bin\//,
+    /gems/,
+    /spec\/spec_helper\.rb/,
+    /lib\/rspec\/(core|expectations|matchers|mocks)/
+  ]
+  
 end
 
 

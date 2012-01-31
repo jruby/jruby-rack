@@ -14,13 +14,18 @@ import org.jruby.Ruby;
  * @author nicksieger
  */
 public class SharedRackApplicationFactory implements RackApplicationFactory {
-    private RackApplicationFactory realFactory;
+    
+    private final RackApplicationFactory realFactory;
     private RackApplication application;
 
     public SharedRackApplicationFactory(RackApplicationFactory factory) {
         realFactory = factory;
     }
 
+    public RackApplicationFactory getRealFactory() {
+        return realFactory;
+    }
+    
     public void init(RackContext rackContext) throws RackInitializationException {
         try {
             realFactory.init(rackContext);
