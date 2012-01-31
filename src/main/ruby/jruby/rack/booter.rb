@@ -6,6 +6,7 @@
 #++
 
 require 'jruby'
+require 'jruby/rack'
 
 module JRuby::Rack
   class Booter
@@ -27,8 +28,13 @@ module JRuby::Rack
       end
       load_settings_from_init_rb
       layout.change_working_directory if layout.respond_to?(:change_working_directory)
+      load_extensions
     end
 
+    def load_extensions
+      require 'jruby/rack/rack_ext'
+    end
+    
     def default_layout_class
       c = @rack_context.getInitParameter 'jruby.rack.layout_class'
       c.nil? ? WebInfLayout : eval(c)

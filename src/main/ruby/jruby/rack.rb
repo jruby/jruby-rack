@@ -35,4 +35,6 @@ require 'jruby/rack/booter'
 require 'jruby/rack/servlet_ext'
 require 'jruby/rack/core_ext'
 require 'jruby/rack/bundler_ext'
-require 'jruby/rack/rack_ext'
+
+# require 'rack' should be delayed to allow the app to boot it's own Rack
+# version if it needs one e.g. in a Rails application util Bundler starts

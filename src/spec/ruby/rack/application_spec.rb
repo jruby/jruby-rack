@@ -203,6 +203,11 @@ describe DefaultRackApplicationFactory do
         should_not_eval_as_nil "defined?(::Rack::Handler::Servlet)"
         should_eval_as_nil "defined?(Rack::Handler::Bogus)"
       end
+
+      it "should not require 'rack' (until booter is called)" do
+        @runtime = app_factory.new_runtime
+        should_eval_as_nil "defined?(::Rack::VERSION)"
+      end
       
       it "should initialize the $servlet_context global variable" do
         @runtime = app_factory.new_runtime

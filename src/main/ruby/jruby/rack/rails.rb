@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby/rack'
+require 'jruby/rack/booter'
 
 module JRuby::Rack
   class RailsBooter < Booter
@@ -29,6 +29,11 @@ module JRuby::Rack
       end
     end
 
+    def load_extensions
+      # no rack etc extensions required here (called during boot!)
+      # require 'jruby/rack/rails/extensions' on #load_environment
+    end
+    
     def setup_relative_url_root
       relative_url_append = @rack_context.getInitParameter('rails.relative_url_append') || ''
       relative_url_root = @rack_context.getContextPath + relative_url_append

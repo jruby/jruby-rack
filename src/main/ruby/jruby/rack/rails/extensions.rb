@@ -18,3 +18,5 @@ module ActionController
     end
   end
 end
+
+require 'jruby/rack/rack_ext'

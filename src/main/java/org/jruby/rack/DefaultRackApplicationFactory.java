@@ -130,10 +130,12 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup) {
-        return runtime.executeScript("load 'jruby/rack/boot/rack.rb';"
-                                     +"Rack::Handler::Servlet.new(Rack::Builder.new {( "
-                                     + rackup + "\n )}.to_app)",
-                                     rackupLocation);
+        return runtime.executeScript(
+                "load 'jruby/rack/boot/rack.rb';\n" + 
+                "Rack::Handler::Servlet.new( " + 
+                    "Rack::Builder.new { (" + rackup + "\n) }.to_app " + 
+                ")",
+                rackupLocation);
     }
 
     private interface ApplicationObjectFactory {
@@ -153,7 +155,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
         try { // try to set jruby home to jar file path
             URL resource = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
-            if (resource.getProtocol().equals("jar")) {
+            if (resource != null && resource.getProtocol().equals("jar")) {
                 String home;
                 try { // http://weblogs.java.net/blog/2007/04/25/how-convert-javaneturl-javaiofile
                     home = resource.toURI().getSchemeSpecificPart();
