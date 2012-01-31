@@ -208,6 +208,21 @@ describe DefaultRackApplicationFactory do
         @runtime = app_factory.new_runtime
         should_eval_as_nil "defined?(::Rack::VERSION)"
       end
+
+      it "should not load any features (until load path is adjusted)" do
+        # due to incorrectly detected jruby.home some container e.g. WebSphere 8
+        # fail if things such as 'fileutils' get required during runtime init !
+        
+        # TODO: WTF? JRuby magic - $LOADED_FEATURES seems to get "inherited" if
+        # Ruby.newInstance(config) is called with the factory's defaultConfig,
+        # but only if it's executed with bundler e.g. `bundle exec rake spec`
+        #@runtime = app_factory.new_runtime
+        @runtime = org.jruby.Ruby.newInstance
+        app_factory.initializeRuntime(@runtime)
+
+        reject_files = "p =~ /jar$/ || p =~ /^builtin/ || p =~ /^jruby/ || p =~ /^java/ || p == 'rack/handler/servlet.rb'"
+        should_eval_as_eql_to "$LOADED_FEATURES.reject { |p| #{reject_files} }", []
+      end
       
       it "should initialize the $servlet_context global variable" do
         @runtime = app_factory.new_runtime
