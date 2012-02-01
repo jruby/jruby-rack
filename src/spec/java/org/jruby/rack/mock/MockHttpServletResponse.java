@@ -1,5 +1,8 @@
 /*
- * Copyright 2002-2011 the original author or authors.
+ * Copyright (c) 2010-2012 Engine Yard, Inc.
+ * Copyright (c) 2007-2009 Sun Microsystems, Inc.
+ * This source code is available under the MIT license.
+ * See the file LICENSE.txt for details.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
