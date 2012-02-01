@@ -5,6 +5,8 @@
 # See the file LICENSE.txt for details.
 #++
 
+require 'jruby'
+
 module JRuby::Rack
   class Booter
     attr_reader :rack_context
@@ -64,7 +66,6 @@ module JRuby::Rack
     end
 
     def adjust_load_path
-      require 'jruby'
       # http://kenai.com/jira/browse/JRUBY_RACK-8: If some containers do
       # not allow proper detection of jruby.home, fall back to this
       tmpdir = java.lang.System.getProperty('java.io.tmpdir')
