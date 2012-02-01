@@ -98,7 +98,7 @@ describe JRuby::Rack::Booter do
     create_booter.boot!
     $loaded_init_rb.should == true
   end
-  
+
   it "should adjust load path when runtime.jruby_home == /tmp" do
     tmpdir = java.lang.System.getProperty('java.io.tmpdir')
     jruby_home = JRuby.runtime.instance_config.getJRubyHome
@@ -122,9 +122,9 @@ describe JRuby::Rack::Booter do
       $LOAD_PATH << "."
       # "stub" runtime.jruby_home :
       JRuby.runtime.instance_config.setJRubyHome(tmpdir)
-      
+
       create_booter.boot!
-      
+
       expected = []
       if JRuby.runtime.is1_9
         expected << "META-INF/jruby.home/lib/ruby/site_ruby/1.9"
@@ -147,6 +147,6 @@ describe JRuby::Rack::Booter do
       JRuby.runtime.instance_config.setJRubyHome(jruby_home)
     end
   end
-  
+
 end
 
