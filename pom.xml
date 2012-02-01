@@ -19,7 +19,7 @@
   </description>
 
   <properties>
-    <jruby.version>1.6.5</jruby.version>
+    <jruby.version>1.6.6</jruby.version>
   </properties>
 
   <issueManagement>
