@@ -299,6 +299,10 @@ Copy this configuration into config/database.yml:
       adapter: jdbch2
       database: db/production_h2_database
 
+Add the following to your application's Gemfile:
+
+    gem 'activerecord-jdbch2-adapter'
+
 Generate a scaffold for a simple model of blog comments.
 
     jruby script/rails generate scaffold comment name:string body:text
@@ -330,20 +334,6 @@ these comments:
 
 This will tell Warble to include the just initialized production H2
 database in the WAR.
-
-Continue editing config/warble.rb and add the following line after
-these comments:
-
-    # Gems to be packaged in the webapp.  Note that Rails gems are added to this
-    # list if vendor/rails is not present, so be sure to include rails if you
-    # overwrite the value
-    # config.gems = ["activerecord-jdbc-adapter", "jruby-openssl"]
-    # config.gems << "tzinfo"
-    # config.gems["rails"] = "1.2.3"
-    config.gems << "activerecord-jdbch2-adapter"
-
-This will tell Warble to add the JDBC driver for H2 as well as the
-ActiveRecord JDBC and JDBC-H2 adapter Gems.
 
 Now generate the WAR file:
 
