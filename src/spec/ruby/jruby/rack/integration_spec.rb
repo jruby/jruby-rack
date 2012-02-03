@@ -134,6 +134,12 @@ describe "integration" do
         initialize_rails
       end
       
+      it "loaded rack ~> 1.2" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rack.release)"
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.2'
+      end
+      
     end
     
   end
@@ -153,6 +159,17 @@ describe "integration" do
       
       before :each do
         initialize_rails
+      end
+
+      it "loaded META-INF/init.rb" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(WARBLER_CONFIG)"
+      end
+      
+      it "loaded rack ~> 1.3" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rack.release)"
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.3'
       end
       
     end

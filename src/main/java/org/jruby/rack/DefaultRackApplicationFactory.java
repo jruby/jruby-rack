@@ -84,10 +84,12 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             rackContext.log("WARNING: no rackup script found. Starting empty Rack application.");
             rackupScript = "";
         }
+        runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
         return createRackServletWrapper(runtime, rackupScript);
     }
 
     public IRubyObject createErrorApplicationObject(Ruby runtime) {
+        runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
         return createRackServletWrapper(runtime, "run JRuby::Rack::ErrorsApp.new");
     }
 
@@ -131,7 +133,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup) {
         return runtime.executeScript(
-                "load 'jruby/rack/boot/rack.rb';\n" + 
                 "Rack::Handler::Servlet.new( " + 
                     "Rack::Builder.new { (" + rackup + "\n) }.to_app " + 
                 ")",

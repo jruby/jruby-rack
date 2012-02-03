@@ -7,6 +7,4 @@
 
 require 'jruby/rack/rails'
 
-module JRuby::Rack
-  self.booter = RailsBooter.new
-end
+JRuby::Rack::RailsBooter.new.boot!

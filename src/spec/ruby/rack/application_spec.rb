@@ -153,16 +153,25 @@ describe DefaultRackApplicationFactory do
     @app_factory.rackup_script.should == "# coding: us-ascii\nrun MyRackApp"
   end
   
+  after :each do
+    JRuby::Rack.booter = nil
+    $servlet_context = nil
+  end
+  
   it "should init and create application object without a rackup script" do
+    JRuby::Rack.booter = nil
+    $servlet_context = @servlet_context
     # NOTE: a workaround to be able to mock it :
     klass = Class.new(DefaultRackApplicationFactory) do
       def createRackServletWrapper(runtime, rackup); end
     end
     @app_factory = klass.new
     
-    @rack_context.stub!(:getRealPath).and_return nil
+    @rack_context.should_receive(:getRealPath).with('/config.ru').and_return nil
+    #@rack_context.should_receive(:getContextPath).and_return '/'
     @rack_config.should_receive(:getRackup).and_return nil
     @rack_config.should_receive(:getRackupPath).and_return nil
+    
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == nil
     
@@ -171,11 +180,12 @@ describe DefaultRackApplicationFactory do
     end
     
     @app_factory.should_receive(:createRackServletWrapper) do |runtime, rackup|
-      runtime && rackup.should == ""
+      runtime.should be JRuby.runtime
+      rackup.should == ""
     end
 
-    runtime = @app_factory.newRuntime
-    @app_factory.createApplicationObject(runtime)
+    @app_factory.createApplicationObject(JRuby.runtime)
+    JRuby::Rack.booter.should be_a(JRuby::Rack::Booter)
   end
   
   context "initialized" do
@@ -305,6 +315,11 @@ describe RailsRackApplicationFactory do
   
   before :each do
     @app_factory = RailsRackApplicationFactory.new
+    $servlet_context = @servlet_context
+  end
+  
+  after :each do
+    $servlet_context = nil
   end
   
   it "should init and create application object" do
@@ -314,19 +329,21 @@ describe RailsRackApplicationFactory do
     end
     @app_factory = klass.new
     
-    @rack_context.stub!(:getRealPath).and_return nil
+    @rack_context.should_receive(:getRealPath).with('/config.ru').and_return nil
+    #@rack_context.should_receive(:getContextPath).and_return '/'
     @rack_config.should_receive(:getRackup).and_return nil
     @rack_config.should_receive(:getRackupPath).and_return nil
-    
+
     @app_factory.init @rack_context
     
     @app_factory.should_receive(:createRackServletWrapper) do |runtime, rackup|
-      runtime.should_not be_nil
-      rackup.should == "run JRuby::Rack::RailsFactory.new"
+      runtime.should be JRuby.runtime
+      rackup.should == "run JRuby::Rack::RailsBooter.to_app"
     end
-
-    runtime = @app_factory.newRuntime
-    @app_factory.createApplicationObject(runtime)
+    JRuby::Rack::RailsBooter.should_receive(:load_environment)
+    
+    @app_factory.createApplicationObject(JRuby.runtime)
+    JRuby::Rack.booter.should be_a(JRuby::Rack::RailsBooter)
   end
   
 end

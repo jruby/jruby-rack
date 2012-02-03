@@ -237,19 +237,11 @@ describe JRuby::Rack::Booter do
         should_not_eval_as_nil "JRuby::Rack.booter"
         should_eval_as_eql_to "JRuby::Rack.booter.class.name", 'JRuby::Rack::RailsBooter'
 
-        # Booter.boot! not yet run :
-        should_eval_as_nil "ENV['RACK_ENV']"
-        should_eval_as_nil "ENV['RAILS_ENV']"
-        # rack not yet required (let bundler decide which rack version to load) :
-        should_eval_as_nil "defined?(Rack::VERSION)"
-
-        # DefaultRackApplicationFactory#createRackServletWrapper
-        @runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'")
-
         # Booter.boot! run :
         should_not_eval_as_nil "ENV['RACK_ENV']"
         should_not_eval_as_nil "ENV['RAILS_ENV']"
-        # rack did not get required (Rails::App.initialize! load correct version) :
+                
+        # rack not yet required (let bundler decide which rack version to load) :
         should_eval_as_nil "defined?(Rack::VERSION)"
         should_eval_as_nil "defined?(Rack.release)"
       end

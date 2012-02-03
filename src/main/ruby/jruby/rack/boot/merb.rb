@@ -7,6 +7,4 @@
 
 require 'jruby/rack/merb'
 
-module JRuby::Rack
-  self.booter = MerbBooter.new
-end
+JRuby::Rack::MerbBooter.new.boot!
