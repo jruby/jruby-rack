@@ -9,6 +9,9 @@ package org.jruby.rack.embed;
 
 import java.io.IOException;
 
+import org.jruby.Ruby;
+import org.jruby.javasupport.JavaUtil;
+
 import org.jruby.rack.AbstractRackDispatcher;
 import org.jruby.rack.DefaultRackApplication;
 import org.jruby.rack.RackApplication;
@@ -16,6 +19,7 @@ import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.RackInitializationException;
 import org.jruby.rack.RackResponseEnvironment;
+
 import org.jruby.runtime.builtin.IRubyObject;
 
 public class Dispatcher extends AbstractRackDispatcher {
@@ -33,6 +37,9 @@ public class Dispatcher extends AbstractRackDispatcher {
         if (rackApplication == null) {
             rackApplication = new DefaultRackApplication(application);
             rackApplication.init();
+            Ruby runtime = application.getRuntime();
+            IRubyObject rubyContext = JavaUtil.convertJavaToRuby(runtime, context);
+            runtime.getGlobalVariables().set("$servlet_context", rubyContext);
         }
         return rackApplication;
     }
