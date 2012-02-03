@@ -36,6 +36,7 @@ describe RackServlet, "service" do
 end
 
 describe ServletRackContext, "getRealPath" do
+  
   before :each do
     @context = DefaultServletRackContext.new(ServletRackConfig.new(@servlet_context))
   end
@@ -46,4 +47,21 @@ describe ServletRackContext, "getRealPath" do
     @servlet_context.should_receive(:getResource).with("/WEB-INF").and_return url
     @context.getRealPath("/WEB-INF").should == "/var/tmp/foo.txt"
   end
+
+  it "should strip file: prefix for getRealPath" do
+    @servlet_context.stub!(:getRealPath).and_return nil
+    
+    # we're emulating a ServletContext.getResource returning an URL which might
+    # differ for different containers - WLS 10 might behave this way from time:
+    url = java.net.URL.new 'file', nil, 0, "file:/foo/bar", nil
+    # url.path.should == "file:/foo/bar"
+    @servlet_context.should_receive(:getResource).with("/bar").and_return url
+    @context.getRealPath("/bar").should == "/foo/bar"
+    
+    url = java.net.URL.new 'file', nil, 0, "file:///foo/bar", nil
+    # url.path.should == "file:///foo/bar"
+    @servlet_context.should_receive(:getResource).with("/bar").and_return url
+    @context.getRealPath("/bar").should == "/foo/bar"
+  end
+  
 end

@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby/rack'
+require 'jruby/rack/booter'
 
 module JRuby::Rack
   class RailsBooter < Booter
@@ -29,6 +29,11 @@ module JRuby::Rack
       end
     end
 
+    def load_extensions
+      # no rack etc extensions required here (called during boot!)
+      # require 'jruby/rack/rails/extensions' on #load_environment
+    end
+    
     def setup_relative_url_root
       relative_url_append = @rack_context.getInitParameter('rails.relative_url_append') || ''
       relative_url_root = @rack_context.getContextPath + relative_url_append
@@ -43,8 +48,10 @@ module JRuby::Rack
     end
 
     module Rails2Environment
+      
       def to_app
-        load_environment
+        # backward "compatibility" calling #to_app without a #load_environment
+        load_environment unless @load_environment
         require 'rack/adapter/rails'
         RailsRequestSetup.new(::Rack::Adapter::Rails.new(options), self)
       end
@@ -56,6 +63,7 @@ module JRuby::Rack
         setup_sessions
         setup_logger
         setup_relative_url_root
+        @load_environment = true # prevent 2x load 'environment.rb'
       end
 
       # This hook method is called back from within the mechanism installed
@@ -70,6 +78,7 @@ module JRuby::Rack
             JRuby::Rack.booter.before_require_frameworks
             require_frameworks_without_servlet_env
             JRuby::Rack.booter.setup_actionpack
+            require 'jruby/rack/rails/extensions2'
           end
           alias_method :require_frameworks, :require_frameworks_with_servlet_env
         end
@@ -89,7 +98,6 @@ module JRuby::Rack
             asset_tag_helper.const_set("STYLESHEETS_DIR", "#{PUBLIC_ROOT}/stylesheets")
           end
         end
-        require 'jruby/rack/rails/extensions2'
       end
 
       def rack_based_sessions?
@@ -158,9 +166,11 @@ module JRuby::Rack
           ActionController::Base.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT']
         end
       end
+      
     end
 
     module Rails3Environment
+      
       def load_environment
         require File.join(app_path, 'config', 'boot')
         require 'jruby/rack/rails/railtie'
@@ -169,10 +179,32 @@ module JRuby::Rack
       end
 
       def to_app
+        # backward "compatibility" calling #to_app without a #load_environment
         load_environment
         ::Rails.application
       end
+      
     end
+    
+    # @see #RailsRackApplicationFactory
+    def self.load_environment
+      rails_booter.load_environment
+    end
+
+    # @see #RailsRackApplicationFactory
+    def self.to_app
+      rails_booter.to_app
+    end
+    
+    private
+    
+    def self.rails_booter
+      booter = JRuby::Rack.booter
+      raise "no booter set" unless booter
+      raise "not a rails booter" unless booter.is_a?(JRuby::Rack::RailsBooter)
+      booter
+    end
+    
   end
 
   class RailsRequestSetup
@@ -186,10 +218,5 @@ module JRuby::Rack
       @app.call(env)
     end
   end
-
-  class RailsFactory
-    def self.new
-      JRuby::Rack.booter.to_app
-    end
-  end
+  
 end

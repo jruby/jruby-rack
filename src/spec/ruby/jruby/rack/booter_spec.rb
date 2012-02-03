@@ -85,16 +85,18 @@ describe JRuby::Rack::Booter do
     @rack_context.should_receive(:log).with(/hello/)
     @booter.logger.info "hello"
   end
-
+  
   it "should load and execute ruby code in META-INF/init.rb if it exists" do
-    @rack_context.should_receive(:getResource).with("/META-INF/init.rb").and_return java.net.URL.new("file:#{File.expand_path('../init.rb', __FILE__)}")
+    @rack_context.should_receive(:getResource).with("/META-INF/init.rb").
+      and_return java.net.URL.new("file:#{File.expand_path('init.rb', STUB_DIR)}")
     create_booter.boot!
     $loaded_init_rb.should == true
     defined?(::SOME_TOPLEVEL_CONSTANT).should be_true
   end
 
   it "should load and execute ruby code in WEB-INF/init.rb if it exists" do
-    @rack_context.should_receive(:getResource).with("/WEB-INF/init.rb").and_return java.net.URL.new("file:#{File.expand_path('../init.rb', __FILE__)}")
+    @rack_context.should_receive(:getResource).with("/WEB-INF/init.rb").
+      and_return java.net.URL.new("file://#{File.expand_path('init.rb', STUB_DIR)}")
     create_booter.boot!
     $loaded_init_rb.should == true
   end
@@ -147,6 +149,105 @@ describe JRuby::Rack::Booter do
       JRuby.runtime.instance_config.setJRubyHome(jruby_home)
     end
   end
+  
+  context "within a runtime" do
+    
+    describe "rack env" do
+      
+      before :each do
+        # NOTE: this is obviously poor testing but it's easier to let the factory
+        # setup the runtime for us than to hand copy/stub/mock all code involved
+        servlet_context = ServletContext.impl do |name, *args|
+          case name.to_sym
+            when :getRealPath then
+              case args.first
+                when '/WEB-INF' then File.expand_path('rack/WEB-INF', STUB_DIR)
+              end
+            when :getContextPath then
+              '/'
+            when :log then
+              raise_logger.log(*args)
+            else nil
+          end
+        end
+        rack_config = org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)
+        rack_context = org.jruby.rack.servlet.DefaultServletRackContext.new(rack_config)
+        app_factory = org.jruby.rack.DefaultRackApplicationFactory.new
+        app_factory.init rack_context
 
+        @runtime = app_factory.newRuntime
+        @runtime.evalScriptlet("ENV.clear")
+      end
+
+      it "sets up (default) rack booter and boots" do
+        # DefaultRackApplicationFactory#createApplicationObject
+        @runtime.evalScriptlet("require 'jruby/rack/booter'")
+        @runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'")
+
+        # booter got setup :
+        should_not_eval_as_nil "defined?(JRuby::Rack.booter)"
+        should_not_eval_as_nil "JRuby::Rack.booter"
+        should_eval_as_eql_to "JRuby::Rack.booter.class.name", 'JRuby::Rack::Booter'
+
+        # Booter.boot! run :
+        should_not_eval_as_nil "ENV['RACK_ENV']"
+        # rack got required :
+        should_not_eval_as_nil "defined?(Rack::VERSION)"
+        should_not_eval_as_nil "defined?(Rack.release)"
+        # check if it got loaded correctly :
+        should_not_eval_as_nil "Rack::Request.new({}) rescue nil"
+      end
+      
+    end
+
+    describe "rails env" do
+      
+      before :each do
+        # NOTE: this is obviously poor testing but it's easier to let the factory
+        # setup the runtime for us than to hand copy/stub/mock all code involved
+        servlet_context = ServletContext.impl do |name, *args|
+          case name.to_sym
+            when :getRealPath then
+              case args.first
+                when '/WEB-INF' then File.expand_path('rails30/WEB-INF', STUB_DIR)
+              end
+            when :getContextPath then
+              '/'
+            when :log then
+              raise_logger.log(*args)
+            else nil
+          end
+        end
+        rack_config = org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)
+        rack_context = org.jruby.rack.servlet.DefaultServletRackContext.new(rack_config)
+        app_factory = org.jruby.rack.rails.RailsRackApplicationFactory.new
+        app_factory.init rack_context
+
+        @runtime = app_factory.newRuntime
+        @runtime.evalScriptlet("ENV.clear")
+      end
+      
+      it "sets up rails booter and boots" do
+        # RailsRackApplicationFactory#createApplicationObject
+        @runtime.evalScriptlet("require 'jruby/rack/rails'")
+        @runtime.evalScriptlet("load 'jruby/rack/boot/rails.rb'")
+
+        # booter got setup :
+        should_not_eval_as_nil "defined?(JRuby::Rack.booter)"
+        should_not_eval_as_nil "JRuby::Rack.booter"
+        should_eval_as_eql_to "JRuby::Rack.booter.class.name", 'JRuby::Rack::RailsBooter'
+
+        # Booter.boot! run :
+        should_not_eval_as_nil "ENV['RACK_ENV']"
+        should_not_eval_as_nil "ENV['RAILS_ENV']"
+                
+        # rack not yet required (let bundler decide which rack version to load) :
+        should_eval_as_nil "defined?(Rack::VERSION)"
+        should_eval_as_nil "defined?(Rack.release)"
+      end
+      
+    end
+    
+  end
+  
 end
-

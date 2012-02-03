@@ -19,6 +19,7 @@ public class RailsRackApplicationFactory extends DefaultRackApplicationFactory {
     @Override
     public IRubyObject createApplicationObject(Ruby runtime) {
         runtime.evalScriptlet("load 'jruby/rack/boot/rails.rb'");
-        return createRackServletWrapper(runtime, "run JRuby::Rack::RailsFactory.new");
+        runtime.evalScriptlet("JRuby::Rack::RailsBooter.load_environment");
+        return createRackServletWrapper(runtime, "run JRuby::Rack::RailsBooter.to_app");
     }
 }

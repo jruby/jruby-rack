@@ -153,16 +153,25 @@ describe DefaultRackApplicationFactory do
     @app_factory.rackup_script.should == "# coding: us-ascii\nrun MyRackApp"
   end
   
+  after :each do
+    JRuby::Rack.booter = nil
+    $servlet_context = nil
+  end
+  
   it "should init and create application object without a rackup script" do
+    JRuby::Rack.booter = nil
+    $servlet_context = @servlet_context
     # NOTE: a workaround to be able to mock it :
     klass = Class.new(DefaultRackApplicationFactory) do
       def createRackServletWrapper(runtime, rackup); end
     end
     @app_factory = klass.new
     
-    @rack_context.stub!(:getRealPath).and_return nil
+    @rack_context.should_receive(:getRealPath).with('/config.ru').and_return nil
+    #@rack_context.should_receive(:getContextPath).and_return '/'
     @rack_config.should_receive(:getRackup).and_return nil
     @rack_config.should_receive(:getRackupPath).and_return nil
+    
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == nil
     
@@ -171,11 +180,12 @@ describe DefaultRackApplicationFactory do
     end
     
     @app_factory.should_receive(:createRackServletWrapper) do |runtime, rackup|
-      runtime && rackup.should == ""
+      runtime.should be JRuby.runtime
+      rackup.should == ""
     end
 
-    runtime = @app_factory.newRuntime
-    @app_factory.createApplicationObject(runtime)
+    @app_factory.createApplicationObject(JRuby.runtime)
+    JRuby::Rack.booter.should be_a(JRuby::Rack::Booter)
   end
   
   context "initialized" do
@@ -197,38 +207,58 @@ describe DefaultRackApplicationFactory do
 
     describe "newRuntime" do
       
-      it "should create a new Ruby runtime with the rack environment pre-loaded" do
-        runtime = app_factory.new_runtime
-        lambda { runtime.evalScriptlet("defined?(::Rack)") != nil }.should be_true
-        lambda { runtime.evalScriptlet("defined?(::Rack::Handler::Servlet)") != nil }.should be_true
-        lambda { runtime.evalScriptlet("defined?(Rack::Handler::Bogus)") == nil }.should be_true
+      it "should create a new Ruby runtime with the jruby-rack environment pre-loaded" do
+        @runtime = app_factory.new_runtime
+        should_not_eval_as_nil "defined?(::Rack)"
+        should_not_eval_as_nil "defined?(::Rack::Handler::Servlet)"
+        should_eval_as_nil "defined?(Rack::Handler::Bogus)"
       end
 
+      it "should not require 'rack' (until booter is called)" do
+        @runtime = app_factory.new_runtime
+        should_eval_as_nil "defined?(::Rack::VERSION)"
+      end
+
+      it "should not load any features (until load path is adjusted)" do
+        # due to incorrectly detected jruby.home some container e.g. WebSphere 8
+        # fail if things such as 'fileutils' get required during runtime init !
+        
+        # TODO: WTF? JRuby magic - $LOADED_FEATURES seems to get "inherited" if
+        # Ruby.newInstance(config) is called with the factory's defaultConfig,
+        # but only if it's executed with bundler e.g. `bundle exec rake spec`
+        #@runtime = app_factory.new_runtime
+        @runtime = org.jruby.Ruby.newInstance
+        app_factory.initializeRuntime(@runtime)
+
+        reject_files = "p =~ /jar$/ || p =~ /^builtin/ || p =~ /^jruby/ || p =~ /^java/ || p == 'rack/handler/servlet.rb'"
+        should_eval_as_eql_to "$LOADED_FEATURES.reject { |p| #{reject_files} }", []
+      end
+      
       it "should initialize the $servlet_context global variable" do
-        runtime = app_factory.new_runtime
-        lambda { runtime.evalScriptlet("defined?($servlet_context)") != nil }.should be_true
+        @runtime = app_factory.new_runtime
+        should_not_eval_as_nil "defined?($servlet_context)"
       end
 
       it "should handle jruby.compat.version == '1.9' and start up in 1.9 mode" do
         @rack_config.stub!(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
-        runtime = app_factory.new_runtime
-        runtime.is1_9.should be_true
+        @runtime = app_factory.new_runtime
+        @runtime.is1_9.should be_true
       end
 
       it "should have environment variables cleared if the configuration ignores the environment" do
         ENV["HOME"].should_not == ""
         @rack_config.stub!(:isIgnoreEnvironment).and_return true
-        runtime = app_factory.new_runtime
-        lambda { runtime.evalScriptlet('ENV["HOME"]') == nil }.should be_true
+        @runtime = app_factory.new_runtime
+        should_eval_as_nil "ENV['HOME']"
       end
 
       it "should handle jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
         @rack_config.stub!(:getRuntimeArguments).and_return ['-X+O', '-Ke'].to_java(:String)
-        runtime = app_factory.new_runtime
-        runtime.object_space_enabled.should be_true
-        runtime.kcode.should == Java::OrgJrubyUtil::KCode::EUC
+        @runtime = app_factory.new_runtime
+        @runtime.object_space_enabled.should be_true
+        @runtime.kcode.should == Java::OrgJrubyUtil::KCode::EUC
       end
-      
+        
     end
     
   end
@@ -285,6 +315,11 @@ describe RailsRackApplicationFactory do
   
   before :each do
     @app_factory = RailsRackApplicationFactory.new
+    $servlet_context = @servlet_context
+  end
+  
+  after :each do
+    $servlet_context = nil
   end
   
   it "should init and create application object" do
@@ -294,19 +329,21 @@ describe RailsRackApplicationFactory do
     end
     @app_factory = klass.new
     
-    @rack_context.stub!(:getRealPath).and_return nil
+    @rack_context.should_receive(:getRealPath).with('/config.ru').and_return nil
+    #@rack_context.should_receive(:getContextPath).and_return '/'
     @rack_config.should_receive(:getRackup).and_return nil
     @rack_config.should_receive(:getRackupPath).and_return nil
-    
+
     @app_factory.init @rack_context
     
     @app_factory.should_receive(:createRackServletWrapper) do |runtime, rackup|
-      runtime.should_not be_nil
-      rackup.should == "run JRuby::Rack::RailsFactory.new"
+      runtime.should be JRuby.runtime
+      rackup.should == "run JRuby::Rack::RailsBooter.to_app"
     end
-
-    runtime = @app_factory.newRuntime
-    @app_factory.createApplicationObject(runtime)
+    JRuby::Rack::RailsBooter.should_receive(:load_environment)
+    
+    @app_factory.createApplicationObject(JRuby.runtime)
+    JRuby::Rack.booter.should be_a(JRuby::Rack::RailsBooter)
   end
   
 end
@@ -353,8 +390,7 @@ describe PoolingRackApplicationFactory do
     @pool.destroy
   end
 
-  it "should create applications during initialization according 
-  to the jruby.min.runtimes context parameter" do
+  it "should create applications during initialization according to the jruby.min.runtimes context parameter" do
     @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"

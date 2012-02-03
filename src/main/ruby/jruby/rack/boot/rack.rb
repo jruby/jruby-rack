@@ -5,7 +5,6 @@
 # See the file LICENSE.txt for details.
 #++
 
-module JRuby::Rack
-  self.booter ||= Booter.new
-  self.booter.boot!
-end
+require 'jruby/rack/booter'
+
+JRuby::Rack::Booter.new.boot!

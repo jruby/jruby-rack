@@ -29,8 +29,7 @@ module JRuby
       end
 
       def real_path(path)
-        rpath = @rack_context.getRealPath(path)
-        if rpath
+        if rpath = @rack_context.getRealPath(path)
           # protect windows paths from backrefs
           rpath.sub!(/\\([0-9])/, '\\\\\\\\\1')
           rpath.chomp!('/')
@@ -60,14 +59,16 @@ module JRuby
       end
 
       def gem_uri
-        @gem_uri ||= @rack_context.getInitParameter('gem.path') ||
-          @rack_context.getInitParameter('gem.home') || '/WEB-INF/gems'
+        @gem_uri ||=
+          @rack_context.getInitParameter('gem.path') ||
+          @rack_context.getInitParameter('gem.home') ||
+          '/WEB-INF/gems'
       end
 
       def real_path(path)
-        rx = Regexp.quote(app_uri)
-        if path =~ /^#{rx}\//
-          path.sub(/^#{rx}/, app_path)
+        app_regex = Regexp.quote(app_uri) # app_uri = '/WEB-INF'
+        if path =~ /^#{app_regex}\// # gem_path = '/WEB-INF/gems'
+          path.sub(/^#{app_regex}/, app_path) # '[app_path]/gems'
         else
           super
         end

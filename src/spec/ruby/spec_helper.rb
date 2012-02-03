@@ -17,7 +17,7 @@ java_import javax.servlet.ServletContext
 java_import javax.servlet.ServletConfig
 
 module SharedHelpers
-
+  
   def mock_servlet_context
     @rack_config ||= RackConfig.impl {}
     @rack_context ||= ServletRackContext.impl {}
@@ -36,13 +36,60 @@ module SharedHelpers
   end
 
   def create_booter(booter_class = JRuby::Rack::Booter)
-    require 'jruby/rack'
     @booter = booter_class.new @rack_context
     yield @booter if block_given?
     @booter
   end
 
+  @@raise_logger = nil
+  
+  def raise_logger
+    @@raise_logger ||= org.jruby.rack.RackLogger.impl do |name, *args|
+      raise args[1] if name.to_s == 'log' && args[1] != nil # log(str, error)
+    end
+  end
+  
+  # org.jruby.Ruby.evalScriptlet helpers - comparing values from different runtimes
+
+  def should_eval_as_eql_to(code, expected, options = {})
+    if options.is_a?(Hash)
+      runtime = options[:runtime] || @runtime
+    else
+      runtime, options = options, {}
+    end
+    message = options[:message] || "expected eval #{code.inspect} to be == $expected but was $actual"
+    be_flag = options.has_key?(:should) ? options[:should] : be_true
+    
+    expected = expected.inspect.to_java
+    actual = runtime.evalScriptlet(code).inspect.to_java
+    actual.equals(expected).should be_flag, message.gsub('$expected', expected.to_s).gsub('$actual', actual.to_s)
+  end
+  
+  def should_eval_as_not_eql_to(code, expected, options = {})
+    should_eval_as_eql_to(code, expected, options.merge(:should => be_false, 
+        :message => options[:message] || "expected eval #{code.inspect} to be != $expected but was not")
+    )
+  end
+  
+  def should_eval_as_nil(code, runtime = @runtime)
+    should_eval_as_eql_to code, nil, :runtime => runtime, 
+      :message => "expected eval #{code.inspect} to be nil but was $actual"
+  end
+
+  def should_eval_as_not_nil(code, runtime = @runtime)
+    should_eval_as_eql_to code, nil, :should => be_false, :runtime => runtime, 
+      :message => "expected eval #{code.inspect} to not be nil but was"
+  end
+  
+  def should_not_eval_as_nil(code, runtime = @runtime) # alias
+    should_eval_as_not_nil(code, runtime)
+  end
+  
 end
+
+STUB_DIR = File.expand_path('../stub', File.dirname(__FILE__))
+
+WD_START = Dir.getwd
 
 begin
   require 'rails' # attempt to load rails - for "real life" testing
@@ -52,7 +99,9 @@ rescue LoadError
   $LOAD_PATH.unshift File.expand_path('../rails/stub', __FILE__) 
 end
 
-WD_START = Dir.getwd
+# current 'library' environment (based on appraisals) e.g. :rails31
+CURRENT_LIB = defined?(Rails::VERSION) ? 
+  :"rails#{Rails::VERSION::MAJOR}#{Rails::VERSION::MINOR}" : :stub
 
 RSpec.configure do |config|
 
@@ -70,17 +119,17 @@ RSpec.configure do |config|
     $servlet_context = nil
   end
   
-  current_lib = 
-    if defined?(Rails::VERSION)
-      :"rails#{Rails::VERSION::MAJOR}#{Rails::VERSION::MINOR}" # e.g :rails31
-    else
-      :stub
-    end
-  
   config.filter_run_excluding :lib => lambda { |lib|
     return false if lib.nil? # no :lib => specified run with all
-    ! ( lib.is_a?(Array) ? lib : [ lib ] ).include?(current_lib)
+    ! ( lib.is_a?(Array) ? lib : [ lib ] ).include?(CURRENT_LIB)
   }
+  
+  config.backtrace_clean_patterns = [
+    /bin\//,
+    /gems/,
+    /spec\/spec_helper\.rb/,
+    /lib\/rspec\/(core|expectations|matchers|mocks)/
+  ]
   
 end
 

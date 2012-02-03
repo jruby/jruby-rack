@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby/rack'
+require 'jruby/rack/booter'
 
 module JRuby::Rack
   class MerbBooter < Booter

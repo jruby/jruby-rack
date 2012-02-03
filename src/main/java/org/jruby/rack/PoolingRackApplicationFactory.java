@@ -33,9 +33,11 @@ import java.util.concurrent.TimeUnit;
  * @author nicksieger
  */
 public class PoolingRackApplicationFactory implements RackApplicationFactory {
+    
     static final int DEFAULT_TIMEOUT = 30;
+    
     protected RackContext rackContext;
-    private RackApplicationFactory realFactory;
+    private final RackApplicationFactory realFactory;
     protected final Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
     private Integer initial, maximum;
     private long timeout = DEFAULT_TIMEOUT;
@@ -45,6 +47,10 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         realFactory = factory;
     }
 
+    public RackApplicationFactory getRealFactory() {
+        return realFactory;
+    }
+    
     public void init(final RackContext rackContext) throws RackInitializationException {
         this.rackContext = rackContext;
         realFactory.init(rackContext);
@@ -128,7 +134,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         }
         realFactory.destroy();
     }
-
+    
     /** Used only by unit tests */
     public Collection<RackApplication> getApplicationPool() {
         return Collections.unmodifiableCollection(applicationPool);

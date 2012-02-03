@@ -52,13 +52,21 @@ public class DefaultServletRackContext implements ServletRackContext {
     public String getRealPath(String path) {
         String realPath = context.getRealPath(path);
         if (realPath == null) { // some servers don't like getRealPath, e.g. w/o exploded war
-            URL u = null;
             try {
-                u = context.getResource(path);
-            } catch (MalformedURLException ex) {}
-            if (u != null) {
-                realPath = u.getPath();
+                URL url = context.getResource(path);
+                if (url != null) {
+                    String urlPath = url.getPath();
+                    // still might end up as an URL with path "file:/home"
+                    if (urlPath.startsWith("file:")) {
+                        // handles "file:/home" and "file:///home" as well
+                        realPath = new URL(urlPath).getPath(); // "/home"
+                    }
+                    else {
+                        realPath = urlPath;
+                    }
+                }
             }
+            catch (MalformedURLException e) { /* ignored */ }
         }
         return realPath;
     }

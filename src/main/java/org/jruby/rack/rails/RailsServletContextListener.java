@@ -7,13 +7,19 @@
 
 package org.jruby.rack.rails;
 
-import org.jruby.rack.*;
+import org.jruby.rack.SerialPoolingRackApplicationFactory;
+import org.jruby.rack.SharedRackApplicationFactory;
+import org.jruby.rack.PoolingRackApplicationFactory;
+import org.jruby.rack.RackApplicationFactory;
+import org.jruby.rack.RackConfig;
+import org.jruby.rack.RackServletContextListener;
 
 /**
  *
  * @author nicksieger
  */
 public class RailsServletContextListener extends RackServletContextListener {
+    
     @Override
     protected RackApplicationFactory newApplicationFactory(RackConfig config) {
         Integer maxRuntimes = config.getMaximumRuntimes();
@@ -27,4 +33,5 @@ public class RailsServletContextListener extends RackServletContextListener {
             }
         }
     }
+    
 }
