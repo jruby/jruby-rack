@@ -141,6 +141,23 @@ describe "integration" do
       end
       
     end
+
+    context "initialized (custom)" do
+
+      before :each do
+        @servlet_context.addInitParameter("rails.env", 'custom')
+        initialize_rails
+      end
+      
+      it "booted a custom env with a custom logger" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rails)"
+        should_eval_as_eql_to "Rails.env", 'custom'
+        should_eval_as_not_nil "Rails.logger"
+        should_eval_as_eql_to "Rails.logger.class.name", 'CustomLogger'
+      end
+      
+    end
     
   end
 
@@ -171,13 +188,23 @@ describe "integration" do
         should_eval_as_not_nil "defined?(Rack.release)"
         should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.3'
       end
+
+      it "booted with a servlet logger" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rails)"
+        should_eval_as_not_nil "Rails.logger"
+        should_eval_as_not_nil "Rails.logger.instance_variable_get(:'@logdev')" # Logger::LogDevice
+        should_eval_as_eql_to "Rails.logger.instance_variable_get(:'@logdev').dev.class.name", 'JRuby::Rack::ServletLog'
+        
+        should_eval_as_eql_to "Rails.logger.level", Logger::DEBUG
+      end
       
     end
     
   end
   
   def initialize_rails
-    listener = org.jruby.rack.RackServletContextListener.new
+    listener = org.jruby.rack.rails.RailsServletContextListener.new
     listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
     @rack_context = @servlet_context.getAttribute("rack.context")
     @rack_factory = @servlet_context.getAttribute("rack.factory")

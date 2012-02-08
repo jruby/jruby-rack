@@ -5,11 +5,7 @@ log
 activemq-data
 examples/*/tmp
 examples/*/work
-examples/merb/merb.war
-examples/rails/rails.war
-examples/rails3/rails3.war
-examples/camping/camping.war
-examples/sinatra/sinatra.war
+examples/*/*.war
 examples/*/nbproject
 nbproject/private/*
 .redcar

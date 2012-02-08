@@ -34,10 +34,12 @@ module JRuby::Rack
     end
 
     initializer "set_servlet_logger", :before => :initialize_logger do |app|
-      logger = JRuby::Rack.booter.logger
-      logger.level = logger.class.const_get(app.config.log_level.to_s.upcase)
-      logger = ActiveSupport::TaggedLogging.new(logger) if defined?(ActiveSupport::TaggedLogging)
-      app.config.logger = logger
+      app.config.logger ||= begin 
+        logger = JRuby::Rack.booter.logger
+        logger.level = logger.class.const_get(app.config.log_level.to_s.upcase)
+        logger = ActiveSupport::TaggedLogging.new(logger) if defined?(ActiveSupport::TaggedLogging)
+        logger
+      end
     end
 
     initializer "set_relative_url_root", :after => "action_controller.set_configs" do |app|
