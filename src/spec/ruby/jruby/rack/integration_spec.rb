@@ -203,6 +203,45 @@ describe "integration" do
     
   end
   
+  describe 'rails 3.2', :lib => :rails32 do
+    
+    before(:all) { copy_gemfile("rails32") }
+    
+    before do
+      @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rails32"
+      @servlet_context.logger = raise_logger
+    end
+    
+    it_should_behave_like 'a rails app'
+    
+    context "initialized" do
+      
+      before :each do
+        initialize_rails
+      end
+      
+      it "loaded rack ~> 1.4" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rack.release)"
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.4'
+      end
+
+      it "booted with a servlet logger" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rails)"
+        should_eval_as_not_nil "Rails.logger"
+        should_eval_as_eql_to "Rails.logger.class.name", 'ActiveSupport::TaggedLogging'
+        should_eval_as_not_nil "Rails.logger.instance_variable_get(:'@logger')"
+        should_eval_as_eql_to "logger = Rails.logger.instance_variable_get(:'@logger'); " + 
+          "logger.instance_variable_get(:'@logdev').dev.class.name", 'JRuby::Rack::ServletLog'
+        
+        should_eval_as_eql_to "Rails.logger.level", Logger::INFO
+      end
+      
+    end
+    
+  end
+  
   def initialize_rails
     listener = org.jruby.rack.rails.RailsServletContextListener.new
     listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
