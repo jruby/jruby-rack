@@ -89,7 +89,7 @@ module JRuby
       def write_body(response)
         outputstream = response.getOutputStream
         begin
-          if @body.respond_to?(:call) && !@body.respond_to?(:each)
+          if @body.respond_to?(:call) && ! @body.respond_to?(:each)
             @body.call(outputstream)
           elsif @body.respond_to?(:to_channel) && !object_polluted_with_anyio?(@body, :to_channel)
             @body = @body.to_channel # so that we close the channel
@@ -98,14 +98,16 @@ module JRuby
             @body = @body.to_inputstream # so that we close the stream
             transfer_channel(Channels.newChannel(@body), outputstream)
           else
-            @body.each do |el|
-              outputstream.write(el.to_java_bytes)
+            # 1.8 has a String#each method but 1.9 does not :
+            method = @body.respond_to?(:each_line) ? :each_line : :each
+            @body.send(method) do |line|
+              outputstream.write(line.to_java_bytes)
               outputstream.flush if chunked?
             end
           end
         rescue LocalJumpError => e
           # HACK: deal with objects that don't comply with Rack specification
-          @body = [@body.to_s]
+          @body = [ @body.to_s ]
           retry
         rescue NativeException => e
           # Don't needlessly raise errors because of client abort exceptions
