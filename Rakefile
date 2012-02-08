@@ -128,7 +128,7 @@ task :speconly => ['target/classpath.rb'] do
     opts = ENV['SPEC_OPTS'] ? ENV['SPEC_OPTS'] : %q{ --format documentation --color }
     spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
     opts = opts.split(' ').push *FileList[spec].to_a
-    ruby "-Isrc/spec/ruby", "-rtarget/classpath", "-S", "rspec", *opts
+    ruby "-Isrc/spec/ruby", "-S", "bundle", "exec", "rspec", *opts
   end
 end
 

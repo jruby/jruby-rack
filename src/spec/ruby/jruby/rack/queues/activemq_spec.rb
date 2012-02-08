@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'spec_helper'
+require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../../..')
 require 'jruby/rack/queues/activemq'
 
 describe JRuby::Rack::Queues::ActiveMQ do

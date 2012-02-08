@@ -1,5 +1,5 @@
 
-require 'spec_helper'
+require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'fileutils'
 require 'jruby'
 
@@ -22,12 +22,12 @@ describe "integration" do
       @servlet_context.logger = raise_logger
       #@servlet_context.logger = org.jruby.rack.logging.StandardOutLogger.new("")
       # make sure we always boot runtimes in the same mode as specs :
-      #set_compat_version @servlet_context
+      set_compat_version @servlet_context
     end
     
     it "initializes" do
       @servlet_context.addInitParameter('rackup', 
-          "run lambda { |env| [200, {'Content-Type' => 'text/plain'}, 'OK'] }"
+          "run lambda { |env| [ 200, {'Content-Type' => 'text/plain'}, 'OK' ] }"
       )
 
       listener = org.jruby.rack.RackServletContextListener.new

@@ -5,8 +5,8 @@
 # See the file LICENSE.txt for details.
 #++
 
+require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
-require 'spec_helper'
 import org.jruby.rack.servlet.RewindableInputStream
 
 describe RewindableInputStream do

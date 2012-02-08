@@ -5,8 +5,15 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'java'
 require 'rspec'
+
+require 'java'
+begin
+  require File.expand_path('target/classpath.rb', File.dirname(__FILE__) + '/../../..')
+rescue LoadError => e
+  puts "classpath.rb script missing try running `rake clean compile` first"
+  raise e
+end unless defined?(Maven.set_classpath)
 Maven.set_classpath
 
 java_import org.jruby.rack.RackContext
@@ -92,12 +99,15 @@ STUB_DIR = File.expand_path('../stub', File.dirname(__FILE__))
 WD_START = Dir.getwd
 
 begin
-  require 'rails' # attempt to load rails - for "real life" testing
-  require 'rails/version' # use Rails::VERSION to detect current env
+  # NOTE: only if running with a `bundle exec` to better isolate
+  if $LOAD_PATH.find { |path| path =~ /\/rails\-(\d\.\d\.\d)\// }
+    require 'rails' # attempt to load rails - for "real life" testing
+    require 'rails/version' # use Rails::VERSION to detect current env
+  end
 rescue LoadError
-  # add to load path for stubbed out action_controller, railtie etc
-  $LOAD_PATH.unshift File.expand_path('../rails/stub', __FILE__) 
 end
+# add to load path for stubbed out action_controller, railtie etc
+$LOAD_PATH.unshift File.expand_path('../rails/stub', __FILE__) unless defined?(Rails::VERSION)
 
 # current 'library' environment (based on appraisals) e.g. :rails31
 CURRENT_LIB = defined?(Rails::VERSION) ? 

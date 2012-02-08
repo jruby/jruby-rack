@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'spec_helper'
+require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../../..')
 
 java_import "org.jruby.rack.servlet.RequestCapture"
 java_import "org.jruby.rack.mock.MockHttpServletRequest"

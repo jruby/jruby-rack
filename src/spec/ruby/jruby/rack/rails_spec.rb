@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'spec_helper'
+require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'jruby/rack/rails'
 require 'jruby/rack/rails/extensions'
 require 'active_support'
@@ -161,7 +161,7 @@ describe JRuby::Rack::RailsBooter do
   end
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
-  describe "Rails 3 environment", :lib => [ :stub ] do
+  describe "Rails 3 environment", :lib => :stub do
     
     before :each do
       $servlet_context = @servlet_context
@@ -206,8 +206,9 @@ describe JRuby::Rack::RailsBooter do
 
       it "gets set as config.logger" do
         @config.stub(:log_level).and_return(:info)
-        @config.should_receive(:logger=).with(@logger)
-        @config.should_receive(:logger).and_return(@logger)
+        @config.should_receive(:logger).ordered.and_return(nil)
+        @config.should_receive(:logger=).ordered.with(@logger)
+        @config.should_receive(:logger).ordered.and_return(@logger)
         @booter.should_receive(:logger).and_return(@logger)
         @logger.class.should_receive(:const_get).with('INFO').and_return(nil)
         @logger.should_receive(:level=).with(nil)
