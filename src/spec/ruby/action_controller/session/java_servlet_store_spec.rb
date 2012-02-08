@@ -7,6 +7,7 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 
+require 'active_support'
 require 'action_controller'
 begin # help Rails 3.0 up
   require 'action_dispatch/middleware/session/abstract_store'

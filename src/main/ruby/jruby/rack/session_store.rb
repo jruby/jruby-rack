@@ -5,18 +5,18 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'rack/session/abstract/id' unless defined?(Rack::Session::Abstract::ID)
+require 'rack/session/abstract/id' unless defined?(::Rack::Session::Abstract::ID)
 
 module JRuby::Rack
   module Session
   
-    if defined?(Rack::Session::Abstract::SessionHash) # Rack 1.3+
+    if defined?(::Rack::Session::Abstract::SessionHash) # Rack 1.3+
 
       # as of rails 3.1.x the rack session hash implementation is used
       # rather than the custom rails AbstractStore::SessionHash class
-      class SessionHash < Rack::Session::Abstract::SessionHash; end
+      class SessionHash < ::Rack::Session::Abstract::SessionHash; end
       
-      OptionsHash = Rack::Session::Abstract::OptionsHash
+      OptionsHash = ::Rack::Session::Abstract::OptionsHash
 
     elsif defined?(ActionDispatch::Session::AbstractStore) # Rails 3.0
       
@@ -49,13 +49,13 @@ module JRuby::Rack
     end
     
     # Rack based SessionStore implementation but compatible with (older) AbstractStore.
-    class SessionStore < Rack::Session::Abstract::ID
+    class SessionStore < ::Rack::Session::Abstract::ID
 
-      ENV_SESSION_KEY = defined?(Rack::Session::Abstract::ENV_SESSION_KEY) ? 
-        Rack::Session::Abstract::ENV_SESSION_KEY : 'rack.session'.freeze
+      ENV_SESSION_KEY = defined?(::Rack::Session::Abstract::ENV_SESSION_KEY) ? 
+        ::Rack::Session::Abstract::ENV_SESSION_KEY : 'rack.session'.freeze
 
-      ENV_SESSION_OPTIONS_KEY = defined?(Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY) ? 
-        Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY : 'rack.session.options'.freeze
+      ENV_SESSION_OPTIONS_KEY = defined?(::Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY) ? 
+        ::Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY : 'rack.session.options'.freeze
 
       ENV_SERVLET_SESSION_KEY = 'java.servlet_session'.freeze
 
