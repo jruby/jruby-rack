@@ -138,7 +138,7 @@ public class RewindableInputStream extends ServletInputStream {
         if (fillBuffer(1) == -1) return -1;  // EOF
         
         //this.position++; // track stream position
-        return this.buffer.get();
+        return this.buffer.get() & 0xFF;
     }
 
     @Override

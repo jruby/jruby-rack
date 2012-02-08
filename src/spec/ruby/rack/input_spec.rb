@@ -84,7 +84,8 @@ module InputSpec
   import 'java.io.ByteArrayInputStream'
 
   def stream_input(content = @content || "hello\r\ngoodbye")
-    ByteArrayInputStream.new(content.to_java_bytes)
+    bytes = content.respond_to?(:to_java_bytes) ? content.to_java_bytes : content
+    java.io.ByteArrayInputStream.new bytes
   end
   
   import 'org.jruby.rack.servlet.RewindableInputStream'
@@ -103,6 +104,48 @@ describe JRuby::RackInput, "for rewindable input" do
   let(:input) { JRuby::RackInput.new(rewindable_input) }
 
   it_should_behave_like_rewindable_rack_input
+  
+  it "should read an image" do
+    image = File.expand_path('../files/image.jpg', File.dirname(__FILE__))
+    file = java.io.RandomAccessFile.new(image, "r") # length == 4278
+    file.read @content = Java::byte[file.length].new
+    
+    input = self.input
+    
+    buf = ""
+    input.read(nil, buf)
+    buf.size.should == file.length
+    
+    file.seek(0)
+    buf.each_byte { |b| b.should == file.read }
+
+    input.rewind
+
+    file.seek(0)
+    buf = input.read(1000)
+    buf.size.should == 1000
+    buf.each_byte { |b| b.should == file.read }
+    
+    buf = input.read(2000)
+    buf.size.should == 2000
+    buf.each_byte { |b| b.should == file.read }
+    
+    buf = input.read(2000)
+    buf.size.should == 1278
+    buf.each_byte { |b| b.should == file.read }
+    
+    10.times { input.read(2000).should be nil }
+    
+    input.rewind
+    
+    file.seek(0)
+    buf = input.read
+    buf.size.should == 4278
+    buf.each_byte { |b| b.should == file.read }
+    
+    10.times { input.read.should == '' }
+  end
+  
 end
 
 describe JRuby::RackInput, "for rewindable input (with buffer size)" do

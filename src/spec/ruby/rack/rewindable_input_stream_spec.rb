@@ -19,8 +19,15 @@ describe RewindableInputStream do
       stream.read.should == i
     end
     3.times { stream.read.should == -1 }
+    
+    stream.rewind
+    
+    49.times do |i|
+      stream.read.should == i
+    end
+    2.times { stream.read.should == -1 }    
   end
-
+  
   it "should read data than rewind and read again (in memory)" do
     @stream = it_should_read_127_bytes(32, 256)
     
@@ -126,6 +133,29 @@ describe RewindableInputStream do
     35.times { |i| stream.read.should == 65 + i }
     
     stream.read.should == -1
+  end
+  
+  it "should read an image" do
+    image = File.expand_path('../files/image.jpg', File.dirname(__FILE__))
+    file = java.io.RandomAccessFile.new(image, "r")
+    file.read bytes = new_byte_array(file.length)
+    
+    stream = rewindable_input_stream(bytes)
+    
+    index = 0
+    while stream.read != -1
+      index += 1
+    end
+    index.should == file.length
+    
+    stream.rewind
+
+    file.seek(0); index = 0
+    while (byte = stream.read) != -1
+      byte.should == file.read
+      index += 1
+    end
+    index.should == file.length
   end
   
   private
