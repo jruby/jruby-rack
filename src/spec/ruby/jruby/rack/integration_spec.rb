@@ -1,6 +1,7 @@
 
 require 'spec_helper'
 require 'fileutils'
+require 'jruby'
 
 import org.jruby.rack.RackContext
 import org.jruby.rack.servlet.ServletRackContext
@@ -20,6 +21,8 @@ describe "integration" do
       @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rack"
       @servlet_context.logger = raise_logger
       #@servlet_context.logger = org.jruby.rack.logging.StandardOutLogger.new("")
+      # make sure we always boot runtimes in the same mode as specs :
+      #set_compat_version @servlet_context
     end
     
     it "initializes" do
@@ -124,6 +127,7 @@ describe "integration" do
     before do
       @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rails30"
       @servlet_context.logger = raise_logger
+      set_compat_version @servlet_context
     end
     
     it_should_behave_like 'a rails app'
@@ -168,6 +172,7 @@ describe "integration" do
     before do
       @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rails31"
       @servlet_context.logger = raise_logger
+      set_compat_version @servlet_context
     end
     
     it_should_behave_like 'a rails app'
@@ -210,6 +215,7 @@ describe "integration" do
     before do
       @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rails32"
       @servlet_context.logger = raise_logger
+      set_compat_version @servlet_context
     end
     
     it_should_behave_like 'a rails app'
@@ -247,6 +253,14 @@ describe "integration" do
     listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
     @rack_context = @servlet_context.getAttribute("rack.context")
     @rack_factory = @servlet_context.getAttribute("rack.factory")
+  end
+  
+  def set_compat_version(servlet_context = @servlet_context)
+    if JRuby.runtime.is1_9
+      servlet_context.addInitParameter("jruby.compat.version", '1.9')
+    else
+      servlet_context.addInitParameter("jruby.compat.version", '1.8')
+    end
   end
   
   private
