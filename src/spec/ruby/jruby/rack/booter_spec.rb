@@ -112,13 +112,13 @@ describe JRuby::Rack::Booter do
         # to test the branched code I've added artificial noise :
         $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/1.9"
         #$LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/shared"
-        $LOAD_PATH << "META-INF/jruby.home/lib/ruby/site_ruby/shared"
+        $LOAD_PATH << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
         $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/1.8"
         #$LOAD_PATH << "#{tmpdir}/lib/ruby/1.9"
       else
         $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/1.8"
         #$LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/shared"
-        $LOAD_PATH << "META-INF/jruby.home/lib/ruby/site_ruby/shared"
+        $LOAD_PATH << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
         #$LOAD_PATH << "#{tmpdir}/lib/ruby/1.8"
       end
       $LOAD_PATH << "."
@@ -129,18 +129,18 @@ describe JRuby::Rack::Booter do
 
       expected = []
       if JRuby.runtime.is1_9
-        expected << "META-INF/jruby.home/lib/ruby/site_ruby/1.9"
-        expected << "META-INF/jruby.home/lib/ruby/site_ruby/shared"
-        expected << "META-INF/jruby.home/lib/ruby/site_ruby/1.8"
-        #expected << "META-INF/jruby.home/lib/ruby/1.9"
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.9"
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
+        #expected << "classpath:/META-INF/jruby.home/lib/ruby/1.9"
         expected << "."
-        expected << "META-INF/jruby.home/lib/ruby/1.9"
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/1.9"
       else
-        expected << "META-INF/jruby.home/lib/ruby/site_ruby/1.8"
-        expected << "META-INF/jruby.home/lib/ruby/site_ruby/shared"
-        #expected << "META-INF/jruby.home/lib/ruby/1.8"
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
+        #expected << "classpath:/META-INF/jruby.home/lib/ruby/1.8"
         expected << "."
-        expected << "META-INF/jruby.home/lib/ruby/1.8"
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/1.8"
       end
       $LOAD_PATH.should == expected
     ensure # restore all runtime modifications :

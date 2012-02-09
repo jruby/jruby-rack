@@ -82,13 +82,26 @@ module JRuby::Rack
           else
             %w{ site_ruby/1.8 site_ruby/shared 1.8 }
           end
+        # NOTE: most servers end up with 'classpath:/...' entries :
+        #  JRuby.home: "classpath:/META-INF/jruby.home"
+        #  $LOAD_PATH:
+        #   "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.9"
+        #   "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
+        #   "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
+        #   "classpath:/META-INF/jruby.home/lib/ruby/1.9"
+        # seems to be the case for JBoss/Tomcat/WebLogic - it's best to
+        # emulate the same setup for containers such as WebSphere where the
+        # JRuby bootstrap fails to detect a correct home and points to /tmp
+        # 
+        # since JRuby 1.6.7 LoadService has better support for 'classpath:'
+        # prefixed entries https://github.com/jruby/jruby-rack/issues/89
         ruby_paths.each do |path|
           # NOTE: even better replace everything starting with '/tmp' ?
           if index = $LOAD_PATH.index("#{tmpdir}/lib/ruby/#{path}")
-            $LOAD_PATH[index] = "META-INF/jruby.home/lib/ruby/#{path}"
+            $LOAD_PATH[index] = "classpath:/META-INF/jruby.home/lib/ruby/#{path}"
           else
-            # e.g. "META-INF/jruby.home/lib/ruby/site_ruby/1.8"
-            full_path = "META-INF/jruby.home/lib/ruby/#{path}"
+            # e.g. "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
+            full_path = "classpath:/META-INF/jruby.home/lib/ruby/#{path}"
             $LOAD_PATH << full_path unless $LOAD_PATH.include?(full_path)
           end
         end
