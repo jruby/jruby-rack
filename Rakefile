@@ -144,7 +144,7 @@ end
 task :always_build              # dummy task to force jar to get built
 
 desc "Create the jar"
-task :jar => [:spec, "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"]
+task :jar => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"
 
 task :default => :jar
 
@@ -212,4 +212,24 @@ task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
     File.open('jruby-rack.gemspec', 'w') {|f| f << gemspec.to_ruby }
     mv FileList['*.gem'], '..'
   end
+end
+
+task :release_checks do
+  sh "git diff --exit-code > /dev/null" do |ok,status|
+    fail "There are uncommitted changes.\nPlease commit or clean workspace before releasing." unless ok
+  end
+  pom_version = `mvn -o validate | grep JRuby-Rack | sed 's/.*JRuby-Rack //'`
+  fail "Can't release a dev/snapshot version.\n" +
+    "Please update pom.xml to the final release version and then run `mvn install'." \
+    if pom_version =~ /dev|SNAPSHOT/
+
+  fail "Can't release because pom.xml version is different than jruby/rack/version.rb.\n" +
+        "Please run `mvn install' to bring the two files in sync." \
+    unless pom_version == JRuby::Rack::VERSION
+end
+
+desc "Release the gem to rubygems and jar to repository.codehaus.org"
+task :release => [:release_checks, :clean, :gem] do
+  puts "mvn deploy -DupdateReleaseInfo=true"
+  puts "gem push target/jruby-rack-#{JRuby::Rack::VERSION}.gem"
 end

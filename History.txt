@@ -1,5 +1,7 @@
 == 1.1.4 (to be released)
 
+- Thanks to @kares for all the maintenance and quick turnaround on
+  bugs this release!
 - incorrectly interpreted byte in RewindableInputStream causing EOFs (#92)
 - fix JRuby::Rack::Response 1.9 incompatibility due String#each
 - ensure $servlet_context is not nil in embedded scenario (#88)
