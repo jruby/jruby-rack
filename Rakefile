@@ -243,8 +243,8 @@ end
 
 desc "Release the gem to rubygems and jar to repository.codehaus.org"
 task :release => [:release_checks, :clean, :gem] do
-  puts "git tag #{JRuby::Rack::VERSION}"
-  puts "git push --tags origin master"
-  puts "mvn deploy -DupdateReleaseInfo=true"
-  puts "gem push target/jruby-rack-#{JRuby::Rack::VERSION}.gem"
+  sh "git tag #{JRuby::Rack::VERSION}"
+  sh "git push --tags origin master"
+  sh "mvn deploy -DupdateReleaseInfo=true"
+  sh "gem push target/jruby-rack-#{JRuby::Rack::VERSION}.gem"
 end
