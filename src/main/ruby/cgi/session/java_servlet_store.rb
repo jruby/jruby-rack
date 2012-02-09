@@ -5,6 +5,8 @@
 # See the file LICENSE.txt for details.
 #++
 
+require 'openssl'
+
 class CGI #:nodoc:all
   class Session
     class JavaServletStore

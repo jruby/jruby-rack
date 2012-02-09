@@ -165,11 +165,12 @@ describe CGI::Session::JavaServletStore do
     end
 
     it "should generate a secret from the java session id and last accessed time" do
+      OpenSSL::Random.should_receive(:random_bytes).with(32).and_return "random"
       @session.should_receive(:getAttribute).with("__rails_secret").and_return nil
       @session.should_receive(:getId).and_return "abc"
       @session.should_receive(:getLastAccessedTime).and_return 123
-      @session.should_receive(:setAttribute).with("__rails_secret", "abc123")
-      @dbman.generate_digest("key").should == hmac("abc123", "key")
+      @session.should_receive(:setAttribute).with("__rails_secret", "abcrandom123")
+      @dbman.generate_digest("key").should == hmac("abcrandom123", "key")
     end
   end
 end

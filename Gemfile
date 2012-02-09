@@ -10,3 +10,7 @@ gem "appraisal"
 
 gem 'rake', :group => :test
 gem 'rspec', '~> 2.7', :group => :test
+
+group :test do
+  gem 'jruby-openssl'
+end
