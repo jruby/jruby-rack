@@ -216,22 +216,29 @@ end
 
 task :release_checks do
   sh "git diff --exit-code > /dev/null" do |ok,status|
-    fail "There are uncommitted changes.\nPlease commit or clean workspace before releasing." unless ok
+    fail "There are uncommitted changes.\nPlease commit changes or clean workspace before releasing." unless ok
   end
-  sh "git rev-parse #{JRuby::Rack::VERSION} > /dev/null" do |ok, status|
+
+  sh "git rev-parse #{JRuby::Rack::VERSION} > /dev/null 2>&1" do |ok, status|
     fail "Tag #{JRuby::Rack::VERSION} already exists.\n" +
       "Please execute these commands to remove it before releasing:\n" +
       "  git tag -d #{JRuby::Rack::VERSION}\n" +
       "  git push origin :#{JRuby::Rack::VERSION}" if ok
   end
-  pom_version = `mvn -o validate | grep JRuby-Rack | sed 's/.*JRuby-Rack //'`
-  fail "Can't release a dev/snapshot version.\n" +
-    "Please update pom.xml to the final release version, run `mvn install', and commit the result." \
-    if pom_version =~ /dev|SNAPSHOT/
 
-  fail "Can't release because pom.xml version is different than jruby/rack/version.rb.\n" +
-        "Please run `mvn install' to bring the two files in sync." \
-    unless pom_version == JRuby::Rack::VERSION
+  pom_version = `mvn -o validate | grep JRuby-Rack | sed 's/.*JRuby-Rack //'`.chomp
+  if pom_version =~ /dev|SNAPSHOT/
+    fail "Can't release a dev/snapshot version.\n" +
+      "Please update pom.xml to the final release version, run `mvn install', and commit the result."
+  end
+
+  unless pom_version == JRuby::Rack::VERSION
+    fail "Can't release because pom.xml version (#{pom_version}) is different than " +
+      "jruby/rack/version.rb (#{JRuby::Rack::VERSION}).\n" +
+      "Please run `mvn install' to bring the two files in sync."
+  end
+
+  puts "Release looks ready to go!"
 end
 
 desc "Release the gem to rubygems and jar to repository.codehaus.org"
