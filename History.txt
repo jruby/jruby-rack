@@ -1,3 +1,14 @@
+== 1.1.4 (to be released)
+
+- incorrectly interpreted byte in RewindableInputStream causing EOFs (#92)
+- fix JRuby::Rack::Response 1.9 incompatibility due String#each
+- ensure $servlet_context is not nil in embedded scenario (#88)
+- upgrade to Rack 1.4.1
+- fix resolving rackup on WLS 10.3 with Rails 3
+- explicit require rack + on rails allow bundler to decide rack version
+- config.logger fixes and support for ActiveSupport::TaggedLogging (#93)
+- revert regression in 1.1.3 with incorrect filter behavior (#84)
+
 == 1.1.3 (01/10/12)
 
 - Additional fix for #73, #76 (Fix relative_url_root issue for good)
