@@ -81,7 +81,7 @@ class CGI #:nodoc:all
         java_session = @java_request.getSession(true)
         @secret ||= java_session.getAttribute("__rails_secret")
         unless @secret
-          @secret = java_session.getId + java_session.getLastAccessedTime.to_s
+          @secret = java_session.getId + OpenSSL::Random.random_bytes(32) + java_session.getLastAccessedTime.to_s
           java_session.setAttribute("__rails_secret", @secret)
         end
         OpenSSL::HMAC.hexdigest(OpenSSL::Digest::Digest.new(@digest), @secret, data)
