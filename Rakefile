@@ -53,12 +53,17 @@ end
 desc "Unpack the rack gem"
 task :unpack_gem => "target" do |t|
   target = File.expand_path(t.prerequisites.first)
-  gem_file = nil
+  gem_file = nil; version = nil
   if ENV['TRAVIS'] # spec.cache_file fails in 1.9 mode with a "stack level too deep"
     # will work as long as travis does `bundle exec rake` ... [PATH]/rack-1.4.1/lib
-    rack_path = $LOAD_PATH.find { |path| path =~ /\/rack\-(\d\.\d\.\d)\// }
-    if rack_path && Gem.respond_to?(:cache_dir) && cache_dir = Gem.cache_dir
-      gem_name = "rack\-#{$1}\.gem"
+    rack_paths = $LOAD_PATH.select { |p| version = $1 if p =~ /\/rack\-([\d\.]*)\// }
+    if rack_paths.size > 1
+      raise "multiple rack versions on $LOAD_PATH: #{rack_paths.inspect}"
+    elsif rack_paths.size == 0
+      warn "no rack version on $LOAD_PATH make sure you `bundle exec ...`"
+    end
+    if version && Gem.respond_to?(:cache_dir) && cache_dir = Gem.cache_dir
+      gem_name = "rack\-#{version}\.gem"
       gem_file = File.join(cache_dir, gem_name) if Dir.entries(cache_dir).include?(gem_name)
     end
   end
