@@ -116,8 +116,7 @@ task :resources => ["target/classes", :unpack_gem, :update_version, :test_resour
       cp_r f, dest
     end
   end
-  meta_inf = File.join(t.prerequisites.first, "META-INF")
-  mkdir_p meta_inf
+  mkdir_p meta_inf = File.join(t.prerequisites.first, "META-INF")
   cp "src/main/tld/jruby-rack.tld", meta_inf
 end
 
