@@ -38,8 +38,10 @@ module JRuby
           servlet_response.getOutput
         end
       end
-
-      ::Rack::Request.send(:include, Request)
     end
   end
+end
+
+class ::Rack::Request
+  include ::JRuby::Rack::RackExt::Request
 end
