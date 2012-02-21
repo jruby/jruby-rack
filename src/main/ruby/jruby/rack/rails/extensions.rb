@@ -12,7 +12,7 @@ module ActionController
     def servlet_request
       request.env['java.servlet_request']
     end
-    
+
     def forward_to(url)
       request.forward_to(url)
     end

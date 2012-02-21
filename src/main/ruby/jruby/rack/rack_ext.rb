@@ -20,9 +20,7 @@ java_import org.jruby.rack.servlet.ServletRackIncludedResponse
 module JRuby
   module Rack
     module RackExt
-      
       module Request
-        
         def forward_to(path, params={})
           servlet_request = env['java.servlet_request']
           params.each { |k,v| servlet_request[k.to_s] = v}
@@ -39,11 +37,9 @@ module JRuby
           servlet_request.getRequestDispatcher(path).include(servlet_request, servlet_response)
           servlet_response.getOutput
         end
-        
       end
-      
+
       ::Rack::Request.send(:include, Request)
-      
     end
   end
 end

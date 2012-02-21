@@ -33,7 +33,7 @@ module JRuby::Rack
       # no rack etc extensions required here (called during boot!)
       # require 'jruby/rack/rails/extensions' on #load_environment
     end
-    
+
     def setup_relative_url_root
       relative_url_append = @rack_context.getInitParameter('rails.relative_url_append') || ''
       relative_url_root = @rack_context.getContextPath + relative_url_append
@@ -48,7 +48,7 @@ module JRuby::Rack
     end
 
     module Rails2Environment
-      
+
       def to_app
         # backward "compatibility" calling #to_app without a #load_environment
         load_environment unless @load_environment
@@ -166,11 +166,11 @@ module JRuby::Rack
           ActionController::Base.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT']
         end
       end
-      
+
     end
 
     module Rails3Environment
-      
+
       def load_environment
         require File.join(app_path, 'config', 'boot')
         require 'jruby/rack/rails/railtie'
@@ -183,9 +183,9 @@ module JRuby::Rack
         load_environment
         ::Rails.application
       end
-      
+
     end
-    
+
     # @see #RailsRackApplicationFactory
     def self.load_environment
       rails_booter.load_environment
@@ -195,16 +195,16 @@ module JRuby::Rack
     def self.to_app
       rails_booter.to_app
     end
-    
+
     private
-    
+
     def self.rails_booter
       booter = JRuby::Rack.booter
       raise "no booter set" unless booter
       raise "not a rails booter" unless booter.is_a?(JRuby::Rack::RailsBooter)
       booter
     end
-    
+
   end
 
   class RailsRequestSetup
@@ -218,5 +218,5 @@ module JRuby::Rack
       @app.call(env)
     end
   end
-  
+
 end

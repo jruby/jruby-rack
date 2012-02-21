@@ -9,7 +9,6 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'jruby/rack/rack_ext'
 
 describe Rack::Request do
-  
   before :each do
     @servlet_request = mock("servlet_request")
     @servlet_response = mock("servlet_response")
@@ -33,5 +32,4 @@ describe Rack::Request do
     @rack_request.should respond_to(:render)
     @rack_request.render('/foo').should == 'foo output'
   end
-  
 end

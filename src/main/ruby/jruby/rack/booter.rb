@@ -34,7 +34,7 @@ module JRuby::Rack
     def load_extensions
       require 'jruby/rack/rack_ext'
     end
-    
+
     def default_layout_class
       c = @rack_context.getInitParameter 'jruby.rack.layout_class'
       c.nil? ? WebInfLayout : eval(c)
