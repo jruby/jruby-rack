@@ -38,10 +38,15 @@ module JRuby
           servlet_response.getOutput
         end
       end
+
+      def self.install
+        ::Rack::Request.module_eval do
+          include ::JRuby::Rack::RackExt::Request
+        end
+      end
+
+      self.install
     end
   end
 end
 
-class ::Rack::Request
-  include ::JRuby::Rack::RackExt::Request
-end

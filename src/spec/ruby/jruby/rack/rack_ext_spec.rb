@@ -10,6 +10,7 @@ require 'jruby/rack/rack_ext'
 
 describe Rack::Request do
   before :each do
+    JRuby::Rack::RackExt.install
     @servlet_request = mock("servlet_request")
     @servlet_response = mock("servlet_response")
     @rack_request = Rack::Request.new('java.servlet_request' => @servlet_request, 'java.servlet_response' => @servlet_response)
