@@ -149,8 +149,7 @@ describe "integration" do
     context "initialized (custom)" do
 
       before :each do
-        @servlet_context.addInitParameter("rails.env", 'custom')
-        initialize_rails
+        initialize_rails('custom')
       end
       
       it "booted a custom env with a custom logger" do
@@ -180,7 +179,7 @@ describe "integration" do
     context "initialized" do
       
       before :each do
-        initialize_rails
+        initialize_rails('production')
       end
 
       it "loaded META-INF/init.rb" do
@@ -223,7 +222,7 @@ describe "integration" do
     context "initialized" do
       
       before :each do
-        initialize_rails
+        initialize_rails('production')
       end
       
       it "loaded rack ~> 1.4" do
@@ -248,11 +247,14 @@ describe "integration" do
     
   end
   
-  def initialize_rails
+  def initialize_rails(env = nil)
     listener = org.jruby.rack.rails.RailsServletContextListener.new
     listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
     @rack_context = @servlet_context.getAttribute("rack.context")
     @rack_factory = @servlet_context.getAttribute("rack.factory")
+    # Travis-CI might have RAILS_ENV=test set, which is not desired for us :
+    @servlet_context.addInitParameter("jruby.rack.ignore.env", true.to_s) if ENV['RAILS_ENV']
+    @servlet_context.addInitParameter("rails.env", env.to_s) if env
   end
   
   def set_compat_version(servlet_context = @servlet_context)
