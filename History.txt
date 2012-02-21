@@ -1,4 +1,4 @@
-== 1.1.4 (02/09/12)
+== 1.1.4 (02/21/12)
 
 - Thanks to @kares for all the maintenance and quick turnaround on
   bugs this release!
