@@ -5,7 +5,6 @@
 # See the file LICENSE.txt for details.
 #++
 
-
 begin
   require 'rack'
 rescue LoadError
@@ -39,13 +38,9 @@ module JRuby
         end
       end
 
-      def self.install
-        ::Rack::Request.module_eval do
-          include ::JRuby::Rack::RackExt::Request
-        end
+      ::Rack::Request.module_eval do
+        include ::JRuby::Rack::RackExt::Request
       end
-
-      self.install
     end
   end
 end

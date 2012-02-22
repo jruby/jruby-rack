@@ -6,7 +6,6 @@
 #++
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
-require 'vendor/rack'
 require 'rack/handler/servlet'
 require 'stringio'
 
