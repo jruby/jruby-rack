@@ -7,6 +7,8 @@ Rack-compatible Ruby web framework.
 
 For more information on Rack, visit http://rack.rubyforge.org.
 
+[![Build Status](https://secure.travis-ci.org/jruby/jruby-rack.png?branch=master)](http://travis-ci.org/jruby/jruby-rack)
+
 # Getting Started
 
 The easiest way to use JRuby-Rack is to get [Warbler][1]. Warbler
