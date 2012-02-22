@@ -23,40 +23,43 @@ public class RackServletContextListener implements ServletContextListener {
     
     private final RackApplicationFactory factory;
 
+    /**
+     * Used by web container.
+     */
     public RackServletContextListener() {
-        factory = null;
+        this.factory = null;
     }
 
     /**
-     * Not used by servlet container -- only for injecting a mock factory
-     * for testing.
+     * Only for injecting a mock factory for testing.
      */
-    public RackServletContextListener(RackApplicationFactory factoryForTest) {
-        factory = factoryForTest;
+    public RackServletContextListener(RackApplicationFactory factory) {
+        this.factory = factory;
     }
 
-    public void contextInitialized(ServletContextEvent ctxEvent) {
-        ServletContext ctx = ctxEvent.getServletContext();
-        ServletRackConfig config = new ServletRackConfig(ctx);
-        final RackApplicationFactory fac = newApplicationFactory(config);
-        ctx.setAttribute(RackApplicationFactory.FACTORY, fac);
-        ServletRackContext rackContext = new DefaultServletRackContext(config);
-        ctx.setAttribute(RackApplicationFactory.RACK_CONTEXT, rackContext);
+    public void contextInitialized(final ServletContextEvent event) {
+        final ServletContext context = event.getServletContext();
+        final ServletRackConfig config = new ServletRackConfig(context);
+        final RackApplicationFactory factory = newApplicationFactory(config);
+        context.setAttribute(RackApplicationFactory.FACTORY, factory);
+        final ServletRackContext rackContext = new DefaultServletRackContext(config);
+        context.setAttribute(RackApplicationFactory.RACK_CONTEXT, rackContext);
         try {
-            fac.init(rackContext);
-        } catch (Exception ex) {
-            ctx.log("Error: application initialization failed", ex);
+            factory.init(rackContext);
+        } 
+        catch (Exception e) {
+            handleInitializationException(factory, rackContext, e);
         }
     }
 
     public void contextDestroyed(ServletContextEvent ctxEvent) {
-        ServletContext ctx = ctxEvent.getServletContext();
-        final RackApplicationFactory fac =
-                (RackApplicationFactory) ctx.getAttribute(RackApplicationFactory.FACTORY);
-        if (fac != null) {
-            fac.destroy();
-            ctx.removeAttribute(RackApplicationFactory.FACTORY);
-            ctx.removeAttribute(RackApplicationFactory.RACK_CONTEXT);
+        final ServletContext context = ctxEvent.getServletContext();
+        final RackApplicationFactory factory =
+                (RackApplicationFactory) context.getAttribute(RackApplicationFactory.FACTORY);
+        if (factory != null) {
+            factory.destroy();
+            context.removeAttribute(RackApplicationFactory.FACTORY);
+            context.removeAttribute(RackApplicationFactory.RACK_CONTEXT);
         }
     }
 
@@ -65,6 +68,13 @@ public class RackServletContextListener implements ServletContextListener {
             return factory;
         }
         return new SharedRackApplicationFactory(new DefaultRackApplicationFactory());
+    }
+ 
+    protected void handleInitializationException(
+            final RackApplicationFactory factory,
+            final ServletRackContext rackContext, 
+            final Exception e) {
+        rackContext.log("Error: application initialization failed", e);
     }
     
 }
