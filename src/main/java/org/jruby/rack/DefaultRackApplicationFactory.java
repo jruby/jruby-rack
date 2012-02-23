@@ -12,6 +12,7 @@ import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.rack.servlet.ServletRackContext;
+import org.jruby.rack.servlet.RewindableInputStream;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -33,14 +34,15 @@ import java.util.regex.Pattern;
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private String rackupScript, rackupLocation;
     private ServletRackContext rackContext;
-    private RubyInstanceConfig defaultConfig;
+    private RubyInstanceConfig runtimeConfig;
     private RackApplication errorApplication;
 
     public void init(RackContext rackContext) {
         this.rackContext = (ServletRackContext) rackContext;
         this.rackupScript = findRackupScript();
-        this.defaultConfig = createDefaultConfig();
-        rackContext.log(defaultConfig.getVersionString());
+        this.runtimeConfig = createRuntimeConfig();
+        rackContext.log(runtimeConfig.getVersionString());
+        configureDefaults();
     }
 
     public RackApplication newApplication() throws RackInitializationException {
@@ -143,7 +145,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         IRubyObject create(Ruby runtime);
     }
 
-    private RubyInstanceConfig createDefaultConfig() {
+    private RubyInstanceConfig createRuntimeConfig() {
         setupJRubyManagement();
         final RubyInstanceConfig config = new RubyInstanceConfig();
         config.setLoader(Thread.currentThread().getContextClassLoader());
@@ -190,7 +192,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     /** This method is only public for unit tests */
     public Ruby newRuntime() throws RackInitializationException {
-        Ruby runtime = Ruby.newInstance(defaultConfig);
+        Ruby runtime = Ruby.newInstance(runtimeConfig);
         initializeRuntime(runtime);
         return runtime;
     }
@@ -325,6 +327,19 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
+    private void configureDefaults() {
+        // configure (default) jruby.rack.request.size.[...] parameters :
+        final RackConfig config = rackContext.getConfig();
+        Integer iniSize = config.getInitialMemoryBufferSize();
+        if (iniSize == null) iniSize = RewindableInputStream.INI_BUFFER_SIZE;
+        Integer maxSize = config.getMaximumMemoryBufferSize();
+        if (maxSize == null) maxSize = RewindableInputStream.MAX_BUFFER_SIZE;
+        if (iniSize.intValue() > maxSize.intValue()) iniSize = maxSize;
+        
+        RewindableInputStream.setDefaultInitialBufferSize(iniSize);
+        RewindableInputStream.setDefaultMaximumBufferSize(maxSize);
+    }
+    
     /** Used only by unit tests */
     public void setErrorApplication(RackApplication app) {
         this.errorApplication = app;

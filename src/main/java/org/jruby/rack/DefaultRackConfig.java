@@ -86,10 +86,10 @@ public class DefaultRackConfig implements RackConfig {
 
     protected RackLogger createLogger(String loggerClass) {
         try {
-            Class<?> c = Class.forName(loggerClass);
+            final Class<?> c = Class.forName(loggerClass);
             try {
-                Constructor<?> ctor = c.getConstructor(new Class<?>[] {String.class});
-                return (RackLogger) ctor.newInstance(new Object[] {getLoggerName()});
+                Constructor<?> ctor = c.getConstructor(new Class<?>[] { String.class });
+                return (RackLogger) ctor.newInstance(new Object[] { getLoggerName() });
             } catch (Exception tryAgain) {
                 return (RackLogger) c.newInstance();
             }
@@ -142,6 +142,18 @@ public class DefaultRackConfig implements RackConfig {
         return getBoolean("jruby.rack.input.rewindable", true);
     }
 
+    public Integer getInitialMemoryBufferSize() {
+        return getPositiveInteger("jruby.rack.request.size.initial.bytes");
+    }
+    
+    public Integer getMaximumMemoryBufferSize() {
+        Integer max = getPositiveInteger("jruby.rack.request.size.maximum.bytes");
+        if (max == null) { // backwards compatibility with 1.0.x :
+            max = getPositiveInteger("jruby.rack.request.size.threshold.bytes");
+        }
+        return max;
+    }
+    
     public boolean isIgnoreEnvironment() {
         return getBoolean("jruby.rack.ignore.env", false);
     }
@@ -175,28 +187,23 @@ public class DefaultRackConfig implements RackConfig {
         return v;
     }
 
-    private Integer getPositiveInteger(String string) {
+    private Integer getPositiveInteger(String key) {
+        final String value = getProperty(key);
+        if (value == null) return null;
         try {
-            int i = Integer.parseInt(getProperty(string));
-            if (i > 0) {
-                return new Integer(i);
-            }
-        } catch (Exception e) {
-        }
+            int i = Integer.parseInt(value);
+            if (i > 0) return Integer.valueOf(i);
+        } catch (Exception e) { /* ignored */ }
         return null;
     }
 
     private boolean getBoolean(String key, boolean defValue) {
-        String value = getProperty(key);
-        if (value == null) {
-            return defValue;
-        }
-
+        final String value = getProperty(key);
+        if (value == null) return defValue;
         try {
             return Boolean.parseBoolean(value);
-        } catch (Exception e) {
-        }
-
+        } catch (Exception e) { /* ignored */ }
         return defValue;
     }
+    
 }

@@ -38,6 +38,37 @@ public class RewindableInputStream extends ServletInputStream {
     
     private static final String TMP_FILE_PREFIX = "jruby-rack-input";
     
+    private static int iniBufferSize = INI_BUFFER_SIZE;
+
+    public static int getDefaultInitialBufferSize() {
+        return iniBufferSize;
+    }
+
+    /**
+     * Set the (default) initial buffer size for all instances created using
+     * {@link #RewindableInputStream(java.io.InputStream)}.
+     * @param iniBufferSize 
+     */
+    public static void setDefaultInitialBufferSize(int iniBufferSize) {
+        RewindableInputStream.iniBufferSize = iniBufferSize;
+    }
+    
+    private static int maxBufferSize = MAX_BUFFER_SIZE;
+
+    public static int getDefaultMaximumBufferSize() {
+        return maxBufferSize;
+    }
+
+    /**
+     * Set the (default) maximum buffer size for all instances created using
+     * {@link #RewindableInputStream(java.io.InputStream)}.
+     * @param maxBufferSize 
+     */
+    public static void setDefaultMaximumBufferSize(int maxBufferSize) {
+        
+        RewindableInputStream.maxBufferSize = maxBufferSize;
+    }
+    
     private final InputStream input;
     
     // an in memory buffer, the wrapped stream will be buffered in memory 
@@ -45,27 +76,26 @@ public class RewindableInputStream extends ServletInputStream {
     // we're using the buffer.limit() to track how many bytes are currently 
     // left in the buffer
     private ByteBuffer buffer;
-    
-    private final int maxBufferSize;
-    
-    // last remembered position (mark support)
-    private long mark = -1;
+    private final int bufferMax;
     
     // the on disk buffered content for this stream
     private RandomAccessFile bufferFile = null;
 
+    // last remembered position (mark support)
+    private long mark = -1;
+    
     /**
      * Wrap an input stream to be king and rewind ...
      * @param input 
      */
     public RewindableInputStream(InputStream input) {
-        this(input, INI_BUFFER_SIZE, MAX_BUFFER_SIZE);
+        this(input, iniBufferSize, maxBufferSize);
     }
 
     /**
      * Wrap an input stream to be king and rewind ...
      * @param input 
-     * @param bufferSize initial buffer size
+     * @param bufferSize the buffer size
      */
     public RewindableInputStream(InputStream input, int bufferSize) {
         this(input, bufferSize, bufferSize);
@@ -74,16 +104,19 @@ public class RewindableInputStream extends ServletInputStream {
     /**
      * Wrap an input stream to be king and rewind ...
      * @param input 
-     * @param bufferSize initial buffer size
+     * @param iniBufferSize initial buffer size
      * @param maxBufferSize maximum buffer size (when reached content gets written into a file)
      */
-    public RewindableInputStream(InputStream input, int bufferSize, int maxBufferSize) {
+    public RewindableInputStream(InputStream input, int iniBufferSize, int maxBufferSize) {
         this.input = input; // super(input);
-        this.buffer = ByteBuffer.allocate(bufferSize);
+        this.buffer = ByteBuffer.allocate(iniBufferSize);
         this.buffer.limit(0); // empty
-        this.maxBufferSize = maxBufferSize;
+        this.bufferMax = maxBufferSize;
     }
 
+    /**
+     * @see InputStream#available() 
+     */
     @Override
     public synchronized int available() throws IOException {
         ensureOpen();
@@ -125,7 +158,7 @@ public class RewindableInputStream extends ServletInputStream {
         if (this.mark < 0) {
             throw new IOException("The marked position is invalid");
         }
-        changePosition(this.mark);
+        setPosition(this.mark);
     }
     
     /**
@@ -141,6 +174,9 @@ public class RewindableInputStream extends ServletInputStream {
         return this.buffer.get() & 0xFF;
     }
 
+    /**
+     * @see InputStream#read(byte[], int, int) 
+     */
     @Override
     public synchronized int read(byte[] buffer, final int offset, final int length) 
         throws IOException {
@@ -180,7 +216,7 @@ public class RewindableInputStream extends ServletInputStream {
      */
     public synchronized void rewind() throws IOException {
         ensureOpen();
-        changePosition(0);
+        setPosition(0);
     }
 
     private void ensureOpen() throws IOException {
@@ -228,7 +264,7 @@ public class RewindableInputStream extends ServletInputStream {
         if ( buffer.position() + count > buffer.capacity() ) {
             // we'll try to incrementaly increase the buffer capacity :
             int newSize = buffer.capacity() + Math.max(count, buffer.capacity());
-            if (newSize <= maxBufferSize) {
+            if (newSize <= bufferMax) {
                 buffer = copyBuffer(newSize);
             }
             // forcing is not really used - only here to ease mark() support
@@ -237,7 +273,7 @@ public class RewindableInputStream extends ServletInputStream {
                 buffer = copyBuffer(newSize);
             }
             else {
-                switchToFileBuffer();
+                setFileBuffered();
             }
         }
     }
@@ -306,11 +342,11 @@ public class RewindableInputStream extends ServletInputStream {
         return Math.min(buffer.remaining(), count);
     }
 
-    private boolean isFileBuffered() {
+    boolean isFileBuffered() {
         return this.bufferFile != null;
     }
 
-    private void switchToFileBuffer() throws IOException {
+    void setFileBuffered() throws IOException {
         if ( isFileBuffered() ) {
             throw new IllegalStateException("already buffered to a file");
         }
@@ -323,7 +359,7 @@ public class RewindableInputStream extends ServletInputStream {
         this.buffer.position(this.buffer.arrayOffset());
         this.bufferFile.getChannel().write(this.buffer);
         
-        changePosition(position);
+        setPosition(position);
     }
     
     /**
@@ -333,7 +369,7 @@ public class RewindableInputStream extends ServletInputStream {
      * @param position
      * @throws IOException 
      */
-    private void changePosition(final long position) throws IOException {
+    private void setPosition(final long position) throws IOException {
         if ( isFileBuffered() ) {
             this.buffer.rewind().limit(0); // buffer.remaining() == 0
             this.bufferFile.seek(position);
@@ -344,13 +380,21 @@ public class RewindableInputStream extends ServletInputStream {
         //this.position = position;
     }
     
-    private long getPosition() throws IOException {
+    long getPosition() throws IOException {
         if ( isFileBuffered() ) {
             return bufferFile.getFilePointer();
         }
         else {
             return this.buffer.position();
         }        
+    }
+
+    public int getCurrentBufferSize() {
+        return buffer.capacity();
+    }
+    
+    public int getMaximumBufferSize() {
+        return bufferMax;
     }
     
 }

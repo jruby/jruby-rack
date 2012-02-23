@@ -27,9 +27,9 @@ import java.util.Set;
  */
 public class DefaultServletRackContext implements ServletRackContext {
     
-    private RackConfig config;
-    private ServletContext context;
-    private RackLogger logger;
+    private final RackConfig config;
+    private final ServletContext context;
+    private final RackLogger logger;
 
     public DefaultServletRackContext(ServletRackConfig config) {
         this.config  = config;

@@ -53,17 +53,20 @@ public interface RackConfig {
     /** Return the JNDI properties for */
     String getJmsJndiProperties();
 
-    /** Return the threshold/size of the in-memory buffer used for request bodies. */
-    //int getMemoryBufferSize();
-
     /** Return true if the runtimes should be initialized in serial (e.g, if threads cannot be created). */
     boolean isSerialInitialization();
 
+    /** Returns true if the outer environment (variables) should not be used. */
+    boolean isIgnoreEnvironment();
+    
     /** Return true if the request body is rewindable. */
     boolean isRewindable();
 
-    /** Returns true if the outer environment (variables) should not be used. */
-    boolean isIgnoreEnvironment();
+    /** Return the initial size of the in-memory buffer used for request bodies. */
+    Integer getInitialMemoryBufferSize();
+    
+    /** Return the maximum size of the in-memory buffer used for request bodies. */
+    Integer getMaximumMemoryBufferSize();
 
     /** General property retrieval for custom configuration values. */
     String getProperty(String key);

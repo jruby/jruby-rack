@@ -152,6 +152,17 @@ describe DefaultRackApplicationFactory do
     @app_factory.rackup_script.should == "# coding: us-ascii\nrun MyRackApp"
   end
   
+  it "initializes default request memory buffer size" do
+    @rack_config.should_receive(:getInitialMemoryBufferSize).and_return 42
+    @rack_config.should_receive(:getMaximumMemoryBufferSize).and_return 420
+    @app_factory.init @rack_context
+    
+    a_stream = java.io.ByteArrayInputStream.new(''.to_java_bytes)
+    input_stream = org.jruby.rack.servlet.RewindableInputStream.new(a_stream)
+    input_stream.getCurrentBufferSize.should == 42
+    input_stream.getMaximumBufferSize.should == 420
+  end
+  
   after :each do
     JRuby::Rack.booter = nil
     $servlet_context = nil
