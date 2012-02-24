@@ -48,7 +48,7 @@ public class RackServletContextListener implements ServletContextListener {
             factory.init(rackContext);
         } 
         catch (Exception e) {
-            handleInitializationException(factory, rackContext, e);
+            handleInitializationException(e, factory, rackContext);
         }
     }
 
@@ -71,9 +71,9 @@ public class RackServletContextListener implements ServletContextListener {
     }
  
     protected void handleInitializationException(
+            final Exception e,
             final RackApplicationFactory factory,
-            final ServletRackContext rackContext, 
-            final Exception e) {
+            final ServletRackContext rackContext) {
         rackContext.log("Error: application initialization failed", e);
     }
     

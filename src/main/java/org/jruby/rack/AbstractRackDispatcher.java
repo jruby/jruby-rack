@@ -29,26 +29,27 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
             app = getApplication();
             app.call(request).respond(response);
         } 
-        catch (Exception re) {
-            handleException(re, request, response);
+        catch (Exception e) {
+            handleException(e, request, response);
         } 
         finally {
             afterProcess(app);
         }
     }
 
-    private void handleException(
-            Exception re, RackEnvironment request,
-            RackResponseEnvironment response) throws IOException {
+    protected void handleException(
+            final Exception e,
+            final RackEnvironment request,
+            final RackResponseEnvironment response) throws IOException {
         
         if (response.isCommitted()) {
-            context.log("Error: Couldn't handle error: response committed", re);
+            context.log("Error: Couldn't handle error: response committed", e);
             return;
         }
+        context.log("Application Error", e);
         response.reset();
-        context.log("Application Error", re);
 
-        afterException(request, re, response);
+        afterException(request, e, response);
     }
 
     protected abstract void afterProcess(RackApplication app) throws IOException;
