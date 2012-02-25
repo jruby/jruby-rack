@@ -441,6 +441,7 @@ describe PoolingRackApplicationFactory do
     @rack_config.should_receive(:getInitialRuntimes).and_return 2
     @rack_config.should_receive(:getMaximumRuntimes).and_return 1
     @pool.init(@rack_context)
+    java.lang.Thread.yield
     @pool.waitForNextAvailable(30)
     @pool.getApplicationPool.size.should == 2
     @pool.finishedWithApplication mock("app")
