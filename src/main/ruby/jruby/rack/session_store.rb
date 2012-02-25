@@ -104,18 +104,24 @@ module JRuby::Rack
         def load_session(env, session_id = nil) # session_id arg for get_session alias
           session_id, session = false, {}
           if servlet_session = get_servlet_session(env)
-            session_id = servlet_session.getId rescue nil
-            servlet_session.getAttributeNames.each do |key|
-              if key == RAILS_SESSION_KEY
-                marshalled_bytes = servlet_session.getAttribute(RAILS_SESSION_KEY)
-                if marshalled_bytes
-                  data = Marshal.load(String.from_java_bytes(marshalled_bytes))
-                  session.update data if Hash === data
+            begin
+              session_id = servlet_session.getId
+              servlet_session.synchronized do
+                servlet_session.getAttributeNames.each do |key|
+                  if key == RAILS_SESSION_KEY
+                    marshalled_bytes = servlet_session.getAttribute(RAILS_SESSION_KEY)
+                    if marshalled_bytes
+                      data = Marshal.load(String.from_java_bytes(marshalled_bytes))
+                      session.update data if Hash === data
+                    end
+                  else
+                    session[key] = servlet_session.getAttribute key
+                  end
                 end
-              else
-                session[key] = servlet_session.getAttribute key
               end
-            end if session_id
+            rescue java.lang.IllegalStateException # session invalid
+              session_id = nil
+            end
           end
           [ session_id, session ]
         end
@@ -164,45 +170,49 @@ module JRuby::Rack
             return true
           end
           if servlet_session = get_servlet_session(env, true)
-            unless ( servlet_session.getId rescue nil )
-              return false # java.lang.IllegalStateException - session invalid
-            end
-            servlet_session.getAttributeNames.select {|key| !hash.has_key?(key)}.each do |key|
-              servlet_session.removeAttribute(key)
-            end
-            hash.delete_if do |key,value|
-              if String === key
-                case value
-                when String, Numeric, true, false, nil
-                  servlet_session.setAttribute key, value
-                  true
-                else
-                  if value.respond_to?(:java_object)
-                    servlet_session.setAttribute key, value
-                    true
-                  else
-                    false
+            begin
+              servlet_session.synchronized do
+                keys = servlet_session.getAttributeNames
+                keys.select { |key| ! hash.has_key?(key) }.each do |key|
+                  servlet_session.removeAttribute(key)
+                end
+                hash.delete_if do |key,value|
+                  if String === key
+                    case value
+                    when String, Numeric, true, false, nil
+                      servlet_session.setAttribute key, value
+                      true
+                    else
+                      if value.respond_to?(:java_object)
+                        servlet_session.setAttribute key, value
+                        true
+                      else
+                        false
+                      end
+                    end
                   end
                 end
+                if ! hash.empty?
+                  marshalled_string = Marshal.dump(hash)
+                  marshalled_bytes = marshalled_string.to_java_bytes
+                  servlet_session.setAttribute(RAILS_SESSION_KEY, marshalled_bytes)
+                elsif servlet_session.getAttribute(RAILS_SESSION_KEY)
+                  servlet_session.removeAttribute(RAILS_SESSION_KEY)
+                end
               end
+              return true
+            rescue java.lang.IllegalStateException # session invalid
+              return false
             end
-            if ! hash.empty?
-              marshalled_string = Marshal.dump(hash)
-              marshalled_bytes = marshalled_string.to_java_bytes
-              servlet_session.setAttribute(RAILS_SESSION_KEY, marshalled_bytes)
-            elsif servlet_session.getAttribute(RAILS_SESSION_KEY)
-              servlet_session.removeAttribute(RAILS_SESSION_KEY)
-            end
-            true
           else
-            false
+            return false
           end
         end
         
         def destroy_session(env, session_id = nil, options = nil)
           # session_id and options arg defaults for destory alias
-          (session = get_servlet_session(env)) and session.invalidate
-        rescue # java.lang.IllegalStateException if session invalid
+          (session = get_servlet_session(env)) && session.synchronized { session.invalidate }
+        rescue java.lang.IllegalStateException # if session already invalid
           nil
         end
         alias :destroy :destroy_session # for AbstractStore::SessionHash compatibility

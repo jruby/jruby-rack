@@ -31,6 +31,7 @@ describe "ActionController::Session::JavaServletStore" do
     @session.stub!(:getId).and_return @session_id = "random-session-id"
     @session.stub!(:getAttribute).and_return nil
     @session.stub!(:getAttributeNames).and_return []
+    @session.stub!(:synchronized).and_yield
     @request = mock "servlet request"
     @app = mock "app"
     @env = {"java.servlet_request" => @request, "rack.errors" => $stderr}
