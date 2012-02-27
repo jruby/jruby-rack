@@ -5,6 +5,6 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby/rack/merb'
+require 'jruby/rack/merb_booter'
 
 JRuby::Rack::MerbBooter.new.boot!

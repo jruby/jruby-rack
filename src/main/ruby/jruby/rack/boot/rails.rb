@@ -5,6 +5,6 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby/rack/rails'
+require 'jruby/rack/rails_booter'
 
 JRuby::Rack::RailsBooter.new.boot!

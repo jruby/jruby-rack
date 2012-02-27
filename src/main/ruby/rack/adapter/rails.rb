@@ -5,8 +5,6 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby/rack/rails'
-
 module Rack
   module Adapter
     class Rails

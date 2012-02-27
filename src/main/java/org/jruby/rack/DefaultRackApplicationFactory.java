@@ -197,7 +197,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return runtime;
     }
 
-    private RackApplication createApplication(final ApplicationObjectFactory appfact)
+    private RackApplication createApplication(final ApplicationObjectFactory appFactory)
             throws RackInitializationException {
         try {
             final Ruby runtime = newRuntime();
@@ -205,7 +205,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 @Override
                 public void init() throws RackInitializationException {
                     try {
-                        setApplication(appfact.create(runtime));
+                        setApplication(appFactory.create(runtime));
                     } catch (RaiseException re) {
                         captureMessage(re);
                         throw new RackInitializationException(re);

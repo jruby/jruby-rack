@@ -181,7 +181,6 @@ describe JRuby::Rack::Booter do
 
       it "sets up (default) rack booter and boots" do
         # DefaultRackApplicationFactory#createApplicationObject
-        @runtime.evalScriptlet("require 'jruby/rack/booter'")
         @runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'")
 
         # booter got setup :
@@ -229,7 +228,6 @@ describe JRuby::Rack::Booter do
       
       it "sets up rails booter and boots" do
         # RailsRackApplicationFactory#createApplicationObject
-        @runtime.evalScriptlet("require 'jruby/rack/rails'")
         @runtime.evalScriptlet("load 'jruby/rack/boot/rails.rb'")
 
         # booter got setup :

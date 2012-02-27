@@ -7,6 +7,7 @@
 
 require 'jruby'
 require 'jruby/rack'
+require 'jruby/rack/app_layout'
 
 module JRuby::Rack
   class Booter
@@ -29,10 +30,7 @@ module JRuby::Rack
       load_settings_from_init_rb
       layout.change_working_directory if layout.respond_to?(:change_working_directory)
       load_extensions
-    end
-
-    def load_extensions
-      require 'jruby/rack/rack_ext'
+      self
     end
 
     def default_layout_class
@@ -67,6 +65,8 @@ module JRuby::Rack
       @logger ||= begin; require 'logger'; Logger.new(logdev); end
     end
 
+    protected
+    
     def silence_warnings(&block)
       JRuby::Rack.silence_warnings(&block)
     end
@@ -125,6 +125,12 @@ module JRuby::Rack
       end
     end
 
+    def load_extensions
+      require 'jruby/rack/rack_ext'
+    end
+    
+    private
+    
     def path_to_file(url)
       begin
         url.toURI.toString
