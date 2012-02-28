@@ -152,7 +152,7 @@ describe "integration" do
     context "initialized (custom)" do
 
       before :all do
-        initialize_rails('custom')
+        initialize_rails 'custom', base_path
       end
 
       it "booted a custom env with a custom logger" do
