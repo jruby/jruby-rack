@@ -127,8 +127,7 @@ module JRuby::Rack::RailsBooter::Rails2Environment
   class RailsRequestSetup # only used for (non-rack based) CGI sessions
     
     def initialize(app, session_options)
-      @app = app
-      @session_options = session_options
+      @app, @session_options = app, session_options
     end
 
     def call(env)

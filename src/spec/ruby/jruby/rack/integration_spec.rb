@@ -236,8 +236,21 @@ describe "integration" do
           "logger.instance_variable_get(:'@logdev').dev.class.name", 'JRuby::Rack::ServletLog'
 
         should_eval_as_eql_to "Rails.logger.level", Logger::INFO
-        
-        should_eval_as_eql_to "Rails.public_path", '' # /home/kares/workspace/github/jruby-rack/src/spec/stub/rails32
+      end
+      
+      it "sets up public_path (as for a war)" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_eql_to "Rails.public_path", "#{STUB_DIR}/rails32"
+        # make sure it was set early on (before initializers run) :
+        should_eval_as_not_nil "defined? Rails32::Application::PUBLIC_PATH"
+        should_eval_as_eql_to "Rails32::Application::PUBLIC_PATH", "#{STUB_DIR}/rails32"
+        # check if image_tag resolves path to images correctly :
+        should_eval_as_eql_to %q{ 
+          config = ActionController::Base.config;
+          asset_paths = ActionView::Helpers::AssetTagHelper::AssetPaths.new(config);
+          image_path = asset_paths.compute_public_path('image.jpg', 'images');
+          image_path[0, 18]
+        }, '/images/image.jpg?'
       end
       
     end

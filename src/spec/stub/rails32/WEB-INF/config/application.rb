@@ -11,6 +11,7 @@ end
 
 module Rails32
   class Application < Rails::Application
+    
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
@@ -55,5 +56,9 @@ module Rails32
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+    
+    # testing out public_path early initialization :
+    PUBLIC_PATH = Rails.public_path.dup.freeze
+    
   end
 end

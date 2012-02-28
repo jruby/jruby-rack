@@ -197,13 +197,14 @@ describe JRuby::Rack::RailsBooter do
     it "should set the application configuration's public path" do
       paths = {}
       %w( public public/javascripts public/stylesheets ).each { |p| paths[p] = [p] }
-      app = mock "app"
+      app = mock("app"); app.stub_chain(:config, :paths).and_return(paths)
       public_path = Pathname.new(@booter.public_path)
-      app.stub_chain(:config, :paths).and_return(paths)
-      init = Rails::Railtie.initializers.detect {|i| i.first =~ /public_path/}
-      init.should_not be_nil
-      init[1].should == [{:before => "action_controller.set_configs"}]
-      init.last.call(app)
+      
+      Rails::Railtie.config.__before_configuration.size.should == 1
+      before_config = Rails::Railtie.config.__before_configuration.first
+      before_config.should_not be nil
+      before_config.call(app)
+      
       paths['public'].should == public_path.to_s
       paths['public/javascripts'].should == public_path.join("javascripts").to_s
       paths['public/stylesheets'].should == public_path.join("stylesheets").to_s
