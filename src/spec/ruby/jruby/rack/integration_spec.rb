@@ -88,29 +88,36 @@ describe "integration" do
 
   shared_examples_for 'a rails app', :shared => true do
 
+    let(:servlet_context) do
+      servlet_context = org.jruby.rack.mock.MockServletContext.new base_path
+      servlet_context.logger = raise_logger
+      set_compat_version servlet_context
+      servlet_context
+    end
+    
     it "initializes (pooling by default)" do
       listener = org.jruby.rack.rails.RailsServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
+      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
 
-      rack_factory = @servlet_context.getAttribute("rack.factory")
+      rack_factory = servlet_context.getAttribute("rack.factory")
       rack_factory.should be_a(RackApplicationFactory)
       rack_factory.should be_a(PoolingRackApplicationFactory)
       rack_factory.should respond_to(:realFactory)
       rack_factory.realFactory.should be_a(RailsRackApplicationFactory)
 
-      @servlet_context.getAttribute("rack.context").should be_a(RackContext)
-      @servlet_context.getAttribute("rack.context").should be_a(ServletRackContext)
+      servlet_context.getAttribute("rack.context").should be_a(RackContext)
+      servlet_context.getAttribute("rack.context").should be_a(ServletRackContext)
 
       rack_factory.getApplication.should be_a(DefaultRackApplication)
     end
 
     it "initializes threadsafe!" do
-      @servlet_context.addInitParameter('jruby.max.runtimes', '1')
+      servlet_context.addInitParameter('jruby.max.runtimes', '1')
 
       listener = org.jruby.rack.rails.RailsServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
+      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
 
-      rack_factory = @servlet_context.getAttribute("rack.factory")
+      rack_factory = servlet_context.getAttribute("rack.factory")
       rack_factory.should be_a(RackApplicationFactory)
       rack_factory.should be_a(SharedRackApplicationFactory)
       rack_factory.realFactory.should be_a(RailsRackApplicationFactory)
@@ -124,18 +131,14 @@ describe "integration" do
 
     before(:all) { copy_gemfile("rails30") }
 
-    before do
-      @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rails30"
-      @servlet_context.logger = raise_logger
-      set_compat_version @servlet_context
-    end
+    let(:base_path) { "file://#{STUB_DIR}/rails30" }
 
     it_should_behave_like 'a rails app'
 
     context "initialized" do
 
-      before :each do
-        initialize_rails
+      before :all do
+        initialize_rails nil, base_path
       end
 
       it "loaded rack ~> 1.2" do
@@ -148,7 +151,7 @@ describe "integration" do
 
     context "initialized (custom)" do
 
-      before :each do
+      before :all do
         initialize_rails('custom')
       end
 
@@ -168,18 +171,14 @@ describe "integration" do
 
     before(:all) { copy_gemfile("rails31") }
 
-    before do
-      @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rails31"
-      @servlet_context.logger = raise_logger
-      set_compat_version @servlet_context
-    end
+    let(:base_path) { "file://#{STUB_DIR}/rails31" }
 
     it_should_behave_like 'a rails app'
 
     context "initialized" do
 
-      before :each do
-        initialize_rails('production')
+      before :all do
+        initialize_rails 'production', base_path
       end
 
       it "loaded META-INF/init.rb" do
@@ -211,18 +210,14 @@ describe "integration" do
 
     before(:all) { copy_gemfile("rails32") }
 
-    before do
-      @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rails32"
-      @servlet_context.logger = raise_logger
-      set_compat_version @servlet_context
-    end
+    let(:base_path) { "file://#{STUB_DIR}/rails32" }
 
     it_should_behave_like 'a rails app'
 
     context "initialized" do
 
-      before :each do
-        initialize_rails('production')
+      before :all do
+        initialize_rails 'production', base_path
       end
 
       it "loaded rack ~> 1.4" do
@@ -241,22 +236,36 @@ describe "integration" do
           "logger.instance_variable_get(:'@logdev').dev.class.name", 'JRuby::Rack::ServletLog'
 
         should_eval_as_eql_to "Rails.logger.level", Logger::INFO
+        
+        should_eval_as_eql_to "Rails.public_path", '' # /home/kares/workspace/github/jruby-rack/src/spec/stub/rails32
       end
-
+      
     end
-
+    
   end
 
-  def initialize_rails(env = nil)
+  def initialize_rails(env = nil, servlet_context = @servlet_context)
+    if ! servlet_context || servlet_context.is_a?(String)
+      base = servlet_context.is_a?(String) ? servlet_context : nil
+      servlet_context = new_servlet_context(base)
+    end
     listener = org.jruby.rack.rails.RailsServletContextListener.new
-    listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
-    @rack_context = @servlet_context.getAttribute("rack.context")
-    @rack_factory = @servlet_context.getAttribute("rack.factory")
+    listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+    @rack_context = servlet_context.getAttribute("rack.context")
+    @rack_factory = servlet_context.getAttribute("rack.factory")
     # Travis-CI might have RAILS_ENV=test set, which is not desired for us :
-    @servlet_context.addInitParameter("jruby.rack.ignore.env", true.to_s) if ENV['RAILS_ENV']
-    @servlet_context.addInitParameter("rails.env", env.to_s) if env
+    servlet_context.addInitParameter("jruby.rack.ignore.env", true.to_s) if ENV['RAILS_ENV']
+    servlet_context.addInitParameter("rails.env", env.to_s) if env
+    @servlet_context ||= servlet_context
   end
 
+  def new_servlet_context(base_path = nil)
+    servlet_context = org.jruby.rack.mock.MockServletContext.new base_path
+    servlet_context.logger = raise_logger
+    set_compat_version servlet_context
+    servlet_context
+  end
+  
   def set_compat_version(servlet_context = @servlet_context)
     if JRuby.runtime.is1_9
       servlet_context.addInitParameter("jruby.compat.version", '1.9')
