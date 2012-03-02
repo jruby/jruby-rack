@@ -11,5 +11,5 @@ appraise "rails31" do
 end
 
 appraise "rails32" do
-  gem "rails", "~> 3.2.1"
+  gem "rails", "~> 3.2.2"
 end
