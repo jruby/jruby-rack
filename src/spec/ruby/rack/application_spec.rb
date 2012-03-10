@@ -268,7 +268,22 @@ describe DefaultRackApplicationFactory do
         @runtime.object_space_enabled.should be_true
         @runtime.kcode.should == Java::OrgJrubyUtil::KCode::EUC
       end
-        
+
+      it "should not propagate ENV changes to JVM (and indirectly to other JRuby VM instances)" do
+        runtime = app_factory.new_runtime
+
+        java.lang.System.getenv['VAR1'].should be_nil
+        #Nil returned from Ruby VM don't have the rspec decorations'
+        nil.should {
+          runtime.evalScriptlet("ENV['VAR1']").nil?
+        }
+        result = runtime.evalScriptlet("ENV['VAR1'] = 'VALUE1';")
+
+        #String returned from Ruby VM don't have the rspec decorations'
+        String.new(result).should == 'VALUE1'
+        java.lang.System.getenv['VAR1'].should be_nil
+      end
+
     end
     
   end
