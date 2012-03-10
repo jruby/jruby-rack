@@ -10,3 +10,5 @@ examples/*/nbproject
 nbproject/private/*
 .redcar
 /.rakeTasks
+
+.idea/
