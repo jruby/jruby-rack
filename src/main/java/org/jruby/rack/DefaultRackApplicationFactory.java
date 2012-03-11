@@ -156,6 +156,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             config.setCompatVersion(rackContext.getConfig().getCompatVersion());
         }
 
+        // Don't affect the container and sibling web apps when ENV changes are made inside the Ruby app
+        // There are quite a such things made in a typical Bundler based app.
+        config.setUpdateNativeENVEnabled(false);
+
         try { // try to set jruby home to jar file path
             URL resource = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
             if (resource != null && resource.getProtocol().equals("jar")) {
