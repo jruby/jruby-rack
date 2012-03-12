@@ -14,54 +14,39 @@ import org.jruby.rack.embed.Context
 import org.jruby.rack.DefaultRackConfig
 
 describe Context do
-
-  def create_context(info="test server")
-    Context.new(info)
-  end
-
-  def capture_stream(streamname, &block)
-    capture_bytes = ByteArrayOutputStream.new
-    print_stream = PrintStream.new capture_bytes
-    original_out = System.send(streamname)
-    set_method_sym = "set_#{streamname}".to_sym
-
-    begin
-      System.send(set_method_sym, print_stream)
-      yield
-    ensure
-      System.send(set_method_sym, original_out)
+  let(:stream) { ByteArrayOutputStream.new }
+  let(:server_info) { "test server" }
+  let(:config) do
+    DefaultRackConfig.new.tap do |c|
+      c.out = c.err = PrintStream.new(stream)
     end
-    print_stream.flush
-    capture_bytes.to_string
   end
+  let(:context) { Context.new(server_info, config) }
 
   it "outputs log messages out to stdout" do
-    embed_context = create_context
-    captured = capture_stream(:out) { embed_context.log "does this string appear?" }
+    context.log "does this string appear?"
+    captured = String.from_java_bytes(stream.to_byte_array)
     captured["does this string appear?"].should_not be_nil
   end
 
   it "outputs error log messages to stderr" do
-    embed_context = create_context
-
-    my_error = begin 
+    my_error = begin
       raise java.lang.RuntimeException.new "shizzle sticks"
     rescue java.lang.RuntimeException; $! ; end
 
-    captured = capture_stream(:err) { embed_context.log("an error, gosh", my_error)  }
-    
+    context.log("an error, gosh", my_error)
+
+    captured = String.from_java_bytes(stream.to_byte_array)
     captured["an error, gosh"].should_not be_nil
     captured["shizzle sticks"].should_not be_nil
     captured["RuntimeException"].should_not be_nil
   end
 
-  it "returns the server info given to it as a constructor argument" do
-    server_info = create_context("awesome power server").get_server_info
-    server_info.should eql("awesome power server")
-  end
+  context "with specific info" do
+    let(:server_info) { "awesome power server" }
 
-  it "returns a default config object via getConfig" do
-    create_context.get_config.should be_an_instance_of DefaultRackConfig
+    it "returns the server info given to it as a constructor argument" do
+      context.get_server_info.should == "awesome power server"
+    end
   end
-
 end

@@ -9,10 +9,18 @@ package org.jruby.rack;
 
 import org.jruby.CompatVersion;
 
+import java.io.PrintStream;
+
 /**
  * Centralized interface for configuration options used by JRuby-Rack. JRuby-Rack can either be configured by setting the key-value pairs as init parameters in the servlet context or as VM-wide system properties.
  */
 public interface RackConfig {
+    /** The standard output stream to use in the application */
+    PrintStream getOut();
+
+    /** The standard error stream to use in the application */
+    PrintStream getErr();
+
     /** Return the Ruby version that JRuby should run. */
     CompatVersion getCompatVersion();
 
@@ -33,7 +41,7 @@ public interface RackConfig {
 
     /** Return (optional) command line arguments to be used to configure runtimes. */
     String[] getRuntimeArguments();
-    
+
     /** Get the number of initializer threads, or null if unspecified. */
     Integer getNumInitializerThreads();
 
@@ -58,13 +66,13 @@ public interface RackConfig {
 
     /** Returns true if the outer environment (variables) should not be used. */
     boolean isIgnoreEnvironment();
-    
+
     /** Return true if the request body is rewindable. */
     boolean isRewindable();
 
     /** Return the initial size of the in-memory buffer used for request bodies. */
     Integer getInitialMemoryBufferSize();
-    
+
     /** Return the maximum size of the in-memory buffer used for request bodies. */
     Integer getMaximumMemoryBufferSize();
 

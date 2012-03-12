@@ -9,10 +9,17 @@ package org.jruby.rack.logging;
 
 import org.jruby.rack.RackLogger;
 
-import static java.lang.System.out;
+import java.io.PrintStream;
 
 public class StandardOutLogger implements RackLogger {
+    private PrintStream out;
+
+    public StandardOutLogger(PrintStream out) {
+        this.out = out;
+    }
+
     public StandardOutLogger(String ignored) {
+        this(System.out);
     }
 
     public void log(String message) {

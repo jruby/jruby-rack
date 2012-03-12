@@ -13,15 +13,19 @@ import org.jruby.rack.RackConfig;
 public class Context implements org.jruby.rack.RackContext {
 
     private final String serverInfo;
-    private final DefaultRackConfig config;
+    private final RackConfig config;
 
     /**
      * @param serverInfo a string to describe the server software you have
      * embedded.  Exposed as a CGI variable.
      */
     public Context(String serverInfo) {
+        this(serverInfo, new DefaultRackConfig());
+    }
+
+    public Context(String serverInfo, RackConfig config) {
         this.serverInfo = serverInfo;
-        this.config = new DefaultRackConfig();
+        this.config = config;
     }
 
     public RackConfig getConfig() {
@@ -33,11 +37,11 @@ public class Context implements org.jruby.rack.RackContext {
     }
 
     public void log(String message) {
-        System.out.println(message);
+        config.getOut().println(message);
     }
 
     public void log(String message, Throwable ex) {
-        System.err.println(message);
-        ex.printStackTrace(System.err);
+        config.getErr().println(message);
+        ex.printStackTrace(config.getErr());
     }
 }

@@ -11,6 +11,8 @@ import org.jruby.CompatVersion;
 import org.jruby.rack.logging.StandardOutLogger;
 import org.jruby.util.SafePropertyAccessor;
 
+import java.io.PrintStream;
+import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +36,32 @@ public class DefaultRackConfig implements RackConfig {
 
     private RackLogger logger;
     private boolean quiet = false;
+    private PrintStream out = System.out;
+    private PrintStream err = System.err;
+
+    public PrintStream getOut() {
+        return out;
+    }
+
+    public void setOut(OutputStream o) {
+        if (o instanceof PrintStream) {
+            out = (PrintStream) o;
+        } else {
+            out = new PrintStream(o);
+        }
+    }
+
+    public PrintStream getErr() {
+        return err;
+    }
+
+    public void setErr(OutputStream o) {
+        if (o instanceof PrintStream) {
+            err = (PrintStream) o;
+        } else {
+            err = new PrintStream(o);
+        }
+    }
 
     public CompatVersion getCompatVersion() {
         String versionString = getProperty("jruby.compat.version");
@@ -67,7 +95,7 @@ public class DefaultRackConfig implements RackConfig {
         final String args = getProperty("jruby.runtime.arguments");
         return args == null ? null : args.trim().split("\\s+");
     }
-    
+
     public Integer getNumInitializerThreads() {
         return getPositiveInteger("jruby.runtime.initializer.threads");
     }
@@ -95,10 +123,10 @@ public class DefaultRackConfig implements RackConfig {
             }
         } catch (Exception e) {
             if (!quiet) {
-                System.err.println("Error loading logger: " + loggerClass);
-                e.printStackTrace(System.err);
+                err.println("Error loading logger: " + loggerClass);
+                e.printStackTrace(err);
             }
-            return new StandardOutLogger(null);
+            return new StandardOutLogger(out);
         }
     }
 
@@ -145,7 +173,7 @@ public class DefaultRackConfig implements RackConfig {
     public Integer getInitialMemoryBufferSize() {
         return getPositiveInteger("jruby.rack.request.size.initial.bytes");
     }
-    
+
     public Integer getMaximumMemoryBufferSize() {
         Integer max = getPositiveInteger("jruby.rack.request.size.maximum.bytes");
         if (max == null) { // backwards compatibility with 1.0.x :
@@ -153,7 +181,7 @@ public class DefaultRackConfig implements RackConfig {
         }
         return max;
     }
-    
+
     public boolean isIgnoreEnvironment() {
         return getBoolean("jruby.rack.ignore.env", false);
     }
@@ -205,5 +233,5 @@ public class DefaultRackConfig implements RackConfig {
         } catch (Exception e) { /* ignored */ }
         return defValue;
     }
-    
+
 }
