@@ -22,10 +22,10 @@ describe Context do
     end
   end
   let(:context) { Context.new(server_info, config) }
+  let(:captured) { String.from_java_bytes(stream.to_byte_array) }
 
   it "outputs log messages out to stdout" do
     context.log "does this string appear?"
-    captured = String.from_java_bytes(stream.to_byte_array)
     captured["does this string appear?"].should_not be_nil
   end
 
@@ -36,7 +36,6 @@ describe Context do
 
     context.log("an error, gosh", my_error)
 
-    captured = String.from_java_bytes(stream.to_byte_array)
     captured["an error, gosh"].should_not be_nil
     captured["shizzle sticks"].should_not be_nil
     captured["RuntimeException"].should_not be_nil
