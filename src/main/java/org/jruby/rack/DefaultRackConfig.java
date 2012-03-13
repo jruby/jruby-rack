@@ -8,13 +8,13 @@
 package org.jruby.rack;
 
 import org.jruby.CompatVersion;
+import org.jruby.rack.logging.OutputStreamLogger;
 import org.jruby.rack.logging.StandardOutLogger;
 import org.jruby.util.SafePropertyAccessor;
 
 import java.io.PrintStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -24,15 +24,6 @@ import java.util.regex.Pattern;
  * Base implementation of RackConfig that retrieves settings from system properties.
  */
 public class DefaultRackConfig implements RackConfig {
-    private static final Pattern COMPAT_VERSION = Pattern.compile("1[._]([89])");
-    private static final Map<String,String> loggerTypes = Collections.unmodifiableMap(new HashMap<String, String>() {{
-        put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
-        put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
-        put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
-        put("log4j", "org.jruby.rack.logging.Log4jLogger");
-        put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");
-        put("stdout", "org.jruby.rack.logging.StandardOutLogger");
-    }});
 
     private RackLogger logger;
     private boolean quiet = false;
@@ -44,7 +35,9 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     public void setOut(OutputStream o) {
-        if (o instanceof PrintStream) {
+        if (o == null) {
+            out = System.out;
+        } else if (o instanceof PrintStream) {
             out = (PrintStream) o;
         } else {
             out = new PrintStream(o);
@@ -56,19 +49,30 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     public void setErr(OutputStream o) {
-        if (o instanceof PrintStream) {
+        if (o == null) {
+            err = System.err;
+        } else if (o instanceof PrintStream) {
             err = (PrintStream) o;
         } else {
             err = new PrintStream(o);
         }
     }
 
+    public boolean isQuiet() {
+        return quiet;
+    }
+
+    public void setQuiet(boolean quiet) {
+        this.quiet = quiet;
+    }
+    
     public CompatVersion getCompatVersion() {
         String versionString = getProperty("jruby.compat.version");
         if (versionString != null) {
-            Matcher matcher = COMPAT_VERSION.matcher(versionString);
+            final Pattern pattern = Pattern.compile("1[._]([89])");
+            final Matcher matcher = pattern.matcher(versionString);
             if (matcher.find()) {
-                String version = matcher.group(1);
+                final String version = matcher.group(1);
                 if (version.equals("8")) {
                     return CompatVersion.RUBY1_8;
                 } else if (version.equals("9")) {
@@ -103,39 +107,52 @@ public class DefaultRackConfig implements RackConfig {
     public RackLogger getLogger() {
         if (logger == null) {
             String loggerClass = getLoggerClassName();
-            if (loggerTypes.containsKey(loggerClass)) {
-                loggerClass = loggerTypes.get(loggerClass);
+            if ( "stdout".equalsIgnoreCase(loggerClass) ) {
+                logger = new OutputStreamLogger(getOut());
             }
-
-            logger = createLogger(loggerClass);
+            else if ( "stderr".equalsIgnoreCase(loggerClass) ) {
+                logger = new OutputStreamLogger(getErr());
+            }
+            else {
+                final Map<String, String> loggerTypes = getLoggerTypes();
+                if (loggerTypes.containsKey(loggerClass)) {
+                    loggerClass = loggerTypes.get(loggerClass);
+                }
+                logger = createLogger(loggerClass);
+            }
+            if (logger == null) logger = defaultLogger();
         }
         return logger;
     }
 
-    protected RackLogger createLogger(String loggerClass) {
+    protected RackLogger createLogger(final String loggerClass) {
         try {
-            final Class<?> c = Class.forName(loggerClass);
+            final Class<?> klass = Class.forName(loggerClass);
             try {
-                Constructor<?> ctor = c.getConstructor(new Class<?>[] { String.class });
+                Constructor<?> ctor = klass.getConstructor(new Class<?>[] { String.class });
                 return (RackLogger) ctor.newInstance(new Object[] { getLoggerName() });
             } catch (Exception tryAgain) {
-                return (RackLogger) c.newInstance();
+                return (RackLogger) klass.newInstance();
             }
         } catch (Exception e) {
-            if (!quiet) {
+            if ( ! isQuiet() ) {
                 err.println("Error loading logger: " + loggerClass);
                 e.printStackTrace(err);
             }
-            return new StandardOutLogger(out);
+            return null;
         }
     }
-
+    
+    protected RackLogger defaultLogger() {
+        return new StandardOutLogger(getOut());
+    }
+    
     public boolean isFilterAddsHtml() {
-        return getBoolean("jruby.rack.filter.adds.html", true);
+        return getBooleanProperty("jruby.rack.filter.adds.html", true);
     }
 
     public boolean isFilterVerifiesResource() {
-        return getBoolean("jruby.rack.filter.verifies.resource", false);
+        return getBooleanProperty("jruby.rack.filter.verifies.resource", false);
     }
 
     public String getJmsConnectionFactory() {
@@ -147,7 +164,7 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     public boolean isSerialInitialization() {
-        return getBoolean("jruby.init.serial", false);
+        return getBooleanProperty("jruby.init.serial", false);
     }
 
     public String getLoggerName() {
@@ -159,15 +176,15 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     public Integer getInitialRuntimes() {
-        return getRangeValue("min", "minIdle");
+        return getRuntimesRangeValue("min", "minIdle");
     }
 
     public Integer getMaximumRuntimes() {
-        return getRangeValue("max", "maxActive");
+        return getRuntimesRangeValue("max", "maxActive");
     }
 
     public boolean isRewindable() {
-        return getBoolean("jruby.rack.input.rewindable", true);
+        return getBooleanProperty("jruby.rack.input.rewindable", true);
     }
 
     public Integer getInitialMemoryBufferSize() {
@@ -183,7 +200,7 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     public boolean isIgnoreEnvironment() {
-        return getBoolean("jruby.rack.ignore.env", false);
+        return getBooleanProperty("jruby.rack.ignore.env", false);
     }
 
     public String getProperty(String key) {
@@ -194,23 +211,25 @@ public class DefaultRackConfig implements RackConfig {
         return SafePropertyAccessor.getProperty(key, defaultValue);
     }
 
-    public boolean isQuiet() {
-        return quiet;
+    public boolean getBooleanProperty(String key) {
+        return getBooleanProperty(key, false);
     }
-
-    public void setQuiet(boolean quiet) {
-        this.quiet = quiet;
+    
+    public boolean getBooleanProperty(String key, boolean defaultValue) {
+        return toBoolean(getProperty(key), defaultValue);
     }
-
-    private Integer getRangeValue(String end, String gsValue) {
+    
+    private Integer getRuntimesRangeValue(String end, String gsValue) {
         Integer v = getPositiveInteger("jruby." + end + ".runtimes");
         if (v == null) {
             v = getPositiveInteger("jruby.pool." + gsValue);
         }
-        if (v == null) {
-            getLogger().log("Warning: no " + end + " runtimes specified.");
-        } else {
-            getLogger().log("Info: received " + end + " runtimes = " + v);
+        if ( ! isQuiet() ) {
+            if (v == null) {
+                getLogger().log("Warning: no " + end + " runtimes specified.");
+            } else {
+                getLogger().log("Info: received " + end + " runtimes = " + v);
+            }   
         }
         return v;
     }
@@ -224,14 +243,24 @@ public class DefaultRackConfig implements RackConfig {
         } catch (Exception e) { /* ignored */ }
         return null;
     }
-
-    private boolean getBoolean(String key, boolean defValue) {
-        final String value = getProperty(key);
-        if (value == null) return defValue;
+    
+    public static boolean toBoolean(String value, boolean defaultValue) {
+        if (value == null) return defaultValue;
         try {
             return Boolean.parseBoolean(value);
-        } catch (Exception e) { /* ignored */ }
-        return defValue;
+        } 
+        catch (Exception e) { /* ignored */ }
+        return defaultValue;
+    }
+    
+    private static Map<String,String> getLoggerTypes() {
+        final Map<String,String> loggerTypes = new HashMap<String, String>();
+        loggerTypes.put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
+        loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
+        loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
+        loggerTypes.put("log4j", "org.jruby.rack.logging.Log4jLogger");
+        loggerTypes.put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");
+        return loggerTypes;
     }
 
 }
