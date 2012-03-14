@@ -12,11 +12,12 @@ module Rack
   module Handler
     class Servlet
       def initialize(rack_app)
-        @rack_app = rack_app
+        unless @rack_app = rack_app
+          raise "rack application not found #{@rack_app}. Make sure the rackup file path is correct."
+        end
       end
 
       def call(servlet_env)
-        raise "rack application not found #{@rack_app}. Make sure the rackup file path is correct." unless @rack_app
         JRuby::Rack::Response.new(@rack_app.call(create_env(servlet_env)))
       end
 

@@ -11,13 +11,14 @@ require 'stringio'
 
 describe Rack::Handler::Servlet, "create_env" do
   before :each do
-    @servlet = Rack::Handler::Servlet.new(nil)
+    @app = mock "application"
+    @servlet = Rack::Handler::Servlet.new(@app)
     @servlet_env = mock "servlet request"
     @servlet_response = mock "servlet response"
     @env = org.jruby.rack.servlet.ServletRackEnvironment.new @servlet_env, @servlet_response, @rack_context
     @servlet_env.stub!(:getAttributeNames).and_return enumeration([])
   end
-
+  
   def stub_env(options = {})
     options = {
       :getContextPath => nil,
@@ -335,9 +336,7 @@ describe Rack::Handler::Servlet, "call" do
   end
 
   it "raises an error when it failed to load the application" do
-    servlet = Rack::Handler::Servlet.new(nil)
-
-    lambda { servlet.call(mock('servlet env')) }.should raise_error(RuntimeError)
-    lambda { servlet.call(mock('servlet env')) }.should_not raise_error(NoMethodError)
+    lambda { Rack::Handler::Servlet.new(nil) }.should raise_error(RuntimeError)
+    lambda { Rack::Handler::Servlet.new(nil) }.should_not raise_error(NoMethodError)
   end
 end

@@ -6,19 +6,20 @@
 #++
 
 require 'jruby'
+require 'stringio'
 
 module JRuby::Rack
   module Capture
     module Base
       def output
-        @output ||= begin; require 'stringio'; StringIO.new; end
+        @output ||= begin; StringIO.new; end
       end
 
       def capture
         require 'rbconfig'
         output.puts("--- System", RUBY_DESCRIPTION, "Time: #{Time.now}",
                     "Server: #{$servlet_context.getServerInfo}",
-                    "jruby.home: #{Config::CONFIG['prefix']}")
+                    "jruby.home: #{RbConfig::CONFIG['prefix']}")
         output.puts("\n--- Context Init Parameters:",
                     *($servlet_context.init_parameter_names.sort.map do |k|
                         "#{k} = #{$servlet_context.get_init_parameter(k)}"
@@ -32,7 +33,7 @@ module JRuby::Rack
 
     module Exception
       def output
-        @output ||= begin; require 'stringio'; StringIO.new.tap do |s|
+        @output ||= begin; StringIO.new.tap do |s|
             s.puts "An exception happened during JRuby-Rack startup", self.to_s
           end; end
       end
