@@ -18,6 +18,9 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
     protected final RackContext context;
 
     public AbstractRackDispatcher(RackContext context) {
+        if (context == null) {
+            throw new IllegalArgumentException("null context");
+        }
         this.context = context;
     }
 
