@@ -40,6 +40,13 @@ public class Config implements RackConfig {
         };
     }
     
+    void initialize(final Ruby runtime) {
+        setOut( runtime.getOut() );
+        setErr( runtime.getErr() );
+        rubyENV = runtime.getENV();
+        compatVersion = runtime.getInstanceConfig().getCompatVersion();
+    }
+    
     public String getProperty(String key) {
         return getProperty(key, null);
     }
