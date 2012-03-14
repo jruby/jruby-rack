@@ -7,41 +7,50 @@
 
 package org.jruby.rack.embed;
 
-import org.jruby.rack.DefaultRackConfig;
-import org.jruby.rack.RackConfig;
+import java.io.PrintStream;
+import org.jruby.rack.RackContext;
 
-public class Context implements org.jruby.rack.RackContext {
+public class Context implements RackContext {
 
     private final String serverInfo;
-    private final RackConfig config;
+    private final Config config;
 
     /**
      * @param serverInfo a string to describe the server software you have
-     * embedded.  Exposed as a CGI variable.
+     * embedded. Exposed as a CGI variable.
      */
     public Context(String serverInfo) {
-        this(serverInfo, new DefaultRackConfig());
+        this(serverInfo, new Config());
+        //this.config.setLogger(this);
     }
 
-    public Context(String serverInfo, RackConfig config) {
+    /**
+     * @param serverInfo
+     * @param config rack configuration
+     */
+    public Context(String serverInfo, Config config) {
         this.serverInfo = serverInfo;
         this.config = config;
     }
-
-    public RackConfig getConfig() {
-        return this.config;
-    }
-
+    
     public String getServerInfo() {
         return this.serverInfo;
     }
+    
+    public Config getConfig() {
+        return this.config;
+    }
 
+    // RackLogger :
+    
     public void log(String message) {
         config.getOut().println(message);
     }
 
     public void log(String message, Throwable ex) {
-        config.getErr().println(message);
-        ex.printStackTrace(config.getErr());
+        final PrintStream err = config.getErr();
+        err.println(message);
+        ex.printStackTrace(err);
     }
+    
 }
