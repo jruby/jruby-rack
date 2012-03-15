@@ -23,14 +23,30 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.jruby.rack.RackConfig;
 
-
+/**
+ * Request wrapper passed to filter chain.
+ */
 public class RequestCapture extends HttpServletRequestWrapper {
 
     private Map<String,String[]> requestParams;
     private RewindableInputStream inputStream;
 
-    public RequestCapture(HttpServletRequest request, RackConfig config) {
+    /**
+     * Wrap a request
+     * @param request 
+     */
+    public RequestCapture(HttpServletRequest request) {
         super(request);
+    }
+    
+    /**
+     * @deprecated use {@link #RequestCapture(HttpServletRequest)}
+     * @param request
+     * @param config will be ignored
+     */
+    @Deprecated
+    public RequestCapture(HttpServletRequest request, RackConfig config) {
+        this(request);
     }
 
     @Override 

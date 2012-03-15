@@ -22,8 +22,32 @@ import org.jruby.rack.servlet.ResponseCapture;
 import org.jruby.rack.servlet.ServletRackEnvironment;
 import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 
+/**
+ * A base filter implementation.
+ * 
+ * @see UnmappedRackFilter
+ * @see RackFilter
+ */
 public abstract class AbstractFilter implements Filter {
     
+    /**
+     * @return the rack context for the application
+     */
+    protected abstract RackContext getContext();
+
+    /**
+     * @return the rack dispatcher for the application
+     */
+    protected abstract RackDispatcher getDispatcher();
+    
+    /**
+     * @see Filter#doFilter(ServletRequest, ServletResponse, FilterChain) 
+     * @param request
+     * @param response
+     * @param chain
+     * @throws IOException
+     * @throws ServletException 
+     */
     public final void doFilter(
             ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
@@ -35,6 +59,7 @@ public abstract class AbstractFilter implements Filter {
         ResponseCapture responseCapture = wrapResponse(httpResponse);
         
         RackEnvironment env = new ServletRackEnvironment(httpRequest, httpResponse, getContext());
+        // NOTE: should be moved bellow, just before getDispatcher().process(...)
         RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment(httpResponse);
 
         if (isDoDispatch(requestCapture, responseCapture, chain, env, responseEnv)) {
@@ -43,6 +68,10 @@ public abstract class AbstractFilter implements Filter {
 
     }
 
+    /**
+     * Destroys the {@link #getDispatcher()} by default.
+     * @see Filter#destroy() 
+     */
     @Override
     public void destroy() {
         getDispatcher().destroy();
@@ -60,20 +89,38 @@ public abstract class AbstractFilter implements Filter {
      * @throws ServletException
      */
     protected boolean isDoDispatch(
-            RequestCapture request, ResponseCapture response,
-            FilterChain chain, RackEnvironment env,
-            RackResponseEnvironment respEnv) throws IOException, ServletException {
+            RequestCapture request, ResponseCapture response, 
+            FilterChain chain, RackEnvironment env) 
+            throws IOException, ServletException {
         return true;
     }
 
-    protected abstract RackContext getContext();
-
-    protected abstract RackDispatcher getDispatcher();
+    /**
+     * @deprecated use {@link #isDoDispatch(RequestCapture, ResponseCapture, FilterChain, RackEnvironment) 
+     */
+    @Deprecated
+    protected boolean isDoDispatch(
+            RequestCapture request, ResponseCapture response, 
+            FilterChain chain, RackEnvironment env, 
+            RackResponseEnvironment responseEnv) 
+            throws IOException, ServletException {
+        return isDoDispatch(request, response, chain, env);
+    }
     
+    /**
+     * Extension point if you'll need to customize {@link RequestCapture}
+     * @param request
+     * @return request capture
+     */
     protected RequestCapture wrapRequest(ServletRequest request) {
-        return new RequestCapture((HttpServletRequest) request, getContext().getConfig());
+        return new RequestCapture((HttpServletRequest) request);
     }
 
+    /**
+     * Extension point if you'll need to customize {@link ResponseCapture}
+     * @param response
+     * @return response capture
+     */
     protected ResponseCapture wrapResponse(ServletResponse response) {
         return new ResponseCapture((HttpServletResponse) response);
     }

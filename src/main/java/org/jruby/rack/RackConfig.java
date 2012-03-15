@@ -48,11 +48,24 @@ public interface RackConfig {
     /** Create a logger based on the configuration. */
     RackLogger getLogger();
 
-    /** Return true if passing through the filter should append '.html' or 'index.html' to the path. */
+    /** 
+     * Return true if passing through the filter should append '.html' 
+     * (or 'index.html') to the path.
+     * 
+     * @deprecated configure filter with a nested init-param
+     * @see RackFilter
+     */
+    @Deprecated
     boolean isFilterAddsHtml();
 
-    /** Return true if the filter should verify the resource exists with
-     * ServletContext#getResource before adding .html on the request. */
+    /** 
+     * Return true if filter should verify the resource exists using 
+     * ServletContext#getResource before adding .html on the request. 
+     * 
+     * @deprecated configure filter with a nested init-param
+     * @see RackFilter
+     */
+    @Deprecated
     boolean isFilterVerifiesResource();
 
     /** Return the JNDI name of the JMS connection factory.*/
@@ -61,7 +74,7 @@ public interface RackConfig {
     /** Return the JNDI properties for */
     String getJmsJndiProperties();
 
-    /** Return true if the runtimes should be initialized in serial (e.g, if threads cannot be created). */
+    /** Return true if the runtimes should be initialized in serial (e.g. if threads cannot be created). */
     boolean isSerialInitialization();
 
     /** Returns true if the outer environment (variables) should not be used. */
@@ -81,4 +94,10 @@ public interface RackConfig {
 
     /** General property retrieval for custom configuration values. */
     String getProperty(String key, String defaultValue);
+
+    /** General property retrieval for custom configuration values. */
+    boolean getBooleanProperty(String key);
+
+    /** General property retrieval for custom configuration values. */
+    boolean getBooleanProperty(String key, boolean defaultValue);
 }
