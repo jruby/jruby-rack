@@ -7,21 +7,15 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 
-import java.lang.System
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
-import org.jruby.rack.embed.Context
-import org.jruby.rack.DefaultRackConfig
-
-describe Context do
-  let(:stream) { ByteArrayOutputStream.new }
+describe org.jruby.rack.embed.Context do
+  let(:stream) { java.io.ByteArrayOutputStream.new }
   let(:server_info) { "test server" }
   let(:config) do
-    DefaultRackConfig.new.tap do |c|
-      c.out = c.err = PrintStream.new(stream)
+    org.jruby.rack.embed.Config.new.tap do |c|
+      c.out = c.err = java.io.PrintStream.new(stream)
     end
   end
-  let(:context) { Context.new(server_info, config) }
+  let(:context) { org.jruby.rack.embed.Context.new(server_info, config) }
   let(:captured) { String.from_java_bytes(stream.to_byte_array) }
 
   it "outputs log messages out to stdout" do

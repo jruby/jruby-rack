@@ -30,23 +30,32 @@ public class Dispatcher extends AbstractRackDispatcher {
     public Dispatcher(RackContext rackContext, IRubyObject application) {
         super(rackContext);
         this.application = application;
+        initialize();
     }
 
+    private void initialize() {
+        final Ruby runtime = application.getRuntime();
+        // initialize embedded config (set stdout/stderr etc) :
+        if (context instanceof Context) {
+            ((Context) context).getConfig().doInitialize(runtime);
+        }
+        // set servlet context as a global variable :
+        IRubyObject rubyContext = JavaUtil.convertJavaToRuby(runtime, context);
+        runtime.getGlobalVariables().set("$servlet_context", rubyContext);
+    }
+    
     @Override
     protected RackApplication getApplication() throws RackInitializationException {
         if (rackApplication == null) {
             rackApplication = new DefaultRackApplication(application);
             rackApplication.init();
-            Ruby runtime = application.getRuntime();
-            IRubyObject rubyContext = JavaUtil.convertJavaToRuby(runtime, context);
-            runtime.getGlobalVariables().set("$servlet_context", rubyContext);
         }
         return rackApplication;
     }
     
     @Override
     protected void afterException(
-            RackEnvironment request, Exception re,
+            RackEnvironment env, Exception re,
             RackResponseEnvironment response) throws IOException {
         // TODO a fast draft (probably should use rack.errors) :
         context.log("Error:", re);
