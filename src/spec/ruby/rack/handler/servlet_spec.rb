@@ -193,7 +193,6 @@ describe Rack::Handler::Servlet, "create_env" do
     (class << @servlet_env; self; end).send(:define_method, :getHeader) {|h| enum[h] }
     @env.stub!(:to_io).and_return StringIO.new
     stub_env({ :getScheme => "http",
-               :getContextPath => "/foo",
                :getContentType => "text/html",
                :getContentLength => 1,
                :getHeaderNames => enumeration(enum.keys),

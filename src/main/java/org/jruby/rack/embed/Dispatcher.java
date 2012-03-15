@@ -35,8 +35,10 @@ public class Dispatcher extends AbstractRackDispatcher {
 
     private void initialize() {
         final Ruby runtime = application.getRuntime();
-        // initialize embedded config (set stdout/stderr) :
-        ((Context) context).getConfig().initialize(runtime);
+        // initialize embedded config (set stdout/stderr etc) :
+        if (context instanceof Context) {
+            ((Context) context).getConfig().doInitialize(runtime);
+        }
         // set servlet context as a global variable :
         IRubyObject rubyContext = JavaUtil.convertJavaToRuby(runtime, context);
         runtime.getGlobalVariables().set("$servlet_context", rubyContext);

@@ -8,6 +8,7 @@
 package org.jruby.rack.embed;
 
 import java.io.PrintStream;
+import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackContext;
 
 public class Context implements RackContext {
@@ -29,8 +30,19 @@ public class Context implements RackContext {
      * @param config rack configuration
      */
     public Context(String serverInfo, Config config) {
+        if (config == null) {
+            throw new IllegalArgumentException("null config");
+        }
         this.serverInfo = serverInfo;
         this.config = config;
+    }
+
+    /**
+     * @deprecated please use {@link #Context(String, Config)}
+     */
+    @Deprecated
+    public Context(String serverInfo, RackConfig config) {
+        this(serverInfo, new Config(config));
     }
     
     public String getServerInfo() {

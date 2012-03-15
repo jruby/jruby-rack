@@ -32,39 +32,56 @@ public class Config implements RackConfig {
             
             @Override
             public String getProperty(String key, String defaultValue) {
-                String value = Config.this.getProperty(key, null);
-                if (value != null) return value;
-                return super.getProperty(key, defaultValue);
+                String value = Config.this.resolveProperty(key);
+                return value != null ? value : super.getProperty(key, defaultValue);
             }
             
         };
     }
     
-    void initialize(final Ruby runtime) {
+    Config(final RackConfig config) {
+        delegate = new DefaultRackConfig() {
+            
+            @Override
+            public String getProperty(String key, String defaultValue) {
+                String value = config.getProperty(key, null);
+                if ( value != null ) return value;
+                
+                value = Config.this.resolveProperty(key);
+                return value != null ? value : super.getProperty(key, defaultValue);
+            }
+            
+        };
+    }
+    
+    void doInitialize(final Ruby runtime) {
         setOut( runtime.getOut() );
         setErr( runtime.getErr() );
         rubyENV = runtime.getENV();
         compatVersion = runtime.getInstanceConfig().getCompatVersion();
     }
     
-    public String getProperty(String key) {
-        return getProperty(key, null);
+    
+    protected String resolveProperty(String key) {
+        String value = null;
+        if ( rubyENV != null ) value = rubyENV.get(key);
+        return value;
+    }    
+    
+    public final String getProperty(String key) {
+        return delegate.getProperty(key);
     }
 
-    public String getProperty(String key, String defaultValue) {
-        if (rubyENV != null) {
-            String value = rubyENV.get(key);
-            if (value != null) return value;
-        }
-        return defaultValue; // delegated in custom DefaultRackConfig#getProperty
+    public final String getProperty(String key, String defaultValue) {
+        return delegate.getProperty(key, defaultValue);
+    }
+    
+    public final boolean getBooleanProperty(String key) {
+        return delegate.getBooleanProperty(key);
     }
 
-    public boolean getBooleanProperty(String key) {
-        return getBooleanProperty(key, false);
-    }
-
-    public boolean getBooleanProperty(String key, boolean defaultValue) {
-        return DefaultRackConfig.toBoolean(getProperty(key), defaultValue);
+    public final boolean getBooleanProperty(String key, boolean defaultValue) {
+        return delegate.getBooleanProperty(key, defaultValue);
     }
     
     public CompatVersion getCompatVersion() {
@@ -118,42 +135,44 @@ public class Config implements RackConfig {
         return delegate.getRackupPath();
     }
 
-    // TODO revisit these - do they make sense ?!
+    // runtime pooling in embedded ENVs not implemented :
     
     public Integer getRuntimeTimeoutSeconds() {
-        return delegate.getRuntimeTimeoutSeconds();
-        //throw new UnsupportedOperationException("getRuntimeTimeoutSeconds()");
+        //return delegate.getRuntimeTimeoutSeconds();
+        throw new UnsupportedOperationException("getRuntimeTimeoutSeconds()");
     }
 
     public Integer getInitialRuntimes() {
-        return delegate.getInitialRuntimes();
-        //throw new UnsupportedOperationException("getInitialRuntimes()");
+        //return delegate.getInitialRuntimes();
+        throw new UnsupportedOperationException("getInitialRuntimes()");
     }
 
     public Integer getMaximumRuntimes() {
-        return delegate.getMaximumRuntimes();
-        //throw new UnsupportedOperationException("getMaximumRuntimes()");
+        //return delegate.getMaximumRuntimes();
+        throw new UnsupportedOperationException("getMaximumRuntimes()");
     }
 
     public String[] getRuntimeArguments() {
-        return delegate.getRuntimeArguments();
-        //throw new UnsupportedOperationException("getRuntimeArguments()");
+        //return delegate.getRuntimeArguments();
+        throw new UnsupportedOperationException("getRuntimeArguments()");
     }
     
     public Integer getNumInitializerThreads() {
-        return delegate.getNumInitializerThreads();
-        //throw new UnsupportedOperationException("getNumInitializerThreads()");
+        //return delegate.getNumInitializerThreads();
+        throw new UnsupportedOperationException("getNumInitializerThreads()");
     }
 
     public boolean isSerialInitialization() {
-        return delegate.isSerialInitialization();
-        //throw new UnsupportedOperationException("isSerialInitialization()");
+        //return delegate.isSerialInitialization();
+        throw new UnsupportedOperationException("isSerialInitialization()");
     }
 
     public boolean isIgnoreEnvironment() {
-        return delegate.isIgnoreEnvironment();
-        //throw new UnsupportedOperationException("isIgnoreEnvironment()");
+        //return delegate.isIgnoreEnvironment();
+        throw new UnsupportedOperationException("isIgnoreEnvironment()");
     }
+    
+    // RackFilter aint's used with embed :
     
     public boolean isFilterAddsHtml() {
         throw new UnsupportedOperationException("isFilterAddsHtml()");
@@ -163,6 +182,8 @@ public class Config implements RackConfig {
         throw new UnsupportedOperationException("isFilterVerifiesResource()");
     }
 
+    // JMS configuration not used with embed :
+    
     public String getJmsConnectionFactory() {
         throw new UnsupportedOperationException("getJmsConnectionFactory()");
     }
