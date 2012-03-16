@@ -7,19 +7,11 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
-import org.jruby.rack.RackFilter
-
-describe RackFilter do
+describe org.jruby.rack.RackFilter do
+  
   let(:dispatcher) { mock "dispatcher" }
-  let(:filter) { RackFilter.new dispatcher, @rack_context }
+  let(:filter) { org.jruby.rack.RackFilter.new dispatcher, @rack_context }
   let(:chain) { mock "filter chain" }
-
-  before :each do
-    stub_request("/index")
-    @response = javax.servlet.http.HttpServletResponse.impl {}
-    @rack_context.stub!(:getResource).and_return nil
-    @rack_config.stub!(:isFilterAddsHtml).and_return true
-  end
 
   def stub_request(path_info)
     @request = javax.servlet.http.HttpServletRequest.impl {}
@@ -33,6 +25,13 @@ describe RackFilter do
     @request.stub!(:getRequestURI).and_return "/some/uri#{path_info}"
   end
 
+  before :each do
+    stub_request("/index")
+    @response = javax.servlet.http.HttpServletResponse.impl {}
+    @rack_context.stub!(:getResource).and_return nil
+    filter.setAddsHtmlToPathInfo(true)
+  end
+  
   it "should dispatch the filter chain and finish if the chain resulted in a successful response" do
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
       resp.setStatus(200)
@@ -81,51 +80,6 @@ describe RackFilter do
     filter.doFilter(@request, @response, chain)
   end
 
-  it "should dispatch /some/uri/index.html unchanged" do
-    stub_request("/index.html")
-    chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getRequestURI.should == "/some/uri/index.html"
-      resp.setStatus(200)
-    end
-    @response.should_receive(:setStatus).ordered.with(200)
-    filter.doFilter(@request, @response, chain)
-  end
-
-  it "should convert / to /index.html" do
-    stub_request("/")
-    chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getServletPath.should == "/some/uri/index.html"
-      resp.setStatus(200)
-    end
-    @response.should_receive(:setStatus).ordered.with(200)
-    filter.doFilter(@request, @response, chain)
-  end
-
-  it "should dispatch the request unwrapped if servlet path already contains the welcome filename" do
-    stub_request("/") do |r,path_info|
-      r.stub!(:getPathInfo).and_return nil
-      r.stub!(:getServletPath).and_return "/some/uri/index.html"
-    end
-    chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getPathInfo.should == nil
-      req.getServletPath.should == "/some/uri/index.html"
-      req.getRequestURI.should == "/some/uri/"
-      resp.setStatus(200)
-    end
-    @response.should_receive(:setStatus).ordered.with(200)
-    filter.doFilter(@request, @response, chain)
-  end
-
-  it "should add .html to the path" do
-    stub_request("")
-    chain.should_receive(:doFilter).ordered.and_return do |req,resp|
-      req.getServletPath.should == "/some/uri.html"
-      resp.setStatus(200)
-    end
-    @response.should_receive(:setStatus).ordered.with(200)
-    filter.doFilter(@request, @response, chain)
-  end
-
   it "should only add to path info if it already was non-null" do
     stub_request("/index") do |r,path_info|
       r.stub!(:getPathInfo).and_return path_info
@@ -154,10 +108,72 @@ describe RackFilter do
     filter.doFilter(@request, @response, chain)
   end
 
+  context "adds .html to path info" do
+    
+    before do
+      filter.setAddsHtmlToPathInfo(true)
+    end
+    
+    it "should dispatch /some/uri/index.html unchanged" do
+      stub_request("/index.html")
+      chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+        req.getRequestURI.should == "/some/uri/index.html"
+        resp.setStatus(200)
+      end
+      @response.should_receive(:setStatus).ordered.with(200)
+      filter.doFilter(@request, @response, chain)
+    end
 
-  context "when the filter is configured to not add .html on the path" do
-    before :each do
-      @rack_config.stub!(:isFilterAddsHtml).and_return false
+    it "should convert / to /index.html" do
+      stub_request("/")
+      chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+        req.getServletPath.should == "/some/uri/index.html"
+        resp.setStatus(200)
+      end
+      @response.should_receive(:setStatus).ordered.with(200)
+      filter.doFilter(@request, @response, chain)
+    end
+
+    it "should dispatch the request unwrapped if servlet path already contains the welcome filename" do
+      stub_request("/") do |r,path_info|
+        r.stub!(:getPathInfo).and_return nil
+        r.stub!(:getServletPath).and_return "/some/uri/index.html"
+      end
+      chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+        req.getPathInfo.should == nil
+        req.getServletPath.should == "/some/uri/index.html"
+        req.getRequestURI.should == "/some/uri/"
+        resp.setStatus(200)
+      end
+      @response.should_receive(:setStatus).ordered.with(200)
+      filter.doFilter(@request, @response, chain)
+    end
+
+    it "should add .html to the path" do
+      stub_request("")
+      chain.should_receive(:doFilter).ordered.and_return do |req,resp|
+        req.getServletPath.should == "/some/uri.html"
+        resp.setStatus(200)
+      end
+      @response.should_receive(:setStatus).ordered.with(200)
+      filter.doFilter(@request, @response, chain)
+    end
+    
+    it "should process dispatching when chain throws a FileNotFoundException (WAS 8.0 behavior)" do
+      stub_request("/foo")
+      chain.should_receive(:doFilter).ordered.and_return do
+        raise java.io.FileNotFoundException.new("/foo.html")
+      end
+      dispatcher.should_receive(:process)
+      filter.doFilter(@request, @response, chain)
+    end
+    
+  end
+  
+  context "down not add .html to path info" do
+    
+    before do
+      filter.setAddsHtmlToPathInfo(false)
     end
 
     it "dispatches /some/uri/index unchanged" do
@@ -170,10 +186,12 @@ describe RackFilter do
       filter.doFilter(@request, @response, chain)
     end
   end
-
-  context "when the filter verifies resources" do
-    before :each do
-      @rack_config.stub!(:isFilterVerifiesResource).and_return true
+  
+  context "verifies .html resources" do
+    
+    before do
+      filter.setAddsHtmlToPathInfo(true)
+      filter.setVerifiesHtmlResource(true)
     end
 
     it "dispatches /some/uri/index unchanged if the resource does not exist" do
@@ -217,15 +235,6 @@ describe RackFilter do
       filter.doFilter(@request, @response, chain)
     end
   end
-
-  it "should process dispatching when chain throws a FileNotFoundException (WAS 8.0 behavior)" do
-    stub_request("/foo")
-    chain.should_receive(:doFilter).ordered.and_return do
-      raise java.io.FileNotFoundException.new("/foo.html")
-    end
-    dispatcher.should_receive(:process)
-    filter.doFilter(@request, @response, chain)
-  end
   
   it "should destroy dispatcher on destroy" do
     dispatcher.should_receive(:destroy)
@@ -233,7 +242,7 @@ describe RackFilter do
   end
   
   it "should have default constructor (for servlet container)" do
-    lambda { RackFilter.new }.should_not raise_error
+    lambda { org.jruby.rack.RackFilter.new }.should_not raise_error
   end
   
 end
