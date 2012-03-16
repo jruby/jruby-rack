@@ -5,7 +5,6 @@
  * See the file LICENSE.txt for details.
  */
 
-
 package org.jruby.rack.servlet;
 
 import java.io.File;
@@ -36,7 +35,7 @@ public class RewindableInputStream extends ServletInputStream {
     
     private static final int TMP_READ_BUFFER_SIZE = 1024;
     
-    private static final String TMP_FILE_PREFIX = "jruby-rack-input";
+    public static final String TMP_FILE_PREFIX = "jruby-rack-input_";
     
     private static int iniBufferSize = INI_BUFFER_SIZE;
 
@@ -65,7 +64,6 @@ public class RewindableInputStream extends ServletInputStream {
      * @param maxBufferSize 
      */
     public static void setDefaultMaximumBufferSize(int maxBufferSize) {
-        
         RewindableInputStream.maxBufferSize = maxBufferSize;
     }
     
@@ -80,6 +78,7 @@ public class RewindableInputStream extends ServletInputStream {
     
     // the on disk buffered content for this stream
     private RandomAccessFile bufferFile = null;
+    private String bufferFilePath; // file path (for deletion)
 
     // last remembered position (mark support)
     private long mark = -1;
@@ -203,7 +202,12 @@ public class RewindableInputStream extends ServletInputStream {
         if (buffer == null) return;
 
         if (bufferFile != null) {
-            bufferFile.close();
+            try {
+                bufferFile.close();
+            }
+            finally {
+                new File(bufferFilePath).delete();
+            }
         }
 
         super.close();
@@ -355,6 +359,7 @@ public class RewindableInputStream extends ServletInputStream {
         
         File tmpFile = File.createTempFile(TMP_FILE_PREFIX, "");
         this.bufferFile = new RandomAccessFile(tmpFile, "rw");
+        this.bufferFilePath = tmpFile.getPath();
         
         this.buffer.position(this.buffer.arrayOffset());
         this.bufferFile.getChannel().write(this.buffer);

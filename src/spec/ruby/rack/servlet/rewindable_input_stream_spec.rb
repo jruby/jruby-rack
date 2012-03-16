@@ -5,9 +5,9 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
+require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 
-import org.jruby.rack.servlet.RewindableInputStream
+java_import 'org.jruby.rack.servlet.RewindableInputStream'
 
 describe RewindableInputStream do
 
@@ -136,7 +136,7 @@ describe RewindableInputStream do
   end
   
   it "should read an image" do
-    image = File.expand_path('../files/image.jpg', File.dirname(__FILE__))
+    image = File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
     file = java.io.RandomAccessFile.new(image, "r")
     file.read bytes = new_byte_array(file.length)
     
@@ -156,6 +156,28 @@ describe RewindableInputStream do
       index += 1
     end
     index.should == file.length
+  end
+  
+  it "should delete the tmp file on close" do
+    class RewindableInputStream
+      field_reader :bufferFilePath
+    end
+    
+    input = '1234567890 42'
+    stream = rewindable_input_stream(input, 10, 12)
+    13.times { stream.read }
+    
+    stream.bufferFilePath.should_not be nil
+    File.exist?(stream.bufferFilePath).should be true
+    
+    stream.close
+    File.exist?(stream.bufferFilePath).should be false
+  end
+  
+  after :all do
+    tmpdir = java.lang.System.getProperty("java.io.tmpdir")
+    prefix = RewindableInputStream::TMP_FILE_PREFIX
+    FileUtils.rm_r Dir.glob(File.join(tmpdir, "#{prefix}*"))
   end
   
   private
