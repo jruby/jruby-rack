@@ -105,8 +105,7 @@ public class UnmappedRackFilter extends AbstractFilter {
      */
     protected boolean handleChainResponse(RequestCapture request, ResponseCapture response) 
         throws IOException {
-        
-        if ( response.isError() ) {
+        if ( ! response.isHandled() ) {
             request.reset(); // rewinds input stream
             // users might configure what to do on a 404 - by default we reset :
             if ( isResetUnhandledResponse() ) {
@@ -118,6 +117,8 @@ public class UnmappedRackFilter extends AbstractFilter {
             request.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
             return true; // dispatch (rails) - nobody handled the request
         }
+        // do not dispatch if a filter set a 2xx/3xx response already ... or 
+        // decided to send an error (!= 404) e.g. as an authentication failure
         return false;
     }
     
@@ -135,8 +136,8 @@ public class UnmappedRackFilter extends AbstractFilter {
         return resetUnhandledResponse == RESET_BUFFER_VALUE;
     }
 
-    public void setResetUnhandledResponseBuffer(boolean reset) {
-        this.resetUnhandledResponse = reset ? RESET_BUFFER_VALUE : null;
+    public void setResetUnhandledResponseBuffer() {
+        this.resetUnhandledResponse = RESET_BUFFER_VALUE;
     }
 
     protected void setResetUnhandledResponseValue(final String value) {

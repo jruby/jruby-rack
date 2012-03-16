@@ -23,18 +23,18 @@ import java.io.InputStream;
  */
 @SuppressWarnings("deprecation")
 public class ServletRackEnvironment extends HttpServletRequestWrapper
-    implements HttpServletRequest, RackEnvironment {
+    implements RackEnvironment {
     
     private String scriptName;
     private String requestURI;
     private String requestURIWithoutQuery;
     private String pathInfo;
     private final RackContext rackContext;
-    private final HttpServletResponse servletResponse;
+    private final HttpServletResponse response;
 
     public ServletRackEnvironment(HttpServletRequest request, HttpServletResponse response, RackContext rackContext) {
         super(request);
-        this.servletResponse = response;
+        this.response = response;
         this.rackContext = rackContext;
     }
 
@@ -51,7 +51,7 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
      * @return
      */
     public HttpServletResponse getResponse() {
-    	return servletResponse;
+    	return response;
     }
 
     /**

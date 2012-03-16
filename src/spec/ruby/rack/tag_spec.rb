@@ -10,7 +10,6 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 import org.jruby.rack.RackTag
 import org.jruby.rack.fake.FakePageContext
 import org.jruby.rack.fake.FakeJspWriter
-import javax.servlet.ServletRequest
 
 class ExceptionThrower
   def call(request)

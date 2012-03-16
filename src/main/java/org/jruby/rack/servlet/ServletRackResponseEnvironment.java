@@ -21,12 +21,13 @@ import java.util.Map.Entry;
  * @author nicksieger
  */
 public class ServletRackResponseEnvironment extends HttpServletResponseWrapper 
-        implements RackResponseEnvironment {
+    implements RackResponseEnvironment {
+    
     public ServletRackResponseEnvironment(HttpServletResponse response) {
         super(response);
     }
     
-    public void defaultRespond(RackResponse response) throws IOException {
+    public void defaultRespond(final RackResponse response) throws IOException {
         setStatus(response.getStatus());
         for (Iterator it = response.getHeaders().entrySet().iterator(); it.hasNext();) {
             Entry entry = (Entry) it.next();
@@ -34,4 +35,5 @@ public class ServletRackResponseEnvironment extends HttpServletResponseWrapper
         }
         getWriter().write(response.getBody());
     }
+    
 }

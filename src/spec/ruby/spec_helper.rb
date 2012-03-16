@@ -16,12 +16,12 @@ rescue LoadError => e
 end unless defined?(Maven.set_classpath)
 Maven.set_classpath
 
-java_import org.jruby.rack.RackContext
-java_import org.jruby.rack.RackConfig
-java_import org.jruby.rack.RackServletContextListener
-java_import org.jruby.rack.servlet.ServletRackContext
-java_import javax.servlet.ServletContext
-java_import javax.servlet.ServletConfig
+java_import 'org.jruby.rack.RackContext'
+java_import 'org.jruby.rack.RackConfig'
+java_import 'org.jruby.rack.RackServletContextListener'
+java_import 'org.jruby.rack.servlet.ServletRackContext'
+java_import 'javax.servlet.ServletContext'
+java_import 'javax.servlet.ServletConfig'
 
 module SharedHelpers
   
@@ -143,6 +143,10 @@ RSpec.configure do |config|
   
 end
 
+import org.jruby.rack.mock.MockServletConfig
+import org.jruby.rack.mock.MockServletContext
+import org.jruby.rack.mock.MockHttpServletRequest
+import org.jruby.rack.mock.MockHttpServletResponse
 
 class StubInputStream < java.io.InputStream
   def initialize(val = "")

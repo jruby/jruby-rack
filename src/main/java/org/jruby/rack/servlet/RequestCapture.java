@@ -55,7 +55,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
         if (enc == null) {
             enc = "UTF-8";
         }
-        return new BufferedReader(new InputStreamReader(this.getInputStream(), enc));
+        return new BufferedReader(new InputStreamReader(getInputStream(), enc));
     }
     
     @Override 
@@ -127,13 +127,11 @@ public class RequestCapture extends HttpServletRequestWrapper {
         try {
             line = getReader().readLine();
         } 
-        catch (IOException e) {
-        }
-        
-        Map<String,String[]> params = new HashMap<String,String[]>();
+        catch (IOException e) { /* ignored */ }
         if (line == null) return false;
         
-        String[] pairs = line.split("\\&");
+        final Map<String,String[]> params = new HashMap<String,String[]>();
+        final String[] pairs = line.split("\\&");
         for (int i = 0; i < pairs.length; i++) {
             try {
                 String[] fields = pairs[i].split("=", 2);
@@ -162,14 +160,22 @@ public class RequestCapture extends HttpServletRequestWrapper {
         this.requestParams = params;
         return true;
     }
-    
-    public void reset() throws IOException {
-        if (inputStream instanceof RewindableInputStream) {
-            ((RewindableInputStream) inputStream).rewind();
-        }
-    }
 
     private boolean requestParametersParsed() {
         return parseRequestParams() && requestParams.size() >= super.getParameterMap().size();
     }
+    
+    
+    public void reset() throws IOException {
+        if ( inputStream != null ) inputStream.rewind();
+    }
+    
+    /**
+     * @return true if {@link #getInputStream()} (or {@link #getReader()}) has 
+     * been accessed
+     */
+    public boolean isInputAccessed() {
+        return inputStream != null;
+    }
+    
 }

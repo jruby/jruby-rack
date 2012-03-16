@@ -58,28 +58,72 @@ describe org.jruby.rack.RackFilter do
     filter.doFilter(@request, @response, chain)
   end
 
-  it "should allow downstream entities to flush the buffer in the case of a successful response" do
+  it "allows downstream entities to flush the buffer in the case of a successful response" do
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
       resp.setStatus(200)
       resp.flushBuffer
     end
-
     @response.should_receive(:setStatus).ordered.with(200)
     @response.should_receive(:flushBuffer).ordered
+    dispatcher.should_not_receive(:process)
     filter.doFilter(@request, @response, chain)
   end
 
-  it "should not allow downstream entities in the chain to flush the buffer in the case of an error" do
+  it "does not allow downstream entities in the chain to flush the buffer in the case of an 404" do
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
-      resp.sendError(400)
+      resp.sendError(404)
       resp.flushBuffer
     end
     @response.should_not_receive(:flushBuffer)
-    @response.should_receive(:reset).ordered
-    dispatcher.should_receive(:process).ordered
+    @response.should_receive(:reset)
+    dispatcher.should_receive(:process)
     filter.doFilter(@request, @response, chain)
   end
 
+  it "only resets the buffer for a 404 if configured so" do
+    chain.should_receive(:doFilter).ordered.and_return do |_, resp|
+      resp.sendError(404)
+      resp.flushBuffer
+    end
+    @response.should_not_receive(:flushBuffer)
+    @response.should_receive(:resetBuffer)
+    @response.should_not_receive(:reset)
+    dispatcher.should_receive(:process)
+    filter.setResetUnhandledResponseBuffer
+    filter.doFilter(@request, @response, chain)
+  end
+  
+  it "allows an error response from the filter chain (and flushes the buffer)" do
+    chain.should_receive(:doFilter).ordered.and_return do |_, resp|
+      resp.sendError(401)
+      resp.flushBuffer
+    end
+    @response.should_receive(:sendError).with(401).ordered
+    @response.should_receive(:flushBuffer).ordered
+    @response.should_not_receive(:reset)
+    dispatcher.should_not_receive(:process)
+    filter.doFilter(@request, @response, chain)
+  end
+
+  it "processes and resets in case a given chain error is not considered handled" do
+    filter = Class.new(org.jruby.rack.RackFilter) do
+      def wrapResponse(response)
+        Class.new(org.jruby.rack.servlet.ResponseCapture) do
+          def isHandled; getStatus < 400; end
+        end.new(response)
+      end
+    end.new(dispatcher, @rack_context)
+    
+    chain.should_receive(:doFilter).ordered.and_return do |_, resp|
+      resp.sendError(401)
+      resp.flushBuffer
+    end
+    @response.should_not_eceive(:flushBuffer)
+    @response.should_receive(:reset)
+    dispatcher.should_receive(:process)
+    filter.doFilter(@request, @response, chain)
+  end
+  
   it "should only add to path info if it already was non-null" do
     stub_request("/index") do |r,path_info|
       r.stub!(:getPathInfo).and_return path_info
