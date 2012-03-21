@@ -211,11 +211,11 @@ public class DefaultRackConfig implements RackConfig {
         return SafePropertyAccessor.getProperty(key, defaultValue);
     }
 
-    public boolean getBooleanProperty(String key) {
-        return getBooleanProperty(key, false);
+    public Boolean getBooleanProperty(String key) {
+        return getBooleanProperty(key, null);
     }
     
-    public boolean getBooleanProperty(String key, boolean defaultValue) {
+    public Boolean getBooleanProperty(String key, Boolean defaultValue) {
         return toBoolean(getProperty(key), defaultValue);
     }
     
@@ -244,10 +244,10 @@ public class DefaultRackConfig implements RackConfig {
         return null;
     }
     
-    public static boolean toBoolean(String value, boolean defaultValue) {
+    protected static Boolean toBoolean(String value, Boolean defaultValue) {
         if (value == null) return defaultValue;
         try {
-            return Boolean.parseBoolean(value);
+            return Boolean.valueOf(value);
         } 
         catch (Exception e) { /* ignored */ }
         return defaultValue;

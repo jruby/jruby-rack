@@ -29,6 +29,12 @@ describe org.jruby.rack.RackFilter do
     stub_request("/index")
     @response = javax.servlet.http.HttpServletResponse.impl {}
     @rack_context.stub!(:getResource).and_return nil
+    @rack_config.stub!(:getProperty) do |key, default|
+      ( key || raise("missing key") ) && default
+    end
+    @rack_config.stub!(:getBooleanProperty) do |key, default|
+      ( key || raise("missing key") ) && default
+    end
     filter.setAddsHtmlToPathInfo(true)
   end
   
@@ -89,7 +95,7 @@ describe org.jruby.rack.RackFilter do
     @response.should_receive(:resetBuffer)
     @response.should_not_receive(:reset)
     dispatcher.should_receive(:process)
-    filter.setResetUnhandledResponseBuffer
+    filter.setResetUnhandledResponseBuffer(true)
     filter.doFilter(@request, @response, chain)
   end
   

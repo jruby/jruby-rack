@@ -76,11 +76,11 @@ public class Config implements RackConfig {
         return delegate.getProperty(key, defaultValue);
     }
     
-    public final boolean getBooleanProperty(String key) {
+    public final Boolean getBooleanProperty(String key) {
         return delegate.getBooleanProperty(key);
     }
 
-    public final boolean getBooleanProperty(String key, boolean defaultValue) {
+    public final Boolean getBooleanProperty(String key, Boolean defaultValue) {
         return delegate.getBooleanProperty(key, defaultValue);
     }
     

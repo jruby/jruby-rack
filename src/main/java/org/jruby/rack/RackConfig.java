@@ -96,8 +96,8 @@ public interface RackConfig {
     String getProperty(String key, String defaultValue);
 
     /** General property retrieval for custom configuration values. */
-    boolean getBooleanProperty(String key);
+    Boolean getBooleanProperty(String key);
 
     /** General property retrieval for custom configuration values. */
-    boolean getBooleanProperty(String key, boolean defaultValue);
+    Boolean getBooleanProperty(String key, Boolean defaultValue);
 }

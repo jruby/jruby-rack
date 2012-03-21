@@ -136,8 +136,8 @@ public class UnmappedRackFilter extends AbstractFilter {
         return resetUnhandledResponse == RESET_BUFFER_VALUE;
     }
 
-    public void setResetUnhandledResponseBuffer() {
-        this.resetUnhandledResponse = RESET_BUFFER_VALUE;
+    public void setResetUnhandledResponseBuffer(boolean reset) {
+        this.resetUnhandledResponse = reset ? RESET_BUFFER_VALUE : null;
     }
 
     protected void setResetUnhandledResponseValue(final String value) {
