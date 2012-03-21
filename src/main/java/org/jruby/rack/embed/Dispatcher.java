@@ -39,7 +39,7 @@ public class Dispatcher extends AbstractRackDispatcher {
         if (context instanceof Context) {
             ((Context) context).getConfig().doInitialize(runtime);
         }
-        // set servlet context as a global variable :
+        // TODO seems confusing as we're not really exposing a servlet context:
         IRubyObject rubyContext = JavaUtil.convertJavaToRuby(runtime, context);
         runtime.getGlobalVariables().set("$servlet_context", rubyContext);
     }

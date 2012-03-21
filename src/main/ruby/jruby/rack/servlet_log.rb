@@ -7,6 +7,7 @@
 
 class JRuby::Rack::ServletLog
   def initialize(context = $servlet_context)
+    raise ArgumentError, "no context" unless context
     @context = context
   end
 

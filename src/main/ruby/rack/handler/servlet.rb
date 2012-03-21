@@ -117,13 +117,14 @@ module Rack
         when 'rack.multiprocess'    then env[key] = false
         when 'rack.run_once'        then env[key] = false
         when 'rack.input'           then env[key] = @servlet_env.to_io
-        when 'rack.errors'          then env[key] = JRuby::Rack::ServletLog.new
+        when 'rack.errors'          then env[key] = JRuby::Rack::ServletLog.new(rack_context)
         when 'rack.url_scheme'
           scheme = env[key] = @servlet_env.getScheme
           env['HTTPS'] = 'on' if scheme == 'https'
         when 'java.servlet_request' then env[key] = @servlet_env.getRequest rescue @servlet_env
         when 'java.servlet_response' then env[key] = @servlet_env.getResponse rescue @servlet_env
-        when 'java.servlet_context' then env[key] = $servlet_context
+        when 'java.servlet_context' then env[key] = servlet_context # nil for embed ?
+        when 'jruby.rack.context'   then env[key] = rack_context # always present
         when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
         when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
         when 'jruby.rack.rack.release'  then env[key] = ::Rack.release
@@ -185,6 +186,27 @@ module Rack
       def load__SERVER_SOFTWARE(env)
         env["SERVER_SOFTWARE"] = @servlet_env.context.getServerInfo
       end
+      
+      private
+      
+        def rack_context
+          if @servlet_env.respond_to?(:context)
+            @servlet_env.context # RackEnvironment#getContext
+          else
+            $servlet_context || raise("missing rack context")
+          end
+        end
+
+        def servlet_context
+          return $servlet_context if $servlet_context
+          if @servlet_env.respond_to?(:context) && 
+              @servlet_env.context.is_a?(javax.servlet.ServletContext)
+            @servlet_env.context
+          else
+            nil
+          end
+        end
+    
     end
   end
 end

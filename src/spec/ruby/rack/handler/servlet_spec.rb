@@ -143,17 +143,29 @@ describe Rack::Handler::Servlet, "create_env" do
     env["CONTENT_LENGTH"].should == "10"
   end
 
-  it "should set the input and error keys" do
+  it "sets the rack.input and rack.errors keys" do
     stub_env :getScheme => "http", :getContextPath => "/foo"
     @env.stub!(:to_io).and_return StringIO.new
     env = @servlet.create_lazy_env @env
-    (input = env['rack.input']).should_not be_nil
+    
+    (input = env['rack.input']).should_not be nil
     [:gets, :read, :each].each {|sym| input.respond_to?(sym).should == true }
-    (errors = env['rack.errors']).should_not be_nil
+    (errors = env['rack.errors']).should_not be nil
     [:puts, :write, :flush].each {|sym| errors.respond_to?(sym).should == true }
     env['java.servlet_request'].should == @servlet_env
   end
 
+  it "sets the rack.errors to log via rack context" do
+    env = @servlet.create_lazy_env @env
+    env['rack.errors'].should be_a JRuby::Rack::ServletLog
+    
+    @rack_context.should_receive(:log).with("bar").ordered
+    @rack_context.should_receive(:log).with("huu").ordered
+    
+    env['rack.errors'].puts "bar"
+    env['rack.errors'].write "huu"
+  end
+  
   it "should set env['HTTPS'] = 'on' if scheme is https" do
     stub_env :getScheme => "https"
     env = @servlet.create_lazy_env @env
