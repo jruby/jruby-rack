@@ -7,18 +7,16 @@
 
 require 'jruby/rack/capture'
 
-def debug?
-  $DEBUG || !ENV['DEBUG'].nil?
-end
+$DEBUG ||= ! ENV['DEBUG'].nil?
 
 class Exception
   include JRuby::Rack::Capture::Base
   include JRuby::Rack::Capture::Exception
-  include JRuby::Rack::Capture::Environment if debug?
+  include JRuby::Rack::Capture::Environment if $DEBUG
   include JRuby::Rack::Capture::RubyGems
   include JRuby::Rack::Capture::Bundler
   include JRuby::Rack::Capture::JRubyRackConfig
-  include JRuby::Rack::Capture::JavaEnvironment if debug?
+  include JRuby::Rack::Capture::JavaEnvironment if $DEBUG
 end
 
 class LoadError

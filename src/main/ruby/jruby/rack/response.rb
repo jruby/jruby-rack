@@ -8,7 +8,7 @@
 module JRuby
   module Rack
     class Response
-      include Java::org.jruby.rack.RackResponse
+      include org.jruby.rack.RackResponse
       java_import java.nio.channels.Channels
 
       @@object_polluted = begin
