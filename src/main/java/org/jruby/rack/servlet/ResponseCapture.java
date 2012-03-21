@@ -24,7 +24,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     private static final String STREAM = "stream";
     private static final String WRITER = "writer";
     
-    private int status = 0;
+    private int status = 200;
     private Object output;
     
     /**
@@ -102,7 +102,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     public ServletOutputStream getOutputStream() throws IOException {
         if ( output == null ) output = STREAM;
         
-        if ( getStatus() == 0 || isHandled() ) {
+        if ( isHandled() ) {
             return super.getOutputStream();
         }
         else {
@@ -120,7 +120,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     public PrintWriter getWriter() throws IOException {
         if ( output == null ) output = WRITER;
         
-        if ( getStatus() == 0 || isHandled() ) {
+        if ( isHandled() ) {
             // we protect against API limitations as we depend on #getWriter 
             // being functional even if getOutputStream has been called ...
             if ( output != WRITER ) {
@@ -142,10 +142,10 @@ public class ResponseCapture extends HttpServletResponseWrapper {
             });
         }
     }
-
+    
     @Override
     public void flushBuffer() throws IOException {
-        if ( getStatus() == 0 || isHandled() ) super.flushBuffer();
+        if ( isHandled() ) super.flushBuffer();
     }
     
     public boolean isError() {
@@ -160,8 +160,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
      * @see #handleStatus(int, boolean) 
      */
     public boolean isHandled() {
-        final int s = getStatus();
-        return s > 0 && s != 404;
+        return getStatus() != 404;
     }
     
     /**
