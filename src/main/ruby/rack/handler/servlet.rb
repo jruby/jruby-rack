@@ -43,10 +43,11 @@ module Rack
       end
 
       def populate(lazy_hash)
-        hash = {}
-        (BUILTINS + REQUEST).each {|k| lazy_hash[k]} # load builtins and request vars
+        for b in BUILTINS; lazy_hash[b]; end
+        for r in REQUEST;  lazy_hash[r]; end
         lazy_hash['HTTP_'] # load headers
-        lazy_hash.keys.each {|k| hash[k] = lazy_hash[k]}
+        hash = {}
+        for k in lazy_hash.keys; hash[k] = lazy_hash[k]; end
         hash
       end
 
@@ -57,7 +58,7 @@ module Rack
 
     class LazyEnv
       def initialize(servlet_env)
-        @env = Hash.new {|h,k| load_env_key(h,k)}
+        @env = Hash.new { |h, k| load_env_key(h, k) }
         @servlet_env = servlet_env
         load_servlet_request_attributes
       end
@@ -67,8 +68,8 @@ module Rack
       end
 
       def load_env_key(env, key)
-        if respond_to?("load__#{key}")
-          send("load__#{key}", env)
+        if respond_to?(load = "load__#{key}")
+          send(load, env)
         elsif key =~ /^(rack|java|jruby)/
           load_builtin(env, key)
         elsif key =~ /^HTTP_/
@@ -85,11 +86,7 @@ module Rack
           when "CONTENT_TYPE"
             @env[k] = v if v
           else
-            if v
-              @env[k] = v
-            else
-              @env[k] = ""
-            end
+            @env[k] = v ? v : ""
           end
         end
       end
@@ -119,12 +116,15 @@ module Rack
         when 'rack.input'           then env[key] = @servlet_env.to_io
         when 'rack.errors'          then env[key] = JRuby::Rack::ServletLog.new(rack_context)
         when 'rack.url_scheme'
-          scheme = env[key] = @servlet_env.getScheme
+          env[key] = scheme = @servlet_env.getScheme
           env['HTTPS'] = 'on' if scheme == 'https'
-        when 'java.servlet_request' then env[key] = @servlet_env.getRequest rescue @servlet_env
-        when 'java.servlet_response' then env[key] = @servlet_env.getResponse rescue @servlet_env
-        when 'java.servlet_context' then env[key] = servlet_context # nil for embed ?
-        when 'jruby.rack.context'   then env[key] = rack_context # always present
+          scheme
+        when 'java.servlet_request'
+          env[key] = @servlet_env.respond_to?(:request) ? @servlet_env.request : @servlet_env
+        when 'java.servlet_response'
+          env[key] = @servlet_env.respond_to?(:response) ? @servlet_env.response : @servlet_env
+        when 'java.servlet_context' then env[key] = servlet_context
+        when 'jruby.rack.context'   then env[key] = rack_context
         when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
         when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
         when 'jruby.rack.rack.release'  then env[key] = ::Rack.release
@@ -184,26 +184,28 @@ module Rack
       end
 
       def load__SERVER_SOFTWARE(env)
-        env["SERVER_SOFTWARE"] = @servlet_env.context.getServerInfo
+        env["SERVER_SOFTWARE"] = rack_context.getServerInfo
       end
       
       private
       
         def rack_context
           if @servlet_env.respond_to?(:context)
-            @servlet_env.context # RackEnvironment#getContext
+            @servlet_env.context # RackEnvironment#getContext()
           else
             $servlet_context || raise("missing rack context")
           end
         end
 
         def servlet_context
-          return $servlet_context if $servlet_context
-          if @servlet_env.respond_to?(:context) && 
-              @servlet_env.context.is_a?(javax.servlet.ServletContext)
-            @servlet_env.context
+          if @servlet_env.respond_to?(:servlet_context) # @since Servlet 3.0
+            @servlet_env.servlet_context # ServletRequest#getServletContext()
           else
-            nil
+            if @servlet_env.context.is_a?(javax.servlet.ServletContext)
+              @servlet_env.context
+            else
+              $servlet_context || @env['java.servlet_request'].servlet_context
+            end
           end
         end
     

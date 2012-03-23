@@ -152,7 +152,6 @@ describe Rack::Handler::Servlet, "create_env" do
     [:gets, :read, :each].each {|sym| input.respond_to?(sym).should == true }
     (errors = env['rack.errors']).should_not be nil
     [:puts, :write, :flush].each {|sym| errors.respond_to?(sym).should == true }
-    env['java.servlet_request'].should == @servlet_env
   end
 
   it "sets the rack.errors to log via rack context" do
@@ -324,10 +323,58 @@ describe Rack::Handler::Servlet, "create_env" do
     env["HTTP_X_SOME_REALLY_LONG_HEADER"].should == "yeap"
   end
 
-  it "should return the servlet response when queried with java.servlet_response" do
+  it "returns the servlet request when queried with java.servlet_request" do
+    env = @servlet.create_lazy_env @env
+    env['java.servlet_request'].should == @servlet_env
+  end
+  
+  it "returns the servlet response when queried with java.servlet_response" do
     env = @servlet.create_lazy_env @env
     env['java.servlet_response'].should == @servlet_response
   end
+
+  context "servlet" do
+    
+    before do
+      @servlet_context = MockServletContext.new
+      @servlet_request = MockHttpServletRequest.new(@servlet_context)
+      @servlet_response = MockHttpServletResponse.new
+      @env = org.jruby.rack.servlet.ServletRackEnvironment.new @servlet_request, @servlet_response, @rack_context
+    end
+
+    it "returns the servlet context when queried with java.servlet_context" do
+      env = @servlet.create_lazy_env @env
+      
+      env['java.servlet_context'].should_not be nil
+      env['java.servlet_context'].should == @rack_context
+    end
+    
+    it "returns the servlet context when queried with java.servlet_context 3.0" do
+      # HACK to emulate Servlet API 3.0 MockHttpServletRequest has getServletContext :
+      env = @servlet.create_lazy_env @servlet_request # @env
+      
+      env['java.servlet_context'].should_not be nil
+      # TODO RSpec yet again at it's best ?!
+      # NoMethodError: private method `pretty_print' called for #<RSpec::Mocks::ErrorGenerator:0x11fa5f0>
+      begin
+        env['java.servlet_context'].should == @servlet_context
+      rescue NoMethodError
+        (env['java.servlet_context'] == @servlet_context).should == true
+      end
+    end
+    
+    it "returns the servlet request when queried with java.servlet_request" do
+      env = @servlet.create_lazy_env @env
+      env['java.servlet_request'].should == @servlet_request
+    end
+    
+    it "returns the servlet response when queried with java.servlet_response" do
+      env = @servlet.create_lazy_env @env
+      env['java.servlet_response'].should == @servlet_response
+    end
+    
+  end
+  
 end
 
 describe Rack::Handler::Servlet, "call" do
