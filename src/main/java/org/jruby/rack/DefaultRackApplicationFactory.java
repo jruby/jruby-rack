@@ -187,6 +187,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             runtime.getGlobalVariables().set("$servlet_context", context);
             if (rackContext.getConfig().isIgnoreEnvironment()) {
                 runtime.evalScriptlet("ENV.clear");
+                // bundler 1.1.x assumes ENV['PATH'] is a string
+                // `ENV['PATH'].split(File::PATH_SEPARATOR)` ...
+                runtime.evalScriptlet("ENV['PATH'] = ''");
             }
             runtime.evalScriptlet("require 'rack/handler/servlet'");
         } catch (RaiseException re) {

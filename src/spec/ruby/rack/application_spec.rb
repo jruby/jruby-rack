@@ -244,25 +244,33 @@ describe DefaultRackApplicationFactory do
         should_eval_as_eql_to "$LOADED_FEATURES.reject { |p| #{reject_files} }", []
       end
       
-      it "should initialize the $servlet_context global variable" do
+      it "initializes the $servlet_context global variable" do
         @runtime = app_factory.new_runtime
         should_not_eval_as_nil "defined?($servlet_context)"
       end
 
-      it "should handle jruby.compat.version == '1.9' and start up in 1.9 mode" do
-        @rack_config.stub!(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
-        @runtime = app_factory.new_runtime
-        @runtime.is1_9.should be_true
-      end
-
-      it "should have environment variables cleared if the configuration ignores the environment" do
+      it "clears environment variables if the configuration ignores the environment" do
         ENV["HOME"].should_not == ""
         @rack_config.stub!(:isIgnoreEnvironment).and_return true
         @runtime = app_factory.new_runtime
         should_eval_as_nil "ENV['HOME']"
       end
 
-      it "should handle jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
+      it "sets ENV['PATH'] to an empty string if the configuration ignores the environment" do
+        ENV["PATH"].should_not be nil
+        ENV["PATH"].should_not == ""
+        @rack_config.stub!(:isIgnoreEnvironment).and_return true
+        @runtime = app_factory.new_runtime
+        should_eval_as_eql_to "ENV['PATH']", ''
+      end
+      
+      it "handles jruby.compat.version == '1.9' and starts in 1.9 mode" do
+        @rack_config.stub!(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
+        @runtime = app_factory.new_runtime
+        @runtime.is1_9.should be_true
+      end
+      
+      it "handles jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
         @rack_config.stub!(:getRuntimeArguments).and_return ['-X+O', '-Ke'].to_java(:String)
         @runtime = app_factory.new_runtime
         @runtime.object_space_enabled.should be_true
