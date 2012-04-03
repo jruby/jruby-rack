@@ -1,7 +1,21 @@
+== 1.1.5 (04/03/12)
+
+- bundler 1.1 workaround when ENV is cleared - set ENV['PATH'] = ''
+- resolve servlet context from request.getServletContext if posssible
+- resetUnhandledResponse init param for controlling chain response handling
+- filter specific context params deprecated in favor of filter init params
+- logging should not depend on $servlet_context global (better #88 fix)
+- cleanup request buffer /tmp files after input stream gets closed
+- add an embed Config to correctly setup RackConfig from ruby runtime
+- introduce RackConfig#getOut/getErr for possible 1/2 stream redirection
+- ensure ENV changes do not affect the native environment (#101)
+- change Rails.public_path early on (#99) and do not set PUBLIC_ROOT in 3.x
+- synchronize session operations with JavaServletStore (#95)
+- allow configuring request buffer initial/maximum size using parameters
+- initialization exception behavior in listener might be overriden (#16)
+
 == 1.1.4 (02/21/12)
 
-- Thanks to @kares for all the maintenance and quick turnaround on
-  bugs this release!
 - incorrectly interpreted byte in RewindableInputStream causing EOFs (#92)
 - fix JRuby::Rack::Response 1.9 incompatibility due String#each
 - ensure $servlet_context is not nil in embedded scenario (#88)
