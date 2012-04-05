@@ -179,8 +179,10 @@ as context init parameters in web.xml or as VM-wide system properties.
   `servlet_context`. See below.
 - `jruby.rack.ignore.env`: Clears out the `ENV` hash in each runtime to insulate 
   the application from the environment.
-- `jruby.rack.background.spool`: (EXPERIMENTAL) Enable large request
-  bodies to be spooled to a tempfile in the background.
+- `jruby.rack.request.size.initial.bytes`: Initial size for request body memory 
+   buffer, see also `jruby.rack.request.size.maximum.bytes` bellow.
+- `jruby.rack.request.size.maximum.bytes`: The maximum size for the request in
+   memory buffer, if the body is larger than this it gets spooled to a tempfile.
 - `jruby.rack.filter.adds.html`: 
   **deprecated** use `addsHtmlToPathInfo` filter config init parameter.
   The default behavior for Rails and many other Ruby applications is to add an 
@@ -252,19 +254,18 @@ Please use GitHub to file bugs, patches and pull requests.
 For JRuby-Rack contributors, the release process goes something like
 the following:
 
-1. Ensure that release version is correct in pom.xml and `mvn install`
+1. Ensure that release version is correct in _pom.xml_ and `mvn install`
    runs clean.
-2. Ensure generated changes to src/main/ruby/jruby/rack/version.rb are
+2. Ensure generated changes to _src/main/ruby/jruby/rack/version.rb_ are
    checked in.
-3. Ensure History.txt is updated with latest release information.
+3. Ensure _History.txt_ is updated with latest release information.
 3. Tag current release in git: `git tag <version>`.
 4. Push commits and tag: `git push origin master --tags`
 5. Build gem: `rake clean gem`
 6. Push gem: `gem push target/jruby-rack-*.gem`
 7. Release jar to maven repository: `mvn -DupdateReleaseInfo=true deploy`
-8. Bump the version in pom.xml to the
-   `<next-release-version>.dev-SNAPSHOT`, run `mvn install`, and commit
-   the changes.
+8. Bump the version in _pom.xml_ to next release version *X.X.X.dev-SNAPSHOT*, 
+   run `mvn install`, and commit the changes.
 
 ## Rails Step-by-step
 

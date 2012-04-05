@@ -7,8 +7,8 @@ examples/*/tmp
 examples/*/work
 examples/*/*.war
 examples/*/nbproject
-nbproject/private/*
+.rakeTasks
 .redcar
-/.rakeTasks
-
+nbproject
 .idea/
+.rvmrc
