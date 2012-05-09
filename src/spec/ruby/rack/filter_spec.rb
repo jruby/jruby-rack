@@ -54,7 +54,7 @@ describe org.jruby.rack.RackFilter do
     filter.doFilter(@request, @response, chain)
   end
 
-  it "should dispatch to the rack dispatcher if the chain resulted in a client or server error" do
+  it "dispatches to the rack dispatcher if the chain resulted in a 404" do
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
       resp.sendError(404)
     end
@@ -64,6 +64,34 @@ describe org.jruby.rack.RackFilter do
     filter.doFilter(@request, @response, chain)
   end
 
+  it "dispatches to the rack dispatcher if the chain resulted in a 403" do
+    # sending a PUT up the chain results in a 403 on Tomcat
+    # @see https://github.com/jruby/jruby-rack/issues/105
+    chain.should_receive(:doFilter).ordered.and_return do |_, resp|
+      resp.sendError(403)
+    end
+    @response.should_receive(:reset).ordered
+    dispatcher.should_receive(:process).ordered
+    filter.doFilter(@request, @response, chain)
+  end
+  
+  it "dispatches to the rack dispatcher out of configured non handled statuses" do
+    filter = Class.new(org.jruby.rack.RackFilter) do
+      def wrapResponse(response)
+        capture = super
+        capture.setNotHandledStatuses [ 442 ]
+        capture
+      end
+    end.new(dispatcher, @rack_context)
+    
+    chain.should_receive(:doFilter).ordered.and_return do |_, resp|
+      resp.sendError(442)
+    end
+    @response.should_receive(:reset).ordered
+    dispatcher.should_receive(:process).ordered
+    filter.doFilter(@request, @response, chain)
+  end
+  
   it "allows downstream entities to flush the buffer in the case of a successful response" do
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
       resp.setStatus(200)
@@ -131,9 +159,9 @@ describe org.jruby.rack.RackFilter do
   end
   
   it "should only add to path info if it already was non-null" do
-    stub_request("/index") do |r,path_info|
-      r.stub!(:getPathInfo).and_return path_info
-      r.stub!(:getServletPath).and_return "/some/uri"
+    stub_request("/index") do |request,path_info|
+      request.stub!(:getPathInfo).and_return path_info
+      request.stub!(:getServletPath).and_return "/some/uri"
     end
     chain.should_receive(:doFilter).ordered.and_return do |req,resp|
       req.getPathInfo.should == "/index.html"
@@ -185,9 +213,9 @@ describe org.jruby.rack.RackFilter do
     end
 
     it "should dispatch the request unwrapped if servlet path already contains the welcome filename" do
-      stub_request("/") do |r,path_info|
-        r.stub!(:getPathInfo).and_return nil
-        r.stub!(:getServletPath).and_return "/some/uri/index.html"
+      stub_request("/") do |request, path_info|
+        request.stub!(:getPathInfo).and_return nil
+        request.stub!(:getServletPath).and_return "/some/uri/index.html"
       end
       chain.should_receive(:doFilter).ordered.and_return do |req,resp|
         req.getPathInfo.should == nil
@@ -284,6 +312,42 @@ describe org.jruby.rack.RackFilter do
       @response.should_receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
+  end
+  
+  it "configures not handled statuses on init" do
+    servlet_context = javax.servlet.ServletContext.impl do |name, *args|
+      case name.to_sym
+      when :getAttribute
+        if args[0] == "rack.context"
+          @rack_context 
+        end
+      else
+        nil
+      end
+    end
+    config = javax.servlet.FilterConfig.impl do |name, *args|
+      case name.to_sym
+      when :getServletContext then servlet_context
+      when :getInitParameter
+        if args[0] == 'responseNotHandledStatuses'
+          ' 403, 404,501, , 504 ,'
+        end
+      else
+        nil
+      end
+    end
+    filter.init(config)
+    response_capture = filter.wrapResponse(@response)
+    response_capture.setStatus(403)
+    response_capture.isHandled.should be false
+    response_capture.setStatus(404)
+    response_capture.isHandled.should be false
+    response_capture.setStatus(501)
+    response_capture.isHandled.should be false
+    response_capture.setStatus(504)
+    response_capture.isHandled.should be false
+    response_capture.setStatus(505)
+    response_capture.isHandled.should be true
   end
   
   it "should destroy dispatcher on destroy" do

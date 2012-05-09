@@ -8,9 +8,15 @@ package org.jruby.rack;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletResponse;
 
 import org.jruby.rack.servlet.RequestCapture;
 import org.jruby.rack.servlet.ResponseCapture;
@@ -37,6 +43,10 @@ public class UnmappedRackFilter extends AbstractFilter {
     // NOTE: it's true by default for backwards compatibility
     private Object resetUnhandledResponse = Boolean.TRUE;
     
+    private Collection<Integer> responseNotHandledStatuses = 
+        // 403 also due containers not supporting PUT/DELETE correctly (e.g. Tomcat 6)
+        Collections.unmodifiableList( Arrays.asList(404, 403) );
+    
     private RackContext context;
     private RackDispatcher dispatcher;
 
@@ -60,6 +70,19 @@ public class UnmappedRackFilter extends AbstractFilter {
         // true / false / "buffer"
         String value = config.getInitParameter("resetUnhandledResponse");
         if ( value != null ) setResetUnhandledResponseValue(value);
+        
+        // ResponseCapture.defaultNotHandledStatuses e.g. "403,404,500"
+        value = config.getInitParameter("responseNotHandledStatuses");
+        if ( value != null ) {
+            final Set<Integer> statuses = new HashSet<Integer>();
+            for ( String status : value.split(",") ) {
+                status = status.trim();
+                if ( ! status.isEmpty() ) {
+                    statuses.add( Integer.parseInt(status) );
+                }
+            }
+            responseNotHandledStatuses = statuses;
+        }
     }
 
     @Override
@@ -121,6 +144,13 @@ public class UnmappedRackFilter extends AbstractFilter {
         // decided to send an error (!= 404) e.g. as an authentication failure
         return false;
     }
+
+    @Override
+    protected ResponseCapture wrapResponse(ServletResponse response) {
+        final ResponseCapture capture = super.wrapResponse(response);
+        capture.setNotHandledStatuses( getResponseNotHandledStatuses() );
+        return capture;
+    }
     
     // getters - setters :
     
@@ -147,6 +177,15 @@ public class UnmappedRackFilter extends AbstractFilter {
         else {
             this.resetUnhandledResponse = Boolean.valueOf(value);
         }
+    }
+    
+    public Collection<Integer> getResponseNotHandledStatuses() {
+        return this.responseNotHandledStatuses;
+    }
+    
+    public void setDefaultNotHandledStatuses(final Collection<Integer> responseNotHandledStatuses) {
+        this.responseNotHandledStatuses = 
+            responseNotHandledStatuses == null ? Collections.EMPTY_SET : responseNotHandledStatuses;
     }
     
 }

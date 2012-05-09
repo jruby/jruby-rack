@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Collections;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -24,8 +26,12 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     private static final String STREAM = "stream";
     private static final String WRITER = "writer";
     
+    private static Collection<Integer> defaultNotHandledStatuses = Collections.singleton(404);
+    
     private int status = 200;
     private Object output;
+    
+    private Collection<Integer> notHandledStatuses = defaultNotHandledStatuses;
     
     /**
      * Wrap a response
@@ -34,7 +40,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     public ResponseCapture(HttpServletResponse response) {
         super(response);
     }
-
+    
     /**
      * @return the status set using one of the set status methods
      * @see #handleStatus(int, boolean) 
@@ -154,13 +160,22 @@ public class ResponseCapture extends HttpServletResponseWrapper {
 
     /**
      * Response is considered to be handled if a status has been set 
-     * and it is not a HTTP NOT FOUND (404) status.
+     * and it is (by default) not a HTTP NOT FOUND (404) status.
      * 
      * @return true if this response should be considered as handled
      * @see #handleStatus(int, boolean) 
      */
     public boolean isHandled() {
-        return getStatus() != 404;
+        return ! notHandledStatuses.contains( getStatus() );
+    }
+
+    public Collection<Integer> getNotHandledStatuses() {
+        return this.notHandledStatuses;
+    }
+    
+    public void setNotHandledStatuses(final Collection<Integer> notHandledStatuses) {
+        this.notHandledStatuses = 
+            notHandledStatuses == null ? Collections.EMPTY_SET : notHandledStatuses;
     }
     
     /**
