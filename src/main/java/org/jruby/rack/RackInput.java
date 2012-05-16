@@ -219,24 +219,21 @@ public class RackInput extends RubyObject {
         return null;
     }
     
-    private byte[] readUntil(int match, int count) throws IOException {
+    private byte[] readUntil(final int match, final int count) throws IOException {
         ByteArrayOutputStream bs = null;
-        int b;
-        long i = 0;
+        int b; long i = 0;
         do {
             b = input.read();
+            if ( b == -1 ) break; // EOF
             
-            if (b == -1) {
-                break;
-            }
             if (bs == null) {
                 bs = new ByteArrayOutputStream( count == 0 ? 128 : count );
             }
             bs.write(b);
-            if (count > 0 && ++i == count) {
-                break;
-            }
-        } while (b != match);
+            
+            if ( ++i == count ) break; // read count bytes
+            
+        } while ( b != match );
 
         return bs == null ? null : bs.toByteArray();
     }

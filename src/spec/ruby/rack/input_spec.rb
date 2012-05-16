@@ -36,10 +36,14 @@ module InputSpec
         input.read.should == "hello\r\ngoodbye"
       end
 
-      it "should read a specified amount" do
+      it "should read a specified length" do
         input.read(5).should == "hello"
       end
 
+      it "should read its full lenght" do
+        input.read(16).should == "hello\r\ngoodbye"
+      end
+      
       it "should read into a provided buffer" do
         buf = ""
         input.read(nil, buf)
@@ -80,15 +84,13 @@ module InputSpec
     end
     
   end
-  
-  import 'java.io.ByteArrayInputStream'
 
   def stream_input(content = @content || "hello\r\ngoodbye")
     bytes = content.respond_to?(:to_java_bytes) ? content.to_java_bytes : content
     java.io.ByteArrayInputStream.new bytes
   end
   
-  import 'org.jruby.rack.servlet.RewindableInputStream'
+  java_import 'org.jruby.rack.servlet.RewindableInputStream'
 
   def rewindable_input(buffer_size = nil, max_buffer_size = nil)
     buffer_size ||= RewindableInputStream::INI_BUFFER_SIZE
@@ -104,10 +106,11 @@ describe JRuby::RackInput, "for rewindable input" do
   let(:input) { JRuby::RackInput.new(rewindable_input) }
 
   it_should_behave_like_rewindable_rack_input
+
+  let(:image_path) { File.expand_path('../files/image.jpg', File.dirname(__FILE__)) }
   
-  it "should read an image" do
-    image = File.expand_path('../files/image.jpg', File.dirname(__FILE__))
-    file = java.io.RandomAccessFile.new(image, "r") # length == 4278
+  it "reads an image" do
+    file = java.io.RandomAccessFile.new(image_path, "r") # length == 4278
     file.read @content = Java::byte[file.length].new
     
     input = self.input
@@ -144,6 +147,18 @@ describe JRuby::RackInput, "for rewindable input" do
     buf.each_byte { |b| b.should == file.read }
     
     10.times { input.read.should == '' }
+  end
+  
+  it "fully reads an image" do
+    file = java.io.RandomAccessFile.new(image_path, "r") # length == 4278
+    file.read @content = Java::byte[file.length].new
+    file.seek(0)
+    
+    input = self.input
+    
+    buf = input.read(file.length)
+    buf.size.should == 4278
+    buf.each_byte { |b| b.should == file.read }
   end
   
 end
