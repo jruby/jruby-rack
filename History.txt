@@ -1,3 +1,8 @@
+== 1.1.6 (16/05/12)
+
+- consider 403 as an unhandled response from filter chain (along with 404) and
+  allow configuring responseNotHandledStatuses via filter init parameter (#105)
+
 == 1.1.5 (04/03/12)
 
 - bundler 1.1 workaround when ENV is cleared - set ENV['PATH'] = ''
