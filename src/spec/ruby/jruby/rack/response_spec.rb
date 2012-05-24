@@ -199,7 +199,35 @@ describe JRuby::Rack::Response do
 
       @response.write_body(@servlet_response)
     end
+    
+    it "streams a file using a channel if wrapped in body_parts", 
+      :lib => [ :rails30, :rails31, :rails32 ] do
+      require 'action_dispatch/http/response'
+      
+      path = File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
+      file = File.open(path, 'rb')
+      headers = { 
+        "Content-Disposition"=>"attachment; filename=\"image.jpg\"", 
+        "Content-Transfer-Encoding"=>"binary", 
+        "Content-Type"=>"image/jpeg" 
+      }
+      # we're emulating the body how rails returns it (for a file response)
+      body = ActionDispatch::Response.new(200, headers, file)
+      body = Rack::BodyProxy.new(body) { nil } if defined?(Rack::BodyProxy)
+      # Rack::BodyProxy not available with Rails 3.0.x
+      # with 3.2 there's even more wrapping with ActionDispatch::BodyProxy
+      
+      response = JRuby::Rack::Response.new [ 200, headers, body ]
+      stream = self.stream
+      response.should_receive(:transfer_channel).with do |ch, s|
+        s.should == stream 
+        ch.should be_a java.nio.channels.FileChannel
+        ch.size.should == File.size(path)
+      end
 
+      response.write_body(@servlet_response)
+    end
+    
     it "uses #transfer_to to copy the stream if available" do
       channel = mock "channel"
       @body.should_receive(:to_channel).and_return channel

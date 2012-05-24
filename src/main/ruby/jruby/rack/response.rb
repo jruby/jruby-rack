@@ -11,14 +11,6 @@ module JRuby
       include org.jruby.rack.RackResponse
       java_import java.nio.channels.Channels
 
-      @@object_polluted = begin
-                            # Fixnum should not have this method, and it
-                            # shouldn't be on Object
-                            Fixnum.method('to_channel').owner == Object
-                          rescue
-                            false
-                          end
-
       def initialize(arr)
         @status, @headers, @body = *arr
       end
@@ -36,9 +28,9 @@ module JRuby
       end
 
       def getBody
-        b = ""
-        @body.each {|part| b << part }
-        b
+        body = ""
+        @body.each { |part| body << part }
+        body
       ensure
         @body.close if @body.respond_to?(:close)
       end
@@ -91,12 +83,19 @@ module JRuby
         begin
           if @body.respond_to?(:call) && ! @body.respond_to?(:each)
             @body.call(outputstream)
-          elsif @body.respond_to?(:to_channel) && !object_polluted_with_anyio?(@body, :to_channel)
+          elsif @body.respond_to?(:to_channel) && 
+              ! object_polluted_with_anyio?(@body, :to_channel)
             @body = @body.to_channel # so that we close the channel
             transfer_channel(@body, outputstream)
-          elsif @body.respond_to?(:to_inputstream) && !object_polluted_with_anyio?(@body, :to_inputstream)
+          elsif @body.respond_to?(:to_inputstream) && 
+              ! object_polluted_with_anyio?(@body, :to_inputstream)
             @body = @body.to_inputstream # so that we close the stream
             transfer_channel(Channels.newChannel(@body), outputstream)
+          elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel) && 
+              ! object_polluted_with_anyio?(@body.body_parts, :to_channel)
+            # ActionDispatch::Response "raw" body access in case it's a File
+            @body = @body.body_parts.to_channel # so that we close the channel
+            transfer_channel(@body, outputstream)
           else
             # 1.8 has a String#each method but 1.9 does not :
             method = @body.respond_to?(:each_line) ? :each_line : :each
@@ -117,12 +116,16 @@ module JRuby
         end
       end
 
+      private
+      
+      BUFFER_SIZE = 16 * 1024
+      
       def transfer_channel(channel, outputstream)
         outputchannel = Channels.newChannel outputstream
         if channel.respond_to?(:transfer_to)
           channel.transfer_to(0, channel.size, outputchannel)
         else
-          buffer = java.nio.ByteBuffer.allocate(16384)
+          buffer = java.nio.ByteBuffer.allocate(BUFFER_SIZE)
           while channel.read(buffer) != -1
             buffer.flip
             outputchannel.write(buffer)
@@ -135,14 +138,22 @@ module JRuby
         end
       end
 
+      @@object_polluted = begin
+                            # Fixnum should not have this method, and it
+                            # shouldn't be on Object
+                            Fixnum.method('to_channel').owner == Object
+                          rescue
+                            false
+                          end
+      
       # See http://bugs.jruby.org/5444 - we need to account for pre-1.6
       # JRuby where Object was polluted with #to_channel by
       # IOJavaAddions.AnyIO
       def object_polluted_with_anyio?(obj, meth)
-        begin
+        @@object_polluted && begin
           # The object should not have this method, and
           # it shouldn't be on Object
-          @@object_polluted && obj.method(meth).owner == Object
+          obj.method(meth).owner == Object
         rescue
           false
         end
