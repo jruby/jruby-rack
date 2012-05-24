@@ -241,9 +241,10 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         reject_files = 
           "p =~ /.jar$/ || " + 
           "p =~ /^builtin/ || " + 
+          "p =~ /java.rb$/ || p =~ /jruby.rb$/ || " + 
           "p =~ /jruby\\/java.*.rb/ || " + 
           "p =~ /jruby\\/rack.*.rb/ || " + 
-          "p == /rack\\/handler\\/servlet.rb/"
+          "p =~ /rack\\/handler\\/servlet.rb$/"
         # TODO: fails with JRuby 1.7 as it has all kind of things loaded e.g. :
         # thread.rb, rbconfig.rb, java.rb, lib/ruby/shared/rubygems.rb etc
         should_eval_as_eql_to "$LOADED_FEATURES.reject { |p| #{reject_files} }", []
