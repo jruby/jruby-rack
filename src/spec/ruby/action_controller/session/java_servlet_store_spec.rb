@@ -211,7 +211,7 @@ describe "ActionController::Session::JavaServletStore" do
     @request.should_receive(:getSession).with(false).and_return @session
     @session.stub!(:getId).and_return(nil)
     @session.should_receive(:invalidate).ordered
-    @app.should_receive(:call).ordered.and_return do |env|
+    @app.should_receive(:call).and_return do |env|
       env['rack.session.options'].delete(:id)
       env['rack.session'] = {}
     end
@@ -222,7 +222,7 @@ describe "ActionController::Session::JavaServletStore" do
     @request.should_receive(:getSession).with(false).and_return session = mock_http_session
     session.stub!(:getId).and_return(nil)
     session.invalidate
-    @app.should_receive(:call).ordered.and_return do |env|
+    @app.should_receive(:call).and_return do |env|
       env['rack.session.options'].delete(:id)
       env['rack.session'] = {}
     end
@@ -232,7 +232,7 @@ describe "ActionController::Session::JavaServletStore" do
   it "should handle session for invalid servlet session" do
     @request.should_receive(:getSession).with(false).and_return session = mock_http_session
     session.invalidate
-    @app.should_receive(:call).ordered.and_return do |env|
+    @app.should_receive(:call).and_return do |env|
       env['rack.session']["foo"] = 'bar'
     end
     lambda { @session_store.call(@env) }.should_not raise_error
@@ -240,7 +240,7 @@ describe "ActionController::Session::JavaServletStore" do
   
   it "should do nothing on session reset if no session is established" do
     @request.should_receive(:getSession).with(false).any_number_of_times.and_return nil
-    @app.should_receive(:call).ordered.and_return do |env|
+    @app.should_receive(:call).and_return do |env|
       env['rack.session.options'].delete(:id)
       env['rack.session'] = {}
     end
@@ -252,7 +252,7 @@ describe "ActionController::Session::JavaServletStore" do
     @request.should_receive(:getSession).and_return @session
     @session.should_receive(:getLastAccessedTime).and_return time
     @session.stub!(:setAttribute)
-    @app.should_receive(:call).ordered.and_return do |env|
+    @app.should_receive(:call).and_return do |env|
       env['rack.session'].getLastAccessedTime.should == time
       lambda { env['rack.session'].blah_blah }.should raise_error(NoMethodError)
     end

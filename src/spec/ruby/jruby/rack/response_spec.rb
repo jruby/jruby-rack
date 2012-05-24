@@ -30,11 +30,10 @@ describe JRuby::Rack::Response do
   end
 
   it "should write the headers to the servlet response" do
-    @headers.should_receive(:each).and_return do |block|
-      block.call "Content-Type", "text/html"
-      block.call "Content-Length", "20"
-      block.call "Server",  "Apache/2.2.x"
-    end
+    @headers.should_receive(:each). # @headers.each do |k, v|
+      and_yield("Content-Type", "text/html").
+      and_yield("Content-Length", "20").
+      and_yield("Server",  "Apache/2.2.x")
     @servlet_response.should_receive(:setContentType).with("text/html")
     @servlet_response.should_receive(:setContentLength).with(20)
     @servlet_response.should_receive(:addHeader).with("Server", "Apache/2.2.x")
@@ -42,11 +41,10 @@ describe JRuby::Rack::Response do
   end
 
   it "should write headers with multiple values multiple addHeader invocations" do
-    @headers.should_receive(:each).and_return do |block|
-      block.call "Content-Type", "text/html"
-      block.call "Content-Length", "20"
-      block.call "Set-Cookie",  %w(cookie1 cookie2)
-    end
+    @headers.should_receive(:each). # @headers.each do |k, v|
+      and_yield("Content-Type", "text/html").
+      and_yield("Content-Length", "20").
+      and_yield("Set-Cookie",  %w(cookie1 cookie2))
     @servlet_response.should_receive(:setContentType).with("text/html")
     @servlet_response.should_receive(:setContentLength).with(20)
     @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
@@ -55,38 +53,31 @@ describe JRuby::Rack::Response do
   end
 
   it "should write headers whose value contains newlines as multiple addHeader invocations" do
-    @headers.should_receive(:each).and_return do |block|
-      block.call "Set-Cookie",  "cookie1\ncookie2"
-    end
+    @headers.should_receive(:each).
+      and_yield("Set-Cookie",  "cookie1\ncookie2")
     @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
     @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
     @response.write_headers(@servlet_response)
   end
 
   it "should write headers whose value contains newlines as multiple addHeader invocations when string doesn't respond to #each" do
-    @headers.should_receive(:each).and_return do |block|
-      s = "cookie1\ncookie2"
-      class << s; undef_method :each; end if s.respond_to?(:each)
-      block.call "Set-Cookie", s
-    end
+    str = "cookie1\ncookie2"
+    class << str; undef_method :each; end if str.respond_to?(:each)
+    @headers.should_receive(:each).and_yield "Set-Cookie", str
     @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
     @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
     @response.write_headers(@servlet_response)
   end
 
   it "should call addIntHeader with integer value" do
-    @headers.should_receive(:each).and_return do |block|
-      block.call "Expires", 0
-    end
+    @headers.should_receive(:each).and_yield "Expires", 0
     @servlet_response.should_receive(:addIntHeader).with("Expires", 0)
     @response.write_headers(@servlet_response)
   end
 
   it "should call addDateHeader with date value" do
     time = Time.now - 1000
-    @headers.should_receive(:each).and_return do |block|
-      block.call "Last-Modified", time
-    end
+    @headers.should_receive(:each).and_yield "Last-Modified", time
     @servlet_response.should_receive(:addDateHeader).with("Last-Modified", time.to_i * 1000)
     @response.write_headers(@servlet_response)
   end
@@ -129,10 +120,9 @@ describe JRuby::Rack::Response do
     end
 
     it "does not flush after write if Transfer-Encoding header is not set" do
-      @body.should_receive(:each).and_return do |block|
-        block.call "hello"
-        block.call "there"
-      end
+      @body.should_receive(:each).
+        and_yield("hello").
+        and_yield("there")
       @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
       @response.chunked?.should eql(false)
       stream.should_receive(:write).exactly(2).times
@@ -147,20 +137,18 @@ describe JRuby::Rack::Response do
       @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
       @response.write_headers(@servlet_response)
       @response.chunked?.should eql(true)
-      @body.should_receive(:each).ordered.and_return do |block|
-        block.call "hello"
-        block.call "there"
-      end
+      @body.should_receive(:each).ordered.
+        and_yield("hello").
+        and_yield("there")
       stream.should_receive(:write).exactly(2).times
       stream.should_receive(:flush).exactly(2).times
       @response.write_body(@servlet_response)
     end
 
     it "writes the body to the servlet response" do
-      @body.should_receive(:each).and_return do |block|
-        block.call "hello"
-        block.call "there"
-      end
+      @body.should_receive(:each).
+        and_yield("hello").
+        and_yield("there")
 
       stream.should_receive(:write).exactly(2).times
 
@@ -168,10 +156,9 @@ describe JRuby::Rack::Response do
     end
 
     it "calls close on the body if the body responds to close" do
-      @body.should_receive(:each).ordered.and_return do |block|
-        block.call "hello"
-        block.call "there"
-      end
+      @body.should_receive(:each).ordered.
+        and_yield("hello").
+        and_yield("there")
       @body.should_receive(:close).ordered
       stream.should_receive(:write).exactly(2).times
 
@@ -189,9 +176,7 @@ describe JRuby::Rack::Response do
 
     it "does not yield the stream if the object responds to both #call and #each" do
       @body.stub!(:call)
-      @body.should_receive(:each).and_return do |block|
-        block.call "hi"
-      end
+      @body.should_receive(:each).and_yield("hi")
       stream.should_receive(:write)
 
       @response.write_body(@servlet_response)
