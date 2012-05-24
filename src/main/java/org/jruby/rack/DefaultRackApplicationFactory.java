@@ -181,7 +181,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return config;
     }
 
-    private void initializeRuntime(Ruby runtime) throws RackInitializationException {
+    // NOTE: only visible due #jruby/rack/application_spec.rb on JRuby 1.7.x
+    void initializeRuntime(Ruby runtime) throws RackInitializationException {
         try {
             IRubyObject context = JavaUtil.convertJavaToRuby(runtime, rackContext);
             runtime.getGlobalVariables().set("$servlet_context", context);

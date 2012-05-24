@@ -7,18 +7,14 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
-import org.jruby.rack.RackTag
-import org.jruby.rack.fake.FakePageContext
-import org.jruby.rack.fake.FakeJspWriter
-
 class ExceptionThrower
   def call(request)
     raise 'Had a problem!'
   end
 end
 
-describe RackTag do
-
+describe org.jruby.rack.RackTag do
+  
   before :each do
     @result = mock("Rack Result")
     @result.stub!(:getBody).and_return("Hello World!")
@@ -36,17 +32,17 @@ describe RackTag do
     @servlet_request.stub!(:getContextPath).and_return ""
     @servlet_response = mock("Servlet Response")
 
-    @writable = FakeJspWriter.new
-    @page_context = FakePageContext.new(@servlet_context, @servlet_request, @servlet_response, @writable)
+    @writable = org.jruby.rack.fake.FakeJspWriter.new
+    @page_context = org.jruby.rack.fake.FakePageContext.new(@servlet_context, @servlet_request, @servlet_response, @writable)
 
-    @tag = RackTag.new
+    @tag = org.jruby.rack.RackTag.new
     @tag.setPageContext(@page_context)
     @tag.setPath("/controller/action/id")
     @tag.setParams("fruit=apple&horse_before=cart")
   end
 
   it 'should be able to construct a new tag' do
-    RackTag.new
+    org.jruby.rack.RackTag.new
   end
 
   it 'should get an application and return it to the pool' do
@@ -62,7 +58,7 @@ describe RackTag do
 
     begin
       @tag.doEndTag
-    rescue
+    rescue Java::JavaxServletJsp::JspException
       #noop
     end
   end

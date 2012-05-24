@@ -8,9 +8,7 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 require 'jruby/rack/environment'
 
-import org.jruby.rack.DefaultRackApplication
-
-describe DefaultRackApplication, "call" do
+describe org.jruby.rack.DefaultRackApplication, "call" do
   
   before :each do
     @rack_env = mock("rack_request_env")
@@ -27,7 +25,7 @@ describe DefaultRackApplication, "call" do
       @rack_response
     end
 
-    application = DefaultRackApplication.new
+    application = org.jruby.rack.DefaultRackApplication.new
     application.setApplication(ruby_object)
     application.call(@rack_env).should == @rack_response
   end
@@ -97,16 +95,16 @@ describe DefaultRackApplication, "call" do
       org.jruby.rack.RackResponse.impl {}
     end
 
-    application = DefaultRackApplication.new
+    application = org.jruby.rack.DefaultRackApplication.new
     application.setApplication(ruby_object)
     application.call(@rack_env)
   end
   
 end
 
-import org.jruby.rack.DefaultRackApplicationFactory
-
-describe DefaultRackApplicationFactory do
+describe org.jruby.rack.DefaultRackApplicationFactory do
+  
+  java_import org.jruby.rack.DefaultRackApplicationFactory
   
   before :each do
     @app_factory = DefaultRackApplicationFactory.new
@@ -238,9 +236,16 @@ describe DefaultRackApplicationFactory do
         # but only if it's executed with bundler e.g. `bundle exec rake spec`
         #@runtime = app_factory.new_runtime
         @runtime = org.jruby.Ruby.newInstance
-        app_factory.initializeRuntime(@runtime)
+        app_factory.send :initializeRuntime, @runtime
 
-        reject_files = "p =~ /jar$/ || p =~ /^builtin/ || p =~ /^jruby/ || p =~ /^java/ || p == 'rack/handler/servlet.rb'"
+        reject_files = 
+          "p =~ /.jar$/ || " + 
+          "p =~ /^builtin/ || " + 
+          "p =~ /jruby\\/java.*.rb/ || " + 
+          "p =~ /jruby\\/rack.*.rb/ || " + 
+          "p == /rack\\/handler\\/servlet.rb/"
+        # TODO: fails with JRuby 1.7 as it has all kind of things loaded e.g. :
+        # thread.rb, rbconfig.rb, java.rb, lib/ruby/shared/rubygems.rb etc
         should_eval_as_eql_to "$LOADED_FEATURES.reject { |p| #{reject_files} }", []
       end
       
@@ -342,9 +347,9 @@ describe DefaultRackApplicationFactory do
   end
 end
 
-import org.jruby.rack.rails.RailsRackApplicationFactory
-
-describe RailsRackApplicationFactory do
+describe org.jruby.rack.rails.RailsRackApplicationFactory do
+  
+  java_import org.jruby.rack.rails.RailsRackApplicationFactory
   
   before :each do
     @app_factory = RailsRackApplicationFactory.new
@@ -381,12 +386,10 @@ describe RailsRackApplicationFactory do
   
 end
 
-import org.jruby.rack.PoolingRackApplicationFactory
-
-describe PoolingRackApplicationFactory do
+describe org.jruby.rack.PoolingRackApplicationFactory do
   before :each do
     @factory = mock "factory"
-    @pool = PoolingRackApplicationFactory.new @factory
+    @pool = org.jruby.rack.PoolingRackApplicationFactory.new @factory
   end
 
   it "should initialize the delegate factory when initialized" do
@@ -478,12 +481,10 @@ describe PoolingRackApplicationFactory do
   end
 end
 
-import org.jruby.rack.SharedRackApplicationFactory
-
-describe SharedRackApplicationFactory do
+describe org.jruby.rack.SharedRackApplicationFactory do
   before :each do
     @factory = mock "factory"
-    @shared = SharedRackApplicationFactory.new @factory
+    @shared =org.jruby.rack.SharedRackApplicationFactory.new @factory
   end
 
   it "should initialize the delegate factory and create the shared application when initialized" do
@@ -506,8 +507,11 @@ describe SharedRackApplicationFactory do
     @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
     @factory.should_receive(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
-    @shared.init(@rack_context) rescue nil
-    @shared.getApplication.should_not be_nil
+    begin
+      @shared.init(@rack_context)
+    rescue org.jruby.rack.RackInitializationException
+    end
+    @shared.getApplication.should_not be nil
   end
 
   it "should return the same application for any newApplication or getApplication call" do
