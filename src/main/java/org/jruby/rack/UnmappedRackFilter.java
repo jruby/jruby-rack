@@ -44,8 +44,9 @@ public class UnmappedRackFilter extends AbstractFilter {
     private Object resetUnhandledResponse = Boolean.TRUE;
     
     private Collection<Integer> responseNotHandledStatuses = 
-        // 403 also due containers not supporting PUT/DELETE correctly (e.g. Tomcat 6)
-        Collections.unmodifiableList( Arrays.asList(404, 403) );
+        // 403 due containers not supporting PUT/DELETE correctly (Tomcat 6)
+        // 405 returned by Jetty 7/8 on PUT/DELETE requests by default
+        Collections.unmodifiableList( Arrays.asList(404, 403, 405) );
     
     private RackContext context;
     private RackDispatcher dispatcher;

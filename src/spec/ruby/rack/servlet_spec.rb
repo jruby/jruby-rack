@@ -7,30 +7,26 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
-import org.jruby.rack.RackServlet
-import org.jruby.rack.servlet.DefaultServletRackContext
-import org.jruby.rack.servlet.ServletRackConfig
-
-describe RackServlet, "service" do
+describe org.jruby.rack.RackServlet, "service" do
   
   it "should delegate to process" do
     request = javax.servlet.http.HttpServletRequest.impl {}
     response = javax.servlet.http.HttpServletResponse.impl {}
     dispatcher = mock "dispatcher"
     dispatcher.should_receive(:process)
-    servlet = RackServlet.new dispatcher, @rack_context
+    servlet = org.jruby.rack.RackServlet.new dispatcher, @rack_context
     servlet.service request, response
   end
 
   it "should destroy dispatcher on destroy" do
     dispatcher = mock "dispatcher"
     dispatcher.should_receive(:destroy)
-    servlet = RackServlet.new dispatcher, @rack_context
+    servlet = org.jruby.rack.RackServlet.new dispatcher, @rack_context
     servlet.destroy
   end
   
   it "should have default constructor (for servlet container)" do
-    lambda { RackServlet.new }.should_not raise_error
+    lambda { org.jruby.rack.RackServlet.new }.should_not raise_error
   end
   
 end
@@ -38,7 +34,8 @@ end
 describe ServletRackContext, "getRealPath" do
   
   before :each do
-    @context = DefaultServletRackContext.new(ServletRackConfig.new(@servlet_context))
+    rack_config = org.jruby.rack.servlet.ServletRackConfig.new(@servlet_context)
+    @context =  org.jruby.rack.servlet.DefaultServletRackContext.new(rack_config)
   end
 
   it "should use getResource when getRealPath returns nil" do

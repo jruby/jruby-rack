@@ -74,6 +74,17 @@ describe org.jruby.rack.RackFilter do
     dispatcher.should_receive(:process).ordered
     filter.doFilter(@request, @response, chain)
   end
+
+  it "dispatches to the rack dispatcher if the chain resulted in a 405" do
+    # PUT/DELETE up the chain end up as HTTP 405 on Jetty
+    # @see https://github.com/jruby/jruby-rack/issues/109
+    chain.should_receive(:doFilter).ordered.and_return do |_, resp|
+      resp.sendError(405)
+    end
+    @response.should_receive(:reset).ordered
+    dispatcher.should_receive(:process).ordered
+    filter.doFilter(@request, @response, chain)
+  end
   
   it "dispatches to the rack dispatcher out of configured non handled statuses" do
     filter = Class.new(org.jruby.rack.RackFilter) do
