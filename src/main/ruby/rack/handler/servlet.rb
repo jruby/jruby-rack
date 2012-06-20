@@ -31,12 +31,13 @@ module Rack
     end
 
     class Env
-      BUILTINS = %w(rack.version rack.multithread rack.multiprocess rack.run_once
-        rack.input rack.errors rack.url_scheme java.servlet_request java.servlet_response 
-        java.servlet_context jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release)
+      BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme 
+        rack.multithread rack.multiprocess rack.run_once
+        java.servlet_request java.servlet_response java.servlet_context 
+        jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release).map!(&:freeze)
 
       REQUEST = %w(CONTENT_TYPE CONTENT_LENGTH REQUEST_METHOD SCRIPT_NAME REQUEST_URI
-        PATH_INFO QUERY_STRING SERVER_NAME SERVER_SOFTWARE REMOTE_HOST REMOTE_ADDR REMOTE_USER SERVER_PORT)
+        PATH_INFO QUERY_STRING SERVER_NAME SERVER_SOFTWARE REMOTE_HOST REMOTE_ADDR REMOTE_USER SERVER_PORT).map!(&:freeze)
 
       def initialize(servlet_env)
         @env = populate(LazyEnv.new(servlet_env).to_hash)
@@ -96,7 +97,7 @@ module Rack
           @headers_added = true
           @servlet_env.getHeaderNames.each do |h|
             next if h =~ /^Content-(Type|Length)$/i
-            k = "HTTP_#{h.upcase.gsub(/-/, '_')}"
+            k = "HTTP_#{h.upcase.gsub(/-/, '_')}".freeze
             env[k] = @servlet_env.getHeader(h) unless env.has_key?(k)
           end
         end
@@ -132,7 +133,7 @@ module Rack
           nil
         end
       end
-
+      
       def load__CONTENT_TYPE(env)
         content_type = @servlet_env.getContentType
         env["CONTENT_TYPE"] = content_type if content_type
