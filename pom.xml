@@ -19,7 +19,7 @@
   </description>
 
   <properties>
-    <jruby.version>1.6.7</jruby.version>
+    <jruby.version>1.6.7.2</jruby.version>
   </properties>
 
   <issueManagement>
@@ -129,13 +129,13 @@
     <dependency>
         <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>
-        <version>1.2.16</version>
+        <version>1.2.17</version>
         <scope>provided</scope>
     </dependency>
     <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-core</artifactId>
-        <version>3.1.0.RELEASE</version>
+        <version>3.1.1.RELEASE</version>
         <scope>test</scope>
     </dependency>
   </dependencies>
@@ -147,7 +147,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
+        <version>2.5.1</version>
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
