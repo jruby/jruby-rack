@@ -54,6 +54,7 @@ public class Config implements RackConfig {
         };
     }
     
+    @SuppressWarnings("unchecked")
     void doInitialize(final Ruby runtime) {
         setOut( runtime.getOut() );
         setErr( runtime.getErr() );

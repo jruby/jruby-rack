@@ -173,8 +173,9 @@ public class ResponseCapture extends HttpServletResponseWrapper {
         return this.notHandledStatuses;
     }
     
+    @SuppressWarnings("unchecked")
     public void setNotHandledStatuses(final Collection<Integer> notHandledStatuses) {
-        this.notHandledStatuses = 
+        this.notHandledStatuses =
             notHandledStatuses == null ? Collections.EMPTY_SET : notHandledStatuses;
     }
     

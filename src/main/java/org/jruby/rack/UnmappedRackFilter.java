@@ -184,8 +184,9 @@ public class UnmappedRackFilter extends AbstractFilter {
         return this.responseNotHandledStatuses;
     }
     
+    @SuppressWarnings("unchecked")
     public void setDefaultNotHandledStatuses(final Collection<Integer> responseNotHandledStatuses) {
-        this.responseNotHandledStatuses = 
+        this.responseNotHandledStatuses =
             responseNotHandledStatuses == null ? Collections.EMPTY_SET : responseNotHandledStatuses;
     }
     
