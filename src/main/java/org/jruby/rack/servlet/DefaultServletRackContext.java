@@ -40,15 +40,7 @@ public class DefaultServletRackContext implements ServletRackContext {
     public String getInitParameter(String key) {
         return config.getProperty(key);
     }
-
-    public void log(String message) {
-        logger.log(message);
-    }
-
-    public void log(String message, Throwable ex) {
-        logger.log(message, ex);
-    }
-
+    
     public String getRealPath(String path) {
         String realPath = context.getRealPath(path);
         if (realPath == null) { // some servers don't like getRealPath, e.g. w/o exploded war
@@ -131,8 +123,8 @@ public class DefaultServletRackContext implements ServletRackContext {
     }
 
     @Deprecated
-    public void log(Exception ex, String msg) {
-        logger.log(msg, ex);
+    public void log(Exception e, String msg) {
+        logger.log(msg, e);
     }
 
     public String getServerInfo() {
@@ -166,4 +158,23 @@ public class DefaultServletRackContext implements ServletRackContext {
     public String getServletContextName() {
         return context.getServletContextName();
     }
+
+    // RackLogger
+    
+    public void log(String message) {
+        logger.log(message);
+    }
+
+    public void log(String message, Throwable e) {
+        logger.log(message, e);
+    }
+    
+    public void log(String level, String message) {
+        logger.log(level, message);
+    }
+
+    public void log(String level, String message, Throwable e) {
+        logger.log(level, message, e);
+    }
+    
 }

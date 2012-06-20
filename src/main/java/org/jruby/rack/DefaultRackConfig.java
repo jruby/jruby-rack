@@ -136,7 +136,7 @@ public class DefaultRackConfig implements RackConfig {
             }
         } catch (Exception e) {
             if ( ! isQuiet() ) {
-                err.println("Error loading logger: " + loggerClass);
+                err.println("Failed loading logger: " + loggerClass);
                 e.printStackTrace(err);
             }
             return null;
@@ -226,10 +226,10 @@ public class DefaultRackConfig implements RackConfig {
         }
         if ( ! isQuiet() ) {
             if (v == null) {
-                getLogger().log("Warning: no " + end + " runtimes specified.");
+                getLogger().log(RackLogger.WARN, "no " + end + " runtimes specified.");
             } else {
-                getLogger().log("Info: received " + end + " runtimes = " + v);
-            }   
+                getLogger().log(RackLogger.INFO, "received " + end + " runtimes = " + v);
+            }
         }
         return v;
     }

@@ -60,7 +60,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         if (specifiedTimeout != null) {
             timeout = specifiedTimeout.longValue();
         }
-        rackContext.log("Info: using runtime pool timeout of " + timeout + " seconds");
+        rackContext.log(RackLogger.INFO, "using runtime pool timeout of " + timeout + " seconds");
 
         initial = config.getInitialRuntimes();
         maximum = config.getMaximumRuntimes();
@@ -105,7 +105,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         if (app == null) {
             // seems to sometimes happen when an error occurs during boot
             // and thus on destroy app.destroy(); will fail with a NPE !
-            rackContext.log("Warn: ignoring null application");
+            rackContext.log(RackLogger.WARN, "ignoring null application");
             return;
         }
         synchronized (applicationPool) {
@@ -177,12 +177,12 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
                                     break;
                                 }
                                 applicationPool.add(app);
-                                rackContext.log("Info: add application to the pool. size now = " + applicationPool.size());
+                                rackContext.log(RackLogger.INFO, "add application to the pool. size now = " + applicationPool.size());
                                 applicationPool.notifyAll();
                             }
                         }
                     } catch (RackInitializationException ex) {
-                        rackContext.log("Error: unable to initialize application", ex);
+                        rackContext.log(RackLogger.ERROR, "unable to initialize application", ex);
                     }
                 }
             }, "JRuby-Rack-App-Init-" + i).start();

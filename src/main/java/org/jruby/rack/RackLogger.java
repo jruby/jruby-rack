@@ -12,6 +12,16 @@ package org.jruby.rack;
  * @author nicksieger
  */
 public interface RackLogger {
+    
     void log(String message);
-    void log(String message, Throwable ex);
+    void log(String message, Throwable e);
+    
+    final String DEBUG = "DEBUG";
+    final String INFO = "INFO";
+    final String WARN = "WARN";
+    final String ERROR = "ERROR";
+    
+    void log(String level, String message);
+    void log(String level, String message, Throwable e);
+    
 }

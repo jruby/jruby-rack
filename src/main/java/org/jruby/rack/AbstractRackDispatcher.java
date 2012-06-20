@@ -46,10 +46,10 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
             final RackResponseEnvironment response) throws IOException {
         
         if (response.isCommitted()) {
-            context.log("Error: Couldn't handle error: response committed", e);
+            context.log(RackLogger.ERROR, "couldn't handle error: response committed", e);
             return;
         }
-        context.log("Application Error", e);
+        context.log(RackLogger.ERROR, "application error", e);
         response.reset();
 
         afterException(request, e, response);

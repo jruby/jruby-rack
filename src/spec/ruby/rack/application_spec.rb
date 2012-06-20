@@ -183,8 +183,9 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == nil
     
-    @rack_context.should_receive(:log).with do |msg|
-      msg.should =~ /WARNING.*/
+    @rack_context.should_receive(:log).with do |*args|
+      args.first.should == 'WARN' if args.size > 1
+      args.last.should =~ /no rackup script found/
     end
     
     @app_factory.should_receive(:createRackServletWrapper) do |runtime, rackup|
@@ -203,7 +204,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       @rack_context.stub!(:getResourcePaths).and_return nil
     end
     
-    let(:app_factory) { @app_factory.init @rack_context; @app_factory }
+    let(:app_factory) { @app_factory.init(@rack_context); @app_factory }
 
     describe "init" do
       

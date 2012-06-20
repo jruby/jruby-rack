@@ -40,7 +40,7 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
                 public void destroy() { }
                 public Ruby getRuntime() { throw new UnsupportedOperationException("not supported"); }
             };
-            rackContext.log("unable to create shared application instance", ex);
+            rackContext.log(RackLogger.ERROR, "unable to create shared application instance", ex);
             throw new RackInitializationException("unable to create shared application instance", ex);
         }
     }

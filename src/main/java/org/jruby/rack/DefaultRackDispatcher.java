@@ -35,7 +35,7 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
             request.setAttribute(RackEnvironment.EXCEPTION, re);
             errorApp.call(request).respond(response);
         } catch (Exception e) {
-            context.log("Error: Couldn't handle error", e);
+            context.log(RackLogger.ERROR, "couldn't handle error", e);
             response.sendError(500);
         }
     }

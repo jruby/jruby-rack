@@ -41,7 +41,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         this.rackContext = (ServletRackContext) rackContext;
         this.rackupScript = findRackupScript();
         this.runtimeConfig = createRuntimeConfig();
-        rackContext.log(runtimeConfig.getVersionString());
+        rackContext.log(RackLogger.INFO, runtimeConfig.getVersionString());
         configureDefaults();
     }
 
@@ -83,7 +83,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public IRubyObject createApplicationObject(Ruby runtime) {
         if (rackupScript == null) {
-            rackContext.log("WARNING: no rackup script found. Starting empty Rack application.");
+            rackContext.log(RackLogger.WARN, "no rackup script found - starting empty Rack application!");
             rackupScript = "";
         }
         runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
@@ -106,8 +106,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             app.init();
             return app;
         } catch (final Exception e) {
-            rackContext.log(
-                "Warning: error application could not be initialized", e);
+            rackContext.log(RackLogger.WARN, "error application could not be initialized", e);
             return new RackApplication() {
                 public void init() throws RackInitializationException { }
                 public RackResponse call(RackEnvironment env) {
@@ -115,14 +114,13 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                         public int getStatus() { return 500; }
                         public Map getHeaders() { return Collections.EMPTY_MAP; }
                         public String getBody() {
-                            return "Application initialization failed: "
-                                    + e.getMessage();
+                            return "application initialization failed: " + e.getMessage();
                         }
                         public void respond(RackResponseEnvironment response) {
                             try {
                                 response.defaultRespond(this);
                             } catch (IOException ex) {
-                                rackContext.log("Error writing body", ex);
+                                rackContext.log(RackLogger.WARN, "could not write response body", e);
                             }
                         }
                     };
@@ -297,7 +295,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
             return str.toString();
         } catch (Exception e) {
-            rackContext.log("Error reading rackup input", e);
+            rackContext.log(RackLogger.ERROR, "failed to read rackup input", e);
             return null;
         }
     }

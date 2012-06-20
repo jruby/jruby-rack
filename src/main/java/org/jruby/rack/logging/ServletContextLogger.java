@@ -12,7 +12,8 @@ import org.jruby.rack.RackLogger;
 import javax.servlet.ServletContext;
 
 public class ServletContextLogger implements RackLogger {
-    private ServletContext context;
+    
+    private final ServletContext context;
 
     public ServletContextLogger(ServletContext context) {
         this.context = context;
@@ -22,7 +23,16 @@ public class ServletContextLogger implements RackLogger {
         context.log(message);
     }
 
-    public void log(String message, Throwable ex) {
-        context.log(message, ex);
+    public void log(String message, Throwable e) {
+        context.log(message, e);
     }
+    
+    public void log(String level, String message) {
+        context.log(level + ": " + message);
+    }
+
+    public void log(String level, String message, Throwable e) {
+        context.log(level + ": " + message, e);
+    }
+    
 }

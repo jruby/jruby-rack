@@ -8,9 +8,13 @@
 package org.jruby.rack.embed;
 
 import java.io.PrintStream;
+
 import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackContext;
 
+/**
+ * A context for embedded scenarios.
+ */
 public class Context implements RackContext {
 
     private final String serverInfo;
@@ -63,6 +67,14 @@ public class Context implements RackContext {
         final PrintStream err = config.getErr();
         err.println(message);
         ex.printStackTrace(err);
+    }
+
+    public void log(String level, String message) {
+        log(level + ": " + message);
+    }
+
+    public void log(String level, String message, Throwable e) {
+        log(level + ": " + message, e);
     }
     
 }

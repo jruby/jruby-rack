@@ -20,9 +20,15 @@ describe org.jruby.rack.embed.Context do
 
   it "outputs log messages out to stdout" do
     context.log "does this string appear?"
-    captured["does this string appear?"].should_not be_nil
+    captured["does this string appear?"].should_not be nil
   end
 
+  it "outputs log messages with level and new line to stdout" do
+    info = org.jruby.rack.embed.Context::INFO
+    context.log info, "this is logging at its best"
+    captured.should == "INFO: this is logging at its best\n"
+  end
+  
   it "outputs error log messages to stderr" do
     my_error = begin
       raise java.lang.RuntimeException.new "shizzle sticks"
@@ -30,9 +36,9 @@ describe org.jruby.rack.embed.Context do
 
     context.log("an error, gosh", my_error)
 
-    captured["an error, gosh"].should_not be_nil
-    captured["shizzle sticks"].should_not be_nil
-    captured["RuntimeException"].should_not be_nil
+    captured["an error, gosh"].should_not be nil
+    captured["shizzle sticks"].should_not be nil
+    captured["RuntimeException"].should_not be nil
   end
 
   context "with specific info" do

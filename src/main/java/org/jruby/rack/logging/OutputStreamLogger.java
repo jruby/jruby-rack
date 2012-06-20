@@ -29,14 +29,35 @@ public class OutputStreamLogger implements RackLogger {
     }
 
     public void log(String message) {
-        out.println(message.replaceFirst("\n$", ""));
+        printMessage(message);
         out.flush();
     }
 
     public void log(String message, Throwable e) {
-        out.println(message.replaceFirst("\n$", ""));
+        printMessage(message);
         e.printStackTrace(out);
         out.flush();
+    }
+    
+    public void log(String level, String message) {
+        out.print(level);
+        out.print(": ");
+        log(message);
+    }
+
+    public void log(String level, String message, Throwable e) {
+        out.print(level);
+        out.print(": ");
+        log(message, e);
+    }
+    
+    private void printMessage(String message) {
+        if ( message.charAt(message.length() - 1) == '\n' ) {
+            out.print(message);
+        }
+        else {
+            out.println(message);
+        }
     }
     
 }

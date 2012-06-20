@@ -37,9 +37,9 @@ public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationF
             try {
                 app.init();
                 applicationPool.add(app);
-                rackContext.log("Info: add application to the pool. size now = " + applicationPool.size());
+                rackContext.log(RackLogger.INFO, "add application to the pool. size now = " + applicationPool.size());
             } catch (RackInitializationException ex) {
-                rackContext.log("Error: unable to initialize application", ex);
+                rackContext.log(RackLogger.ERROR, "unable to initialize application", ex);
             }
         }
     }

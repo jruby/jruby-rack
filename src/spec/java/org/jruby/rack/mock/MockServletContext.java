@@ -163,6 +163,14 @@ public class MockServletContext implements ServletContext {
         public void log(String message, Throwable ex) {
             // NOOP
         }
+
+        public void log(String level, String message) {
+            // NOOP
+        }
+
+        public void log(String level, String message, Throwable e) {
+            // NOOP
+        }
         
     }
     
