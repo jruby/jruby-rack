@@ -1,3 +1,11 @@
+== 1.1.7 (21/06/12)
+
+- support for delegating logs to java.util.logging (jruby.rack.logging: JUL)
+- extend RackLogger with levels for better logging with underlying log impl
+- consider 405 as an unhandled response from filter chain by default (#109)
+- make sure optimized file streaming gets used with rails send_file, this serves
+  as a work-around for a --1.9 bug in jruby-1.6.7 with string encoding (#107)
+
 == 1.1.6 (16/05/12)
 
 - consider 403 as an unhandled response from filter chain (along with 404) and
