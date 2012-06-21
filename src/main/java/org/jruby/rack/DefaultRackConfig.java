@@ -115,8 +115,9 @@ public class DefaultRackConfig implements RackConfig {
             }
             else {
                 final Map<String, String> loggerTypes = getLoggerTypes();
-                if (loggerTypes.containsKey(loggerClass)) {
-                    loggerClass = loggerTypes.get(loggerClass);
+                final String loggerKey = loggerClass.toLowerCase();
+                if (loggerTypes.containsKey(loggerKey)) {
+                    loggerClass = loggerTypes.get(loggerKey);
                 }
                 logger = createLogger(loggerClass);
             }
@@ -257,8 +258,9 @@ public class DefaultRackConfig implements RackConfig {
         final Map<String,String> loggerTypes = new HashMap<String, String>();
         loggerTypes.put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
-        loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
         loggerTypes.put("log4j", "org.jruby.rack.logging.Log4jLogger");
+        loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
+        loggerTypes.put("jul", "org.jruby.rack.logging.JulLogger");
         loggerTypes.put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");
         return loggerTypes;
     }

@@ -7,41 +7,71 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
-import org.jruby.rack.servlet.ServletRackConfig
+describe org.jruby.rack.servlet.ServletRackConfig do
+  
+  let(:config) do 
+    config = org.jruby.rack.servlet.ServletRackConfig.new(@servlet_context)
+    config.quiet = true; config
+  end
 
-describe ServletRackConfig do
-  let(:config) { ServletRackConfig.new(@servlet_context).tap {|c| c.quiet = true } }
-
-  describe "getLogger" do
+  context "getLogger" do
+    
     let(:logger) { config.getLogger }
 
     after :each do
       java.lang.System.clearProperty("jruby.rack.logging")
     end
 
+    it "constructs a slf4j logger from the context init param" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.rack.logging").and_return "slf4j"
+      logger.should be_a(org.jruby.rack.logging.Slf4jLogger)
+    end
+
+    it "constructs a commons logging logger from system properties" do
+      java.lang.System.setProperty("jruby.rack.logging", "commons_logging")
+      logger.should be_a(org.jruby.rack.logging.CommonsLoggingLogger)
+    end
+
+    org.jruby.rack.logging.JulLogger.class_eval { field_reader :logger }
+    
+    it "constructs a jul logger with logger name" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.rack.logging.name").and_return "/myapp"
+      @servlet_context.should_receive(:getInitParameter).with("jruby.rack.logging").and_return "JUL"
+      logger.should be_a(org.jruby.rack.logging.JulLogger)
+      logger.logger.name.should == '/myapp'
+    end
+
+    org.jruby.rack.logging.Log4jLogger.class_eval { field_reader :logger }
+    
+    it "constructs a slf4j logger with default logger name" do
+      java.lang.System.setProperty("jruby.rack.logging", "Log4J")
+      logger.should be_a(org.jruby.rack.logging.Log4jLogger)
+      logger.logger.name.should == 'jruby.rack'
+    end
+    
     it "constructs a logger from the context init params over system properties" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.rack.logging").and_return "clogging"
       java.lang.System.setProperty("jruby.rack.logging", "stdout")
-      logger.should be_kind_of(org.jruby.rack.logging.CommonsLoggingLogger)
+      logger.should be_a(org.jruby.rack.logging.CommonsLoggingLogger)
     end
 
     it "constructs a standard out logger when the logging attribute is unrecognized" do
       java.lang.System.setProperty("jruby.rack.logging", "other")
-      logger.should be_kind_of(org.jruby.rack.logging.StandardOutLogger)
+      logger.should be_a(org.jruby.rack.logging.StandardOutLogger)
     end
 
     it "constructs a standard out logger when the logger can't be instantiated" do
       java.lang.System.setProperty("jruby.rack.logging", "java.lang.String")
-      logger.should be_kind_of(org.jruby.rack.logging.StandardOutLogger)
+      logger.should be_a(org.jruby.rack.logging.StandardOutLogger)
     end
 
     it "constructs a servlet context logger by default" do
-      logger.should be_kind_of(org.jruby.rack.logging.ServletContextLogger)
+      logger.should be_a(org.jruby.rack.logging.ServletContextLogger)
     end
 
     it "allows specifying a class name in the logging attribute" do
       java.lang.System.setProperty("jruby.rack.logging", "org.jruby.rack.logging.CommonsLoggingLogger")
-      logger.should be_kind_of(org.jruby.rack.logging.CommonsLoggingLogger)
+      logger.should be_a(org.jruby.rack.logging.CommonsLoggingLogger)
     end
   end
 
