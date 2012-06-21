@@ -60,10 +60,12 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         if (specifiedTimeout != null) {
             timeout = specifiedTimeout.longValue();
         }
-        rackContext.log(RackLogger.INFO, "using runtime pool timeout of " + timeout + " seconds");
 
         initial = config.getInitialRuntimes();
         maximum = config.getMaximumRuntimes();
+        
+        rackContext.log(RackLogger.INFO, "using "+ initial + ":"+ maximum +" runtime pool with timeout of "+ timeout +" seconds");
+        
         if (maximum != null) {
             if (initial != null && initial > maximum) {
                 maximum = initial;

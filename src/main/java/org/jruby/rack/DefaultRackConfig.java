@@ -225,13 +225,6 @@ public class DefaultRackConfig implements RackConfig {
         if (v == null) {
             v = getPositiveInteger("jruby.pool." + gsValue);
         }
-        if ( ! isQuiet() ) {
-            if (v == null) {
-                getLogger().log(RackLogger.WARN, "no " + end + " runtimes specified.");
-            } else {
-                getLogger().log(RackLogger.INFO, "received " + end + " runtimes = " + v);
-            }
-        }
         return v;
     }
 

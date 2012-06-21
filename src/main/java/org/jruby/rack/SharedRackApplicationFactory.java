@@ -29,6 +29,7 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
     public void init(RackContext rackContext) throws RackInitializationException {
         try {
             realFactory.init(rackContext);
+            rackContext.log(RackLogger.INFO, "using a shared (threadsafe!) runtime");
             application = realFactory.getApplication();
         } catch (final Exception ex) {
             application = new RackApplication() {
