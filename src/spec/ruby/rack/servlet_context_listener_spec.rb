@@ -7,14 +7,18 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
-import org.jruby.rack.RackApplicationFactory
+java_import org.jruby.rack.RackApplicationFactory
 
 describe RackServletContextListener do
   before(:each) do
     @servlet_context.stub!(:getInitParameter).and_return nil
     @servlet_context_event = javax.servlet.ServletContextEvent.new @servlet_context
     @factory = mock "application factory"
-    @listener = RackServletContextListener.new @factory
+    # @listener = RackServletContextListener.new(@factory) :
+    constructor = RackServletContextListener.java_class.to_java.
+      getDeclaredConstructor(RackApplicationFactory.java_class)
+    constructor.accessible = true
+    @listener = constructor.newInstance(@factory.to_java(RackApplicationFactory))
   end
 
   describe "contextInitialized" do
@@ -70,14 +74,55 @@ describe RackServletContextListener do
     lambda { RackServletContextListener.new }.should_not raise_error
   end
   
+  it "pools runtimes when max > 1" do
+    @rack_config.stub!(:getMaximumRuntimes).and_return(2)
+    factory = RackServletContextListener.new.
+      send(:newApplicationFactory, @rack_config)
+    factory.should be_a(org.jruby.rack.PoolingRackApplicationFactory)
+  end
+  
+  it "does not pool when max = 1" do
+    @rack_config.stub!(:getMaximumRuntimes).and_return(1)
+    factory = RackServletContextListener.new.
+      send(:newApplicationFactory, @rack_config)
+    factory.should be_a(org.jruby.rack.SharedRackApplicationFactory)
+  end
+  
+  it "does not pool by default" do
+    factory = RackServletContextListener.new.
+      send(:newApplicationFactory, @rack_config)
+    factory.should be_a(org.jruby.rack.SharedRackApplicationFactory)
+  end
+  
 end
 
-import org.jruby.rack.rails.RailsServletContextListener
+java_import org.jruby.rack.rails.RailsServletContextListener
 
 describe RailsServletContextListener do
 
   it "should have default constructor (for servlet container)" do
     lambda { RailsServletContextListener.new }.should_not raise_error
+  end
+
+  it "pools runtimes by default" do
+    factory = RailsServletContextListener.new.
+      send(:newApplicationFactory, @rack_config)
+    factory.should be_a(org.jruby.rack.PoolingRackApplicationFactory)
+  end
+  
+  it "pools runtimes when max > 1" do
+    @rack_config.stub!(:getMaximumRuntimes).and_return(3)
+    @rack_config.stub!(:isSerialInitialization).and_return(true)
+    factory = RailsServletContextListener.new.
+      send(:newApplicationFactory, @rack_config)
+    factory.should be_a(org.jruby.rack.SerialPoolingRackApplicationFactory)
+  end
+  
+  it "does not pool when max = 1" do
+    @rack_config.stub!(:getMaximumRuntimes).and_return(1)
+    factory = RailsServletContextListener.new.
+      send(:newApplicationFactory, @rack_config)
+    factory.should be_a(org.jruby.rack.SharedRackApplicationFactory)
   end
   
 end

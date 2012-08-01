@@ -33,7 +33,7 @@ public class RackServletContextListener implements ServletContextListener {
     /**
      * Only for injecting a mock factory for testing.
      */
-    public RackServletContextListener(RackApplicationFactory factory) {
+    RackServletContextListener(RackApplicationFactory factory) {
         this.factory = factory;
     }
 
@@ -64,12 +64,22 @@ public class RackServletContextListener implements ServletContextListener {
     }
 
     protected RackApplicationFactory newApplicationFactory(RackConfig config) {
-        if (factory != null) {
-            return factory;
+        if (factory != null) return factory; // only != null while testing
+
+        final RackApplicationFactory factory = new DefaultRackApplicationFactory();
+        final Integer maxRuntimes = config.getMaximumRuntimes();
+        // for backwards compatibility when runtime mix/max values not specified
+        // we assume a single shared (threadsafe) runtime to be used :
+        if ( maxRuntimes == null || maxRuntimes.intValue() == 1 ) {
+            return new SharedRackApplicationFactory(factory);
+        } 
+        else {
+            return config.isSerialInitialization() ?
+                new SerialPoolingRackApplicationFactory(factory) :
+                    new PoolingRackApplicationFactory(factory) ;
         }
-        return new SharedRackApplicationFactory(new DefaultRackApplicationFactory());
     }
- 
+    
     protected void handleInitializationException(
             final Exception e,
             final RackApplicationFactory factory,

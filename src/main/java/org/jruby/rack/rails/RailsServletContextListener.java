@@ -22,15 +22,16 @@ public class RailsServletContextListener extends RackServletContextListener {
     
     @Override
     protected RackApplicationFactory newApplicationFactory(RackConfig config) {
-        Integer maxRuntimes = config.getMaximumRuntimes();
-        if (maxRuntimes != null && maxRuntimes == 1) {
-            return new SharedRackApplicationFactory(new RailsRackApplicationFactory());
-        } else {
-            if (config.isSerialInitialization()) {
-                return new SerialPoolingRackApplicationFactory(new RailsRackApplicationFactory());
-            } else {
-                return new PoolingRackApplicationFactory(new RailsRackApplicationFactory());
-            }
+        final RackApplicationFactory factory = new RailsRackApplicationFactory();
+        final Integer maxRuntimes = config.getMaximumRuntimes();
+        // TODO maybe after Rails 4 is out switch to shared by default as well !
+        if ( maxRuntimes != null && maxRuntimes.intValue() == 1 ) {
+            return new SharedRackApplicationFactory(factory);
+        } 
+        else {
+            return config.isSerialInitialization() ?
+                new SerialPoolingRackApplicationFactory(factory) :
+                    new PoolingRackApplicationFactory(factory) ;
         }
     }
     
