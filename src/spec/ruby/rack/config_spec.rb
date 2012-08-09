@@ -127,4 +127,39 @@ describe org.jruby.rack.servlet.ServletRackConfig do
       config.should_not be_rewindable
     end
   end
+
+  describe "custom-properties" do
+
+    it "parser an int property" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.some.timeout").and_return "1"
+      config.getNumberProperty('jruby.some.timeout').should == 1
+    end
+
+    it "returns a default value" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.some.timeout").and_return nil
+      config.getNumberProperty('jruby.some.timeout', java.lang.Integer.new(10)).should == 10
+    end
+    
+    it "parser a float property" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.some.timeout").and_return "0.25"
+      config.getNumberProperty('jruby.some.timeout').should == 0.25
+    end
+
+    it "parser a big negative value" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.some.timeout").and_return "-20000000000"
+      config.getNumberProperty('jruby.some.timeout').should == -20000000000
+    end
+
+    it "parser a boolean flag" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.some.flag").and_return "true"
+      config.getBooleanProperty('jruby.some.flag').should == true
+    end
+
+    it "parser a boolean (falsy) flag" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.some.flag").and_return "F"
+      config.getBooleanProperty('jruby.some.flag').should == false
+    end
+    
+  end
+  
 end

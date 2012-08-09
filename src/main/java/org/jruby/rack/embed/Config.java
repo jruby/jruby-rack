@@ -84,6 +84,14 @@ public class Config implements RackConfig {
     public final Boolean getBooleanProperty(String key, Boolean defaultValue) {
         return delegate.getBooleanProperty(key, defaultValue);
     }
+
+    public final Number getNumberProperty(String key) {
+        return delegate.getNumberProperty(key);
+    }
+
+    public final Number getNumberProperty(String key, Number defaultValue) {
+        return delegate.getNumberProperty(key, defaultValue);
+    }
     
     public CompatVersion getCompatVersion() {
         return compatVersion;

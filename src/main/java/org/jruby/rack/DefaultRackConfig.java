@@ -104,6 +104,10 @@ public class DefaultRackConfig implements RackConfig {
         return getPositiveInteger("jruby.runtime.initializer.threads");
     }
 
+    public boolean isSerialInitialization() {
+        return getBooleanProperty("jruby.init.serial", false);
+    }
+    
     public RackLogger getLogger() {
         if (logger == null) {
             String loggerClass = getLoggerClassName();
@@ -164,10 +168,6 @@ public class DefaultRackConfig implements RackConfig {
         return getProperty("jms.jndi.properties");
     }
 
-    public boolean isSerialInitialization() {
-        return getBooleanProperty("jruby.init.serial", false);
-    }
-
     public String getLoggerName() {
         return getProperty("jruby.rack.logging.name", "jruby.rack");
     }
@@ -219,6 +219,14 @@ public class DefaultRackConfig implements RackConfig {
     public Boolean getBooleanProperty(String key, Boolean defaultValue) {
         return toBoolean(getProperty(key), defaultValue);
     }
+
+    public Number getNumberProperty(String key) {
+        return getNumberProperty(key, null);
+    }
+    
+    public Number getNumberProperty(String key, Number defaultValue) {
+        return toNumber(getProperty(key), defaultValue);
+    }
     
     private Integer getRuntimesRangeValue(String end, String gsValue) {
         Integer v = getPositiveInteger("jruby." + end + ".runtimes");
@@ -243,6 +251,29 @@ public class DefaultRackConfig implements RackConfig {
         try {
             return Boolean.valueOf(value);
         } 
+        catch (Exception e) { /* ignored */ }
+        return defaultValue;
+    }
+
+    protected static Number toNumber(String value, Number defaultValue) {
+        if (value == null) return defaultValue;
+        try {
+            float number = Float.parseFloat(value);
+            if ( Float.isInfinite(number) ) {
+                return Double.parseDouble(value);
+            }
+            if ( Float.isNaN(number) ) {
+                return defaultValue;
+            }
+            if ( number == ((int) number) )
+            if ( number > Integer.MAX_VALUE ) {
+                return Long.valueOf((long) number);
+            }
+            else {
+                return Integer.valueOf((int) number);
+            }
+            return Float.valueOf(number);
+        }
         catch (Exception e) { /* ignored */ }
         return defaultValue;
     }
