@@ -13,6 +13,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 public class RackInitializationException extends Exception {
+    
+    public RackInitializationException(String msg) {
+        super(msg);
+    }
+    
+    public RackInitializationException(String msg, Throwable ex) {
+        super(msg, ex);
+    }
+    
     public RackInitializationException(RaiseException re) {
         super(exceptionMessage(re), re);
     }
@@ -20,17 +29,15 @@ public class RackInitializationException extends Exception {
     private static String exceptionMessage(RaiseException re) {
         if (re != null) {
             StringBuilder st = new StringBuilder();
-            st.append(re.getException().toString()).append("\n");
+            st.append(re.getException().toString()).append('\n');
             ByteArrayOutputStream b = new ByteArrayOutputStream();
             re.getException().printBacktrace(new PrintStream(b));
             st.append(b.toString());
             return st.toString();
-        } else {
+        }
+        else {
             return null;
         }
     }
 
-    public RackInitializationException(String msg, Throwable ex) {
-        super(msg, ex);
-    }
 }

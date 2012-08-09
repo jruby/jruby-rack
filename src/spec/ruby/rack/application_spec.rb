@@ -389,46 +389,60 @@ describe org.jruby.rack.rails.RailsRackApplicationFactory do
 end
 
 describe org.jruby.rack.PoolingRackApplicationFactory do
+  
+  class Java::OrgJrubyRack::PoolingRackApplicationFactory
+    field_writer :rackContext
+  end
+  
   before :each do
     @factory = mock "factory"
-    @pool = org.jruby.rack.PoolingRackApplicationFactory.new @factory
+    @pooling_factory = org.jruby.rack.PoolingRackApplicationFactory.new @factory
+    @pooling_factory.rackContext = @rack_context
   end
 
   it "should initialize the delegate factory when initialized" do
     @factory.should_receive(:init).with(@rack_context)
-    @pool.init(@rack_context)
+    @pooling_factory.init(@rack_context)
   end
 
   it "should start out empty" do
-    @pool.getApplicationPool.should be_empty
+    @pooling_factory.getApplicationPool.should be_empty
   end
 
   it "should create a new application when empty" do
     app = mock "app"
     @factory.should_receive(:getApplication).and_return app
-    @pool.getApplication.should == app
+    @pooling_factory.getApplication.should == app
   end
 
-  it "should accept an existing application and put it back in the pool" do
+  it "should not add newly created application to pool" do
     app = mock "app"
-    @pool.getApplicationPool.should be_empty
-    @pool.finishedWithApplication app
-    @pool.getApplicationPool.should_not be_empty
-    @pool.getApplication.should == app
+    @factory.should_receive(:getApplication).and_return app
+    @pooling_factory.getApplication.should == app
+    @pooling_factory.getApplicationPool.to_a.should == []
+  end
+  
+  it "accepts an existing application and puts it back in the pool" do
+    app = mock "app"
+    @pooling_factory.getApplicationPool.to_a.should == []
+    @pooling_factory.finishedWithApplication app
+    @pooling_factory.getApplicationPool.to_a.should == [ app ]
+    @pooling_factory.getApplication.should == app
   end
 
-  it "should call destroy on all cached applications when destroyed" do
-    app1 = mock "app1"
-    app2 = mock "app2"
-    @pool.finishedWithApplication app1
-    @pool.finishedWithApplication app2
+  it "calls destroy on all cached applications when destroyed" do
+    app1, app2 = mock("app1"), mock("app2")
+    @pooling_factory.finishedWithApplication app1
+    @pooling_factory.finishedWithApplication app2
     app1.should_receive(:destroy)
     app2.should_receive(:destroy)
     @factory.should_receive(:destroy)
-    @pool.destroy
+    
+    @pooling_factory.destroy
+    @pooling_factory.getApplicationPool.to_a.should == [] # and empty application pool
   end
-
-  it "should create applications during initialization according to the jruby.min.runtimes context parameter" do
+  
+  it "creates applications during initialization according to the jruby.min.runtimes context parameter" do
     @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
@@ -436,30 +450,30 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
       app
     end
     @rack_config.should_receive(:getInitialRuntimes).and_return 1
-    @pool.init(@rack_context)
-    @pool.getApplicationPool.size.should == 1
+    @pooling_factory.init(@rack_context)
+    @pooling_factory.getApplicationPool.size.should == 1
   end
 
-  it "should not create any new applications beyond the maximum specified by the jruby.max.runtimes context parameter" do
+  it "does not allow new applications beyond the maximum specified by the jruby.max.runtimes context parameter" do
     @factory.should_receive(:init).with(@rack_context)
     @rack_config.should_receive(:getMaximumRuntimes).and_return 1
-    @pool.init(@rack_context)
-    @pool.finishedWithApplication mock("app1")
-    @pool.finishedWithApplication mock("app2")
-    @pool.getApplicationPool.size.should == 1
+    @pooling_factory.init(@rack_context)
+    @pooling_factory.finishedWithApplication mock("app1")
+    @pooling_factory.finishedWithApplication mock("app2")
+    @pooling_factory.getApplicationPool.size.should == 1
   end
 
-  it "should not add an application back into the pool if it already exists" do
+  it "does not add an application back into the pool if it already exists" do
     @factory.should_receive(:init).with(@rack_context)
     @rack_config.should_receive(:getMaximumRuntimes).and_return 4
-    @pool.init(@rack_context)
+    @pooling_factory.init(@rack_context)
     rack_application_1 = mock("app1")
-    @pool.finishedWithApplication rack_application_1
-    @pool.finishedWithApplication rack_application_1
-    @pool.getApplicationPool.size.should == 1
+    @pooling_factory.finishedWithApplication rack_application_1
+    @pooling_factory.finishedWithApplication rack_application_1
+    @pooling_factory.getApplicationPool.size.should == 1
   end
 
-  it "should force the maximum size to be greater or equal to the initial size" do
+  it "forces the maximum size to be greater or equal to the initial size" do
     @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
@@ -468,63 +482,109 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     end
     @rack_config.should_receive(:getInitialRuntimes).and_return 2
     @rack_config.should_receive(:getMaximumRuntimes).and_return 1
-    @pool.init(@rack_context)
-    java.lang.Thread.yield
-    @pool.waitForNextAvailable(30)
-    @pool.getApplicationPool.size.should == 2
-    @pool.finishedWithApplication mock("app")
-    @pool.getApplicationPool.size.should == 2
+    @pooling_factory.init(@rack_context)
+    # java.lang.Thread.yield
+    @pooling_factory.send :waitForNextAvailable, 10 # seconds
+    @pooling_factory.getApplicationPool.size.should == 2
+    @pooling_factory.finishedWithApplication mock("app")
+    @pooling_factory.getApplicationPool.size.should == 2
   end
 
-  it "should retrieve the error application from the delegate factory" do
+  it "retrieves the error application from the delegate factory" do
     app = mock("app")
     @factory.should_receive(:getErrorApplication).and_return app
-    @pool.getErrorApplication.should == app
+    @pooling_factory.getErrorApplication.should == app
   end
+  
+  it "initializes initial runtimes in paralel" do
+    @factory.should_receive(:init).with(@rack_context)
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.stub!(:init).and_return do
+        sleep(0.25)
+      end
+      app
+    end
+    @rack_config.should_receive(:getInitialRuntimes).and_return 6
+    @rack_config.should_receive(:getMaximumRuntimes).and_return 8
+    @pooling_factory.init(@rack_context)
+    sleep(0.75) # 6 x 0.25 == 1.5 but we're booting in paralel
+    @pooling_factory.getApplicationPool.size.should >= 6
+  end
+  
+end
+
+describe org.jruby.rack.SerialPoolingRackApplicationFactory do
+
+  before :each do
+    @factory = mock "factory"
+    @pooling_factory = org.jruby.rack.SerialPoolingRackApplicationFactory.new @factory
+    @pooling_factory.rackContext = @rack_context
+  end
+  
+  it "initializes initial runtimes in serial order" do
+    @factory.should_receive(:init).with(@rack_context)
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.stub!(:init).and_return do
+        sleep(0.25)
+      end
+      app
+    end
+    @rack_config.should_receive(:getInitialRuntimes).and_return 6
+    @rack_config.should_receive(:getMaximumRuntimes).and_return 8
+    @pooling_factory.init(@rack_context)
+    sleep(0.75)
+    @pooling_factory.getApplicationPool.size.should <= 6
+    sleep(0.85)
+    @pooling_factory.getApplicationPool.size.should == 6
+  end
+  
 end
 
 describe org.jruby.rack.SharedRackApplicationFactory do
+  
   before :each do
     @factory = mock "factory"
-    @shared =org.jruby.rack.SharedRackApplicationFactory.new @factory
+    @shared_factory = org.jruby.rack.SharedRackApplicationFactory.new @factory
   end
 
   it "should initialize the delegate factory and create the shared application when initialized" do
     @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
     @factory.should_receive(:getApplication).and_return app
-    @shared.init(@rack_context)
+    @shared_factory.init(@rack_context)
   end
 
   it "should throw a servlet exception if the shared application cannot be initialized" do
     @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
-    @factory.should_receive(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
+    @factory.should_receive(:getApplication).and_raise java.lang.RuntimeException.new('42')
     lambda {
-      @shared.init(@rack_context)
-    }.should raise_error # TODO: doesn't work w/ raise_error(javax.servlet.ServletException)
+      @shared_factory.init(@rack_context)
+    }.should raise_error(org.jruby.rack.RackInitializationException)
   end
 
   it "should return a valid application object even if initialization fails" do
     @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
-    @factory.should_receive(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
+    @factory.should_receive(:getApplication).and_raise java.lang.RuntimeException.new('42')
     begin
-      @shared.init(@rack_context)
+      @shared_factory.init(@rack_context)
     rescue org.jruby.rack.RackInitializationException
     end
-    @shared.getApplication.should_not be nil
+    @shared_factory.getApplication.should_not be nil
   end
 
   it "should return the same application for any newApplication or getApplication call" do
     @factory.should_receive(:init).with(@rack_context)
     app = mock "application"
     @factory.should_receive(:getApplication).and_return app
-    @shared.init(@rack_context)
+    @shared_factory.init(@rack_context)
     1.upto(5) do
-      @shared.newApplication.should == app
-      @shared.getApplication.should == app
-      @shared.finishedWithApplication app
+      @shared_factory.newApplication.should == app
+      @shared_factory.getApplication.should == app
+      @shared_factory.finishedWithApplication app
     end
   end
 
@@ -534,13 +594,13 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     @factory.should_receive(:getApplication).and_return app
     @factory.should_receive(:destroy)
     app.should_receive(:destroy)
-    @shared.init(@rack_context)
-    @shared.destroy
+    @shared_factory.init(@rack_context)
+    @shared_factory.destroy
   end
 
   it "should retrieve the error application from the delegate factory" do
     app = mock("app")
     @factory.should_receive(:getErrorApplication).and_return app
-    @shared.getErrorApplication.should == app
+    @shared_factory.getErrorApplication.should == app
   end
 end

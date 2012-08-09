@@ -16,32 +16,24 @@ import java.util.Queue;
  * @author Ola Bini <ola.bini@gmail.com>
  */
 public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationFactory {
+    
     public SerialPoolingRackApplicationFactory(RackApplicationFactory factory) {
         super(factory);
     }
 
     @Override
-    protected void fillInitialPool() throws RackInitializationException {
-        Queue<RackApplication> apps = createApplications();
-        launchInitialization(apps);
-    }
-
     protected void launchInitialization(final Queue<RackApplication> apps) {
-        while (true) {
-            RackApplication app = null;
-            if (apps.isEmpty()) {
-                break;
-            }
-            app = apps.remove();
-
+        while ( ! apps.isEmpty() ) {
+            final RackApplication app = apps.remove();
             try {
                 app.init();
                 applicationPool.add(app);
-                rackContext.log(RackLogger.INFO, "add application to the pool. size now = " + applicationPool.size());
-            } catch (RackInitializationException ex) {
-                rackContext.log(RackLogger.ERROR, "unable to initialize application", ex);
+                rackContext.log(RackLogger.INFO, "added application to pool, size now = " + applicationPool.size());
+            }
+            catch (RackInitializationException e) {
+                rackContext.log(RackLogger.ERROR, "unable to initialize application", e);
             }
         }
     }
+    
 }
-
