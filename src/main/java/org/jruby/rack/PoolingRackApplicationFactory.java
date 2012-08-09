@@ -34,15 +34,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class PoolingRackApplicationFactory implements RackApplicationFactory {
     
-    static final int DEFAULT_TIMEOUT = 30;
-    
     protected RackContext rackContext;
     private final RackApplicationFactory realFactory;
     
     protected final Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
     private Integer initial, maximum;
     
-    private int acquireTimeout = DEFAULT_TIMEOUT;
+    private int acquireTimeout = 30;
     private Semaphore permits;
 
     public PoolingRackApplicationFactory(RackApplicationFactory factory) {
@@ -203,13 +201,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     protected void fillInitialPool() throws RackInitializationException {
         Queue<RackApplication> apps = createApplications();
         launchInitializerThreads(apps);
-        synchronized (applicationPool) {
-            if (applicationPool.isEmpty()) {
-                waitForNextAvailable(DEFAULT_TIMEOUT);
-            }
-        }
-        // returns when there's at least 1 application initialized or 
-        // 30 (DEFAULT_TIMEOUT) seconds had ellapsed since launch ...
+        waitTillPoolReady();
     }
     
     /**
@@ -226,10 +218,10 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
      * @param apps the (initial) instances (for the pool) to be initialized
      */
     protected void launchInitialization(final Queue<RackApplication> apps) {
-        Integer numThreads = rackContext.getConfig().getNumInitializerThreads();
-        if ( numThreads == null ) numThreads = 4; // quad-core baby
+        Integer initThreads = rackContext.getConfig().getNumInitializerThreads();
+        if ( initThreads == null ) initThreads = 4; // quad-core baby
         
-        for (int i = 0; i < numThreads; i++) {
+        for (int i = 0; i < initThreads; i++) {
             new Thread(new Runnable() {
 
                 public void run() {
@@ -278,18 +270,47 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         return true;
     }
     
-    /** Wait the specified time (in seconds) or until a runtime is available. */
-    private void waitForNextAvailable(final int timeout) {
-        synchronized (applicationPool) {
-            try {
-                // although applicationPool is "locked" here
-                // calling wait() releases the target lock !
-                applicationPool.wait(timeout * 1000);
-            }
-            catch (InterruptedException ignore) {
-                return;
+    /** Wait till the pool has enough (initialized) applications. */
+    protected void waitTillPoolReady() {
+        final int waitFor = getInitialPoolSizeWait();
+        while (true) {
+            synchronized (applicationPool) {
+                if ( applicationPool.size() >= waitFor ) break;
+                try {
+                    // although applicationPool is "locked" here
+                    // calling wait() releases the target lock !
+                    applicationPool.wait(30 * 1000);
+                }
+                catch (InterruptedException ignore) {
+                    continue;
+                }
             }
         }
+    }
+    
+    /**
+     * How many (initial) application instances to wait for becoming available 
+     * in the pool (less or equal than zero means not to wait at all).
+     */
+    private int getInitialPoolSizeWait() {
+        Number waitNum = rackContext.getConfig()
+                .getNumberProperty("jruby.runtime.init.wait");
+        if ( waitNum != null ) {
+            int wait = waitNum.intValue();
+            if (maximum != null && wait > maximum) {
+                wait = maximum.intValue();
+            }
+            return wait;
+        }
+        // otherwise we assume it to be a boolean true/false flag :
+        Boolean waitFlag = rackContext.getConfig()
+                .getBooleanProperty("jruby.runtime.init.wait");
+        if ( waitFlag == null ) waitFlag = Boolean.TRUE;
+        return waitFlag ? ( initial == null ? 1 : initial.intValue() ) : 0;
+        // NOTE: this slightly changes the behavior in 1.1.8, in previous
+        // versions the initialization only waited for 1 application instance
+        // to be available in the pool - here by default we wait till initial
+        // apps are ready to be used, or 1 (previous behavior) if initial null
     }
     
 }

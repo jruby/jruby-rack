@@ -443,7 +443,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   end
   
   it "creates applications during initialization according to the jruby.min.runtimes context parameter" do
-    @factory.should_receive(:init).with(@rack_context)
+    @factory.stub!(:init)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.should_receive(:init)
@@ -455,8 +455,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   end
 
   it "does not allow new applications beyond the maximum specified by the jruby.max.runtimes context parameter" do
-    @factory.should_receive(:init).with(@rack_context)
+    @factory.stub!(:init)
     @rack_config.should_receive(:getMaximumRuntimes).and_return 1
+    
     @pooling_factory.init(@rack_context)
     @pooling_factory.finishedWithApplication mock("app1")
     @pooling_factory.finishedWithApplication mock("app2")
@@ -464,17 +465,18 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   end
 
   it "does not add an application back into the pool if it already exists" do
-    @factory.should_receive(:init).with(@rack_context)
+    @factory.stub!(:init)
     @rack_config.should_receive(:getMaximumRuntimes).and_return 4
     @pooling_factory.init(@rack_context)
     rack_application_1 = mock("app1")
     @pooling_factory.finishedWithApplication rack_application_1
     @pooling_factory.finishedWithApplication rack_application_1
+    
     @pooling_factory.getApplicationPool.size.should == 1
   end
 
   it "forces the maximum size to be greater or equal to the initial size" do
-    @factory.should_receive(:init).with(@rack_context)
+    @factory.stub!(:init)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.should_receive(:init)
@@ -482,9 +484,8 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     end
     @rack_config.should_receive(:getInitialRuntimes).and_return 2
     @rack_config.should_receive(:getMaximumRuntimes).and_return 1
+    
     @pooling_factory.init(@rack_context)
-    # java.lang.Thread.yield
-    @pooling_factory.send :waitForNextAvailable, 10 # seconds
     @pooling_factory.getApplicationPool.size.should == 2
     @pooling_factory.finishedWithApplication mock("app")
     @pooling_factory.getApplicationPool.size.should == 2
@@ -495,20 +496,40 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @factory.should_receive(:getErrorApplication).and_return app
     @pooling_factory.getErrorApplication.should == app
   end
-  
-  it "initializes initial runtimes in paralel" do
+
+  it "waits till initial runtimes get initialized (with wait set to true)" do
     @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.stub!(:init).and_return do
-        sleep(0.25)
+        sleep(0.10)
       end
       app
     end
+    @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return true
+    @rack_config.should_receive(:getInitialRuntimes).and_return 4
+    @rack_config.should_receive(:getMaximumRuntimes).and_return 8
+    
+    @pooling_factory.init(@rack_context)
+    @pooling_factory.getApplicationPool.size.should >= 4
+  end
+  
+  it "initializes initial runtimes in paralel (with wait set to false)" do
+    @factory.should_receive(:init).with(@rack_context)
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.stub!(:init).and_return do
+        sleep(0.15)
+      end
+      app
+    end
+    @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
     @rack_config.should_receive(:getInitialRuntimes).and_return 6
     @rack_config.should_receive(:getMaximumRuntimes).and_return 8
+    
     @pooling_factory.init(@rack_context)
-    sleep(0.75) # 6 x 0.25 == 1.5 but we're booting in paralel
+    @pooling_factory.getApplicationPool.size.should < 6
+    sleep(0.45) # 6 x 0.15 == 0.9 but we're booting in paralel
     @pooling_factory.getApplicationPool.size.should >= 6
   end
   
@@ -527,16 +548,14 @@ describe org.jruby.rack.SerialPoolingRackApplicationFactory do
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.stub!(:init).and_return do
-        sleep(0.25)
+        sleep(0.15)
       end
       app
     end
     @rack_config.should_receive(:getInitialRuntimes).and_return 6
     @rack_config.should_receive(:getMaximumRuntimes).and_return 8
+    
     @pooling_factory.init(@rack_context)
-    sleep(0.75)
-    @pooling_factory.getApplicationPool.size.should <= 6
-    sleep(0.85)
     @pooling_factory.getApplicationPool.size.should == 6
   end
   

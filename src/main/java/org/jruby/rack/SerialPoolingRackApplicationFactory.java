@@ -20,7 +20,7 @@ public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationF
     public SerialPoolingRackApplicationFactory(RackApplicationFactory factory) {
         super(factory);
     }
-
+    
     @Override
     protected void launchInitialization(final Queue<RackApplication> apps) {
         while ( ! apps.isEmpty() ) {
@@ -34,6 +34,11 @@ public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationF
                 rackContext.log(RackLogger.ERROR, "unable to initialize application", e);
             }
         }
+    }
+    
+    @Override
+    protected void waitTillPoolReady() {
+        return; // waiting makes no sense here as we're initializing serialy
     }
     
 }
