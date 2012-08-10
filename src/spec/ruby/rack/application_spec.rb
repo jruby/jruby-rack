@@ -552,9 +552,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @factory.stub!(:init)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
-      app.stub!(:init).and_return do
-        sleep(0.2)
-      end
+      app.stub!(:init).and_return { sleep(0.2) }
       app
     end
     @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
@@ -570,11 +568,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "waits acquire timeout till an application is available from the pool (than raises)" do
     @factory.stub!(:init)
-    @factory.stub!(:newApplication).and_return do
+    @factory.should_receive(:newApplication).twice.and_return do
       app = mock "app"
-      app.stub!(:init).and_return do
-        sleep(0.2)
-      end
+      app.should_receive(:init).and_return { sleep(0.2) }
       app
     end
     @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
@@ -598,6 +594,43 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     
     @pooling_factory.finishedWithApplication(app2) # gets back to the pool
     lambda { @pooling_factory.getApplication.should == app2 }.should_not raise_error
+  end
+  
+  it "gets and initializes new applications until maximum allows to create more" do
+    @factory.stub!(:init)
+    @factory.should_receive(:newApplication).twice.and_return do
+      app = mock "app (new)"
+      app.should_receive(:init).and_return { sleep(0.1) }
+      app
+    end
+    @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
+    @rack_config.should_receive(:getInitialRuntimes).and_return 2
+    @rack_config.should_receive(:getMaximumRuntimes).and_return 4
+
+    @pooling_factory.init(@rack_context)
+    @pooling_factory.acquire_timeout = 0.10.to_java # second
+    
+    lambda {
+      2.times { @pooling_factory.getApplication.should_not be nil }
+    }.should_not raise_error
+    
+    @factory.should_receive(:getApplication).twice.and_return do
+      app = mock "app (get)"; sleep(0.15); app
+    end
+    
+    millis = java.lang.System.currentTimeMillis
+    lambda {
+      2.times { @pooling_factory.getApplication.should_not be nil }
+    }.should_not raise_error
+    millis = java.lang.System.currentTimeMillis - millis
+    millis.should >= 300 # waited about 2 x 0.15 secs
+    
+    millis = java.lang.System.currentTimeMillis
+    lambda {
+      @pooling_factory.getApplication
+    }.should raise_error # timeout
+    millis = java.lang.System.currentTimeMillis - millis
+    millis.should >= 90 # waited about ~ 0.10 secs
   end
   
   it "initializes initial runtimes in paralel (with wait set to false)" do

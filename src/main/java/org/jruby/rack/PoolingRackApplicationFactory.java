@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A pooling application factory that creates runtimes and manages a fixed- or
@@ -42,6 +43,9 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     
     protected final Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
     private Integer initialSize, maximumSize;
+    
+    private final AtomicInteger initedApplications = new AtomicInteger(0);
+    private final AtomicInteger createdApplications = new AtomicInteger(0);
     
     private float acquireTimeout = ACQUIRE_DEFAULT; // in seconds
     private Semaphore permits;
@@ -142,7 +146,8 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             if ( ! applicationPool.isEmpty() ) {
                 app = applicationPool.remove();
             }
-            else if ( permit ) {
+            else if ( permit && ( initialSize != null && 
+                    initialSize > initedApplications.get() ) ) {
                 // pool is empty but we still gained a permit for an app !
                 // could only happen if the initialization threads are still 
                 // running (and we've been configured to not wait till all 
@@ -156,11 +161,12 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         }
         
         if ( app != null ) return app;
-        
-        if ( ! permit ) {
+        // NOTE: for apps that take a long time to boot simply set values
+        // initial == maximum to avoid creating an application on demand
+        if ( ! permit || ( maximumSize == null || maximumSize > createdApplications.get() ) ) {
             rackContext.log(RackLogger.INFO, "pool was empty - getting new application instance");
             // we'll try to put it "back" to pool from finishedWithApplication(app)
-            return realFactory.getApplication();
+            return createApplication(true);
         }
         
         // NOTE: getting here means something is wrong (app == null) :
@@ -303,9 +309,16 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     protected Queue<RackApplication> createApplications() throws RackInitializationException {
         Queue<RackApplication> apps = new LinkedList<RackApplication>();
         for (int i = 0; i < initialSize; i++) {
-            apps.add(realFactory.newApplication());
+            apps.add( createApplication(false) );
         }
         return apps;
+    }
+    
+    private synchronized RackApplication createApplication(final boolean init) 
+        throws RackInitializationException {
+        createdApplications.incrementAndGet();
+        if ( init ) initedApplications.incrementAndGet();
+        return init ? realFactory.getApplication() : realFactory.newApplication();
     }
     
     /** Called when a thread initialized an application. */
@@ -317,6 +330,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             applicationPool.add(app);
             rackContext.log(RackLogger.INFO, "added application " + 
                     "to pool, size now = " + applicationPool.size());
+            initedApplications.incrementAndGet();
             // in case we're waiting from waitForNextAvailable() :
             applicationPool.notifyAll();
         }
