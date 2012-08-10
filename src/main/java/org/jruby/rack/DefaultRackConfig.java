@@ -92,7 +92,11 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     public Integer getRuntimeTimeoutSeconds() {
-        return getPositiveInteger("jruby.runtime.timeout.sec");
+        Integer timeout = getPositiveInteger("jruby.runtime.acquire.timeout");
+        if (timeout == null) { // backwards compatibility with 1.0.x :
+            timeout = getPositiveInteger("jruby.runtime.timeout.sec");
+        }
+        return timeout;
     }
 
     public String[] getRuntimeArguments() {
@@ -101,11 +105,29 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     public Integer getNumInitializerThreads() {
-        return getPositiveInteger("jruby.runtime.initializer.threads");
+        Number threads = getNumberProperty("jruby.runtime.init.threads");
+        if (threads == null) { // backwards compatibility with 1.0.x :
+            threads = getNumberProperty("jruby.runtime.initializer.threads");
+        }
+        return threads != null ? threads.intValue() : null;
     }
 
     public boolean isSerialInitialization() {
-        return getBooleanProperty("jruby.init.serial", false);
+        Boolean serial = getBooleanProperty("jruby.runtime.init.serial");
+        if (serial == null) { // backwards compatibility with 1.0.x :
+            serial = getBooleanProperty("jruby.init.serial");
+            
+            if (serial == null) { // if initializer threads set to <= 0
+                Integer threads = getNumInitializerThreads();
+                if ( threads != null && threads < 0 ) {
+                    serial = Boolean.TRUE;
+                }
+                else {
+                    serial = Boolean.FALSE;
+                }
+            }
+        }
+        return serial.booleanValue();
     }
     
     public RackLogger getLogger() {

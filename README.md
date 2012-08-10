@@ -144,8 +144,11 @@ Several aspects of Rails are automatically set up for you.
 ## JRuby Runtime Management
 
 JRuby runtime management and pooling is done automatically by the framework. 
-In the case of Rails, runtimes are pooled. For other Rack applications, 
-currently, a single runtime is created and shared for every request.
+In the case of Rails, runtimes are pooled by default (the default will most 
+likely change with the adoption of Rails 4.0). For other Rack applications a 
+single shared runtime is created and shared for every request by default (as of 
+**1.1.8** if *jruby.min.runtimes*/*jruby.max.runtimes* values are specified 
+pooling is supported as well).
 
 ## JRuby-Rack Configuration
 
@@ -155,19 +158,8 @@ as context init parameters in web.xml or as VM-wide system properties.
 - `rackup`: Rackup script for configuring how the Rack application is mounted. 
   Required for Rack-based applications other than Rails. Can be omitted if a 
   *config.ru* is included in the application root.
-- `jruby.min.runtimes`: For non-threadsafe Rails applications using a runtime 
-  pool, specify an integer minimum number of runtimes to hold in the pool.
-- `jruby.max.runtimes`: For non-threadsafe Rails applications, an integer 
-  maximum number of runtimes to keep in the pool.
-- `jruby.init.serial`: When using runtime pooling, indicate that the runtime 
-  pool should be created serially in the foreground rather than spawning 
-  background threads. For environments where creating threads is not permitted.
-- `jruby.compat.version`: Set to "1.8" or "1.9" to make JRuby run a specific 
-  version of Ruby.
 - `public.root`: Relative path to the location of your application's static 
   assets. Defaults to */*.
-- `gem.path`: Relative path to the bundled gem repository. Defaults to
-  */WEB-INF/gems*.
 - `rails.root`: Root path to the location of the Rails application files. 
   Defaults to */WEB-INF*.
 - `rails.env`: Specify the Rails environment to run. Defaults to 'production'.
@@ -175,6 +167,25 @@ as context init parameters in web.xml or as VM-wide system properties.
   `ActionController::Base.relative_url_root` after the context path. Useful
   for running a rails app from the same war as an existing app, under a 
   sub-path of the main servlet context root.
+- `gem.path`: Relative path to the bundled gem repository. Defaults to
+  */WEB-INF/gems*.
+- `jruby.compat.version`: Set to "1.8" or "1.9" to make JRuby run a specific 
+  version of Ruby (same as the --1.8 / --1.9 command line flags).
+- `jruby.min.runtimes`: For non-threadsafe Rails applications using a runtime 
+  pool, specify an integer minimum number of runtimes to hold in the pool.
+- `jruby.max.runtimes`: For non-threadsafe Rails applications, an integer 
+  maximum number of runtimes to keep in the pool.
+- `jruby.runtime.init.threads`: How many threads to use for initializing 
+   application runtimes when pooling is used (default is 4).
+   It does not make sense to set this value higher than `jruby.max.runtimes`.
+- `jruby.runtime.init.serial`: When using runtime pooling, this flag indicates 
+  that the pool should be created serially in the foreground rather than 
+  spawning (background) threads, it's by default off (set to false).
+  For environments where creating threads is not permitted.
+- `jruby.runtime.acquire.timeout`: The timeout in seconds (default 10) to use
+  when acquiring a runtime from the pool (while a pool maximum is set), an 
+  exception will be thrown if a runtime can not be acquired within this time (
+  accepts decimal values for fine tuning e.g. 1.25).
 - `jruby.rack.logging`: Specify the logging device to use. Defaults to
   `servlet_context`. See below.
 - `jruby.rack.ignore.env`: Clears out the `ENV` hash in each runtime to insulate 
