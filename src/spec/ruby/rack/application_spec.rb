@@ -498,7 +498,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   end
 
   it "waits till initial runtimes get initialized (with wait set to true)" do
-    @factory.should_receive(:init).with(@rack_context)
+    @factory.stub!(:init)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.stub!(:init).and_return do
@@ -514,8 +514,94 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @pooling_factory.getApplicationPool.size.should >= 4
   end
   
+  it "throws an exception from getApplication when an app failed to initialize " + 
+     "(with wait set to false)" do
+    @factory.stub!(:init)
+    app_count = java.util.concurrent.atomic.AtomicInteger.new(0)
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.stub!(:init).and_return do
+        if app_count.addAndGet(1) == 2
+          raise org.jruby.rack.RackInitializationException.new('failed app init')
+        end
+        sleep(0.05)
+      end
+      app
+    end
+    @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
+    @rack_config.should_receive(:getInitialRuntimes).and_return 3
+    @rack_config.should_receive(:getMaximumRuntimes).and_return 3
+    
+    @pooling_factory.init(@rack_context)
+    sleep(0.20)
+    
+    failed = 0
+    3.times do
+      begin
+        @pooling_factory.getApplication
+      rescue java.lang.IllegalStateException
+        failed += 1
+      end
+    end
+    if failed != 1
+      fail "@pooling_factory.getApplication expected to fail once, but failed #{failed}-time(s)"
+    end
+  end
+  
+  it "wait until pool is filled when invoking getApplication (with wait set to false)" do
+    @factory.stub!(:init)
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.stub!(:init).and_return do
+        sleep(0.2)
+      end
+      app
+    end
+    @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
+    @rack_config.should_receive(:getInitialRuntimes).and_return 3
+    @rack_config.should_receive(:getMaximumRuntimes).and_return 4
+    
+    @pooling_factory.init(@rack_context)
+    millis = java.lang.System.currentTimeMillis
+    @pooling_factory.getApplication.should_not be nil
+    millis = java.lang.System.currentTimeMillis - millis
+    millis.should >= 150 # getApplication waited ~ 0.2 secs
+  end
+
+  it "waits acquire timeout till an application is available from the pool (than raises)" do
+    @factory.stub!(:init)
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.stub!(:init).and_return do
+        sleep(0.2)
+      end
+      app
+    end
+    @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
+    @rack_config.should_receive(:getInitialRuntimes).and_return 2
+    @rack_config.should_receive(:getMaximumRuntimes).and_return 2
+    
+    @pooling_factory.init(@rack_context)
+    @pooling_factory.acquire_timeout = 1.to_java # second
+    millis = java.lang.System.currentTimeMillis
+    @pooling_factory.getApplication.should_not be nil
+    millis = java.lang.System.currentTimeMillis - millis
+    millis.should >= 150 # getApplication waited ~ 0.2 secs
+    
+    app2 = @pooling_factory.getApplication # now the pool is empty
+    
+    @pooling_factory.acquire_timeout = 0.1.to_java # second
+    millis = java.lang.System.currentTimeMillis
+    lambda { @pooling_factory.getApplication }.should raise_error(org.jruby.rack.RackInitializationException)
+    millis = java.lang.System.currentTimeMillis - millis
+    millis.should >= 90 # waited about ~ 0.1 secs
+    
+    @pooling_factory.finishedWithApplication(app2) # gets back to the pool
+    lambda { @pooling_factory.getApplication.should == app2 }.should_not raise_error
+  end
+  
   it "initializes initial runtimes in paralel (with wait set to false)" do
-    @factory.should_receive(:init).with(@rack_context)
+    @factory.stub!(:init)
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.stub!(:init).and_return do

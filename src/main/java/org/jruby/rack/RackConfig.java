@@ -48,9 +48,11 @@ public interface RackConfig {
     String[] getRuntimeArguments();
 
     /** Return the configured amount of time before runtime acquisition times out (in seconds). */
-    Integer getRuntimeTimeoutSeconds(); // TODO RENAME IT !
+    @Deprecated // TODO rename to Float getRuntimeAquireTimeout
+    Integer getRuntimeTimeoutSeconds();
     
     /** Get the number of initializer threads, or null if unspecified. */
+    @Deprecated // TODO rename to Integer getRuntimeInitThreads
     Integer getNumInitializerThreads();
 
     /** Return true if the runtimes should be initialized in serial (e.g. if threads cannot be created). */

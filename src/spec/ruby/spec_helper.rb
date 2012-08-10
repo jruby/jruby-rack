@@ -143,10 +143,10 @@ RSpec.configure do |config|
   
 end
 
-import org.jruby.rack.mock.MockServletConfig
-import org.jruby.rack.mock.MockServletContext
-import org.jruby.rack.mock.MockHttpServletRequest
-import org.jruby.rack.mock.MockHttpServletResponse
+java_import org.jruby.rack.mock.MockServletConfig
+java_import org.jruby.rack.mock.MockServletContext
+java_import org.jruby.rack.mock.MockHttpServletRequest
+java_import org.jruby.rack.mock.MockHttpServletResponse
 
 class StubInputStream < java.io.InputStream
   def initialize(val = "")
