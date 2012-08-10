@@ -12,7 +12,7 @@ import org.jruby.exceptions.RaiseException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-public class RackInitializationException extends Exception {
+public class RackInitializationException extends RackException {
     
     public RackInitializationException(String msg) {
         super(msg);

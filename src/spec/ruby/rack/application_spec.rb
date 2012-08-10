@@ -588,7 +588,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     
     @pooling_factory.acquire_timeout = 0.1.to_java # second
     millis = java.lang.System.currentTimeMillis
-    lambda { @pooling_factory.getApplication }.should raise_error(org.jruby.rack.RackInitializationException)
+    lambda { @pooling_factory.getApplication }.should raise_error(org.jruby.rack.AcquireTimeoutException)
     millis = java.lang.System.currentTimeMillis - millis
     millis.should >= 90 # waited about ~ 0.1 secs
     
@@ -628,7 +628,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     millis = java.lang.System.currentTimeMillis
     lambda {
       @pooling_factory.getApplication
-    }.should raise_error # timeout
+    }.should raise_error(org.jruby.rack.AcquireTimeoutException)
     millis = java.lang.System.currentTimeMillis - millis
     millis.should >= 90 # waited about ~ 0.10 secs
   end

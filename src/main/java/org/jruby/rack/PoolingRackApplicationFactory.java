@@ -127,7 +127,8 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
      * Same as {@link #getApplication()} since we're pooling instances.
      * @see RackApplicationFactory#newApplication() 
      */
-    public RackApplication newApplication() throws RackInitializationException {
+    public RackApplication newApplication() 
+        throws RackInitializationException, AcquireTimeoutException {
         return getApplication();
     }
 
@@ -138,7 +139,8 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
      * upper maximum.
      * @see RackApplicationFactory#getApplication() 
      */
-    public RackApplication getApplication() throws RackInitializationException {
+    public RackApplication getApplication() 
+        throws RackInitializationException, AcquireTimeoutException {
         RackApplication app = null;
         final boolean permit = acquireApplicationPermit();
         // if a permit is gained we can retrieve an app from the pool
@@ -178,7 +180,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
      * @return true if a permit is acquired, false if no permit necessary
      * @throws TimeoutException if a permit can not be acquired
      */
-    protected boolean acquireApplicationPermit() throws RackInitializationException {
+    protected boolean acquireApplicationPermit() throws AcquireTimeoutException {
         // NOTE: permits are only used if a pool maximum is specified !
         if (permits != null) {
             boolean acquired = false;
@@ -189,14 +191,14 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RackInitializationException("could not acquire application permit", e);
+                throw new AcquireTimeoutException("could not acquire application permit", e);
             }
             
             if ( ! acquired ) {
                 String message = "could not acquire application permit" + 
                         " within " + acquireTimeout + " seconds";
                 rackContext.log(RackLogger.INFO, message + " (try increasing the pool size)");
-                throw new RackInitializationException(message);
+                throw new AcquireTimeoutException(message);
             }
             return true; // acquired permit
         }
