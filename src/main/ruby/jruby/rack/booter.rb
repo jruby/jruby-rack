@@ -72,7 +72,7 @@ module JRuby::Rack
     end
 
     def adjust_load_path
-      # http://kenai.com/jira/browse/JRUBY_RACK-8: If some containers do
+      # http://kenai.com/jira/browse/JRUBY_RACK-8 If some containers do
       # not allow proper detection of jruby.home, fall back to this
       tmpdir = java.lang.System.getProperty('java.io.tmpdir')
       if JRuby.runtime.instance_config.jruby_home == tmpdir
@@ -95,6 +95,9 @@ module JRuby::Rack
         # 
         # since JRuby 1.6.7 LoadService has better support for 'classpath:'
         # prefixed entries https://github.com/jruby/jruby-rack/issues/89
+        #
+        # also since JRuby 1.7.0 there's a fix for incorrect home detection
+        # (avoids /tmp on IBM WAS) https://github.com/jruby/jruby/pull/123
         ruby_paths.each do |path|
           # NOTE: even better replace everything starting with '/tmp' ?
           if index = $LOAD_PATH.index("#{tmpdir}/lib/ruby/#{path}")

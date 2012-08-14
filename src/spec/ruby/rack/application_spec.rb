@@ -228,29 +228,32 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_eval_as_nil "defined?(::Rack::VERSION)"
       end
 
-      it "should not load any features (until load path is adjusted)" do
-        # due to incorrectly detected jruby.home some container e.g. WebSphere 8
-        # fail if things such as 'fileutils' get required during runtime init !
-        
-        # TODO: WTF? JRuby magic - $LOADED_FEATURES seems to get "inherited" if
-        # Ruby.newInstance(config) is called with the factory's defaultConfig,
-        # but only if it's executed with bundler e.g. `bundle exec rake spec`
-        #@runtime = app_factory.new_runtime
-        @runtime = org.jruby.Ruby.newInstance
-        app_factory.send :initializeRuntime, @runtime
+      # should not matter on 1.7.x due https://github.com/jruby/jruby/pull/123
+      if JRUBY_VERSION < '1.7.0'        
+        it "should not load any features (until load path is adjusted)" do
+          # due to incorrectly detected jruby.home some container e.g. WebSphere 8
+          # fail if things such as 'fileutils' get required during runtime init !
 
-        reject_files = 
-          "p =~ /.jar$/ || " + 
-          "p =~ /^builtin/ || " + 
-          "p =~ /java.rb$/ || p =~ /jruby.rb$/ || " + 
-          "p =~ /jruby\\/java.*.rb/ || " + 
-          "p =~ /jruby\\/rack.*.rb/ || " + 
-          "p =~ /rack\\/handler\\/servlet.rb$/"
-        # TODO: fails with JRuby 1.7 as it has all kind of things loaded e.g. :
-        # thread.rb, rbconfig.rb, java.rb, lib/ruby/shared/rubygems.rb etc
-        should_eval_as_eql_to "$LOADED_FEATURES.reject { |p| #{reject_files} }", []
+          # TODO: WTF? JRuby magic - $LOADED_FEATURES seems to get "inherited" if
+          # Ruby.newInstance(config) is called with the factory's defaultConfig,
+          # but only if it's executed with bundler e.g. `bundle exec rake spec`
+          #@runtime = app_factory.new_runtime
+          @runtime = org.jruby.Ruby.newInstance
+          app_factory.send :initializeRuntime, @runtime
+
+          reject_files = 
+            "p =~ /.jar$/ || " + 
+            "p =~ /^builtin/ || " + 
+            "p =~ /java.rb$/ || p =~ /jruby.rb$/ || " + 
+            "p =~ /jruby\\/java.*.rb/ || " + 
+            "p =~ /jruby\\/rack.*.rb/ || " + 
+            "p =~ /rack\\/handler\\/servlet.rb$/"
+          # NOTE: fails with JRuby 1.7 as it has all kind of things loaded e.g. :
+          # thread.rb, rbconfig.rb, java.rb, lib/ruby/shared/rubygems.rb etc
+          should_eval_as_eql_to "$LOADED_FEATURES.reject { |p| #{reject_files} }", []
+        end
       end
-      
+        
       it "initializes the $servlet_context global variable" do
         @runtime = app_factory.new_runtime
         should_not_eval_as_nil "defined?($servlet_context)"
