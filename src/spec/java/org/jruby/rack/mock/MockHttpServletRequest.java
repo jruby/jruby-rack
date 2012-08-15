@@ -106,6 +106,9 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
 	private String contentType;
 
+    private ServletInputStream inputStream;
+    private BufferedReader reader;
+    
 	private final Map<String, String[]> parameters = new LinkedHashMap<String, String[]>(16);
 
 	private String protocol = DEFAULT_PROTOCOL;
@@ -312,15 +315,25 @@ public class MockHttpServletRequest implements HttpServletRequest {
 		return this.contentType;
 	}
 
-	public ServletInputStream getInputStream() {
+	public ServletInputStream getInputStream() throws IllegalStateException {
+        // NOTE: make sure it behaves like a real ServletRequest :
+        if (this.reader != null) {
+            throw new IllegalStateException("getReader() method has already been called for this request");
+        }
+        if (this.inputStream != null) return this.inputStream;
+        
 		if (this.content != null) {
-			return new DelegatingServletInputStream(new ByteArrayInputStream(this.content));
+			return this.inputStream = new DelegatingServletInputStream(new ByteArrayInputStream(this.content));
 		}
 		else {
 			return null;
 		}
 	}
 
+    public void resetInputStream() {
+        this.inputStream = null;
+    }
+    
 	/**
 	 * Set a single value for the specified HTTP parameter.
 	 * <p>
@@ -479,11 +492,17 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	}
 
 	public BufferedReader getReader() throws UnsupportedEncodingException {
+        // NOTE: make sure it behaves like a real ServletRequest :
+        if (this.inputStream != null) {
+            throw new IllegalStateException("getInputStream() method has already been called for this request");
+        }
+        if (this.reader != null) return this.reader;
+        
 		if (this.content != null) {
 			InputStream sourceStream = new ByteArrayInputStream(this.content);
 			Reader sourceReader = (this.characterEncoding != null) ? new InputStreamReader(sourceStream,
 				this.characterEncoding) : new InputStreamReader(sourceStream);
-			return new BufferedReader(sourceReader);
+			return this.reader = new BufferedReader(sourceReader);
 		}
 		else {
 			return null;

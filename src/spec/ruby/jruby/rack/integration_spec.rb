@@ -3,18 +3,18 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'fileutils'
 require 'jruby'
 
-import org.jruby.rack.RackContext
-import org.jruby.rack.servlet.ServletRackContext
-import org.jruby.rack.RackApplication
-import org.jruby.rack.DefaultRackApplication
-import org.jruby.rack.RackApplicationFactory
-import org.jruby.rack.DefaultRackApplicationFactory
-import org.jruby.rack.SharedRackApplicationFactory
-import org.jruby.rack.PoolingRackApplicationFactory
-import org.jruby.rack.rails.RailsRackApplicationFactory
+java_import org.jruby.rack.RackContext
+java_import org.jruby.rack.servlet.ServletRackContext
+java_import org.jruby.rack.RackApplication
+java_import org.jruby.rack.DefaultRackApplication
+java_import org.jruby.rack.RackApplicationFactory
+java_import org.jruby.rack.DefaultRackApplicationFactory
+java_import org.jruby.rack.SharedRackApplicationFactory
+java_import org.jruby.rack.PoolingRackApplicationFactory
+java_import org.jruby.rack.rails.RailsRackApplicationFactory
 
 describe "integration" do
-
+  
   describe 'rack (lambda)' do
 
     before do
