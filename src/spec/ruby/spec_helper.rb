@@ -136,7 +136,7 @@ RSpec.configure do |config|
   
   config.backtrace_clean_patterns = [
     /bin\//,
-    /gems/,
+    #/gems/,
     /spec\/spec_helper\.rb/,
     /lib\/rspec\/(core|expectations|matchers|mocks)/
   ]
