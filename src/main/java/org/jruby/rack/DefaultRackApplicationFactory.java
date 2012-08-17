@@ -184,13 +184,20 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         try {
             IRubyObject context = JavaUtil.convertJavaToRuby(runtime, rackContext);
             runtime.getGlobalVariables().set("$servlet_context", context);
-            if (rackContext.getConfig().isIgnoreEnvironment()) {
+            if ( rackContext.getConfig().isIgnoreEnvironment() ) {
                 runtime.evalScriptlet("ENV.clear");
                 // bundler 1.1.x assumes ENV['PATH'] is a string
                 // `ENV['PATH'].split(File::PATH_SEPARATOR)` ...
                 runtime.evalScriptlet("ENV['PATH'] = ''");
             }
             runtime.evalScriptlet("require 'rack/handler/servlet'");
+            // NOTE: this is experimental stuff and might change in the future :
+            String env = rackContext.getConfig().getProperty("jruby.rack.handler.env");
+            // currently supported "env" values are 'default' and 'servlet'
+            if ( env != null ) {
+                runtime.evalScriptlet("Rack::Handler::Servlet.env = '" + env + "'");
+            }
+            
         } catch (RaiseException re) {
             throw new RackInitializationException(re);
         }
