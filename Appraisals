@@ -3,13 +3,13 @@ appraise "rails23" do
 end
 
 appraise "rails30" do
-  gem "rails", "~> 3.0.16"
+  gem "rails", "~> 3.0.17"
 end
 
 appraise "rails31" do
-  gem "rails", "~> 3.1.7"
+  gem "rails", "~> 3.1.8"
 end
 
 appraise "rails32" do
-  gem "rails", "~> 3.2.7"
+  gem "rails", "~> 3.2.8"
 end

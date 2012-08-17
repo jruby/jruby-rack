@@ -10,7 +10,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>1.1.8.dev-SNAPSHOT</version>
+  <version>1.1.8</version>
   <name>JRuby-Rack</name>
   <url>http://github.com/jruby/jruby-rack/</url>
   <description>
@@ -154,6 +154,11 @@
           <showDeprecation>true</showDeprecation>
           <showWarnings>true</showWarnings>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-help-plugin</artifactId>
+        <version>2.1.1</version>
       </plugin>
       <plugin>
         <groupId>org.jruby.plugins</groupId>

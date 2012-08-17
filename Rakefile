@@ -214,7 +214,8 @@ task :release_checks do
       "  git push origin :#{JRuby::Rack::VERSION}" if ok
   end
 
-  pom_version = `mvn -o validate | grep JRuby-Rack | sed 's/.*JRuby-Rack //'`.chomp
+  pom_version = `mvn help:evaluate -Dexpression=project.version`.
+    split("\n").reject { |line| line =~ /[INFO]/ }.first.chomp
   if pom_version =~ /dev|SNAPSHOT/
     fail "Can't release a dev/snapshot version.\n" +
       "Please update pom.xml to the final release version, run `mvn install', and commit the result."

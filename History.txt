@@ -1,3 +1,32 @@
+== 1.1.8 (17/08/12)
+
+ - introduced ServletEnv for cases when it's desirable to fully use the servlet
+   environment to create the rack env (and not let Rack::Request parse params 
+   but rely on the parameters already parsed and available from the servlet
+   request #110). this is an experimental feature that might change in the 
+   future and requires setting 'jruby.rack.handler.env' param to 'servlet' !
+ - separated out Env (LazyEnv) into a separate file :
+   - Env got refactored into DefaultEnv (with lazyness built-in) 
+   - LazyEnv got removed as it is not longer necessary 
+   - Rack::Handler::Servlet.env sets the used env conversion class 
+ - introduce a generic getNumberProperty on RackConfig
+ - introduce a base RackException and add a custom AcquireTimeoutException for 
+   pool timeouts (related to jruby.runtime.acquire.timeout parameter)
+ - RackInitializationException changed to unchecked as it inherits from 
+   RackException now
+ - PoolingRackApplication (and related) polishing :
+   - avoid creating a new application from getApplication when a permit is 
+     granted but pool is empty
+   - support to wait till pool becomes ready by default otherwise wait until 
+     initial application objects are present in the pool before returning 
+     (controlled with the jruby.runtime.init.wait accepting true/false/integer)
+   - edge case handling where (in case were set to not wait for initialization) 
+     we should wait for an initializer thread to put an application into the pool
+   - allow acquire timeout (jruby.runtime.acquire.timeout param) to be specified
+     as a decimal number for finer control and decreased the timeout default 
+     from 30s to 10s (although seems still too high for a default) 
+ - jruby runtime pooling for plain Rack applications (not just Rails)
+
 == 1.1.7 (21/06/12)
 
 - support for delegating logs to java.util.logging (jruby.rack.logging: JUL)
