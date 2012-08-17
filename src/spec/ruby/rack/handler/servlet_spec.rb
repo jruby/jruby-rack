@@ -17,7 +17,7 @@ describe Rack::Handler::Servlet do
   shared_examples "env" do
     
     before do
-      @servlet_request ||= org.jruby.rack.mock.MockHttpServletRequest.new
+      @servlet_request ||= org.jruby.rack.mock.MockHttpServletRequest.new(@servlet_context)
       @servlet_response ||= org.jruby.rack.mock.MockHttpServletResponse.new
       @servlet_env ||= org.jruby.rack.servlet.ServletRackEnvironment.new(
         @servlet_request, @servlet_response, @rack_context
@@ -303,19 +303,49 @@ describe Rack::Handler::Servlet do
       env["HTTP_X_SOME_REALLY_LONG_HEADER"].should == "yeap"
     end
 
-    it "returns the servlet request when queried with java.servlet_request" do
+    it "exposes the servlet request" do
       env = servlet.create_env @servlet_env
       env['java.servlet_request'].should == @servlet_request
     end
 
-    it "returns the servlet response when queried with java.servlet_response" do
+    it "exposes the servlet response" do
       env = servlet.create_env @servlet_env
       env['java.servlet_response'].should == @servlet_response
+    end
+
+    it "exposes the servlet context" do
+      env = servlet.create_env @servlet_env
+      env['java.servlet_context'].should be_a javax.servlet.ServletContext
+      # Failure/Error: env['java.servlet_context'].should == @servlet_context
+      # NoMethodError:
+      #  private method `pretty_print' called for #<RSpec::Mocks::ErrorGenerator:0x1e9d469>
+      #begin
+      #  env['java.servlet_context'].should == @servlet_context
+      #rescue NoMethodError
+      #  ( env['java.servlet_context'] == @servlet_context ).should be true
+      #end
+    end
+
+    it "exposes the rack context" do
+      env = servlet.create_env @servlet_env
+      env['jruby.rack.context'].should == @rack_context
     end
     
   end
   
   describe 'env (default)' do
+    
+    it_behaves_like "env"
+    
+  end
+
+  describe 'lazy env (default)' do
+    
+    before do
+      def servlet.create_env(servlet_env)
+        create_lazy_env(servlet_env)
+      end
+    end
     
     it_behaves_like "env"
     
@@ -379,6 +409,85 @@ describe Rack::Handler::Servlet do
     it "raises an error when it failed to load the application" do
       lambda { Rack::Handler::Servlet.new(nil) }.should raise_error(RuntimeError)
       lambda { Rack::Handler::Servlet.new(nil) }.should_not raise_error(NoMethodError)
+    end
+    
+  end
+
+  describe 'servlet-env' do
+
+    before do
+      Rack::Handler::Servlet.env = :servlet
+    end
+    
+    after do
+      Rack::Handler::Servlet.env = nil
+    end
+    
+    it_behaves_like "env"
+ 
+    it "has correct params when request input has been read" do
+      # reproducing https://github.com/jruby/jruby-rack/issues/110
+      # 
+      # Request Path: /home/path?foo=bad&foo=bar&bar=huu&age=33
+      # POST Parameters :
+      #  name[]: Ferko Suska
+      #  name[]: Jozko Hruska
+      #  age: 30
+      #  formula: a + b == 42%!
+      content = 'name[]=Ferko+Suska&name[]=Jozko+Hruska&age=30&formula=a+%2B+b+%3D%3D+42%25%21'
+      servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new # servlet_context
+      servlet_request.setContent content.to_java_bytes
+      servlet_request.addHeader('CONTENT-TYPE', 'application/x-www-form-urlencoded')
+      servlet_request.setMethod 'POST'
+      servlet_request.setContextPath '/home'
+      servlet_request.setPathInfo '/path'
+      servlet_request.setRequestURI '/home/path'
+      servlet_request.setQueryString 'foo=bad&foo=bar&bar=huu&age=33'
+      # NOTE: assume input stream read but getParameter methods work correctly :
+      # this is essentially the same as some filter/servlet reading before we do
+      read_input_stream servlet_request.getInputStream
+      # Query params :
+      servlet_request.addParameter('foo', 'bad')
+      servlet_request.addParameter('foo', 'bar')
+      servlet_request.addParameter('bar', 'huu')
+      servlet_request.addParameter('age', '33')
+      # POST params :
+      servlet_request.addParameter('name[]', 'Ferko Suska')
+      servlet_request.addParameter('name[]', 'Jozko Hruska')
+      servlet_request.addParameter('age', '30')
+      servlet_request.addParameter('formula', 'a + b == 42%!')
+
+      servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
+      servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, @rack_context)
+      
+      input_class = org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
+      input = input_class.new(servlet_request.getInputStream)
+      servlet_env.instance_variable_set :@_io, input
+
+      env = servlet.create_env(servlet_env)
+      rack_request = Rack::Request.new(env)
+
+      rack_request.GET.should == { 'foo'=>'bar', 'bar'=>'huu', 'age'=>'33' }
+      rack_request.POST.should == { "name"=>["Ferko Suska", "Jozko Hruska"], "age"=>"30", "formula"=>"a + b == 42%!" }
+      rack_request.params.should == {
+        "foo"=>"bar", "bar"=>"huu", "age"=>"30", 
+        "name"=>["Ferko Suska", "Jozko Hruska"], "formula"=>"a + b == 42%!"
+      }
+
+      #request.body.should == nil
+
+      rack_request.query_string.should == 'foo=bad&foo=bar&bar=huu&age=33'
+      rack_request.request_method.should == 'POST'
+      rack_request.path_info.should == '/path'
+      rack_request.script_name.should == '/home' # context path
+      rack_request.content_length.should == content.size.to_s
+    end
+
+    private
+
+    def read_input_stream(input)
+      while input.read != -1
+      end
     end
     
   end

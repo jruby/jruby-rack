@@ -11,9 +11,10 @@ require 'jruby/rack/version'
 module Rack
   module Handler
     class Servlet
+      
       def initialize(rack_app)
         unless @rack_app = rack_app
-          raise "rack application not found #{@rack_app}. Make sure the rackup file path is correct."
+          raise "rack application not found. Make sure the rackup file path is correct."
         end
       end
 
@@ -22,194 +23,36 @@ module Rack
       end
 
       def create_env(servlet_env)
-        Env.new(servlet_env).to_hash
+        self.class.env.create(servlet_env).to_hash
       end
-
+      
+      # #deprecated please use #create_env instead
       def create_lazy_env(servlet_env)
-        LazyEnv.new(servlet_env).to_hash
-      end
-    end
-
-    class Env
-      BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme 
-        rack.multithread rack.multiprocess rack.run_once
-        java.servlet_request java.servlet_response java.servlet_context 
-        jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release).map!(&:freeze)
-
-      REQUEST = %w(CONTENT_TYPE CONTENT_LENGTH REQUEST_METHOD SCRIPT_NAME REQUEST_URI
-        PATH_INFO QUERY_STRING SERVER_NAME SERVER_SOFTWARE REMOTE_HOST REMOTE_ADDR REMOTE_USER SERVER_PORT).map!(&:freeze)
-
-      def initialize(servlet_env)
-        @env = populate(LazyEnv.new(servlet_env).to_hash)
-      end
-
-      def populate(lazy_hash)
-        for b in BUILTINS; lazy_hash[b]; end
-        for r in REQUEST;  lazy_hash[r]; end
-        lazy_hash['HTTP_'] # load headers
-        hash = {}
-        for k in lazy_hash.keys; hash[k] = lazy_hash[k]; end
-        hash
-      end
-
-      def to_hash
-        @env
-      end
-    end
-
-    class LazyEnv
-      def initialize(servlet_env)
-        @env = Hash.new { |h, k| load_env_key(h, k) }
-        @servlet_env = servlet_env
-        load_servlet_request_attributes
-      end
-
-      def to_hash
-        @env
-      end
-
-      def load_env_key(env, key)
-        if respond_to?(load = "load__#{key}")
-          send(load, env)
-        elsif key =~ /^(rack|java|jruby)/
-          load_builtin(env, key)
-        elsif key =~ /^HTTP_/
-          load_headers(env, key)
-        end
-      end
-
-      def load_servlet_request_attributes
-        @servlet_env.getAttributeNames.each do |k|
-          v = @servlet_env.getAttribute(k)
-          case k
-          when "SERVER_PORT", "CONTENT_LENGTH"
-            @env[k] = v.to_s if v.to_i >= 0
-          when "CONTENT_TYPE"
-            @env[k] = v if v
-          else
-            @env[k] = v ? v : ""
-          end
-        end
-      end
-
-      def load_headers(env, key)
-        unless @headers_added
-          @headers_added = true
-          @servlet_env.getHeaderNames.each do |h|
-            next if h =~ /^Content-(Type|Length)$/i
-            k = "HTTP_#{h.upcase.gsub(/-/, '_')}".freeze
-            env[k] = @servlet_env.getHeader(h) unless env.has_key?(k)
-          end
-        end
-        if env.has_key?(key)
-          env[key]
-        else
-          nil
-        end
-      end
-
-      def load_builtin(env, key)
-        case key
-        when 'rack.version'         then env[key] = ::Rack::VERSION
-        when 'rack.multithread'     then env[key] = true
-        when 'rack.multiprocess'    then env[key] = false
-        when 'rack.run_once'        then env[key] = false
-        when 'rack.input'           then env[key] = @servlet_env.to_io
-        when 'rack.errors'          then env[key] = JRuby::Rack::ServletLog.new(rack_context)
-        when 'rack.url_scheme'
-          env[key] = scheme = @servlet_env.getScheme
-          env['HTTPS'] = 'on' if scheme == 'https'
-          scheme
-        when 'java.servlet_request'
-          env[key] = @servlet_env.respond_to?(:request) ? @servlet_env.request : @servlet_env
-        when 'java.servlet_response'
-          env[key] = @servlet_env.respond_to?(:response) ? @servlet_env.response : @servlet_env
-        when 'java.servlet_context' then env[key] = servlet_context
-        when 'jruby.rack.context'   then env[key] = rack_context
-        when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
-        when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
-        when 'jruby.rack.rack.release'  then env[key] = ::Rack.release
-        else
-          nil
-        end
+        DefaultEnv.new(servlet_env).to_hash
       end
       
-      def load__CONTENT_TYPE(env)
-        content_type = @servlet_env.getContentType
-        env["CONTENT_TYPE"] = content_type if content_type
-      end
-
-      def load__CONTENT_LENGTH(env)
-        content_length = @servlet_env.getContentLength
-        env["CONTENT_LENGTH"] = content_length.to_s if content_length >= 0
-      end
-
-      def load__REQUEST_METHOD(env)
-        env["REQUEST_METHOD"] = @servlet_env.getMethod || "GET"
-      end
-
-      def load__SCRIPT_NAME(env)
-        env["SCRIPT_NAME"] = @servlet_env.getScriptName
-      end
-
-      def load__REQUEST_URI(env)
-        env["REQUEST_URI"] = @servlet_env.getRequestURI
-      end
-
-      def load__PATH_INFO(env)
-        env["PATH_INFO"] = @servlet_env.getPathInfo
-      end
-
-      def load__QUERY_STRING(env)
-        env["QUERY_STRING"] = @servlet_env.getQueryString || ""
-      end
-
-      def load__SERVER_NAME(env)
-        env["SERVER_NAME"] = @servlet_env.getServerName || ""
-      end
-
-      def load__REMOTE_HOST(env)
-        env["REMOTE_HOST"] = @servlet_env.getRemoteHost || ""
-      end
-
-      def load__REMOTE_ADDR(env)
-        env["REMOTE_ADDR"] = @servlet_env.getRemoteAddr || ""
-      end
-
-      def load__REMOTE_USER(env)
-        env["REMOTE_USER"] = @servlet_env.getRemoteUser || ""
-      end
-
-      def load__SERVER_PORT(env)
-        env["SERVER_PORT"] = @servlet_env.getServerPort.to_s
-      end
-
-      def load__SERVER_SOFTWARE(env)
-        env["SERVER_SOFTWARE"] = rack_context.getServerInfo
+      @@env = nil
+      
+      def self.env
+        @@env ||= DefaultEnv
       end
       
-      private
+      def self.env=(klass)
+        if klass && ! klass.is_a?(Module)
+          # accepting a String or Symbol:
+          unless (const_defined?(klass) rescue nil)
+            klass = "#{klass.to_s.capitalize}Env" # :default => 'DefaultEnv'
+          end
+          klass = const_get(klass)
+        end
+        @@env = klass
+      end
       
-        def rack_context
-          if @servlet_env.respond_to?(:context)
-            @servlet_env.context # RackEnvironment#getContext()
-          else
-            $servlet_context || raise("missing rack context")
-          end
-        end
-
-        def servlet_context
-          if @servlet_env.respond_to?(:servlet_context) # @since Servlet 3.0
-            @servlet_env.servlet_context # ServletRequest#getServletContext()
-          else
-            if @servlet_env.context.is_a?(javax.servlet.ServletContext)
-              @servlet_env.context
-            else
-              $servlet_context || @env['java.servlet_request'].servlet_context
-            end
-          end
-        end
-    
+      autoload :DefaultEnv, "rack/handler/servlet/default_env"
+      autoload :ServletEnv, "rack/handler/servlet/servlet_env"
+      
     end
+    # #deprecated backwards compatibility
+    LazyEnv = Env = Servlet::DefaultEnv
   end
 end
