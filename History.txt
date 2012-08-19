@@ -1,3 +1,8 @@
+== 1.1.9 (19/08/12)
+
+ - rack env regression fix when used with rack-cache, introduced in 1.1.8 (#116)
+   request.env should work correctly when (duped and) frozen
+
 == 1.1.8 (17/08/12)
 
  - introduced ServletEnv for cases when it's desirable to fully use the servlet
