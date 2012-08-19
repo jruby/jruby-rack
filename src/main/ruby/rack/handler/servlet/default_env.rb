@@ -20,7 +20,7 @@ module Rack
         
         BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme 
           rack.multithread rack.multiprocess rack.run_once
-          java.servlet_request java.servlet_response java.servlet_context 
+          java.servlet_request java.servlet_response java.servlet_context
           jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release).
           map!(&:freeze)
 
@@ -32,8 +32,12 @@ module Rack
         # Factory method for creating the Hash.
         # Besides initializing a new env instance this method by default 
         # eagerly populates (and returns) the env Hash.
+        # 
         # Subclasses might decide to change this behavior by overriding
         # this method (NOTE: that #initialize returns a lazy instance).
+        # 
+        # However keep in mind that some Rack middleware or extension might
+        # dislike a lazy env since it does not reflect env.keys "correctly".
         def self.create(servlet_env)
           self.new(servlet_env).populate
         end
@@ -45,7 +49,7 @@ module Rack
         # #populate to fill in the env keys eagerly.
         def initialize(servlet_env)
           @servlet_env = servlet_env
-          @env = Hash.new { |h, k| load_env_key(h, k) }
+          @env = Hash.new { |env, key| load_env_key(env, key) }
           # always pre-load since they might override variables
           load_attributes
         end
@@ -79,27 +83,33 @@ module Rack
 
         def load_builtins
           for b in BUILTINS
-            load_builtin(@env, b) unless @env.has_key?(b) # @env[b]
+            load_builtin(@env, b) unless @env.has_key?(b)
           end
         end
 
         def load_variables
           for v in VARIABLES
-            load_variable(@env, v) unless @env.has_key?(v) # @env[b]
+            load_variable(@env, v) unless @env.has_key?(v)
           end
         end
         
         @@content_header_names = /^Content-(Type|Length)$/i
         
         def load_headers
-          @servlet_env.getHeaderNames.each do |h|
-            next if h =~ @@content_header_names
-            k = "HTTP_#{h.upcase.gsub(/-/, '_')}".freeze
-            @env[k] = @servlet_env.getHeader(h) unless @env.has_key?(k)
+          # NOTE: getHeaderNames and getHeaders might return null !
+          # if the container does not allow access to header information
+          return unless @servlet_env.getHeaderNames
+          @servlet_env.getHeaderNames.each do |name|
+            next if name =~ @@content_header_names
+            key = "HTTP_#{name.upcase.gsub(/-/, '_')}".freeze
+            @env[key] = @servlet_env.getHeader(name) unless @env.has_key?(key)
           end
         end
 
         def load_env_key(env, key)
+          # rack-cache likes to freeze: `Request.new(@env.dup.freeze)`
+          return if env.frozen?
+          
           if key =~ /^(rack|java|jruby)/
             load_builtin(env, key)
           elsif key[0, 5] == 'HTTP_'
@@ -113,7 +123,9 @@ module Rack
           name = key.sub('HTTP_', '').
             split('_').each { |w| w.downcase!; w.capitalize! }.join('-')
           return if name =~ @@content_header_names
-          env[key] = @servlet_env.getHeader(name)
+          if header = @servlet_env.getHeader(name)
+            env[key] = header # null if it does not have a header of that name
+          end
         end
 
         def load_builtin(env, key)

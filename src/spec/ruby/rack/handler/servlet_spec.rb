@@ -333,9 +333,190 @@ describe Rack::Handler::Servlet do
     
   end
   
+  shared_examples "(eager)rack-env" do
+    
+    before do
+      @servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new(@servlet_context)
+      @servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
+      @servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(
+        @servlet_request, @servlet_response, @rack_context
+      )
+    end
+    
+    let(:filled_servlet_env) do
+      @servlet_request.setMethod('GET')
+      @servlet_request.setContextPath('/main')
+      @servlet_request.setServletPath('/app1')
+      @servlet_request.setPathInfo('/path/info')
+      @servlet_request.setRequestURI('/main/app1/path/info')
+      @servlet_request.setQueryString('hello=there')
+      @servlet_request.setServerName('serverhost')
+      @servlet_request.setServerPort(80)
+      @rack_context.stub!(:getServerInfo).and_return 'Trinidad'
+      @servlet_request.setRemoteAddr('127.0.0.1')
+      @servlet_request.setRemoteHost('localhost')
+      @servlet_request.setRemoteUser('admin')
+      @servlet_request.setContentType('text/plain')
+      @servlet_request.setContent('1234'.to_java_bytes) # Content-Length
+      { "X-Forwarded-Proto" => "https",
+        "If-None-Match" => "03273f2f207cb7864f217458f0f85e4e",
+        "If-Modified-Since" => "Sun, Aug 19 2012 12:11:50 +0200",
+        "Referer" => "http://www.example.com",
+        "X-Some-Really-Long-Header" => "42"
+      }.each { |name, value| @servlet_request.addHeader(name, value) }
+      define_rack_input(@servlet_env)
+      @servlet_env
+    end
+    
+    it "is not lazy by default" do
+      env = servlet.create_env filled_servlet_env
+      
+      env.keys.should include('REQUEST_METHOD')
+      env.keys.should include('SCRIPT_NAME')
+      env.keys.should include('PATH_INFO')
+      env.keys.should include('REQUEST_URI')
+      env.keys.should include('QUERY_STRING')
+      env.keys.should include('SERVER_NAME')
+      env.keys.should include('SERVER_PORT')
+      env.keys.should include('REMOTE_HOST')
+      env.keys.should include('REMOTE_ADDR')
+      env.keys.should include('REMOTE_USER')
+      Rack::Handler::Servlet::DefaultEnv::BUILTINS.each do |key|
+        env.keys.should include(key)
+      end
+      
+      env.keys.should include('rack.version')
+      env.keys.should include('rack.input')
+      env.keys.should include('rack.errors')
+      env.keys.should include('rack.url_scheme')
+      env.keys.should include('rack.multithread')
+      env.keys.should include('rack.run_once')
+      env.keys.should include('java.servlet_context')
+      env.keys.should include('java.servlet_request')
+      env.keys.should include('java.servlet_response')
+      Rack::Handler::Servlet::DefaultEnv::VARIABLES.each do |key|
+        env.keys.should include(key)
+      end
+      
+      env.keys.should include('HTTP_X_FORWARDED_PROTO')
+      env.keys.should include('HTTP_IF_NONE_MATCH')
+      env.keys.should include('HTTP_IF_MODIFIED_SINCE')
+      env.keys.should include('HTTP_X_SOME_REALLY_LONG_HEADER')
+    end
+    
+    it "works correctly when frozen" do
+      env = servlet.create_env filled_servlet_env
+      env.freeze
+      
+      lambda { env['REQUEST_METHOD'] }.should_not raise_error
+      lambda { env['SCRIPT_NAME'] }.should_not raise_error
+      Rack::Handler::Servlet::DefaultEnv::BUILTINS.each do |key|
+        lambda { env[key] }.should_not raise_error
+        env[key].should_not be nil
+      end
+      lambda { env['OTHER_METHOD'] }.should_not raise_error
+      env['OTHER_METHOD'].should be nil
+
+      lambda { env['rack.version'] }.should_not raise_error
+      lambda { env['rack.input'] }.should_not raise_error
+      lambda { env['rack.errors'] }.should_not raise_error
+      lambda { env['rack.run_once'] }.should_not raise_error
+      lambda { env['rack.multithread'] }.should_not raise_error
+      lambda { env['java.servlet_context'] }.should_not raise_error
+      lambda { env['java.servlet_request'] }.should_not raise_error
+      lambda { env['java.servlet_response'] }.should_not raise_error
+      Rack::Handler::Servlet::DefaultEnv::VARIABLES.each do |key|
+        lambda { env[key] }.should_not raise_error
+        env[key].should_not be(nil), "key: #{key.inspect} nil"
+      end
+      lambda { env['rack.whatever'] }.should_not raise_error
+      env['rack.whatever'].should be nil
+      
+      lambda { 
+        env['HTTP_X_FORWARDED_PROTO']
+        env['HTTP_IF_NONE_MATCH']
+        env['HTTP_IF_MODIFIED_SINCE']
+        env['HTTP_X_SOME_REALLY_LONG_HEADER']
+      }.should_not raise_error
+      env['HTTP_X_FORWARDED_PROTO'].should_not be nil
+      env['HTTP_IF_NONE_MATCH'].should_not be nil
+      env['HTTP_IF_MODIFIED_SINCE'].should_not be nil
+      env['HTTP_X_SOME_REALLY_LONG_HEADER'].should_not be nil
+      
+      lambda { 
+        env['HTTP_X_SOME_NON_EXISTENT_HEADER']
+      }.should_not raise_error
+      env['HTTP_X_SOME_NON_EXISTENT_HEADER'].should be nil
+    end
+    
+    it "works when dupped and frozen as a request" do
+      env = servlet.create_env filled_servlet_env
+      request = Rack::Request.new(env.dup.freeze)
+      
+      lambda { request.request_method }.should_not raise_error
+      request.request_method.should == 'GET'
+      
+      lambda { request.script_name }.should_not raise_error
+      request.script_name.should == '/main'
+
+      lambda { request.path_info }.should_not raise_error
+      request.path_info.should =~ /\/path\/info/
+
+      lambda { request.query_string }.should_not raise_error
+      request.query_string.should == 'hello=there'
+
+      lambda { request.content_type }.should_not raise_error
+      request.content_type.should == 'text/plain'
+
+      lambda { request.content_length }.should_not raise_error
+      request.content_length.should == '4'
+
+      lambda { request.logger }.should_not raise_error
+      request.logger.should be nil # we do not setup rack.logger
+
+      lambda { request.scheme }.should_not raise_error
+      if Rack.release >= '1.3' # rack 1.3.x 1.4.x
+        request.scheme.should == 'https' # X-Forwarded-Proto
+      else
+        request.scheme.should == 'http' # Rails 3.0 / 2.3
+      end
+
+      lambda { request.port }.should_not raise_error
+      request.port.should == 80
+      
+      lambda { request.host_with_port }.should_not raise_error
+      request.host_with_port.should == 'serverhost:80'
+
+      lambda { request.referrer }.should_not raise_error
+      request.referrer.should == 'http://www.example.com'
+
+      lambda { request.user_agent }.should_not raise_error
+      request.user_agent.should == nil
+      
+      if defined?(request.base_url)
+        lambda { request.base_url }.should_not raise_error
+        if Rack.release >= '1.3' # Rails >= 3.1.x
+          request.base_url.should == 'https://serverhost:80'
+        else
+          request.base_url.should == 'http://serverhost'
+        end
+      end
+
+      lambda { request.url }.should_not raise_error
+      if Rack.release >= '1.3' # Rails >= 3.1.x
+        request.url.should == 'https://serverhost:80/main/app1/path/info?hello=there'
+      else
+        request.url.should == 'http://serverhost/main/app1/path/info?hello=there'
+      end
+    end
+    
+  end
+  
   describe 'env (default)' do
     
     it_behaves_like "env"
+    
+    it_behaves_like "(eager)rack-env"
     
   end
 
@@ -425,6 +606,8 @@ describe Rack::Handler::Servlet do
     
     it_behaves_like "env"
  
+    it_behaves_like "(eager)rack-env"
+    
     it "has correct params when request input has been read" do
       # reproducing https://github.com/jruby/jruby-rack/issues/110
       # 
@@ -459,10 +642,7 @@ describe Rack::Handler::Servlet do
 
       servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
       servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, @rack_context)
-      
-      input_class = org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
-      input = input_class.new(servlet_request.getInputStream)
-      servlet_env.instance_variable_set :@_io, input
+      define_rack_input(servlet_env)
 
       env = servlet.create_env(servlet_env)
       rack_request = Rack::Request.new(env)
@@ -490,6 +670,15 @@ describe Rack::Handler::Servlet do
       end
     end
     
+  end
+  
+  private 
+  
+  def define_rack_input(servlet_env)
+    input_class = org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
+    input = input_class.new(servlet_env.getInputStream)
+    servlet_env.instance_variable_set :@_io, input
+    input
   end
   
 end
