@@ -257,6 +257,57 @@ describe "integration" do
     
   end
 
+  describe 'rails 4.0', :lib => :rails40 do
+
+    before(:all) { copy_gemfile("rails40") }
+
+    let(:base_path) { "file://#{STUB_DIR}/rails40" }
+
+    it_should_behave_like 'a rails app'
+
+    context "initialized" do
+
+      before :all do
+        initialize_rails 'production', base_path
+      end
+
+      it "loaded rack ~> 1.4" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rack.release)"
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.4'
+      end
+
+      it "booted with a servlet logger" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rails)"
+        should_eval_as_not_nil "Rails.logger"
+        should_eval_as_eql_to "Rails.logger.class.name", 'ActiveSupport::TaggedLogging'
+        should_eval_as_not_nil "Rails.logger.instance_variable_get(:'@logger')"
+        should_eval_as_eql_to "logger = Rails.logger.instance_variable_get(:'@logger'); " +
+          "logger.instance_variable_get(:'@logdev').dev.class.name", 'JRuby::Rack::ServletLog'
+
+        should_eval_as_eql_to "Rails.logger.level", Logger::INFO
+      end
+      
+      it "sets up public_path (as for a war)" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_eql_to "Rails.public_path", "#{STUB_DIR}/rails40"
+        # make sure it was set early on (before initializers run) :
+        #should_eval_as_not_nil "defined? Rails40::Application::PUBLIC_PATH"
+        #should_eval_as_eql_to "Rails40::Application::PUBLIC_PATH", "#{STUB_DIR}/rails40"
+        # check if image_tag resolves path to images correctly :
+        should_eval_as_eql_to %q{ 
+          config = ActionController::Base.config;
+          asset_paths = ActionView::Helpers::AssetTagHelper::AssetPaths.new(config);
+          image_path = asset_paths.compute_public_path('image.jpg', 'images');
+          image_path[0, 18]
+        }, '/images/image.jpg?'
+      end
+      
+    end
+    
+  end
+  
   def initialize_rails(env = nil, servlet_context = @servlet_context)
     if ! servlet_context || servlet_context.is_a?(String)
       base = servlet_context.is_a?(String) ? servlet_context : nil

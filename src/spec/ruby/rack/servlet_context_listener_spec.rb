@@ -8,6 +8,7 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
 java_import org.jruby.rack.RackApplicationFactory
+java_import org.jruby.rack.RackServletContextListener
 
 describe RackServletContextListener do
   before(:each) do

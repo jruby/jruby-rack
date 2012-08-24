@@ -13,3 +13,12 @@ end
 appraise "rails32" do
   gem "rails", "~> 3.2.8"
 end
+
+appraise "rails40" do
+  gem 'rails', 
+      :git => 'git://github.com/rails/rails.git'
+  gem 'journey', 
+      :git => 'git://github.com/rails/journey.git'
+  gem 'activerecord-deprecated_finders', :require => nil,
+      :git => 'git://github.com/rails/activerecord-deprecated_finders.git'
+end

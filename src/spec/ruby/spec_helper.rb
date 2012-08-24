@@ -16,14 +16,13 @@ rescue LoadError => e
 end unless defined?(Maven.set_classpath)
 Maven.set_classpath
 
-java_import 'org.jruby.rack.RackContext'
-java_import 'org.jruby.rack.RackConfig'
-java_import 'org.jruby.rack.RackServletContextListener'
-java_import 'org.jruby.rack.servlet.ServletRackContext'
-java_import 'javax.servlet.ServletContext'
-java_import 'javax.servlet.ServletConfig'
-
 module SharedHelpers
+  
+  java_import 'org.jruby.rack.RackContext'
+  java_import 'org.jruby.rack.RackConfig'
+  java_import 'org.jruby.rack.servlet.ServletRackContext'
+  java_import 'javax.servlet.ServletContext'
+  java_import 'javax.servlet.ServletConfig'
   
   def mock_servlet_context
     @rack_config ||= RackConfig.impl {}
@@ -100,7 +99,7 @@ WD_START = Dir.getwd
 
 begin
   # NOTE: only if running with a `bundle exec` to better isolate
-  if $LOAD_PATH.find { |path| path =~ /\/rails\-[\d\.]*\// }
+  if $LOAD_PATH.find { |path| path =~ /\/rails\-[\w\.]*\// }
     require 'rails' # attempt to load rails - for "real life" testing
     require 'rails/version' # use Rails::VERSION to detect current env
   end
@@ -126,12 +125,19 @@ RSpec.configure do |config|
     (ENV.keys - @env_save.keys).each {|k| ENV.delete k}
     @env_save.each {|k,v| ENV[k] = v}
     Dir.chdir(WD_START) unless Dir.getwd == WD_START
-    $servlet_context = nil
+    $servlet_context = nil if defined? $servlet_context
   end
   
   config.filter_run_excluding :lib => lambda { |lib|
     return false if lib.nil? # no :lib => specified run with all
-    ! ( lib.is_a?(Array) ? lib : [ lib ] ).include?(CURRENT_LIB)
+    lib = lib.is_a?(Array) ? lib : [ lib ]
+    if CURRENT_LIB == :rails40
+      if RUBY_VERSION < '1.9'
+        return true # NOTE: no sense running Rails 4.0 on 1.8.x
+      end
+      #return ! lib.include?(:rails32)
+    end
+    ! lib.include?(CURRENT_LIB)
   }
   
   config.backtrace_clean_patterns = [
