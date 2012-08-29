@@ -7,7 +7,9 @@ gem "appraisal"
 gem "rake", :group=>:test
 gem "rspec", "~> 2.10", :group=>:test
 gem "jruby-openssl", :group=>:test
-gem "rails", :git=>"git://github.com/rails/rails.git"
-gem "journey", :git=>"git://github.com/rails/journey.git"
-gem "activerecord-deprecated_finders", :require=>nil, :git=>"git://github.com/rails/activerecord-deprecated_finders.git"
+gem "rails", :github=>"rails/rails"
+gem "journey", :github=>"rails/journey"
+gem "activerecord-deprecated_finders", :require=>nil, :github=>"rails/activerecord-deprecated_finders"
+gem "activerecord-jdbc-adapter", :github=>"kares/activerecord-jdbc-adapter"
+gem "activerecord-jdbcsqlite3-adapter"
 

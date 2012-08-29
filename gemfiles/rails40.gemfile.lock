@@ -1,4 +1,11 @@
 GIT
+  remote: git://github.com/kares/activerecord-jdbc-adapter.git
+  revision: beecf1e5152d1f510c377411ed102d7fe7f7da82
+  specs:
+    activerecord-jdbc-adapter (1.2.2)
+    jdbc-sqlite3 (3.7.2)
+
+GIT
   remote: git://github.com/rails/activerecord-deprecated_finders.git
   revision: fe150f26f009cef370658b7c19db1629b2448952
   specs:
@@ -56,6 +63,9 @@ GIT
 GEM
   remote: http://rubygems.org/
   specs:
+    activerecord-jdbcsqlite3-adapter (1.2.1)
+      activerecord-jdbc-adapter (~> 1.2.1)
+      jdbc-sqlite3 (~> 3.7.2)
     appraisal (0.4.1)
       bundler
       rake
@@ -68,6 +78,7 @@ GEM
     i18n (0.6.0)
     jruby-openssl (0.7.7)
       bouncy-castle-java (>= 1.5.0146.1)
+    json (1.7.5)
     json (1.7.5-java)
     mail (2.4.4)
       i18n (>= 0.4.0)
@@ -113,6 +124,8 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord-deprecated_finders!
+  activerecord-jdbc-adapter!
+  activerecord-jdbcsqlite3-adapter
   appraisal
   journey!
   jruby-openssl
