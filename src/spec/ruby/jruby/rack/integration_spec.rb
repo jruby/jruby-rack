@@ -281,21 +281,16 @@ describe "integration" do
         @runtime = @rack_factory.getApplication.getRuntime
         should_eval_as_not_nil "defined?(Rails)"
         should_eval_as_not_nil "Rails.logger"
-        should_eval_as_eql_to "Rails.logger.class.name", 'ActiveSupport::TaggedLogging'
-        should_eval_as_not_nil "Rails.logger.instance_variable_get(:'@logger')"
-        should_eval_as_eql_to "logger = Rails.logger.instance_variable_get(:'@logger'); " +
-          "logger.instance_variable_get(:'@logdev').dev.class.name", 'JRuby::Rack::ServletLog'
-
+        # NOTE: TaggedLogging is a module that extends the instance now :
+        should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::TaggedLogging", true
+        should_eval_as_eql_to "Rails.logger.instance_variable_get(:'@logdev').dev.class.name", 
+                              'JRuby::Rack::ServletLog'
         should_eval_as_eql_to "Rails.logger.level", Logger::INFO
       end
       
       it "sets up public_path (as for a war)" do
         @runtime = @rack_factory.getApplication.getRuntime
         should_eval_as_eql_to "Rails.public_path", "#{STUB_DIR}/rails40"
-        # make sure it was set early on (before initializers run) :
-        #should_eval_as_not_nil "defined? Rails40::Application::PUBLIC_PATH"
-        #should_eval_as_eql_to "Rails40::Application::PUBLIC_PATH", "#{STUB_DIR}/rails40"
-        # check if image_tag resolves path to images correctly :
         should_eval_as_eql_to %q{ 
           config = ActionController::Base.config;
           asset_paths = ActionView::Helpers::AssetTagHelper::AssetPaths.new(config);

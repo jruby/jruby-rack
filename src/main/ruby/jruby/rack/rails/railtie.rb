@@ -13,9 +13,9 @@ module JRuby::Rack
     
     # settings Rails.public_path in an initializer seems "too" late @see #99
     config.before_configuration do |app|
-      public = Pathname.new(JRuby::Rack.booter.public_path)
-      if Hash === ( paths = app.config.paths )
-        # Rails 3.1: paths["app/controllers"] style
+      paths, public = app.config.paths, Pathname.new(JRuby::Rack.booter.public_path)
+      if paths.respond_to?(:'[]') && paths.respond_to?(:keys)
+        # Rails 3.1/3.2/4.0: paths["app/controllers"] style
         old_public  = Pathname.new(paths['public'].to_a.first)
         javascripts = Pathname.new(paths['public/javascripts'].to_a.first)
         stylesheets = Pathname.new(paths['public/stylesheets'].to_a.first)
@@ -37,7 +37,17 @@ module JRuby::Rack
       app.config.logger ||= begin
         logger = JRuby::Rack.booter.logger
         logger.level = logger.class.const_get(app.config.log_level.to_s.upcase)
-        logger = ActiveSupport::TaggedLogging.new(logger) if defined?(ActiveSupport::TaggedLogging)
+        if defined?(ActiveSupport::TaggedLogging)
+          if ActiveSupport::TaggedLogging.is_a?(Class) # Rails 3.2
+            logger = ActiveSupport::TaggedLogging.new(logger)
+          else # Rails 4.0 
+            # extends the logger as well as it's logger.formatter instance :
+            # NOTE: good idea to keep or should we use a clone as Rails.logger ?
+            #dup_logger = logger.dup
+            #dup_logger.formatter = logger.formatter.dup
+            logger = ActiveSupport::TaggedLogging.new(logger)
+          end
+        end
         logger
       end
     end
