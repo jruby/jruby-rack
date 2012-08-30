@@ -9,6 +9,7 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'jruby/rack/response'
 
 describe JRuby::Rack::Response do
+  
   before :each do
     @status, @headers, @body = mock("status"), mock("headers"), mock("body")
     @headers.stub!(:[]).and_return nil
@@ -82,14 +83,6 @@ describe JRuby::Rack::Response do
     @response.write_headers(@servlet_response)
   end
 
-  it "should detect a chunked response when the Transfer-Encoding header is set" do
-    @headers = { "Transfer-Encoding" => "chunked" }
-    @response = JRuby::Rack::Response.new([@status, @headers, @body])
-    @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
-    @response.write_headers(@servlet_response)
-    @response.chunked?.should eql(true)
-  end
-
   it "should write the status first, followed by the headers, and the body last" do
     @servlet_response.should_receive(:committed?).and_return false
     @response.should_receive(:write_status).ordered
@@ -112,39 +105,132 @@ describe JRuby::Rack::Response do
     @response.getBody.should == "hello"
   end
 
+  it "detects a chunked response when the Transfer-Encoding header is set" do
+    @headers = { "Transfer-Encoding" => "chunked" }
+    @response = JRuby::Rack::Response.new([@status, @headers, @body])
+    # NOTE: servlet container auto handle chunking when flushed no need to set :
+    @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
+    @response.write_headers(@servlet_response)
+    @response.send(:chunked?).should be true
+  end
+  
   describe "#write_body" do
+    
     let(:stream) do
       StubOutputStream.new.tap do |stream|
         @servlet_response.stub!(:getOutputStream).and_return stream
       end
     end
-
-    it "does not flush after write if Transfer-Encoding header is not set" do
-      @body.should_receive(:each).
-        and_yield("hello").
-        and_yield("there")
-      @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
-      @response.chunked?.should eql(false)
-      stream.should_receive(:write).exactly(2).times
-      stream.should_not_receive(:flush)
-
-      @response.write_body(@servlet_response)
-    end
-
+    
     it "writes the body to the stream and flushes when the response is chunked" do
       @headers = { "Transfer-Encoding" => "chunked" }
       @response = JRuby::Rack::Response.new([@status, @headers, @body])
-      @servlet_response.should_receive(:addHeader).with("Transfer-Encoding", "chunked")
+      # NOTE: servlet container auto handle chunking when flushed no need to set :
+      @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
       @response.write_headers(@servlet_response)
-      @response.chunked?.should eql(true)
-      @body.should_receive(:each).ordered.
-        and_yield("hello").
-        and_yield("there")
+      @response.send(:chunked?).should == true
+      @body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
       stream.should_receive(:write).exactly(2).times
       stream.should_receive(:flush).exactly(2).times
       @response.write_body(@servlet_response)
     end
 
+    it "dechunks the body when a chunked response is detected", 
+      :lib => [ :rails31, :rails32, :rails40 ] do
+      require 'rack/chunked'
+      
+      headers = { 
+        "Cache-Control" => 'no-cache',
+        "Transfer-Encoding" => 'chunked'
+      }
+      body = [
+        "1".freeze,
+        "\nsecond chunk",
+        "a multi\nline chunk \n42",
+        "yet-another-chunk\n",
+        "terminated chunk\r\n",
+        "\r\nthe very\r\n last\r\n\r\n chunk",
+      ]
+      body = Rack::Chunked::Body.new body
+      response = JRuby::Rack::Response.new([ 200, headers, body ])
+      @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")
+      @servlet_response.stub!(:addHeader)
+      response.write_headers(@servlet_response)
+
+      times = 0
+      stream.should_receive(:write).exactly(6).times.with do |bytes|
+        str = String.from_java_bytes(bytes)
+        case times += 1
+        when 1 then str.should == "1"
+        when 2 then str.should == "\nsecond chunk"
+        when 3 then str.should == "a multi\nline chunk \n42"
+        when 4 then str.should == "yet-another-chunk\n"
+        when 5 then str.should == "terminated chunk\r\n"
+        when 6 then str.should == "\r\nthe very\r\n last\r\n\r\n chunk"
+        else
+          fail("unexpected :write received with #{str.inspect}")
+        end
+      end
+      stream.should_receive(:flush).exactly(6+1).times # +1 for tail chunk
+      
+      response.write_body(@servlet_response)
+    end
+    
+    it "handles dechunking gracefully when body is not chunked" do
+      headers = { 
+        "Cache-Control" => 'no-cache',
+        "Transfer-Encoding" => 'chunked'
+      }
+      body = [
+        "1".freeze,
+        "a multi\nline chunk \n42",
+        "\r\nthe very\r\n last\r\n\r\n chunk",
+      ]
+      response = JRuby::Rack::Response.new([ 200, headers, body ])
+      @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")
+      @servlet_response.stub!(:addHeader)
+      response.write_headers(@servlet_response)
+
+      times = 0
+      stream.should_receive(:write).exactly(3).times.with do |bytes|
+        str = String.from_java_bytes(bytes)
+        case times += 1
+        when 1 then str.should == "1"
+        when 2 then str.should == "a multi\nline chunk \n42"
+        when 3 then str.should == "\r\nthe very\r\n last\r\n\r\n chunk"
+        else
+          fail("unexpected :write received with #{str.inspect}")
+        end
+      end
+      stream.should_receive(:flush).exactly(3).times
+      
+      response.write_body(@servlet_response)
+    end
+    
+    it "flushed the body when no Content-Length set" do
+      @response = JRuby::Rack::Response.new([ 200, {}, @body ])
+      @servlet_response.stub!(:addHeader)
+      @body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
+      @response.write_headers(@servlet_response)
+      stream.should_receive(:write).once.ordered
+      stream.should_receive(:flush).once.ordered
+      stream.should_receive(:write).once.ordered
+      stream.should_receive(:flush).once.ordered
+      @response.write_body(@servlet_response)
+    end
+
+    it "does not flush the body when Content-Length set" do
+      @headers = { "Content-Length" => 10 }
+      @response = JRuby::Rack::Response.new([ 200, @headers, @body ])
+      @servlet_response.stub!(:addHeader)
+      @servlet_response.stub!(:setContentLength)
+      @body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
+      @response.write_headers(@servlet_response)
+      stream.should_receive(:write).twice
+      stream.should_receive(:flush).never
+      @response.write_body(@servlet_response)
+    end
+    
     it "writes the body to the servlet response" do
       @body.should_receive(:each).
         and_yield("hello").

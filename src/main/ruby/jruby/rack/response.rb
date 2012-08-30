@@ -9,10 +9,12 @@ module JRuby
   module Rack
     class Response
       include org.jruby.rack.RackResponse
-      java_import java.nio.channels.Channels
+      java_import 'java.nio.ByteBuffer'
+      java_import 'java.nio.channels.Channels'
 
-      def initialize(arr)
-        @status, @headers, @body = *arr
+      # Expects a Rack response: [status, headers, body].
+      def initialize(array)
+        @status, @headers, @body = *array
       end
 
       def getStatus
@@ -21,10 +23,6 @@ module JRuby
 
       def getHeaders
         @headers
-      end
-
-      def chunked?
-        (@headers && @headers['Transfer-Encoding'] == "chunked")
       end
 
       def getBody
@@ -42,7 +40,7 @@ module JRuby
           write_body(response)
         end
       end
-
+      
       def write_status(response)
         response.setStatus(@status.to_i)
       end
@@ -54,9 +52,12 @@ module JRuby
             response.setContentType(v.to_s)
           when /^Content-Length$/i
             length = v.to_i
-            # setContentLength accepts only int, addHeader must be used for large files (>2GB)
-            response.setContentLength(length) unless chunked? || length >= 2_147_483_648
+            # setContentLength(int) ... addHeader must be used for large files (>2GB)
+            response.setContentLength(length) if ! chunked? && length < 2_147_483_648
           else
+            # servlet container auto handle chunking when response is flushed 
+            # (and Content-Length headers has not been set) :
+            next if ( k == 'Transfer-Encoding' && v == 'chunked' )
             # NOTE: effectively the same as `v.split("\n").each` which is what
             # rack handler does to guard against response splitting attacks !
             # https://github.com/jruby/jruby-rack/issues/81
@@ -79,29 +80,46 @@ module JRuby
       end
 
       def write_body(response)
-        outputstream = response.getOutputStream
+        output_stream = response.getOutputStream
         begin
           if @body.respond_to?(:call) && ! @body.respond_to?(:each)
-            @body.call(outputstream)
+            @body.call(output_stream)
           elsif @body.respond_to?(:to_channel) && 
               ! object_polluted_with_anyio?(@body, :to_channel)
             @body = @body.to_channel # so that we close the channel
-            transfer_channel(@body, outputstream)
+            transfer_channel(@body, output_stream)
           elsif @body.respond_to?(:to_inputstream) && 
               ! object_polluted_with_anyio?(@body, :to_inputstream)
             @body = @body.to_inputstream # so that we close the stream
-            transfer_channel(Channels.newChannel(@body), outputstream)
+            transfer_channel(Channels.newChannel(@body), output_stream)
           elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel) && 
               ! object_polluted_with_anyio?(@body.body_parts, :to_channel)
             # ActionDispatch::Response "raw" body access in case it's a File
             @body = @body.body_parts.to_channel # so that we close the channel
-            transfer_channel(@body, outputstream)
+            transfer_channel(@body, output_stream)
           else
             # 1.8 has a String#each method but 1.9 does not :
             method = @body.respond_to?(:each_line) ? :each_line : :each
-            @body.send(method) do |line|
-              outputstream.write(line.to_java_bytes)
-              outputstream.flush if chunked?
+            if dechunk?
+              # NOTE: due Rails 3.2 stream-ed rendering http://git.io/ooCOtA#L223
+              term = "\r\n"; tail = "0#{term}#{term}".freeze
+              chunk = /([0-9]|[a-f]+)#{Regexp.escape(term)}(.*)#{Regexp.escape(term)}/mo
+              @body.send(method) do |line|
+                if line == tail
+                  # NOOP
+                elsif line =~ chunk # (size.to_s(16)) term (chunk) term
+                  # NOTE: not checking whether we have the correct size ?!
+                  output_stream.write $2.to_java_bytes
+                else # seems it's not a chunk ... thus let it flow :
+                  output_stream.write line.to_java_bytes
+                end
+                output_stream.flush
+              end        
+            else
+              @body.send(method) do |line|
+                output_stream.write(line.to_java_bytes)
+                output_stream.flush if flush?
+              end
             end
           end
         rescue LocalJumpError => e
@@ -116,6 +134,24 @@ module JRuby
         end
       end
 
+      protected
+      
+      # returns true if a chunked encoding is detected
+      def chunked?
+        return @chunked unless @chunked.nil?
+        @chunked = !! ( @headers && @headers['Transfer-Encoding'] == 'chunked' )
+      end
+      
+      # returns true if output (body) should be flushed after each written line
+      def flush?
+        chunked? || ! ( @headers && @headers['Content-Length'] )
+      end
+      
+      # this should be true whenever the response should be de-chunked
+      def dechunk?
+        chunked?
+      end
+      
       private
       
       BUFFER_SIZE = 16 * 1024
@@ -125,7 +161,7 @@ module JRuby
         if channel.respond_to?(:transfer_to)
           channel.transfer_to(0, channel.size, outputchannel)
         else
-          buffer = java.nio.ByteBuffer.allocate(BUFFER_SIZE)
+          buffer = ByteBuffer.allocate(BUFFER_SIZE)
           while channel.read(buffer) != -1
             buffer.flip
             outputchannel.write(buffer)
