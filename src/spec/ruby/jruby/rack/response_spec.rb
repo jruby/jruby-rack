@@ -1,3 +1,4 @@
+# encoding: UTF-8
 #--
 # Copyright (c) 2010-2012 Engine Yard, Inc.
 # Copyright (c) 2007-2009 Sun Microsystems, Inc.
@@ -147,9 +148,10 @@ describe JRuby::Rack::Response do
         "1".freeze,
         "\nsecond chunk",
         "a multi\nline chunk \n42",
-        "yet-another-chunk\n",
+        "utf-8 chunk 'ty píčo'!\n",
         "terminated chunk\r\n",
-        "\r\nthe very\r\n last\r\n\r\n chunk",
+        "", # should be skipped
+        "\r\nthe very\r\n last\r\n\r\n chunk"
       ]
       body = Rack::Chunked::Body.new body
       response = JRuby::Rack::Response.new([ 200, headers, body ])
@@ -160,11 +162,12 @@ describe JRuby::Rack::Response do
       times = 0
       stream.should_receive(:write).exactly(6).times.with do |bytes|
         str = String.from_java_bytes(bytes)
+        str = str.force_encoding('UTF-8') if str.respond_to?(:force_encoding)
         case times += 1
         when 1 then str.should == "1"
         when 2 then str.should == "\nsecond chunk"
         when 3 then str.should == "a multi\nline chunk \n42"
-        when 4 then str.should == "yet-another-chunk\n"
+        when 4 then str.should == "utf-8 chunk 'ty píčo'!\n"
         when 5 then str.should == "terminated chunk\r\n"
         when 6 then str.should == "\r\nthe very\r\n last\r\n\r\n chunk"
         else
@@ -176,15 +179,18 @@ describe JRuby::Rack::Response do
       response.write_body(@servlet_response)
     end
     
+    # force_encoding(encoding)
+    
     it "handles dechunking gracefully when body is not chunked" do
       headers = { 
-        "Cache-Control" => 'no-cache',
         "Transfer-Encoding" => 'chunked'
       }
       body = [
         "1".freeze,
         "a multi\nline chunk \n42",
         "\r\nthe very\r\n last\r\n\r\n chunk",
+        "7\r\nty píčo\r\n", # " incorrect bytesize (9)
+        "21\r\n a chunk with an invalid length \r\n" # size == 32 (0x20)
       ]
       response = JRuby::Rack::Response.new([ 200, headers, body ])
       @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")
@@ -192,17 +198,21 @@ describe JRuby::Rack::Response do
       response.write_headers(@servlet_response)
 
       times = 0
-      stream.should_receive(:write).exactly(3).times.with do |bytes|
+      stream.should_receive(:write).exactly(5).times.with do |bytes|
         str = String.from_java_bytes(bytes)
         case times += 1
         when 1 then str.should == "1"
         when 2 then str.should == "a multi\nline chunk \n42"
         when 3 then str.should == "\r\nthe very\r\n last\r\n\r\n chunk"
+        when 4 then 
+          str = str.force_encoding('UTF-8') if str.respond_to?(:force_encoding)
+          str.should == "7\r\nty píčo\r\n"
+        when 5 then str.should == "21\r\n a chunk with an invalid length \r\n"
         else
           fail("unexpected :write received with #{str.inspect}")
         end
       end
-      stream.should_receive(:flush).exactly(3).times
+      stream.should_receive(:flush).exactly(5).times
       
       response.write_body(@servlet_response)
     end

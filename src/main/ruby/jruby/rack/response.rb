@@ -103,13 +103,16 @@ module JRuby
             if dechunk?
               # NOTE: due Rails 3.2 stream-ed rendering http://git.io/ooCOtA#L223
               term = "\r\n"; tail = "0#{term}#{term}".freeze
-              chunk = /([0-9]|[a-f]+)#{Regexp.escape(term)}(.*)#{Regexp.escape(term)}/mo
+              chunk = /([0-9a-f]+)#{Regexp.escape(term)}(.+)#{Regexp.escape(term)}/mo
               @body.send(method) do |line|
                 if line == tail
-                  # NOOP
+                  # "0\r\n\r\n" NOOP
                 elsif line =~ chunk # (size.to_s(16)) term (chunk) term
-                  # NOTE: not checking whether we have the correct size ?!
-                  output_stream.write $2.to_java_bytes
+                  if $1.to_i(16) == $2.bytesize
+                    output_stream.write $2.to_java_bytes
+                  else
+                    output_stream.write line.to_java_bytes
+                  end
                 else # seems it's not a chunk ... thus let it flow :
                   output_stream.write line.to_java_bytes
                 end
