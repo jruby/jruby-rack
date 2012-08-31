@@ -147,7 +147,7 @@ JRuby runtime management and pooling is done automatically by the framework.
 In the case of Rails, runtimes are pooled by default (the default will most 
 likely change with the adoption of Rails 4.0). For other Rack applications a 
 single shared runtime is created and shared for every request by default (as of 
-**1.1.8** if *jruby.min.runtimes*/*jruby.max.runtimes* values are specified 
+**1.1.9** if *jruby.min.runtimes*/*jruby.max.runtimes* values are specified 
 pooling is supported as well).
 
 ## JRuby-Rack Configuration
@@ -194,6 +194,11 @@ as context init parameters in web.xml or as VM-wide system properties.
    buffer, see also `jruby.rack.request.size.maximum.bytes` bellow.
 - `jruby.rack.request.size.maximum.bytes`: The maximum size for the request in
    memory buffer, if the body is larger than this it gets spooled to a tempfile.
+- `jruby.rack.response.dechunk`: Set to false to turn off response dechunking 
+  (Rails since 3.1 chunks response on `render stream: true`), it's on by default
+  as frameworks such as Rails might use `Rack::Chunked::Body` as a Rack response
+  body but since most servlet containers perform dechunking automatically things
+  might end double-chunked in such cases.
 - `jruby.rack.filter.adds.html`: 
   **deprecated** use `addsHtmlToPathInfo` filter config init parameter.
   The default behavior for Rails and many other Ruby applications is to add an 

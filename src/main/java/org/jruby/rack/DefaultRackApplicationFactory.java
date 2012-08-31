@@ -191,6 +191,13 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 runtime.evalScriptlet("ENV['PATH'] = ''");
             }
             runtime.evalScriptlet("require 'rack/handler/servlet'");
+            
+            Boolean dechunk = rackContext.getConfig().getBooleanProperty("jruby.rack.response.dechunk");
+            if ( dechunk != null ) {
+                runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunk + "");
+                // TODO it would be useful by default or when dechunk is on
+                // to remove Rack::Chunked from the middleware stack ... ?!
+            }
             // NOTE: this is experimental stuff and might change in the future :
             String env = rackContext.getConfig().getProperty("jruby.rack.handler.env");
             // currently supported "env" values are 'default' and 'servlet'

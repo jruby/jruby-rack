@@ -178,8 +178,47 @@ describe JRuby::Rack::Response do
       
       response.write_body(@servlet_response)
     end
-    
-    # force_encoding(encoding)
+
+    it "does not dechunk body when dechunkins is turned off",
+      :lib => [ :rails31, :rails32, :rails40 ] do
+      dechunk = JRuby::Rack::Response.dechunk?
+      begin
+        JRuby::Rack::Response.dechunk = false
+        
+        require 'rack/chunked'
+        headers = { 
+          "Cache-Control" => 'no-cache',
+          "Transfer-Encoding" => 'chunked'
+        }
+        body = [
+          "1".freeze,
+          "\nsecond chunk",
+          ""
+        ]
+        body = Rack::Chunked::Body.new body
+        response = JRuby::Rack::Response.new([ 200, headers, body ])
+        @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")
+        @servlet_response.stub!(:addHeader)
+        response.write_headers(@servlet_response)
+
+        times = 0
+        stream.should_receive(:write).exactly(3).times.with do |bytes|
+          str = String.from_java_bytes(bytes)
+          case times += 1
+          when 1 then str.should == "1\r\n1\r\n"
+          when 2 then str.should == "d\r\n\nsecond chunk\r\n"
+          when 3 then str.should == "0\r\n\r\n"
+          else
+            fail("unexpected :write received with #{str.inspect}")
+          end
+        end
+        stream.should_receive(:flush).exactly(3).times
+        response.write_body(@servlet_response)
+        
+      ensure
+        JRuby::Rack::Response.dechunk = dechunk
+      end
+    end
     
     it "handles dechunking gracefully when body is not chunked" do
       headers = { 

@@ -7,16 +7,28 @@
 
 module JRuby
   module Rack
+    # Takes a Rack response to map it into the Servlet world.
+    # Assumes servlet containers auto-handle chunking when the output stream
+    # gets flushed. Thus dechunks data if Rack chunked them, to disable this
+    # behavior execute the following before delivering responses :
+    #
+    #  JRuby::Rack::Response.dechunk = false
+    #
+    # see #OrgJrubyRack::RackResponse
     class Response
       include org.jruby.rack.RackResponse
       java_import 'java.nio.ByteBuffer'
       java_import 'java.nio.channels.Channels'
 
+      @@dechunk = true
+      def self.dechunk?; @@dechunk; end
+      def self.dechunk=(flag); @@dechunk = !! flag; end
+      
       # Expects a Rack response: [status, headers, body].
       def initialize(array)
         @status, @headers, @body = *array
       end
-
+      
       def getStatus
         @status
       end
@@ -57,7 +69,7 @@ module JRuby
           else
             # servlet container auto handle chunking when response is flushed 
             # (and Content-Length headers has not been set) :
-            next if ( k == 'Transfer-Encoding' && v == 'chunked' )
+            next if ( k == 'Transfer-Encoding' && v == 'chunked' && dechunk? )
             # NOTE: effectively the same as `v.split("\n").each` which is what
             # rack handler does to guard against response splitting attacks !
             # https://github.com/jruby/jruby-rack/issues/81
@@ -152,7 +164,7 @@ module JRuby
       
       # this should be true whenever the response should be de-chunked
       def dechunk?
-        chunked?
+        self.class.dechunk? && chunked?
       end
       
       private
