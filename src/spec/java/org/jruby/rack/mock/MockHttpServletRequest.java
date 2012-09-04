@@ -623,14 +623,20 @@ public class MockHttpServletRequest implements HttpServletRequest {
 		return this.authType;
 	}
 
+    /**
+     * Return the set of Cookies received with this Request.
+     */
+    public Cookie[] getCookies() {
+        return cookies;
+    }
+    
+    /**
+     * Set the set of cookies received with this Request.
+     */
 	public void setCookies(Cookie... cookies) {
 		this.cookies = cookies;
 	}
-
-	public Cookie[] getCookies() {
-		return this.cookies;
-	}
-
+    
 	/**
 	 * Add a header entry for the given name.
 	 * <p>If there was no entry for that header name before, the value will be used

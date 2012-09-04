@@ -608,6 +608,12 @@ describe Rack::Handler::Servlet do
  
     it_behaves_like "(eager)rack-env"
     
+    let(:servlet_request) { org.jruby.rack.mock.MockHttpServletRequest.new }
+    let(:servlet_response) { org.jruby.rack.mock.MockHttpServletResponse.new }
+    let(:servlet_env) do
+      org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, @rack_context)
+    end
+    
     it "has correct params when request input has been read" do
       # reproducing https://github.com/jruby/jruby-rack/issues/110
       # 
@@ -618,7 +624,6 @@ describe Rack::Handler::Servlet do
       #  age: 30
       #  formula: a + b == 42%!
       content = 'name[]=Ferko+Suska&name[]=Jozko+Hruska&age=30&formula=a+%2B+b+%3D%3D+42%25%21'
-      servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new # servlet_context
       servlet_request.setContent content.to_java_bytes
       servlet_request.addHeader('CONTENT-TYPE', 'application/x-www-form-urlencoded')
       servlet_request.setMethod 'POST'
@@ -639,9 +644,7 @@ describe Rack::Handler::Servlet do
       servlet_request.addParameter('name[]', 'Jozko Hruska')
       servlet_request.addParameter('age', '30')
       servlet_request.addParameter('formula', 'a + b == 42%!')
-
-      servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
-      servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, @rack_context)
+      
       define_rack_input(servlet_env)
 
       env = servlet.create_env(servlet_env)
@@ -663,6 +666,38 @@ describe Rack::Handler::Servlet do
       rack_request.content_length.should == content.size.to_s
     end
 
+    it "sets cookies from servlet requests" do
+      cookies = []
+      cookies << javax.servlet.http.Cookie.new('foo', 'bar')
+      cookies << javax.servlet.http.Cookie.new('bar', '142')
+      servlet_request.setCookies cookies.to_java :'javax.servlet.http.Cookie'
+      env = servlet.create_env(servlet_env)
+      rack_request = Rack::Request.new(env)
+      rack_request.cookies.should == { 'foo' => 'bar', 'bar' => '142' }
+    end
+    
+    it "sets cookies from servlet requests (when empty)" do
+      servlet_request.getCookies.should be nil
+      env = servlet.create_env(servlet_env)
+      rack_request = Rack::Request.new(env)
+      rack_request.cookies.should == {}
+      
+      servlet_request.setCookies [].to_java :'javax.servlet.http.Cookie'
+      env = servlet.create_env(servlet_env)
+      rack_request = Rack::Request.new(env)
+      rack_request.cookies.should == {}
+    end
+    
+    it "sets a single cookie from servlet requests" do
+      cookies = []
+      cookies << javax.servlet.http.Cookie.new('foo', 'bar')
+      cookies << javax.servlet.http.Cookie.new('foo', '142')
+      servlet_request.setCookies cookies.to_java :'javax.servlet.http.Cookie'
+      env = servlet.create_env(servlet_env)
+      rack_request = Rack::Request.new(env)
+      rack_request.cookies.should == { 'foo' => 'bar' }
+    end
+    
     private
 
     def read_input_stream(input)

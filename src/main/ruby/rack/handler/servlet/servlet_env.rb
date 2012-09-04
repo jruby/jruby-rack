@@ -24,6 +24,12 @@ module Rack
           load_parameters
         end
         
+        def populate
+          super
+          load_cookies
+          @env
+        end
+        
         protected
 
         # Load parameters into the (Rack) env from the Servlet API.
@@ -66,7 +72,7 @@ module Rack
           @env[ "rack.request.form_input".freeze ] = @env["rack.input"]
           @env[ "rack.request.form_hash".freeze ] = form_hash
         end
-
+        
         # Store the parameter into the given Hash.
         # By default this is performed in a Rack compatible way and thus
         # some parameter values might get "lost" - it only accepts multiple
@@ -85,6 +91,24 @@ module Rack
           end      
         end
 
+        # Load cookies into the (Rack) env from the Servlet API.
+        # using javax.servlet.http.HttpServletRequest#getCookies
+        def load_cookies
+          cookie_hash = {}
+          (@servlet_env.getCookies || []).each do |cookie| # Cookie
+            name = cookie.name
+            if cookie_hash[name]
+              # NOTE: Rack compatible only accepting a single value
+              # assume cookies where already ordered - use cookie
+            else
+              cookie_hash[name] = cookie.value
+            end
+          end
+          # Rack::Request#cookies
+          @env["rack.request.cookie_string"] = @env["HTTP_COOKIE"]
+          @env["rack.request.cookie_hash"] = cookie_hash
+        end
+        
         private
 
         def query_string
