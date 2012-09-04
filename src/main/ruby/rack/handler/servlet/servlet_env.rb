@@ -105,7 +105,7 @@ module Rack
             end
           end
           # Rack::Request#cookies
-          @env["rack.request.cookie_string"] = @env["HTTP_COOKIE"]
+          @env["rack.request.cookie_string"] = ( @env["HTTP_COOKIE"] ||= '' )
           @env["rack.request.cookie_hash"] = cookie_hash
         end
         
