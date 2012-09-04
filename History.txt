@@ -1,3 +1,12 @@
+== 1.1.10 (04/09/12)
+
+ - correctly dechunk data from response and handle flushing, 
+   finally Rails 3.1+ `render stream: true` support (#117)
+ - initial compatibility with Rails master (getting torwards 4.0.0.beta)
+   known issues: ActionController::Live seems to end up with a dead-lock
+ - ServletEnv now parses cookies using HttpServletRequest.getCookies instead of
+   leaving it off for Rack::Request
+
 == 1.1.9 (19/08/12)
 
  - rack env regression fix when used with rack-cache, introduced in 1.1.8 (#116)
