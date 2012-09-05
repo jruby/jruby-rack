@@ -5,9 +5,40 @@
 # See the file LICENSE.txt for details.
 #++
 
-# Ruby-friendly extensions to the servlet API.
+require 'java'
 
-module Java::JavaxServletHttp::HttpServletRequest
+# Ruby-friendly extensions to the Servlet API.
+
+module Java::JavaxServlet::ServletContext
+  # Fetch an attribute from the servlet context.
+  def [](key)
+    getAttribute(key.to_s)
+  end
+  # Set an attribute in the servlet context.
+  def []=(key, val)
+    setAttribute(key.to_s, val)
+  end
+  # Remove an attribute for the given key.
+  def delete(key)
+    removeAttribute(key.to_s)
+  end
+  # Retrieve all the attribute names (keys).
+  # like Hash#keys
+  def keys
+    getAttributeNames.to_a
+  end
+  # like Hash#values
+  def values
+    getAttributeNames.map { |name| getAttribute(name) }
+  end
+  # Iterate over every attribute name/value pair from the context.
+  # like Hash#each
+  def each
+    getAttributeNames.each { |name| yield(name, getAttribute(name)) }
+  end
+end
+
+module Java::JavaxServlet::ServletRequest
   # Fetch an attribute from the servlet request.
   def [](key)
     getAttribute(key.to_s)
@@ -16,9 +47,23 @@ module Java::JavaxServletHttp::HttpServletRequest
   def []=(key, val)
     setAttribute(key.to_s, val)
   end
+  # Remove an attribute for the given key.
+  def delete(key)
+    removeAttribute(key.to_s)
+  end
   # Retrieve all the attribute names (keys) from the servlet request.
+  # like Hash#keys
   def keys
     getAttributeNames.to_a
+  end
+  # like Hash#values
+  def values
+    getAttributeNames.map { |name| getAttribute(name) }
+  end
+  # Iterate over every attribute name/value pair from the servlet request.
+  # like Hash#each
+  def each
+    getAttributeNames.each { |name| yield(name, getAttribute(name)) }
   end
 end
 
@@ -31,8 +76,22 @@ module Java::JavaxServletHttp::HttpSession
   def []=(key, val)
     setAttribute(key.to_s, val)
   end
+  # Remove an attribute for the given key.
+  def delete(key)
+    removeAttribute(key.to_s)
+  end
   # Retrieve all the attribute names (keys) from the session.
+  # like Hash#keys
   def keys
     getAttributeNames.to_a
+  end
+  # like Hash#values
+  def values
+    getAttributeNames.map { |name| getAttribute(name) }
+  end
+  # Iterate over every attribute name/value pair from the session.
+  # like Hash#each
+  def each
+    getAttributeNames.each { |name| yield(name, getAttribute(name)) }
   end
 end
