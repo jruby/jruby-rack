@@ -1,16 +1,16 @@
 # JRuby-Rack
 
-JRuby-Rack is a lightweight adapter for the Java servlet environment that allows 
-any Rack-based application to run unmodified in a Java servlet container. 
+JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows 
+any Rack-based application to run unmodified in a Java Servlet container. 
 JRuby-Rack supports Rails as well as any Rack-compatible Ruby web framework.
 
 For more information on Rack, visit http://rack.rubyforge.org.
 
-[![Build Status](https://secure.travis-ci.org/jruby/jruby-rack.png?branch=master)](http://travis-ci.org/jruby/jruby-rack)
+[![Build Status][0]](http://travis-ci.org/jruby/jruby-rack)
 
-# Getting Started
+## Getting Started
 
-The easiest way to use JRuby-Rack is to get [Warbler][1]. 
+The most-common way to use JRuby-Rack is to get [Warbler][1]. 
 Warbler depends on the latest version of JRuby-Rack and ensures it gets placed 
 in your WAR file when it gets built.
 
@@ -21,15 +21,19 @@ If you're assembling your own WAR using other means, you can install the
     require 'jruby-rack'
     FileUtils.cp JRubyJars.jruby_rack_jar_path, '.'
 
-Otherwise you'll need to download the [latest jar release][2], drop it into the 
-*WEB-INF/lib* directory and configure the RackFilter in your application's 
-*web.xml*. Example web.xml snippets are as follows.
+Otherwise you'll need to download the latest [jar release][2], drop it into the 
+*WEB-INF/lib* directory and configure the `RackFilter` in your application's 
+*web.xml* (see following examples).
 
-## For Rails
+Alternatively you can use a server built upon JRuby-Rack such as [Trinidad][3]
+with sensible defaults, without the need to configure a deployment descriptor.
 
-Here's sample web.xml configuration for Rails. Note the environment and min/max 
-runtime parameters. For multi-threaded Rails with a single runtime, set min/max 
-both to 1. Otherwise, define the size of the runtime pool as you wish.
+### Rails
+
+Here's sample *web.xml* configuration for Rails. Note the environment and 
+min/max runtime parameters. For **multi-threaded** (a.k.a. `thread-safe!`) 
+Rails with a single runtime, set min/max both to 1. Otherwise, define the size 
+of the runtime pool as you wish.
 
     <context-param>
       <param-name>rails.env</param-name>
@@ -70,15 +74,16 @@ both to 1. Otherwise, define the size of the runtime pool as you wish.
       <listener-class>org.jruby.rack.rails.RailsServletContextListener</listener-class>
     </listener>
 
-## For Other Rack Applications
+### (Other) Rack Applications
 
-Here's a sample web.xml configuration for a Rack application. The main difference 
-is that JRuby-Rack looks for a "rackup" file named **config.ru** in 
-`WEB-INF/config.ru` or `WEB-INF/*/config.ru`.
+The main difference when using a non-Rails Rack application is that JRuby-Rack 
+looks for a "rackup" file named **config.ru** in  `WEB-INF/config.ru` or 
+`WEB-INF/*/config.ru`. Here's a sample *web.xml* configuration :
 
     <filter>
       <filter-name>RackFilter</filter-name>
       <filter-class>org.jruby.rack.RackFilter</filter-class>
+      <!-- optional filter configuration init-params (@see above) -->
     </filter>
     <filter-mapping>
       <filter-name>RackFilter</filter-name>
@@ -89,10 +94,8 @@ is that JRuby-Rack looks for a "rackup" file named **config.ru** in
       <listener-class>org.jruby.rack.RackServletContextListener</listener-class>
     </listener>
 
-If you don't have a config.ru or don't want to include it in your web app, you 
-can embed it in web.xml as follows (using Sinatra as an example). 
-
-Be sure to escape angle-brackets for XML !
+If you don't have a *config.ru* or don't want to include it in your web app, you 
+can embed it directly in the *web.xml* as follows (using Sinatra as an example):
 
     <context-param>
       <param-name>rackup</param-name>
@@ -106,38 +109,50 @@ Be sure to escape angle-brackets for XML !
       </param-value>
     </context-param>
 
+Be sure to escape angle-brackets for XML !
 
-# Features
 
 ## Servlet Filter
 
-JRuby-Rack's main mode of operation is as a servlet filter. This allows requests 
-for static content to pass through and be served by the application server. 
+JRuby-Rack's main mode of operation is as a filter. This allows requests for 
+static content to pass through and be served by the application server. 
 Dynamic requests only happen for URLs that don't have a corresponding file, much 
-like many Ruby applications expect. 
+like many Ruby/Rack applications expect. The (default) filter we recommend 
+using is `org.jruby.rack.RackFilter`, the filter supports the following 
+(optional) init-params:
+
+- **responseNotHandledStatuses** which statuses (when a filter chain returns) 
+  should be considered that the response has not been handled (default value: 
+  "403,404,405") and should be dispatched as a Rack application
+- **resetUnhandledResponse** whether an unhandled response from the filter chain
+  gets reset (accepts  values "true", "false" and "buffer" to reset the buffer 
+  only), by default "true"
+- **addsHtmlToPathInfo** controls whether the .html suffix is added to the URI 
+  when checking if the request is for a static page
+- **verifiesHtmlResource** used with the previous parameter to makee sure the
+  requested static resource exist before adding the .html request URI suffix
+
 The application can also be configured to dispatch through a servlet instead of 
-a filter if it suits your environment better.
+a filter, the servlet class name is `org.jruby.rack.RackServlet`.
 
-## Servlet environment integration
+## Servlet Environment Integration
 
-- Servlet context is accessible to any application through the Rack environment 
-  variable *java.servlet_context* as well as the `$servlet_context` global.
-- Servlet request object is available in the Rack environment via the
-  key *java.servlet_request*.
-- Servlet request attributes are passed through to the Rack environment.
-- Rack environment variables and headers can be overridden by servlet
-  request attributes.
-- Java servlet sessions are available as a session store for Rails. 
-  Session attributes with String keys and String, numeric, boolean, or java 
-  object values are automatically copied to the servlet session for you.
+- servlet context is accessible to any application through the Rack environment 
+  variable *java.servlet_context* (as well as the `$servlet_context` global).
+- the (native) servlet request and response objects could be obtained via the
+  *java.servlet_request* and *java.servlet_response* keys
+- all servlet request attributes are passed through to the Rack environment (and
+  thus might override request headers or Rack environment variables)
+- servlet sessions can be used as a (java) session store for Rails, session 
+  attributes with String keys (and String, numeric, boolean, or java 
+  object values) are automatically copied to the servlet session for you.
 
 ## Rails
 
 Several aspects of Rails are automatically set up for you.
 
-- The Rails controller setting `ActionController::Base.relative_url_root`
-  is set for you automatically according to the context root where
-  your webapp is deployed.
+- `ActionController::Base.relative_url_root` is set for you automatically 
+  according to the context root where your webapp is deployed.
 - `Rails.logger` output is redirected to the application server log.
 - Page caching and asset directories are configured appropriately.
 
@@ -146,9 +161,15 @@ Several aspects of Rails are automatically set up for you.
 JRuby runtime management and pooling is done automatically by the framework. 
 In the case of Rails, runtimes are pooled by default (the default will most 
 likely change with the adoption of Rails 4.0). For other Rack applications a 
-single shared runtime is created and shared for every request by default (as of 
-**1.1.9** if *jruby.min.runtimes*/*jruby.max.runtimes* values are specified 
-pooling is supported as well).
+single shared runtime is created and shared for every request by default. 
+As of **1.1.9** if *jruby.min.runtimes* and *jruby.max.runtimes* values are 
+specified pooling is supported for plain Rack applications as well.
+
+We do recommend to boot your runtimes up-front to avoid the cost of initializing
+one while a request kicks in and find the pool empty, this can be easily avoided
+by setting *jruby.min.runtimes* equal to *jruby.max.runtimes*. You might also 
+want to consider tunning the *jruby.runtime.acquire.timeout* parameter to not 
+wait too long when all (max) runtimes from the pool are busy.
 
 ## JRuby-Rack Configuration
 
@@ -242,132 +263,41 @@ logging system, configure `jruby.rack.logging` as follows:
 For those loggers that require a specific named logger, set it with the
 `jruby.rack.logging.name` option, by default "jruby.rack" name will be used.
 
-# Building
+## Building
 
-Checkout the JRuby Rack code and cd to that directory.
+Checkout the JRuby-Rack code using [git](http://git-scm.com/) :
 
     git clone git://github.com/jruby/jruby-rack.git
     cd jruby-rack
 
-Ensure you have Maven installed. It is required for downloading jar
-artifacts that JRuby-Rack depends on.
+Ensure you have [Maven](http://maven.apache.org/) installed. 
+It is required for downloading jar artifacts that JRuby-Rack depends on.
 
-You can choose to build with either Maven or Rake. Either of the
-following two will suffice.
+Build the .jar using Maven :
 
     mvn install
-    jruby -S rake
 
-The generated jar should be located here: target/jruby-rack-*.jar.
+the generated jar should be located at **target/jruby-rack-*.jar**
 
-# Issues
+Alternatively use Rake, e.g. to build the gem (skipping specs) :
 
-Please use GitHub to file bugs, patches and pull requests.
+    jruby -S rake clean gem SKIP_SPECS=true
 
-- https://github.com/jruby/jruby-rack
-- https://github.com/jruby/jruby-rack/issues
+You can **not** use JRuby-Rack with Bundler directly from the git (or http) URL
+(`gem 'jruby-rack', :github => 'jruby/jruby-rack'`) since the included .jar file
+is compiled and generated on-demand during the build (it would require us to 
+package and push the .jar every time a commit changes a source file).
 
-# Releases
 
-For JRuby-Rack contributors, the release process goes something like
-the following:
+## Issues
 
-1. Ensure that release version is correct in _pom.xml_ and `mvn install`
-   runs clean.
-2. Ensure generated changes to _src/main/ruby/jruby/rack/version.rb_ are
-   checked in.
-3. Ensure _History.txt_ is updated with latest release information.
-3. Tag current release in git: `git tag <version>`.
-4. Push commits and tag: `git push origin master --tags`
-5. Build gem: `rake clean gem`
-6. Push gem: `gem push target/jruby-rack-*.gem`
-7. Release jar to maven repository: `mvn -DupdateReleaseInfo=true deploy`
-8. Bump the version in _pom.xml_ to next release version *X.X.X.dev-SNAPSHOT*, 
-   run `mvn install`, and commit the changes.
+Please use [github][4] to file bugs, patches and pull requests.
 
-## Rails Step-by-step
+More information at the [wiki][5] or ask us at the #jruby IRC channel.
 
-This example shows how to create and deploy a simple Rails app using
-the embedded Java database H2 to a WAR using Warbler and JRuby-Rack.
-
-Install Rails and the ActiveRecord adapters + driver for the H2 database:
-
-    jruby -S gem install rails activerecord-jdbch2-adapter
-
-Install Warbler:
-
-    jruby -S gem install warbler
-
-Make the "Blog" application
-
-    jruby -S rails new blog
-    cd blog
-
-Copy this configuration into config/database.yml:
-
-    development:
-      adapter: jdbch2
-      database: db/development_h2_database
-
-    test:
-      adapter: jdbch2
-      database: db/test_h2_database
-
-    production:
-      adapter: jdbch2
-      database: db/production_h2_database
-
-Add the following to your application's Gemfile:
-
-    gem 'activerecord-jdbch2-adapter', :platform => :jruby
-
-Generate a scaffold for a simple model of blog comments.
-
-    jruby script/rails generate scaffold comment name:string body:text
-
-Run the database migration that was just created as part of the scaffold.
-
-    jruby -S rake db:migrate
-
-Start your application on 3000 using WEBrick and make sure it works:
-
-    jruby script/rails server
-
-Generate a production version of the H2 database for the application:
-
-    RAILS_ENV=production jruby -S rake db:migrate
-
-Generate a custom Warbler WAR configuration for the blog application
-
-    jruby -S warble config
-
-Edit *config/warble.rb* and add the following line after these comments:
-
-    # Additional files/directories to include, above those in config.dirs
-    # config.includes = FileList["db"]
-    config.includes = FileList["db/production_h2*"]
-
-This will tell Warbler to include the just initialized production H2
-database in the WAR.
-
-Now generate the WAR file:
-
-    jruby -S warble war
-
-This task generates the file: blog.war at the top level of the application as 
-well as an exploded version of the war located at *tmp/war*.
-
-The war should be ready to deploy to your Java application server.
-
-# Thanks
-
-- All contributors! But also:
-- Dudley Flanders, for the Merb support
-- Robert Egglestone, for the original JRuby servlet integration
-  project, Goldspike
-- Chris Neukirchen, for Rack
-- Sun Microsystems, for early project support
-- Engine Yard, for more recent support
-
+[0]: https://secure.travis-ci.org/jruby/jruby-rack.png?branch=master
 [1]: http://caldersphere.rubyforge.org/warbler
 [2]: http://repository.codehaus.org/org/jruby/rack/jruby-rack/
+[3]: http://github.com/trinidad/trinidad
+[4]: http://github.com/jruby/jruby-rack/issues
+[5]: http://wiki.github.com/jruby/jruby-rack
