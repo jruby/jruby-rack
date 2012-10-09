@@ -92,23 +92,23 @@ module JRuby
       end
 
       def write_body(response)
-        output_stream = response.getOutputStream
+        output_stream = response.getOutputStream; body = nil
         begin
           if @body.respond_to?(:call) && ! @body.respond_to?(:each)
             @body.call(output_stream)
           elsif @body.respond_to?(:to_channel) && 
               ! object_polluted_with_anyio?(@body, :to_channel)
-            @body = @body.to_channel # so that we close the channel
-            transfer_channel(@body, output_stream)
+            body = @body.to_channel # so that we close the channel
+            transfer_channel(body, output_stream)
           elsif @body.respond_to?(:to_inputstream) && 
               ! object_polluted_with_anyio?(@body, :to_inputstream)
-            @body = @body.to_inputstream # so that we close the stream
-            transfer_channel(Channels.newChannel(@body), output_stream)
+            body = @body.to_inputstream # so that we close the stream
+            transfer_channel(Channels.newChannel(body), output_stream)
           elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel) && 
               ! object_polluted_with_anyio?(@body.body_parts, :to_channel)
             # ActionDispatch::Response "raw" body access in case it's a File
-            @body = @body.body_parts.to_channel # so that we close the channel
-            transfer_channel(@body, output_stream)
+            body = @body.body_parts.to_channel # so that we close the channel
+            transfer_channel(body, output_stream)
           else
             # 1.8 has a String#each method but 1.9 does not :
             method = @body.respond_to?(:each_line) ? :each_line : :each
@@ -146,6 +146,7 @@ module JRuby
           raise unless e.cause.toString =~ /(clientabortexception|broken pipe)/i
         ensure
           @body.close if @body.respond_to?(:close)
+          body && body.close rescue nil
         end
       end
 
@@ -171,20 +172,20 @@ module JRuby
       
       BUFFER_SIZE = 16 * 1024
       
-      def transfer_channel(channel, outputstream)
-        outputchannel = Channels.newChannel outputstream
+      def transfer_channel(channel, output_stream)
+        output_channel = Channels.newChannel output_stream
         if channel.respond_to?(:transfer_to)
-          channel.transfer_to(0, channel.size, outputchannel)
+          channel.transfer_to(0, channel.size, output_channel)
         else
           buffer = ByteBuffer.allocate(BUFFER_SIZE)
           while channel.read(buffer) != -1
             buffer.flip
-            outputchannel.write(buffer)
+            output_channel.write(buffer)
             buffer.compact
           end
           buffer.flip
           while buffer.has_remaining
-            outputchannel.write(buffer)
+            output_channel.write(buffer)
           end
         end
       end
