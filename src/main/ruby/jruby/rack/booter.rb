@@ -11,7 +11,7 @@ require 'jruby/rack/app_layout'
 
 module JRuby::Rack
   class Booter
-    attr_reader :rack_context
+    attr_reader :rack_context, :rack_env
 
     def initialize(rack_context = nil)
       @rack_context = rack_context || $servlet_context
@@ -21,7 +21,7 @@ module JRuby::Rack
 
     def boot!
       adjust_load_path
-      ENV['RACK_ENV'] = @rack_env
+      ENV['RACK_ENV'] = rack_env
       if ENV['GEM_PATH']
         ENV['GEM_PATH'] = layout.gem_path + File::PATH_SEPARATOR + ENV['GEM_PATH']
       else
@@ -34,16 +34,16 @@ module JRuby::Rack
     end
 
     def default_layout_class
-      c = @rack_context.getInitParameter 'jruby.rack.layout_class'
-      c.nil? ? WebInfLayout : eval(c)
+      layout_class = @rack_context.getInitParameter 'jruby.rack.layout_class'
+      layout_class.nil? ? WebInfLayout : eval(layout_class)
     end
 
     def layout_class
       @layout_class ||= default_layout_class
     end
 
-    def layout_class=(c)
-      @layout_class = c
+    def layout_class=(layout_class)
+      @layout_class = layout_class
     end
 
     def layout
@@ -119,7 +119,8 @@ module JRuby::Rack
           begin
             stream = url.openStream
             stream.to_io.read
-          rescue Exception
+          rescue Exception => e
+            logger.info "failed to read from '#{url.toString}' (#{e.message})"
             next
           ensure
             stream.close rescue nil

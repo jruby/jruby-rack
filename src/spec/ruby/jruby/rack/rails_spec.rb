@@ -21,6 +21,12 @@ describe JRuby::Rack::RailsBooter do
     booter.app_path.should == "./WEB-INF"
   end
 
+  RAILS_ENV = ENV['RAILS_ENV']
+  
+  after do
+    RAILS_ENV.nil? ? ENV.delete('RAILS_ENV') : ENV['RAILS_ENV'] = RAILS_ENV
+  end
+  
   it "should default RAILS_ROOT to /WEB-INF" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
     booter = create_booter(JRuby::Rack::RailsBooter).boot!
@@ -35,18 +41,25 @@ describe JRuby::Rack::RailsBooter do
   end
 
   it "should determine RAILS_ENV from the 'rails.env' init parameter" do
-    ENV['RAILS_ENV'] = nil
+    #ENV['RAILS_ENV'] = nil
     @rack_context.should_receive(:getInitParameter).with("rails.env").and_return "test"
     booter = create_booter(JRuby::Rack::RailsBooter).boot!
     booter.rails_env.should == "test"
   end
 
+  it "should get rails environment from rack environmnent" do
+    ENV['RACK_ENV'] = 'development'
+    @rack_context.stub!(:getInitParameter)
+    create_booter(JRuby::Rack::RailsBooter).boot!
+    @booter.rails_env.should == 'development'
+  end
+  
   it "should default RAILS_ENV to 'production'" do
     ENV['RAILS_ENV'] = nil
     booter = create_booter(JRuby::Rack::RailsBooter).boot!
     booter.rails_env.should == "production"
   end
-
+  
   it "should set RAILS_RELATIVE_URL_ROOT based on the servlet context path" do
     @rack_context.should_receive(:getContextPath).and_return '/myapp'
     create_booter(JRuby::Rack::RailsBooter).boot!

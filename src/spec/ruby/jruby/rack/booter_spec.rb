@@ -13,6 +13,12 @@ describe JRuby::Rack::Booter do
     $loaded_init_rb = nil
   end
 
+  RACK_ENV = ENV['RACK_ENV']
+  
+  after do
+    RACK_ENV.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = RACK_ENV
+  end
+  
   it "should determine the public html root from the 'public.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
@@ -60,10 +66,17 @@ describe JRuby::Rack::Booter do
   end
 
   it "should get rack environment from rack.env" do
-    ENV['RACK_ENV'] = nil
-    @rack_context.should_receive(:getInitParameter).with("rack.env").and_return "production"
+    #ENV.delete('RACK_ENV')
+    @rack_context.should_receive(:getInitParameter).with("rack.env").and_return "staging"
     create_booter.boot!
-    ENV['RACK_ENV'].should == "production"
+    @booter.rack_env.should == 'staging'
+  end
+  
+  it "should get rack environment from ENV" do
+    ENV['RACK_ENV'] = 'production'
+    @rack_context.stub!(:getInitParameter)
+    create_booter.boot!
+    @booter.rack_env.should == "production"
   end
 
   it "should prepend gem_path to ENV['GEM_PATH']  " do

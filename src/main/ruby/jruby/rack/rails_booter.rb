@@ -13,13 +13,14 @@ module JRuby::Rack
 
     def initialize(rack_context = nil)
       super
-      @rails_env = ENV['RAILS_ENV'] || @rack_context.getInitParameter('rails.env') || 'production'
+      @rails_env = ENV['RAILS_ENV'] ||
+        @rack_context.getInitParameter('rails.env') || rack_env || 'production'
     end
 
     def boot!
       super
       ENV['RAILS_ROOT'] = app_path
-      ENV['RAILS_ENV'] = @rails_env
+      ENV['RAILS_ENV'] = rails_env
       
       if File.exist?(File.join(app_path, "config", "application.rb"))
         require 'jruby/rack/rails/environment3'
