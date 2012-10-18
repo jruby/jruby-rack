@@ -8,16 +8,19 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'jruby/rack/rails_booter'
 require 'jruby/rack/rails/extensions'
+
 require 'active_support'
 require 'cgi/session/java_servlet_store'
 class ::CGI::Session::PStore; end
 
 describe JRuby::Rack::RailsBooter do
   
+  let(:booter) { JRuby::Rack::RailsBooter.new(@rack_context) }
+  
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     booter.app_path.should == "./WEB-INF"
   end
 
@@ -29,13 +32,13 @@ describe JRuby::Rack::RailsBooter do
   
   it "should default RAILS_ROOT to /WEB-INF" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     booter.app_path.should == "./WEB-INF"
   end
 
   it "should leave ENV['RAILS_ENV'] as is if it was already set" do
     ENV['RAILS_ENV'] = 'staging'
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     ENV['RAILS_ENV'].should == 'staging'
     booter.rails_env.should == "staging"
   end
@@ -43,51 +46,51 @@ describe JRuby::Rack::RailsBooter do
   it "should determine RAILS_ENV from the 'rails.env' init parameter" do
     #ENV['RAILS_ENV'] = nil
     @rack_context.should_receive(:getInitParameter).with("rails.env").and_return "test"
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     booter.rails_env.should == "test"
   end
 
   it "should get rails environment from rack environmnent" do
     ENV['RACK_ENV'] = 'development'
     @rack_context.stub!(:getInitParameter)
-    create_booter(JRuby::Rack::RailsBooter).boot!
-    @booter.rails_env.should == 'development'
+    booter.boot!
+    booter.rails_env.should == 'development'
   end
   
   it "should default RAILS_ENV to 'production'" do
     ENV['RAILS_ENV'] = nil
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     booter.rails_env.should == "production"
   end
   
   it "should set RAILS_RELATIVE_URL_ROOT based on the servlet context path" do
     @rack_context.should_receive(:getContextPath).and_return '/myapp'
-    create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp'
   end
 
   it "should append to RAILS_RELATIVE_URL_ROOT if 'rails.relative_url_append' is set" do
     @rack_context.should_receive(:getContextPath).and_return '/myapp'
     @rack_context.should_receive(:getInitParameter).with("rails.relative_url_append").and_return "/blah"
-    create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp/blah'
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     booter.public_path.should == "."
   end
 
   it "should default public root to '/'" do
     @rack_context.should_receive(:getRealPath).with("/").and_return "."
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     booter.public_path.should == "."
   end
 
   it "should create a log device that writes messages to the servlet context" do
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     @rack_context.should_receive(:log).with(/hello/)
     booter.logdev.write "hello"
   end
@@ -95,7 +98,7 @@ describe JRuby::Rack::RailsBooter do
   it "should setup java servlet-based sessions if the session store is the default", 
     :lib => [ :stub ] do
     
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     booter.should_receive(:rack_based_sessions?).and_return false
 
     booter.session_options[:database_manager] = ::CGI::Session::PStore
@@ -106,7 +109,7 @@ describe JRuby::Rack::RailsBooter do
   it "should turn off Ruby CGI cookies if the java servlet store is used", 
     :lib => [ :stub ] do
     
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     booter.should_receive(:rack_based_sessions?).and_return false
 
     booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
@@ -117,7 +120,7 @@ describe JRuby::Rack::RailsBooter do
   it "should provide the servlet request in the session options if the java servlet store is used",
     :lib => [ :stub ] do
     
-    booter = create_booter(JRuby::Rack::RailsBooter).boot!
+    booter.boot!
     booter.should_receive(:rack_based_sessions?).twice.and_return false
 
     booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
@@ -137,10 +140,9 @@ describe JRuby::Rack::RailsBooter do
     :lib => [ :rails23, :stub ] do
     
     begin
-      create_booter(JRuby::Rack::RailsBooter) do |booter|
-        booter.app_path = File.expand_path("../../../rails", __FILE__)
-      end.boot!
-      PUBLIC_ROOT.should == @booter.public_path
+      booter.app_path = File.expand_path("../../../rails", __FILE__)
+      booter.boot!
+      PUBLIC_ROOT.should == booter.public_path
     ensure
       Object.send :remove_const, :PUBLIC_ROOT
     end
@@ -151,10 +153,9 @@ describe JRuby::Rack::RailsBooter do
     before :each do
       $servlet_context = @servlet_context
       @rack_context.should_receive(:getContextPath).and_return "/foo"
-      @booter = create_booter(JRuby::Rack::RailsBooter) do |booter|
-        booter.app_path = File.expand_path("../../../rails", __FILE__)
-      end.boot!
-      @booter.load_environment
+      booter.app_path = File.expand_path("../../../rails", __FILE__)
+      booter.boot!
+      silence_warnings { booter.load_environment }
     end
 
     after(:each) { Object.send :remove_const, :PUBLIC_ROOT }
@@ -164,7 +165,7 @@ describe JRuby::Rack::RailsBooter do
     end
     
     it "should default the page cache directory to the public root" do
-      ActionController::Base.page_cache_directory.should == @booter.public_path
+      ActionController::Base.page_cache_directory.should == booter.public_path
     end
 
     it "should default the session store to the java servlet session store" do
@@ -172,15 +173,15 @@ describe JRuby::Rack::RailsBooter do
     end
 
     it "should set the ActionView ASSETS_DIR constant to the public root" do
-      ActionView::Helpers::AssetTagHelper::ASSETS_DIR.should == @booter.public_path
+      ActionView::Helpers::AssetTagHelper::ASSETS_DIR.should == booter.public_path
     end
 
     it "should set the ActionView JAVASCRIPTS_DIR constant to the public root/javascripts" do
-      ActionView::Helpers::AssetTagHelper::JAVASCRIPTS_DIR.should == @booter.public_path + "/javascripts"
+      ActionView::Helpers::AssetTagHelper::JAVASCRIPTS_DIR.should == booter.public_path + "/javascripts"
     end
 
     it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
-      ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == @booter.public_path + "/stylesheets"
+      ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == booter.public_path + "/stylesheets"
     end
 
     it "should set the ActionController.relative_url_root to the servlet context path" do
@@ -193,10 +194,9 @@ describe JRuby::Rack::RailsBooter do
     
     before :each do
       $servlet_context = @servlet_context
-      @booter = create_booter(JRuby::Rack::RailsBooter) do |b|
-        b.app_path = File.expand_path("../../../rails3", __FILE__)
-      end.boot!
-      @booter.load_environment
+      booter.app_path = File.expand_path("../../../rails3", __FILE__)
+      booter.boot!
+      silence_warnings { booter.load_environment }
     end
     
     after :all do
@@ -211,7 +211,7 @@ describe JRuby::Rack::RailsBooter do
       paths = {}
       %w( public public/javascripts public/stylesheets ).each { |p| paths[p] = [p] }
       app = mock("app"); app.stub_chain(:config, :paths).and_return(paths)
-      public_path = Pathname.new(@booter.public_path)
+      public_path = Pathname.new(booter.public_path)
       
       Rails::Railtie.config.__before_configuration.size.should == 1
       before_config = Rails::Railtie.config.__before_configuration.first
@@ -246,7 +246,7 @@ describe JRuby::Rack::RailsBooter do
         @config.should_receive(:logger).ordered.and_return(nil)
         @config.should_receive(:logger=).ordered.with(@logger)
         @config.should_receive(:logger).ordered.and_return(@logger)
-        @booter.should_receive(:logger).and_return(@logger)
+        booter.should_receive(:logger).and_return(@logger)
         @logger.class.should_receive(:const_get).with('INFO').and_return(nil)
         @logger.should_receive(:level=).with(nil)
         
@@ -301,7 +301,7 @@ describe JRuby::Rack::RailsBooter do
     it "should return the Rails.application instance" do
       app = mock "app"
       Rails.application = app
-      @booter.to_app.should == app
+      booter.to_app.should == app
     end
 
     it "should set config.action_controller.relative_url_root based on ENV['RAILS_RELATIVE_URL_ROOT']" do
@@ -321,10 +321,9 @@ describe JRuby::Rack::RailsBooter do
     
     before :each do
       $servlet_context = @servlet_context
-      create_booter(JRuby::Rack::RailsBooter) do |b|
-        b.app_path = File.expand_path("../../../rails3", __FILE__)
-      end.boot!
-      @booter.load_environment
+      booter.app_path = File.expand_path("../../../rails3", __FILE__)
+      booter.boot!
+      booter.load_environment
     end
 
     after :all do

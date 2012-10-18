@@ -9,9 +9,8 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'jruby/rack/booter'
 
 describe JRuby::Rack::Booter do
-  before :each do
-    $loaded_init_rb = nil
-  end
+  
+  let(:booter) { JRuby::Rack::Booter.new(@rack_context) }
 
   RACK_ENV = ENV['RACK_ENV']
   
@@ -22,99 +21,101 @@ describe JRuby::Rack::Booter do
   it "should determine the public html root from the 'public.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
-    create_booter.boot!
-    @booter.public_path.should == "."
+    booter.boot!
+    booter.public_path.should == "."
   end
 
   it "should convert public.root to not have any trailing slashes" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah/"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "/blah/blah"
-    create_booter.boot!
-    @booter.public_path.should == "/blah/blah"
+    booter.boot!
+    booter.public_path.should == "/blah/blah"
   end
 
   it "should default public root to '/'" do
     @rack_context.should_receive(:getRealPath).with("/").and_return "."
-    create_booter.boot!
-    @booter.public_path.should == "."
+    booter.boot!
+    booter.public_path.should == "."
   end
 
   it "should chomp trailing slashes from paths" do
     @rack_context.should_receive(:getRealPath).with("/").and_return "/hello/there/"
-    create_booter.boot!
-    @booter.public_path.should == "/hello/there"
+    booter.boot!
+    booter.public_path.should == "/hello/there"
   end
 
   it "should determine the gem path from the gem.path init parameter" do
     @rack_context.should_receive(:getInitParameter).with("gem.path").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
-    create_booter.boot!
-    @booter.gem_path.should == "."
+    booter.boot!
+    booter.gem_path.should == "."
   end
 
   it "should also be able to determine the gem path from the gem.home init parameter" do
     @rack_context.should_receive(:getInitParameter).with("gem.home").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
-    create_booter.boot!
-    @booter.gem_path.should == "."
+    booter.boot!
+    booter.gem_path.should == "."
   end
 
   it "should default gem path to '/WEB-INF/gems'" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
-    create_booter.boot!
-    @booter.gem_path.should == "./gems"
+    booter.boot!
+    booter.gem_path.should == "./gems"
   end
 
   it "should get rack environment from rack.env" do
     #ENV.delete('RACK_ENV')
     @rack_context.should_receive(:getInitParameter).with("rack.env").and_return "staging"
-    create_booter.boot!
-    @booter.rack_env.should == 'staging'
+    booter.boot!
+    booter.rack_env.should == 'staging'
   end
   
   it "should get rack environment from ENV" do
     ENV['RACK_ENV'] = 'production'
     @rack_context.stub!(:getInitParameter)
-    create_booter.boot!
-    @booter.rack_env.should == "production"
+    booter.boot!
+    booter.rack_env.should == "production"
   end
 
   it "should prepend gem_path to ENV['GEM_PATH']  " do
     ENV['GEM_PATH'] = '/other/gems'
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
-    create_booter.boot!
+    booter.boot!
     ENV['GEM_PATH'].should == "/blah/gems#{File::PATH_SEPARATOR}/other/gems"
   end
 
   it "should set ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
     ENV['GEM_PATH'] = nil
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
-    create_booter.boot!
+    booter.boot!
     ENV['GEM_PATH'].should == "/blah/gems"
   end
 
-  it "should create a logger that writes messages to the servlet context" do
-    create_booter.boot!
+  it "creates a logger that writes messages to the servlet context" do
+    booter.boot!
     @rack_context.should_receive(:log).with(/hello/)
-    @booter.logger.info "hello"
+    booter.logger.info "hello"
   end
   
-  it "should load and execute ruby code in META-INF/init.rb if it exists" do
+  before { $loaded_init_rb = nil }
+  
+  it "loads and executes ruby code in META-INF/init.rb if it exists" do
     @rack_context.should_receive(:getResource).with("/META-INF/init.rb").
       and_return java.net.URL.new("file:#{File.expand_path('init.rb', STUB_DIR)}")
-    create_booter.boot!
+    silence_warnings { booter.boot! }
     $loaded_init_rb.should == true
-    defined?(::SOME_TOPLEVEL_CONSTANT).should be_true
+    defined?(::SOME_TOPLEVEL_CONSTANT).should == "constant"
   end
 
-  it "should load and execute ruby code in WEB-INF/init.rb if it exists" do
+  it "loads and executes ruby code in WEB-INF/init.rb if it exists" do
     @rack_context.should_receive(:getResource).with("/WEB-INF/init.rb").
       and_return java.net.URL.new("file://#{File.expand_path('init.rb', STUB_DIR)}")
-    create_booter.boot!
+    silence_warnings { booter.boot! }
     $loaded_init_rb.should == true
   end
 
-  it "should adjust load path when runtime.jruby_home == /tmp" do
+  it "adjusts load path when runtime.jruby_home == /tmp" do
     tmpdir = java.lang.System.getProperty('java.io.tmpdir')
     jruby_home = JRuby.runtime.instance_config.getJRubyHome
     load_path = $LOAD_PATH.dup
@@ -138,7 +139,7 @@ describe JRuby::Rack::Booter do
       # "stub" runtime.jruby_home :
       JRuby.runtime.instance_config.setJRubyHome(tmpdir)
 
-      create_booter.boot!
+      booter.boot!
 
       expected = []
       if JRuby.runtime.is1_9

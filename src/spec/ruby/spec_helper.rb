@@ -40,11 +40,9 @@ module SharedHelpers
     @servlet_config.stub!(:getServletName).and_return "A Servlet"
     @servlet_config.stub!(:getServletContext).and_return @servlet_context
   end
-
-  def create_booter(booter_class = JRuby::Rack::Booter)
-    @booter = booter_class.new @rack_context
-    yield @booter if block_given?
-    @booter
+  
+  def silence_warnings(&block)
+    JRuby::Rack.silence_warnings(&block)
   end
 
   @@raise_logger = nil
