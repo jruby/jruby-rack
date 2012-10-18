@@ -15,17 +15,18 @@ module JRuby
     # only need to accept a rack context in your initializer and
     # provide the three *_uri methods.
     class AppLayout
+      
       attr_reader :app_uri, :public_uri, :gem_uri
 
       def initialize(rack_context)
         @rack_context = rack_context
       end
 
-      %w(app_path gem_path public_path).each do |m|
+      %w( app_path gem_path public_path ).each do |path|
         # def app_path; @app_path ||= real_path(app_uri); end
         # def app_path=(v); @app_path = v; end
-        class_eval "def #{m}; @#{m} ||= real_path(#{m.sub(/path$/,'uri')}); end"
-        class_eval "def #{m}=(v); @#{m} = v; end"
+        class_eval "def #{path}; @#{path} ||= real_path(#{path.sub('path', 'uri')}); end"
+        class_eval "def #{path}=(path); @#{path} = path; end"
       end
 
       def real_path(path)
@@ -40,29 +41,33 @@ module JRuby
     end
 
     class WebInfLayout < AppLayout
+      
       def initialize(context)
         super
-        $0 = File.join(app_path, "web.xml")
-      end
-
-      def public_uri
-        @public_uri ||= begin
-          path = @rack_context.getInitParameter('public.root') || '/'
-          path = "/#{path}" unless path =~ %r{^/}
-          path.chomp!("/") unless path == "/"
-          path
-        end
+        $0 = File.join(app_path, 'web.xml')
       end
 
       def app_uri
-        @app_uri ||= '/WEB-INF'
+        @app_uri ||= 
+          @rack_context.getInitParameter('app.root') ||
+          @rack_context.getInitParameter('rails.root') ||
+          '/WEB-INF'
       end
-
+      
       def gem_uri
         @gem_uri ||=
           @rack_context.getInitParameter('gem.path') ||
           @rack_context.getInitParameter('gem.home') ||
           '/WEB-INF/gems'
+      end
+      
+      def public_uri
+        @public_uri ||= begin
+          path = @rack_context.getInitParameter('public.root') || '/'
+          path = "/#{path}" if path[0, 1] != '/'
+          path.chomp!('/') unless path == '/'
+          path
+        end
       end
 
       def real_path(path)
@@ -73,36 +78,48 @@ module JRuby
           super
         end
       end
-
-      def change_working_directory
-        Dir.chdir(app_path) if File.directory?(app_path)
-      end
+      
     end
 
-    class RailsWebInfLayout < WebInfLayout
-      def app_uri
-        @app_uri ||= @rack_context.getInitParameter('rails.root') || '/WEB-INF'
-      end
-    end
+    RailsWebInfLayout = WebInfLayout
 
+    # #deprecated will be removed (with Merb support)
     class MerbWebInfLayout < WebInfLayout
+      
       def app_uri
         @app_uri ||= @rack_context.getInitParameter('merb.root') || '/WEB-INF'
       end
+      
     end
 
-    class RailsFilesystemLayout < AppLayout
-      def initialize(context)
-        super(context)
-        @public_uri = context.getInitParameter("public.root") || "./public"
-        @app_uri = context.getInitParameter("rails.root") || "."
-        @gem_uri = context.getInitParameter("gem.path") || context.getInitParameter("gem.home")
+    class FileSystemLayout < AppLayout
+
+      def app_uri
+        @app_uri ||=
+          @rack_context.getInitParameter('app.root') ||
+          @rack_context.getInitParameter('rails.root') ||
+          '.'
       end
 
-      # do not use context.getRealPath
+      def gem_uri
+        @gem_uri ||=
+          @rack_context.getInitParameter('gem.path') ||
+          @rack_context.getInitParameter('gem.home')
+      end
+      
+      def public_uri
+        @public_uri ||=
+          @rack_context.getInitParameter('public.root') || './public'
+      end
+
       def real_path(path)
-        path
+        File.expand_path(path)
       end
+      
     end
+    
+    RailsFileSystemLayout = FileSystemLayout
+    RailsFilesystemLayout = FileSystemLayout # backwards compatibility
+    
   end
 end

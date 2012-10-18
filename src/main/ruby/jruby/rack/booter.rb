@@ -22,39 +22,41 @@ module JRuby::Rack
     def boot!
       adjust_load_path
       ENV['RACK_ENV'] = rack_env
-      if ENV['GEM_PATH']
-        ENV['GEM_PATH'] = layout.gem_path + File::PATH_SEPARATOR + ENV['GEM_PATH']
-      else
-        ENV['GEM_PATH'] = layout.gem_path
+      gem_path = layout.gem_path
+      if env_gem_path = ENV['GEM_PATH']
+        if gem_path.nil? || gem_path.empty?
+          gem_path = env_gem_path # keep ENV['GEM_PATH'] as is
+        elsif env_gem_path != gem_path
+          gem_path = "#{gem_path}#{File::PATH_SEPARATOR}#{env_gem_path}"
+        end
       end
+      ENV['GEM_PATH'] = gem_path
+      change_working_directory
       load_settings_from_init_rb
-      layout.change_working_directory if layout.respond_to?(:change_working_directory)
       load_extensions
       self
     end
-
+    
     def default_layout_class
-      layout_class = @rack_context.getInitParameter 'jruby.rack.layout_class'
-      layout_class.nil? ? WebInfLayout : eval(layout_class)
+      klass = @rack_context.getInitParameter 'jruby.rack.layout_class'
+      klass.nil? ? WebInfLayout : eval(klass) # TODO really eval ?!
     end
 
     def layout_class
       @layout_class ||= default_layout_class
     end
-
-    def layout_class=(layout_class)
-      @layout_class = layout_class
-    end
+    attr_writer :layout_class
 
     def layout
       @layout ||= layout_class.new(@rack_context)
     end
+    attr_writer :layout
 
-    %w(app_path gem_path public_path).each do |m|
+    %w( app_path gem_path public_path ).each do |path|
       # def app_path; layout.app_path; end
-      # def app_path=(v); layout.app_path = v; end
-      class_eval "def #{m}; layout.#{m}; end"
-      class_eval "def #{m}=(v); layout.#{m} = v; end"
+      # def app_path=(path); layout.app_path = path; end
+      class_eval "def #{path}; layout.#{path}; end"
+      class_eval "def #{path}=(path); layout.#{path} = path; end"
     end
 
     def logdev
@@ -71,6 +73,11 @@ module JRuby::Rack
       JRuby::Rack.silence_warnings(&block)
     end
 
+    def change_working_directory
+      app_path = layout.app_path
+      Dir.chdir(app_path) if app_path && File.directory?(app_path)
+    end
+    
     def adjust_load_path
       # http://kenai.com/jira/browse/JRUBY_RACK-8 If some containers do
       # not allow proper detection of jruby.home, fall back to this
@@ -138,7 +145,7 @@ module JRuby::Rack
     def path_to_file(url)
       begin
         url.toURI.toString
-      rescue java.net.URISyntaxException => e
+      rescue java.net.URISyntaxException
         url.toString
       end
     end

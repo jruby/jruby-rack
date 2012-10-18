@@ -58,34 +58,43 @@ describe JRuby::Rack::Booter do
     booter.gem_path.should == "."
   end
 
-  it "should default gem path to '/WEB-INF/gems'" do
+  it "defaults gem path to '/WEB-INF/gems'" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
     booter.boot!
     booter.gem_path.should == "./gems"
   end
 
-  it "should get rack environment from rack.env" do
+  it "gets rack environment from rack.env" do
     #ENV.delete('RACK_ENV')
     @rack_context.should_receive(:getInitParameter).with("rack.env").and_return "staging"
     booter.boot!
     booter.rack_env.should == 'staging'
   end
   
-  it "should get rack environment from ENV" do
+  it "gets rack environment from ENV" do
     ENV['RACK_ENV'] = 'production'
     @rack_context.stub!(:getInitParameter)
     booter.boot!
-    booter.rack_env.should == "production"
+    booter.rack_env.should == 'production'
   end
 
-  it "should prepend gem_path to ENV['GEM_PATH']  " do
+  it "prepends gem_path to ENV['GEM_PATH']" do
     ENV['GEM_PATH'] = '/other/gems'
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
     booter.boot!
     ENV['GEM_PATH'].should == "/blah/gems#{File::PATH_SEPARATOR}/other/gems"
   end
 
-  it "should set ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
+  it "keeps ENV['GEM_PATH'] when gem_path is nil" do
+    ENV['GEM_PATH'] = '/some/other/gems'
+    booter.layout = layout = mock('layout')
+    layout.stub!(:app_path).and_return '.'
+    layout.should_receive(:gem_path).and_return nil
+    booter.boot!
+    ENV['GEM_PATH'].should == "/some/other/gems"
+  end  
+  
+  it "sets ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
     ENV['GEM_PATH'] = nil
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
     booter.boot!
@@ -115,6 +124,32 @@ describe JRuby::Rack::Booter do
     $loaded_init_rb.should == true
   end
 
+  it "delegates _path methods to layout" do
+    booter.should_receive(:layout).at_least(:once).and_return layout = mock('layout')
+    layout.should_receive(:app_path).and_return 'app/path'
+    layout.should_receive(:gem_path).and_return 'gem/path'
+    layout.should_receive(:public_path).and_return 'public/path'
+    
+    expect( booter.app_path ).to eq 'app/path'
+    expect( booter.gem_path ).to eq 'gem/path'
+    expect( booter.public_path ).to eq 'public/path'
+  end
+
+  it "changes working directory to app path on boot" do
+    wd = Dir.pwd
+    begin
+      booter.stub!(:layout).and_return layout = mock('layout')
+      layout.stub!(:app_path).and_return parent = File.expand_path('..')
+      layout.stub!(:gem_path)
+      layout.stub!(:public_path)
+
+      booter.boot!
+      expect( Dir.pwd ).to eq parent
+    ensure
+      Dir.chdir(wd)
+    end
+  end
+  
   it "adjusts load path when runtime.jruby_home == /tmp" do
     tmpdir = java.lang.System.getProperty('java.io.tmpdir')
     jruby_home = JRuby.runtime.instance_config.getJRubyHome
