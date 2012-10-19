@@ -147,17 +147,14 @@ module JRuby
             @body.call response.getOutputStream
           elsif @body.respond_to?(:to_path) # send_file
             send_file @body.to_path, response
-          elsif @body.respond_to?(:to_channel) && 
-              ! object_polluted_with_anyio?(@body, :to_channel)
+          elsif @body.respond_to?(:to_channel)
             body = @body.to_channel # so that we close the channel
             transfer_channel body, response.getOutputStream
-          elsif @body.respond_to?(:to_inputstream) && 
-              ! object_polluted_with_anyio?(@body, :to_inputstream)
+          elsif @body.respond_to?(:to_inputstream)
             body = @body.to_inputstream # so that we close the stream
             body = Channels.newChannel(body) # closing the channel closes the stream
             transfer_channel body, response.getOutputStream
-          elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel) && 
-              ! object_polluted_with_anyio?(@body.body_parts, :to_channel)
+          elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel)
             # ActionDispatch::Response "raw" body access in case it's a File
             body = @body.body_parts.to_channel # so that we close the channel
             transfer_channel body, response.getOutputStream
@@ -278,21 +275,6 @@ module JRuby
           while buffer.has_remaining
             output_channel.write(buffer)
           end
-        end
-      end
-      
-      # Fixnum should not have this method, and it shouldn't be on Object
-      @@object_polluted = ( Fixnum.method(:to_channel).owner == Object ) rescue nil # :nodoc
-      
-      # See http://bugs.jruby.org/5444 - we need to account for pre-1.6 JRuby 
-      # where Object was polluted with #to_channel ( by IOJavaAddions.AnyIO )
-      def object_polluted_with_anyio?(obj, meth) # :nodoc
-        @@object_polluted && begin
-          # The object should not have this method, and
-          # it shouldn't be on Object
-          obj.method(meth).owner == Object
-        rescue
-          false
         end
       end
       
