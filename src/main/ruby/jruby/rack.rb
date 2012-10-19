@@ -81,7 +81,6 @@ require 'jruby/rack/booter'
 require 'jruby/rack/response'
 require 'jruby/rack/servlet_ext'
 require 'jruby/rack/core_ext'
-require 'jruby/rack/bundler_ext'
 
 # loading Rack is delayed to allow the application to boot it's desired Rack
 # version (if it needs one) e.g. in a Rails application until Bundler setups
