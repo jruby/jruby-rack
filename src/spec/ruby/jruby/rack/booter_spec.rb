@@ -12,10 +12,10 @@ describe JRuby::Rack::Booter do
   
   let(:booter) { JRuby::Rack::Booter.new(@rack_context) }
 
-  RACK_ENV = ENV['RACK_ENV']
+  @@rack_env = ENV['RACK_ENV']
   
   after do
-    RACK_ENV.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = RACK_ENV
+    @@rack_env.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = @@rack_env
   end
   
   it "should determine the public html root from the 'public.root' init parameter" do
@@ -65,7 +65,7 @@ describe JRuby::Rack::Booter do
   end
 
   it "gets rack environment from rack.env" do
-    #ENV.delete('RACK_ENV')
+    ENV.delete('RACK_ENV')
     @rack_context.should_receive(:getInitParameter).with("rack.env").and_return "staging"
     booter.boot!
     booter.rack_env.should == 'staging'

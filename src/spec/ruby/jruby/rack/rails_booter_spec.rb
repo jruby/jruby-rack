@@ -24,10 +24,11 @@ describe JRuby::Rack::RailsBooter do
     booter.app_path.should == "./WEB-INF"
   end
 
-  RAILS_ENV = ENV['RAILS_ENV']
+  @@rails_env = ENV['RAILS_ENV']; @@rack_env = ENV['RACK_ENV']
   
   after do
-    RAILS_ENV.nil? ? ENV.delete('RAILS_ENV') : ENV['RAILS_ENV'] = RAILS_ENV
+    @@rails_env.nil? ? ENV.delete('RAILS_ENV') : ENV['RAILS_ENV'] = @@rails_env
+    @@rack_env.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = @@rack_env
   end
   
   it "should default RAILS_ROOT to /WEB-INF" do
@@ -36,29 +37,30 @@ describe JRuby::Rack::RailsBooter do
     booter.app_path.should == "./WEB-INF"
   end
 
-  it "should leave ENV['RAILS_ENV'] as is if it was already set" do
+  it "leaves ENV['RAILS_ENV'] as is if it was already set" do
     ENV['RAILS_ENV'] = 'staging'
     booter.boot!
     ENV['RAILS_ENV'].should == 'staging'
     booter.rails_env.should == "staging"
   end
 
-  it "should determine RAILS_ENV from the 'rails.env' init parameter" do
-    #ENV['RAILS_ENV'] = nil
+  it "determines RAILS_ENV from the 'rails.env' init parameter" do
+    ENV['RAILS_ENV'] = nil
     @rack_context.should_receive(:getInitParameter).with("rails.env").and_return "test"
     booter.boot!
     booter.rails_env.should == "test"
   end
 
-  it "should get rails environment from rack environmnent" do
+  it "gets rails environment from rack environmnent" do
+    ENV.delete('RAILS_ENV')
     ENV['RACK_ENV'] = 'development'
     @rack_context.stub!(:getInitParameter)
     booter.boot!
     booter.rails_env.should == 'development'
   end
   
-  it "should default RAILS_ENV to 'production'" do
-    ENV['RAILS_ENV'] = nil
+  it "default RAILS_ENV to 'production'" do
+    ENV.delete('RAILS_ENV'); ENV.delete('RACK_ENV')
     booter.boot!
     booter.rails_env.should == "production"
   end
