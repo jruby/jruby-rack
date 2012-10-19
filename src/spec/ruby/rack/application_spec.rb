@@ -241,6 +241,8 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
           @runtime = org.jruby.Ruby.newInstance
           app_factory.send :initializeRuntime, @runtime
 
+          @runtime.evalScriptlet 'puts "initializeRuntime $LOADED_FEATURES: #{$LOADED_FEATURES.inspect}"'
+          
           reject_files = 
             "p =~ /.jar$/ || " + 
             "p =~ /^builtin/ || " + 
