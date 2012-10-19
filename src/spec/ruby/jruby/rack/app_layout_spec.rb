@@ -80,15 +80,20 @@ shared_examples "FileSystemLayout" do
   it "sets gem path based on gem.path context init param" do
     @rack_context.should_receive(:getInitParameter).with("gem.path").and_return "gem/path/"
     expect( layout.gem_uri ).to eq "gem/path/"
-    
     expect( layout.gem_path ).to eq File.expand_path("gem/path")
   end
   
   it "sets gem path based on gem.home context init param" do
     @rack_context.should_receive(:getInitParameter).with("gem.home").and_return "gem/home"
     expect( layout.gem_uri ).to eq "gem/home"
-    
     expect( layout.gem_path ).to eq File.expand_path("gem/home")
+  end
+
+  it "gem_path returns nil (assumes to be set from ENV) when not set" do
+    @rack_context.should_receive(:getInitParameter).with("gem.home").and_return nil
+    @rack_context.should_receive(:getInitParameter).with("gem.path").and_return nil
+    expect( layout.gem_uri ).to be nil
+    expect( layout.gem_path ).to be nil
   end
   
 end

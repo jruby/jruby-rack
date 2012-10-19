@@ -37,7 +37,7 @@ module JRuby
         end
         rpath
       end
-
+      
     end
 
     class WebInfLayout < AppLayout
@@ -113,7 +113,7 @@ module JRuby
       end
 
       def real_path(path)
-        File.expand_path(path)
+        path.nil? ? nil : File.expand_path(path)
       end
       
     end
