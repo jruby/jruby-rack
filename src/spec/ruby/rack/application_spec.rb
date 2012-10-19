@@ -241,7 +241,29 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
           @runtime = org.jruby.Ruby.newInstance
           app_factory.send :initializeRuntime, @runtime
 
-          @runtime.evalScriptlet 'puts "initializeRuntime $LOADED_FEATURES: #{$LOADED_FEATURES.inspect}"'
+          #@runtime.evalScriptlet 'puts "initializeRuntime $LOADED_FEATURES: #{$LOADED_FEATURES.inspect}"'
+          # NOTE: the above scriptlet behaves slightly different on Travis-CI
+          # depending on whether jruby + JRUBY_OPTS="--1.9" is used and or using
+          # jruby-19mode with the later the LOADED_FEATURES do get expanded e.g. :
+          # 
+          #   "/home/travis/builds/kares/jruby-rack/target/classes/rack/handler/servlet.rb", 
+          #   "/home/travis/builds/kares/jruby-rack/target/classes/jruby/rack.rb", 
+          #   "/home/travis/builds/kares/jruby-rack/target/classes/jruby/rack/environment.rb", 
+          #   "java.rb", 
+          #   "/home/travis/.rvm/rubies/jruby-1.6.8-d19/lib/ruby/site_ruby/shared/builtin/javasupport.rb", 
+          #   "/home/travis/.rvm/rubies/jruby-1.6.8-d19/lib/ruby/site_ruby/shared/builtin/javasupport/java.rb", 
+          #   ...
+          #
+          # compared to jruby --1.9 :
+          #
+          #   "enumerator.jar", 
+          #   "rack/handler/servlet.rb", 
+          #   "jruby/rack.rb", 
+          #   "jruby/rack/environment.rb", 
+          #   "java.rb", 
+          #   "builtin/javasupport.rb", 
+          #   "builtin/javasupport/java.rb", 
+          #   ...
           
           reject_files = 
             "p =~ /.jar$/ || " + 
