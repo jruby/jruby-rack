@@ -89,11 +89,7 @@ task :resources => ['target/classes', :unpack_gem] do |t|
   end
 end
 
-task :test_resources => ['target/test-classes'] do |t|
-  FileList["src/spec/ruby/merb/gems/gems/merb-core-*/lib/*"].each do |f|
-    cp_r f, t.prerequisites.first
-  end
-end
+task :test_resources => ["target/test-classes"]
 
 namespace :resources do
   desc "Copy (and generate) resources"

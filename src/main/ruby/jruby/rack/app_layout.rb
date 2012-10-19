@@ -83,15 +83,6 @@ module JRuby
 
     RailsWebInfLayout = WebInfLayout
 
-    # #deprecated will be removed (with Merb support)
-    class MerbWebInfLayout < WebInfLayout
-      
-      def app_uri
-        @app_uri ||= @rack_context.getInitParameter('merb.root') || '/WEB-INF'
-      end
-      
-    end
-
     class FileSystemLayout < AppLayout
 
       def app_uri
