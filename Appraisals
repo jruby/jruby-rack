@@ -24,7 +24,5 @@ appraise "rails40" do
   # No such file or directory - [...]/jruby-rack/src/spec/stub/rails40/WEB-INF/config/database.yml
   # NOTE: AR-JDBC stable (nor master) ain't 4.0 ready yet, thus :
   gem 'activerecord-jdbc-adapter', :github => 'kares/activerecord-jdbc-adapter'
-    #path: '/home/kares/workspace/github/activerecord-jdbc-adapter'
   gem 'activerecord-jdbcsqlite3-adapter'
-    #path: '/home/kares/workspace/github/activerecord-jdbc-adapter/activerecord-jdbcsqlite3-adapter'
 end
