@@ -67,16 +67,20 @@ public class DefaultRackConfig implements RackConfig {
     }
     
     public CompatVersion getCompatVersion() {
-        String versionString = getProperty("jruby.compat.version");
-        if (versionString != null) {
-            final Pattern pattern = Pattern.compile("1[._]([89])");
-            final Matcher matcher = pattern.matcher(versionString);
-            if (matcher.find()) {
-                final String version = matcher.group(1);
-                if (version.equals("8")) {
-                    return CompatVersion.RUBY1_8;
-                } else if (version.equals("9")) {
-                    return CompatVersion.RUBY1_9;
+        final String version = getProperty("jruby.compat.version");
+        if ( version != null ) {
+            // we handle 1.8, RUBY1_9, --2.0m 1_9 etc :
+            final Pattern pattern = Pattern.compile("([12])[._]([890])");
+            final Matcher matcher = pattern.matcher(version);
+            if ( matcher.find() ) {
+                final String name = "RUBY" + 
+                    matcher.group(1) + '_' + matcher.group(2);
+                try {
+                    return Enum.valueOf(CompatVersion.class, name);
+                }
+                catch (IllegalArgumentException e) {
+                    getLogger().log(RackLogger.WARN, 
+                        "could not resolve compat version from '"+ version +"' will use default", e);
                 }
             }
         }

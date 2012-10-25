@@ -93,12 +93,14 @@ describe org.jruby.rack.servlet.ServletRackConfig do
 
   describe "runtime arguments" do
     it "should retrieve single argument from jruby.runtime.arguments" do
-      @servlet_context.should_receive(:getInitParameter).with("jruby.runtime.arguments").and_return nil
+      @servlet_context.should_receive(:getInitParameter).with("jruby.runtime.arguments").
+        and_return nil
       config.runtime_arguments.should be_nil
     end
     
     it "should retrieve single argument from jruby.runtime.arguments" do
-      @servlet_context.should_receive(:getInitParameter).with("jruby.runtime.arguments").and_return "--profile"
+      @servlet_context.should_receive(:getInitParameter).with("jruby.runtime.arguments").
+        and_return "--profile"
       args = config.runtime_arguments
       args.should_not be_nil
       args.length.should == 1
@@ -106,7 +108,8 @@ describe org.jruby.rack.servlet.ServletRackConfig do
     end
     
     it "should retrieve multiple argument from jruby.runtime.arguments" do
-      @servlet_context.should_receive(:getInitParameter).with("jruby.runtime.arguments").and_return " --compat RUBY1_8 \n --profile.api  --debug  \n\r"
+      @servlet_context.should_receive(:getInitParameter).with("jruby.runtime.arguments").
+        and_return " --compat RUBY1_8 \n --profile.api  --debug  \n\r"
       args = config.runtime_arguments
       args.should_not be_nil
       args.length.should == 4
@@ -123,41 +126,80 @@ describe org.jruby.rack.servlet.ServletRackConfig do
     end
 
     it "is false when overridden by jruby.rack.input.rewindable" do
-      @servlet_context.should_receive(:getInitParameter).with("jruby.rack.input.rewindable").and_return "false"
+      @servlet_context.should_receive(:getInitParameter).with("jruby.rack.input.rewindable").
+        and_return "false"
       config.should_not be_rewindable
     end
   end
 
+  it "sets compat version from init parameter" do
+    @servlet_context.should_receive(:getInitParameter).with("jruby.compat.version").
+      and_return "RUBY1_9"
+    expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY1_9
+  end
+
+  it "sets compat version from init parameter (dot syntax)" do
+    @servlet_context.should_receive(:getInitParameter).with("jruby.compat.version").
+      and_return "1.8"
+    expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY1_8
+  end
+
+  it "leaves compat version nil if not specified" do
+    @servlet_context.should_receive(:getInitParameter).with("jruby.compat.version").
+      and_return nil
+    expect( config.getCompatVersion ).to be nil
+  end
+
+  it "leaves compat version nil if invalid value specified" do
+    @servlet_context.should_receive(:getInitParameter).with("jruby.compat.version").
+      and_return "4.2"
+    expect( config.getCompatVersion ).to be nil
+  end
+  
+  if JRUBY_VERSION >= '1.7.0'
+    it "sets compat version 2.0 from init parameter" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.compat.version").
+        and_return "RUBY2_0"
+      expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY2_0
+    end
+
+    it "sets compat version 2.0 from init parameter (dot syntax)" do
+      @servlet_context.should_receive(:getInitParameter).with("jruby.compat.version").
+        and_return "2_0"
+      expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY2_0
+    end
+  end
+  
   describe "custom-properties" do
 
     it "parser an int property" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.some.timeout").and_return "1"
-      config.getNumberProperty('jruby.some.timeout').should == 1
+      expect( config.getNumberProperty('jruby.some.timeout') ).to eql 1
     end
 
     it "returns a default value" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.some.timeout").and_return nil
-      config.getNumberProperty('jruby.some.timeout', java.lang.Integer.new(10)).should == 10
+      expect( config.getNumberProperty('jruby.some.timeout', java.lang.Integer.new(10)) ).to eql 10
     end
     
     it "parser a float property" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.some.timeout").and_return "0.25"
-      config.getNumberProperty('jruby.some.timeout').should == 0.25
+      expect( config.getNumberProperty('jruby.some.timeout') ).to eql 0.25
     end
 
     it "parser a big negative value" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.some.timeout").and_return "-20000000000"
-      config.getNumberProperty('jruby.some.timeout').should == -20000000000
+      expect( config.getNumberProperty('jruby.some.timeout') ).to eql -20000000000.0
     end
 
     it "parser a boolean flag" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.some.flag").and_return "true"
-      config.getBooleanProperty('jruby.some.flag').should == true
+      expect( config.getBooleanProperty('jruby.some.flag') ).to be true
     end
 
     it "parser a boolean (falsy) flag" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.some.flag").and_return "F"
-      config.getBooleanProperty('jruby.some.flag').should == false
+      expect( config.getBooleanProperty('jruby.some.flag') ).to be false
     end
     
   end
