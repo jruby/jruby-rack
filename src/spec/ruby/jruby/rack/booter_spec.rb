@@ -150,52 +150,91 @@ describe JRuby::Rack::Booter do
     end
   end
   
-  it "adjusts load path when runtime.jruby_home == /tmp" do
-    tmpdir = java.lang.System.getProperty('java.io.tmpdir')
-    jruby_home = JRuby.runtime.instance_config.getJRubyHome
-    load_path = $LOAD_PATH.dup
-    begin # emulating a "bare" load path :
-      $LOAD_PATH.clear
-      if JRuby.runtime.is1_9
-        # a-realistic setup would be having those commented - but
-        # to test the branched code I've added artificial noise :
-        $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/1.9"
-        #$LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/shared"
-        $LOAD_PATH << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
-        $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/1.8"
-        #$LOAD_PATH << "#{tmpdir}/lib/ruby/1.9"
-      else
-        $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/1.8"
-        #$LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/shared"
-        $LOAD_PATH << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
-        #$LOAD_PATH << "#{tmpdir}/lib/ruby/1.8"
-      end
-      $LOAD_PATH << "."
-      # "stub" runtime.jruby_home :
-      JRuby.runtime.instance_config.setJRubyHome(tmpdir)
+  require 'jruby'
+  
+  if JRUBY_VERSION >= '1.7.0'
+    it "adjusts load path when runtime.jruby_home == /tmp" do
+      tmpdir = java.lang.System.getProperty('java.io.tmpdir')
+      jruby_home = JRuby.runtime.instance_config.getJRubyHome
+      load_path = $LOAD_PATH.dup
+      begin # emulating a "bare" load path :
+        $LOAD_PATH.clear
+        $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby"
+        $LOAD_PATH << "#{tmpdir}/lib/ruby/shared"
+        $LOAD_PATH << (JRuby.runtime.is1_9 ? "#{tmpdir}/lib/ruby/1.9" : "#{tmpdir}/lib/ruby/1.8")
+        $LOAD_PATH << "." if RUBY_VERSION.index('1.8')
+        # "stub" runtime.jruby_home :
+        JRuby.runtime.instance_config.setJRubyHome(tmpdir)
 
-      booter.boot!
+        #booter.stub!(:require)
+        booter.boot!
 
-      expected = []
-      if JRuby.runtime.is1_9
-        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.9"
-        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
-        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
-        #expected << "classpath:/META-INF/jruby.home/lib/ruby/1.9"
-        expected << "."
-        expected << "classpath:/META-INF/jruby.home/lib/ruby/1.9"
-      else
-        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
-        expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
-        #expected << "classpath:/META-INF/jruby.home/lib/ruby/1.8"
-        expected << "."
-        expected << "classpath:/META-INF/jruby.home/lib/ruby/1.8"
+        expected = []
+        if JRuby.runtime.is1_9
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby"
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/shared"
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/1.9"
+        else
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby"
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/shared"
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/1.8"
+          expected << "."
+        end
+        $LOAD_PATH.should == expected
+      ensure # restore all runtime modifications :
+        $LOAD_PATH.clear
+        $LOAD_PATH.replace load_path
+        JRuby.runtime.instance_config.setJRubyHome(jruby_home)
       end
-      $LOAD_PATH.should == expected
-    ensure # restore all runtime modifications :
-      $LOAD_PATH.clear
-      $LOAD_PATH.replace load_path
-      JRuby.runtime.instance_config.setJRubyHome(jruby_home)
+    end
+  else
+    it "adjusts load path when runtime.jruby_home == /tmp" do
+      tmpdir = java.lang.System.getProperty('java.io.tmpdir')
+      jruby_home = JRuby.runtime.instance_config.getJRubyHome
+      load_path = $LOAD_PATH.dup
+      begin # emulating a "bare" load path :
+        $LOAD_PATH.clear
+        if JRuby.runtime.is1_9
+          # a-realistic setup would be having those commented - but
+          # to test the branched code there's artificial noise :
+          $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/1.9"
+          #$LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/shared"
+          $LOAD_PATH << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
+          $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/1.8"
+          #$LOAD_PATH << "#{tmpdir}/lib/ruby/1.9"
+        else
+          $LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/1.8"
+          #$LOAD_PATH << "#{tmpdir}/lib/ruby/site_ruby/shared"
+          $LOAD_PATH << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
+          #$LOAD_PATH << "#{tmpdir}/lib/ruby/1.8"
+        end
+        $LOAD_PATH << "."
+        # "stub" runtime.jruby_home :
+        JRuby.runtime.instance_config.setJRubyHome(tmpdir)
+
+        booter.boot!
+
+        expected = []
+        if JRuby.runtime.is1_9
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.9"
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
+          #expected << "classpath:/META-INF/jruby.home/lib/ruby/1.9"
+          expected << "."
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/1.9"
+        else
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
+          #expected << "classpath:/META-INF/jruby.home/lib/ruby/1.8"
+          expected << "."
+          expected << "classpath:/META-INF/jruby.home/lib/ruby/1.8"
+        end
+        $LOAD_PATH.should == expected
+      ensure # restore all runtime modifications :
+        $LOAD_PATH.clear
+        $LOAD_PATH.replace load_path
+        JRuby.runtime.instance_config.setJRubyHome(jruby_home)
+      end
     end
   end
   
