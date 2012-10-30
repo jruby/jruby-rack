@@ -115,7 +115,10 @@ module JRuby
             if dechunk?
               # NOTE: due Rails 3.2 stream-ed rendering http://git.io/ooCOtA#L223
               term = "\r\n"; tail = "0#{term}#{term}".freeze
-              chunk = /([0-9a-f]+)#{Regexp.escape(term)}(.+)#{Regexp.escape(term)}/mo
+              # we assume no support here for chunk-extensions e.g. 
+              # chunk = chunk-size [ chunk-extension ] CRLF chunk-data CRLF
+              # no need to be handled - we simply unwrap what Rails chunked :
+              chunk = /^([0-9a-fA-F]+)#{Regexp.escape(term)}(.+)#{Regexp.escape(term)}/mo
               @body.send(method) do |line|
                 if line == tail
                   # "0\r\n\r\n" NOOP
