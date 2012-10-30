@@ -8,7 +8,6 @@
 package org.jruby.rack.logging;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogConfigurationException;
 import org.apache.commons.logging.LogFactory;
 
 import org.jruby.rack.RackLogger;
@@ -22,11 +21,7 @@ public class CommonsLoggingLogger implements RackLogger {
     }
 
     public void setLoggerName(String loggerName) {
-        try {
-            logger = LogFactory.getLog(loggerName);
-        } catch (LogConfigurationException e) {
-            throw new LoggerConfigurationException("Unable to configure logger", e);
-        }
+        logger = LogFactory.getLog(loggerName);
     }
 
     public void log(String message) {
