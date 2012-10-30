@@ -142,7 +142,22 @@
 
   <build>
     <defaultGoal>install</defaultGoal>
+    <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+    <resources>
+        <resource>
+            <directory>${basedir}/src/main/ruby</directory>
+        </resource>
+        <resource>
+            <directory>${basedir}/src/main/tld</directory>
+            <targetPath>META-INF</targetPath>
+        </resource>
+    </resources>
     <testSourceDirectory>${basedir}/src/spec/java</testSourceDirectory>
+    <testResources>
+        <testResource>
+            <directory>${basedir}/src/spec/ruby</directory>
+        </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -166,8 +181,8 @@
         <version>${jruby.version}</version>
         <executions>
           <execution>
-            <id>install-gems</id>
-            <phase>generate-resources</phase>
+            <id>gem-install-bundler</id>
+            <phase>test</phase>
             <goals><goal>install-gems</goal></goals>
             <configuration>
               <gems>bundler</gems>
@@ -175,26 +190,28 @@
           </execution>
           <execution>
             <id>bundle-install</id>
-            <phase>generate-resources</phase>
+            <phase>test</phase>
             <goals><goal>jruby</goal></goals>
             <configuration>
               <args>-S bundle install</args>
             </configuration>
           </execution>
           <execution>
-            <id>unpack-gem</id>
-            <phase>generate-resources</phase>
-            <goals><goal>rake</goal></goals>
-            <configuration>
-              <args>resources VERSION=${project.version}</args>
-            </configuration>
-          </execution>
-          <execution>
-            <id>spec</id>
+            <id>rake-spec</id>
             <phase>test</phase>
             <goals><goal>rake</goal></goals>
             <configuration>
               <args>speconly SKIP_SPECS=${maven.test.skip}</args>
+            </configuration>
+          </execution>
+          <execution>
+            <id>rake-resources</id>
+            <phase>prepare-package</phase>
+            <!-- bind "late" so we do not run during compile/test-compile -->
+            <goals><goal>rake</goal></goals>
+            <configuration>
+              <!-- additional (ruby) generated resources -->
+              <args>resources VERSION=${project.version}</args>
             </configuration>
           </execution>
         </executions>

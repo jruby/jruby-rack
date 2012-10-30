@@ -9,45 +9,44 @@ raise "JRuby-Rack must be built with JRuby: try again with `jruby -S rake'" unle
 
 begin
   require 'bundler/setup'
-rescue
+rescue LoadError => e
+  require('rubygems') && retry
   puts "Please install Bundler and run `bundle install` to ensure you have all dependencies"
+  raise e
 end
 require 'appraisal'
 
-require 'rake/clean'
-require 'date'
-require 'java'
-
-def compile_classpath
-  test_classpath.reject {|p| p =~ /target\/(test-)?classes$/}
+desc "Remove target directory"
+task :clean do
+  rm_r 'target' rescue nil
 end
 
-def test_classpath
-  require './target/classpath'
-  Maven.classpath
-end
+GENERATED = FileList.new
 
-CLEAN << 'target'
+namespace :clean do
+  desc "Remove generated files"
+  task :generated do
+    GENERATED.each { |fn| rm_r fn rescue nil }
+  end
+end
 
 directory 'target/classes'
 
 file 'target/classpath.rb' do
   sh 'mvn org.jruby.plugins:jruby-rake-plugin:classpath -Djruby.classpath.scope=test'
 end
+GENERATED << 'target/classpath.rb'
 
-desc "Compile java classes"
-task :compile => ["target/classes", "target/classpath.rb"] do |t|
-  debug = ENV['DEBUG'] ? '-g' : ''
-  sh "javac -Xlint:deprecation -Xlint:unchecked #{debug} -classpath \"" + compile_classpath.join(File::PATH_SEPARATOR) + '" -source 1.5 ' +
-    '-target 1.5 -d ' + t.prerequisites.first + ' ' + Dir["src/main/java/**/*.java"].join(" ")
+desc "Compile classes"
+task :compile => [:'target/classes'] do |t|
+  sh 'mvn compile'
 end
 
 directory 'target/test-classes'
 
-desc "Compile classes used for test/spec"
-task :compilespec => ["target/test-classes", "target/classpath.rb"] do |t|
-  sh 'javac -classpath "' + test_classpath.join(File::PATH_SEPARATOR) + '" -source 1.5 ' +
-    '-target 1.5 -d ' + t.prerequisites.first + ' ' + Dir["src/spec/java/**/*.java"].join(" ")
+desc "Compile test classes"
+task :test_compile => ['target/test-classes'] do |t|
+  sh 'mvn test-compile'
 end
 
 desc "Unpack the rack gem"
@@ -67,14 +66,15 @@ task :unpack_gem => "target" do |t|
     File.open("#{target}/vendor/rack.rb", "w") do |f|
       f << "dir = File.dirname(__FILE__)\n"
       f << "if dir =~ /.jar!/ && dir !~ /^file:/\n"
-      f << "$LOAD_PATH.unshift 'file:' + dir + '/#{rack_dir}'\n"
+      f << "  $LOAD_PATH.unshift 'file:' + dir + '/#{rack_dir}'\n"
       f << "else\n"
-      f << "$LOAD_PATH.unshift dir + '/#{rack_dir}'\n"
+      f << "  $LOAD_PATH.unshift dir + '/#{rack_dir}'\n"
       f << "end\n"
       f << "require 'rack'"
     end
   end
 end
+GENERATED << 'target/vendor/rack.rb'
 
 load version_file = 'src/main/ruby/jruby/rack/version.rb'
 
@@ -82,34 +82,39 @@ task :update_version do
   if ENV["VERSION"] && ENV["VERSION"] != JRuby::Rack::VERSION
     lines = File.readlines(version_file)
     lines.each {|l| l.sub!(/VERSION =.*$/, %{VERSION = "#{ENV["VERSION"]}"})}
-    File.open(version_file, "wb") {|f| f.puts *lines }
+    File.open(version_file, "wb") { |f| f.puts *lines }
   end
 end
 
-
-task :test_resources => ["target/test-classes"] do |t|
-  FileList["src/spec/ruby/merb/gems/gems/merb-core-*/lib/*"].each do |f|
-    cp_r f, t.prerequisites.first
-  end
-end
-
-desc "Copy resources"
-task :resources => ["target/classes", :unpack_gem, :update_version, :test_resources] do |t|
+desc "Generate (ruby) resources"
+task :resources => ['target/classes', :unpack_gem, :update_version] do |t|
   rack_dir = File.basename(FileList["target/rack-*"].first)
   classes_dir = t.prerequisites.first
-  { 'src/main/ruby' => classes_dir,
-    'target/vendor' => "#{classes_dir}/vendor",
-    "target/#{rack_dir}/lib" => "#{t.prerequisites.first}/vendor/#{rack_dir}"}.each do |src,dest|
+  { 'target/vendor' => "#{classes_dir}/vendor",
+    "target/#{rack_dir}/lib" => "#{classes_dir}/vendor/#{rack_dir}"}.each do |src,dest|
     mkdir_p dest
     FileList["#{src}/*"].each do |f|
       cp_r f, dest
     end
   end
-  mkdir_p meta_inf = File.join(t.prerequisites.first, "META-INF")
-  cp "src/main/tld/jruby-rack.tld", meta_inf
 end
 
-task :speconly => ['target/classpath.rb'] do
+task :test_resources => ['target/test-classes'] do |t|
+  FileList["src/spec/ruby/merb/gems/gems/merb-core-*/lib/*"].each do |f|
+    cp_r f, t.prerequisites.first
+  end
+end
+
+namespace :resources do
+  desc "Copy (and generate) resources"
+  task :copy => :resources do
+    sh 'mvn process-resources'
+  end
+  desc "Generate test resources"
+  task :test => :test_resources
+end
+
+task :speconly => ['target/classpath.rb', :resources, :test_resources] do
   if ENV['SKIP_SPECS'] && ENV['SKIP_SPECS'] == "true"
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
@@ -121,17 +126,16 @@ task :speconly => ['target/classpath.rb'] do
 end
 
 desc "Run specs"
-task :spec => [:compile, :resources, :compilespec, :speconly]
-
+task :spec => [:compile, :test_compile, :speconly]
 task :test => :spec
 
 file "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" => :always_build do |t|
   Rake::Task['spec'].invoke
   sh "jar cf #{t.name} -C target/classes ."
 end
-task :always_build              # dummy task to force jar to get built
+task :always_build # dummy task to force jar to get built
 
-desc "Create the jar"
+desc "Create the jruby-rack-#{JRuby::Rack::VERSION}.jar"
 task :jar => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"
 
 task :default => :jar
@@ -141,19 +145,15 @@ task :debug do
   Rake::Task['jar'].invoke
 end
 
-task :install => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" do |t|
-  repos_dir = File.expand_path "~/.m2/repository/org/jruby/rack/jruby-rack/#{JRuby::Rack::VERSION}"
-  mkdir_p repos_dir
-  cp t.prerequisites.first, repos_dir
-  cp "pom.xml", "#{repos_dir}/jruby-rack-#{JRuby::Rack::VERSION}.pom"
+desc "Print the (Maven) class-path"
+task :classpath => 'target/classpath.rb' do
+  require './target/classpath'
+  classpath = Maven.classpath
+  classpath = classpath.reject { |p| p =~ /target\/(test-)?classes$/ }
+  puts *classpath
 end
 
-task :classpaths do
-  puts "compile_classpath:",*compile_classpath
-  puts "test_classpath:", *test_classpath
-end
-
-file "target/gem/lib/jruby-rack.rb" do |t|
+file 'target/gem/lib/jruby-rack.rb' do |t|
   mkdir_p File.dirname(t.name)
   File.open(t.name, "wb") do |f|
     f << %q{require 'jruby/rack/version'
@@ -166,13 +166,14 @@ end
 }
   end
 end
+GENERATED << 'target/gem/lib/jruby-rack.rb'
 
 file "target/gem/lib/jruby/rack/version.rb" => "src/main/ruby/jruby/rack/version.rb" do |t|
   mkdir_p File.dirname(t.name)
   cp t.prerequisites.first, t.name
 end
 
-desc "Build gem"
+desc "Build the jruby-rack-#{JRuby::Rack::VERSION}.gem"
 task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
               "target/gem/lib/jruby-rack.rb",
               "target/gem/lib/jruby/rack/version.rb"] do |t|
@@ -181,6 +182,7 @@ task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
   if (jars = FileList["target/gem/lib/*.jar"].to_a).size > 1
     abort "Too many jars! #{jars.map{|j| File.basename(j)}.inspect}\nRun a clean build first"
   end
+  require 'date'
   Dir.chdir("target/gem") do
     rm_f 'jruby-rack.gemspec'
     gemspec = Gem::Specification.new do |s|
@@ -201,6 +203,7 @@ task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
     mv FileList['*.gem'], '..'
   end
 end
+GENERATED << 'target/gem/jruby-rack.gemspec'
 
 task :release_checks do
   sh "git diff --exit-code > /dev/null" do |ok,status|
