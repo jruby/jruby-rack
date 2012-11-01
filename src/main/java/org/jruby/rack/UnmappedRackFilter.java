@@ -78,7 +78,7 @@ public class UnmappedRackFilter extends AbstractFilter {
             final Set<Integer> statuses = new HashSet<Integer>();
             for ( String status : value.split(",") ) {
                 status = status.trim();
-                if ( ! status.isEmpty() ) {
+                if ( status.length() > 0 ) {
                     statuses.add( Integer.parseInt(status) );
                 }
             }
