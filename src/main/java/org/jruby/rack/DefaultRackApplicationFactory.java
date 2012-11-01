@@ -13,19 +13,20 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.rack.servlet.ServletRackContext;
 import org.jruby.rack.servlet.RewindableInputStream;
+import org.jruby.rack.util.IOHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -254,17 +255,19 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
-    private String findConfigRuPathInSubDirectories(String path, int level) {
-        Set entries = rackContext.getResourcePaths(path);
+    private String findConfigRuPathInSubDirectories(final String path, int level) {
+        @SuppressWarnings("unchecked")
+        final Set<String> entries = rackContext.getResourcePaths(path);
         if (entries != null) {
-            if (entries.contains(path + "config.ru")) {
-                return path + "config.ru";
+            String config_ru = path + "config.ru";
+            if ( entries.contains(config_ru) ) {
+                return config_ru;
             }
 
             if (level > 0) {
                 level--;
-                for (Iterator i = entries.iterator(); i.hasNext(); ) {
-                    String subpath = (String) i.next();
+                for ( Iterator<String> i = entries.iterator(); i.hasNext(); ) {
+                    String subpath = i.next();
                     if (subpath.endsWith("/")) {
                         subpath = findConfigRuPathInSubDirectories(subpath, level);
                         if (subpath != null) {
@@ -275,43 +278,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             }
         }
         return null;
-    }
-
-    private static final Pattern CODING = Pattern.compile("coding:\\s*(\\S+)");
-
-    private String inputStreamToString(InputStream stream) {
-        if (stream == null) {
-            return null;
-        }
-
-        try {
-            StringBuilder str = new StringBuilder();
-            int c = stream.read();
-            Reader reader;
-            String coding = "UTF-8";
-            if (c == '#') {     // look for a coding: pragma
-                str.append((char) c);
-                while ((c = stream.read()) != -1 && c != 10) {
-                    str.append((char) c);
-                }
-                Matcher m = CODING.matcher(str.toString());
-                if (m.find()) {
-                    coding = m.group(1);
-                }
-            }
-
-            str.append((char) c);
-            reader = new InputStreamReader(stream, coding);
-
-            while ((c = reader.read()) != -1) {
-                str.append((char) c);
-            }
-
-            return str.toString();
-        } catch (Exception e) {
-            rackContext.log(RackLogger.ERROR, "failed to read rackup input", e);
-            return null;
-        }
     }
 
     private String findRackupScript() {
@@ -335,7 +301,14 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
         if (rackup != null) {
             rackupLocation = rackContext.getRealPath(rackup);
-            rackup = inputStreamToString(rackContext.getResourceAsStream(rackup));
+            try {
+                rackup = IOHelpers.inputStreamToString(rackContext.getResourceAsStream(rackup));
+            }
+            catch (IOException e) {
+                rackContext.log(RackLogger.ERROR, "failed to read rackup '"+ rackup +
+                                "' from path: "+ rackupLocation +" (" + e + ")");
+                throw new RackInitializationException("failed to read rackup input", e);
+            }
         }
 
         return rackup;
@@ -369,4 +342,5 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     public String getRackupScript() {
         return rackupScript;
     }
+    
 }
