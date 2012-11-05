@@ -7,13 +7,10 @@
 
 module JRuby
   module Rack
-    def self.silence_warnings
-      oldv, $VERBOSE = $VERBOSE, nil
-      begin
-        yield
-      ensure
-        $VERBOSE = oldv
-      end
+    
+    # #deprecated use JRuby::Rack::Helpers.silence_warnings
+    def self.silence_warnings(&block)
+      Helpers.silence_warnings(&block)
     end
     
     def self.booter; @booter; end # TODO do we need to keep after boot! ?!
@@ -60,12 +57,11 @@ module JRuby
   end
 end
 
-require 'jruby/rack/environment'
-require 'jruby/rack/app_layout'
-require 'jruby/rack/errors'
-require 'jruby/rack/response'
+require 'jruby/rack/helpers'
 require 'jruby/rack/servlet_log'
+require 'jruby/rack/environment'
 require 'jruby/rack/booter'
+require 'jruby/rack/response'
 require 'jruby/rack/servlet_ext'
 require 'jruby/rack/core_ext'
 require 'jruby/rack/bundler_ext'

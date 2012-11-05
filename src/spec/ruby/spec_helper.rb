@@ -42,7 +42,7 @@ module SharedHelpers
   end
   
   def silence_warnings(&block)
-    JRuby::Rack.silence_warnings(&block)
+    JRuby::Rack::Helpers.silence_warnings(&block)
   end
 
   @@raise_logger = nil

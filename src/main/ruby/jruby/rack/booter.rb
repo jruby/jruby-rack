@@ -64,10 +64,6 @@ module JRuby::Rack
     end
 
     protected
-    
-    def silence_warnings(&block)
-      JRuby::Rack.silence_warnings(&block)
-    end
 
     def export_global_settings
       JRuby::Rack.send(:instance_variable_set, :@booter, self) # TODO
@@ -158,6 +154,10 @@ module JRuby::Rack
     end
     
     private
+    
+    def silence_warnings(&block)
+      Helpers.silence_warnings(&block)
+    end
     
     def path_to_file(url)
       begin
