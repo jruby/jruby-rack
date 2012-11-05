@@ -11,13 +11,16 @@ require 'active_record'
 require 'jruby/rack/queues'
 
 describe JRuby::Rack::Queues do
+  
   before :each do
-    $servlet_context = @servlet_context
+    JRuby::Rack.context = @servlet_context
     @queue_manager = mock "queue manager"
     @servlet_context.stub!(:getAttribute).and_return @queue_manager
     @registry = JRuby::Rack::Queues::QueueRegistry.new
   end
 
+  after(:all) { JRuby::Rack.context = nil }
+  
   def mock_connection
     conn_factory = mock "connection factory"
     @queue_manager.should_receive(:getConnectionFactory).and_return conn_factory

@@ -13,9 +13,8 @@ module JRuby::Rack
     attr_reader :rack_context, :rack_env
 
     def initialize(rack_context = nil)
-      @rack_context = rack_context || $servlet_context
+      @rack_context = rack_context || JRuby::Rack.context || raise("rack context not available")
       @rack_env = ENV['RACK_ENV'] || @rack_context.getInitParameter('rack.env') || 'production'
-      JRuby::Rack.booter = self
     end
 
     def boot!
@@ -30,6 +29,7 @@ module JRuby::Rack
         end
       end
       ENV['GEM_PATH'] = gem_path
+      export_global_settings
       change_working_directory
       load_settings_from_init_rb
       load_extensions
@@ -58,12 +58,9 @@ module JRuby::Rack
       class_eval "def #{path}=(path); layout.#{path} = path; end"
     end
 
-    def logdev
-      @logdev ||= ServletLog.new @rack_context
-    end
-
+    # #deprecated use JRuby::Rack.logger
     def logger
-      @logger ||= begin; require 'logger'; Logger.new(logdev); end
+      JRuby::Rack.logger
     end
 
     protected
@@ -72,6 +69,12 @@ module JRuby::Rack
       JRuby::Rack.silence_warnings(&block)
     end
 
+    def export_global_settings
+      JRuby::Rack.send(:instance_variable_set, :@booter, self) # TODO
+      JRuby::Rack.app_path = layout.app_path
+      JRuby::Rack.public_path = layout.public_path
+    end
+    
     def change_working_directory
       app_path = layout.app_path
       Dir.chdir(app_path) if app_path && File.directory?(app_path)
@@ -163,5 +166,6 @@ module JRuby::Rack
         url.toString
       end
     end
+    
   end
 end

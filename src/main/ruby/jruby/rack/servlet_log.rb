@@ -5,23 +5,27 @@
 # See the file LICENSE.txt for details.
 #++
 
-class JRuby::Rack::ServletLog
-  def initialize(context = $servlet_context)
-    raise ArgumentError, "no context" unless context
-    @context = context
-  end
+module JRuby
+  module Rack
+    class ServletLog
+      def initialize(context = JRuby::Rack.context)
+        raise ArgumentError, "no context" unless context
+        @context = context
+      end
 
-  def puts(msg)
-    write msg.to_s
-  end
+      def puts(msg)
+        write msg.to_s
+      end
 
-  def write(msg)
-    @context.log(msg)
-  end
+      def write(msg)
+        @context.log(msg)
+      end
 
-  def flush
-  end
+      def flush
+      end
 
-  def close
+      def close
+      end
+    end
   end
 end

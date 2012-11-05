@@ -15,14 +15,48 @@ module JRuby
         $VERBOSE = oldv
       end
     end
-
-    def self.booter=(booter)
-      @booter = booter
+    
+    def self.booter; @booter; end # TODO do we need to keep after boot! ?!
+    
+    def self.app_path
+      @app_path ||= begin 
+        app_path = context.getRealPath('/') if context
+        app_path || Dir.pwd
+      end
     end
 
-    def self.booter
-      @booter
+    def self.app_path=(app_path)
+      @app_path = app_path
     end
+    
+    def self.public_path
+      return @public_path if defined? @public_path
+      @public_path = app_path
+    end
+    
+    def self.public_path=(public_path)
+      @public_path = public_path
+    end
+    
+    def self.context
+      @context ||= $servlet_context
+    end
+    
+    def self.context=(context)
+      @logger = nil # reset the logger
+      @context = context
+    end
+    
+    def self.logger
+      @logger ||= begin; require 'logger'; Logger.new(logdev); end
+    end
+    
+    private
+    
+    def self.logdev
+      ServletLog.new context
+    end
+  
   end
 end
 

@@ -15,7 +15,11 @@ class ::CGI::Session::PStore; end
 
 describe JRuby::Rack::RailsBooter do
   
-  let(:booter) { JRuby::Rack::RailsBooter.new(@rack_context) }
+  let(:booter) do 
+    JRuby::Rack::RailsBooter.new JRuby::Rack.context = @rack_context
+  end
+  
+  after(:all) { JRuby::Rack.context = nil }
   
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
@@ -94,7 +98,7 @@ describe JRuby::Rack::RailsBooter do
   it "should create a log device that writes messages to the servlet context" do
     booter.boot!
     @rack_context.should_receive(:log).with(/hello/)
-    booter.logdev.write "hello"
+    booter.logger.instance_variable_get(:@logdev).write "hello"
   end
 
   it "should setup java servlet-based sessions if the session store is the default", 
@@ -248,7 +252,7 @@ describe JRuby::Rack::RailsBooter do
         @config.should_receive(:logger).ordered.and_return(nil)
         @config.should_receive(:logger=).ordered.with(@logger)
         @config.should_receive(:logger).ordered.and_return(@logger)
-        booter.should_receive(:logger).and_return(@logger)
+        JRuby::Rack.should_receive(:logger).and_return(@logger)
         @logger.class.should_receive(:const_get).with('INFO').and_return(nil)
         @logger.should_receive(:level=).with(nil)
         

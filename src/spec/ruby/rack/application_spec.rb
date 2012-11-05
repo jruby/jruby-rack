@@ -161,13 +161,12 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     input_stream.getMaximumBufferSize.should == 420
   end
   
-  after :each do
-    JRuby::Rack.booter = nil
-    $servlet_context = nil
+  before do
+    reset_booter
+    JRuby::Rack.context = $servlet_context = nil
   end
   
   it "should init and create application object without a rackup script" do
-    JRuby::Rack.booter = nil
     $servlet_context = @servlet_context
     # NOTE: a workaround to be able to mock it :
     klass = Class.new(DefaultRackApplicationFactory) do
@@ -195,6 +194,12 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
     @app_factory.createApplicationObject(JRuby.runtime)
     JRuby::Rack.booter.should be_a(JRuby::Rack::Booter)
+  end
+  
+  private
+  
+  def reset_booter
+    JRuby::Rack.send(:instance_variable_set, :@booter, self)
   end
   
   context "initialized" do
@@ -382,11 +387,11 @@ describe org.jruby.rack.rails.RailsRackApplicationFactory do
   
   before :each do
     @app_factory = RailsRackApplicationFactory.new
-    $servlet_context = @servlet_context
+    JRuby::Rack.context = @servlet_context
   end
   
   after :each do
-    $servlet_context = nil
+    JRuby::Rack.context = nil
   end
   
   it "should init and create application object" do

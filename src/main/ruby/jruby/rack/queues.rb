@@ -85,11 +85,11 @@ module JRuby
         end
 
         def queue_manager
-          @queue_manager ||= $servlet_context.getAttribute(Java::OrgJrubyRackJms::QueueManager::MGR_KEY)
+          @queue_manager ||= JRuby::Rack.context.getAttribute(Java::OrgJrubyRackJms::QueueManager::MGR_KEY)
         end
 
         def raise_dispatch_error(message)
-          $servlet_context.log "Unable to dispatch: #{message.inspect}" if $servlet_context
+          JRuby::Rack.context.log "Unable to dispatch: #{message.inspect}"
           raise "Unable to dispatch: #{message.inspect}"
         end
 
@@ -145,8 +145,8 @@ module JRuby
               return
             end
           rescue Exception => e
-            $servlet_context.log("Error during message dispatch: " +
-                                 e.to_s + "\nMessage: #{message.inspect}") if $servlet_context
+            JRuby::Rack.context.log("Error during message dispatch: " +
+                                 e.to_s + "\nMessage: #{message.inspect}")
             raise
           end
 

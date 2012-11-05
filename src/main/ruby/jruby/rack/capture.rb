@@ -5,7 +5,6 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby'
 require 'stringio'
 
 module JRuby::Rack
@@ -17,30 +16,34 @@ module JRuby::Rack
 
       def capture
         require 'rbconfig'
+        servlet_context = JRuby::Rack.context
         output.puts("--- System", RUBY_DESCRIPTION, "Time: #{Time.now}",
-                    "Server: #{$servlet_context.getServerInfo}",
+                    "Server: #{servlet_context.getServerInfo}",
                     "jruby.home: #{RbConfig::CONFIG['prefix']}")
         output.puts("\n--- Context Init Parameters:",
-                    *($servlet_context.init_parameter_names.sort.map do |k|
-                        "#{k} = #{$servlet_context.get_init_parameter(k)}"
+                    *(servlet_context.init_parameter_names.sort.map do |k|
+                        "#{k} = #{servlet_context.get_init_parameter(k)}"
                       end))
       end
 
       def store
-        $servlet_context.log(output.string)
+        JRuby::Rack.context.log(output.string)
       end
     end
 
     module Exception
       def output
-        @output ||= begin; StringIO.new.tap do |s|
-            s.puts "An exception happened during JRuby-Rack startup", self.to_s
-          end; end
+        @output ||= begin
+          io = StringIO.new
+          io.puts "An exception happened during JRuby-Rack startup", self.to_s
+          io
+        end
       end
 
       def capture
         super
         if backtrace
+          require 'jruby'
           if JRuby.runtime.instance_config.respond_to?(:trace_type)
             full_trace = JRuby.runtime.instance_config.trace_type.print_backtrace(self)
           else
@@ -55,8 +58,8 @@ module JRuby::Rack
       def capture
         super
         if defined?(::Gem)
-          output.puts("\n--- RubyGems", "Gem.dir: #{Gem.dir}", "Gem.path:", Gem.path) rescue nil
-          output.puts("Activated gems:", *(Gem.loaded_specs.map {|k,spec| "  #{spec.full_name}" })) rescue nil
+          output.puts("\n--- RubyGems", "Gem.dir: #{::Gem.dir}", "Gem.path:", ::Gem.path) rescue nil
+          output.puts("Activated gems:", *(::Gem.loaded_specs.map {|_,spec| "  #{spec.full_name}" })) rescue nil
         end
       end
     end
@@ -77,14 +80,15 @@ module JRuby::Rack
     module JRubyRackConfig
       def capture
         super
-        methods = $servlet_context.config.class.instance_methods(false) +
+        servlet_context = JRuby::Rack.context
+        methods = servlet_context.config.class.instance_methods(false) +
           org.jruby.rack.DefaultRackConfig.instance_methods(false)
         methods = methods.uniq.reject do |m|
           m =~ /^(get|is|set)/ || m =~ /[A-Z]|create|quiet|([!?=]$)/
         end
         output.puts("\n--- JRuby-Rack Config",
                     *(methods.sort.map do |m|
-                        "#{m} = #{$servlet_context.config.send(m)}" rescue "#{m} = <error: #{$?}>"
+                        "#{m} = #{servlet_context.config.send(m)}" rescue "#{m} = <error: #{$?}>"
                       end))
       end
     end

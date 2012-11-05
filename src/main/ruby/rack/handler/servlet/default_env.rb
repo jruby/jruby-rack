@@ -185,7 +185,7 @@ module Rack
             if @servlet_env.respond_to?(:context)
               @servlet_env.context # RackEnvironment#getContext()
             else
-              $servlet_context || raise("missing rack context")
+              JRuby::Rack.context || raise("missing rack context")
             end
         end
 
@@ -196,7 +196,7 @@ module Rack
             if @servlet_env.context.is_a?(javax.servlet.ServletContext)
               @servlet_env.context
             else
-              $servlet_context || @env['java.servlet_request'].servlet_context
+              JRuby::Rack.context || @env['java.servlet_request'].servlet_context
             end
           end
         end

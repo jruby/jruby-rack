@@ -15,6 +15,8 @@ java_import org.jruby.rack.rails.RailsRackApplicationFactory
 
 describe "integration" do
   
+  #after(:all) { JRuby::Rack.context = nil }
+  
   describe 'rack (lambda)' do
 
     before do
@@ -59,8 +61,8 @@ describe "integration" do
 
         servlet = org.jruby.rack.RackServlet.new
         servlet.init(servlet_config)
-        servlet.getContext.should_not be_nil
-        servlet.getDispatcher.should_not be_nil
+        expect( servlet.getContext ).to_not be nil
+        expect( servlet.getDispatcher ).to_not be nil
       end
 
       it "serves (servlet)" do
@@ -76,10 +78,10 @@ describe "integration" do
 
         servlet.service(request, response)
 
-        response.getStatus.should == 200
-        response.getContentType == 'text/plain'
-        response.getContentAsString.should == 'OK'
-        response.getHeader("Via").should == 'JRuby-Rack'
+        expect( response.getStatus ).to eql 200
+        expect( response.getContentType ).to eql 'text/plain'
+        expect( response.getContentAsString ).to eql 'OK'
+        expect( response.getHeader("Via") ).to eql 'JRuby-Rack'
       end
 
     end

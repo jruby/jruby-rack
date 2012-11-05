@@ -13,7 +13,7 @@ module JRuby::Rack
     
     # settings Rails.public_path in an initializer seems "too" late @see #99
     config.before_configuration do |app|
-      paths, public = app.config.paths, Pathname.new(JRuby::Rack.booter.public_path)
+      paths, public = app.config.paths, Pathname.new(JRuby::Rack.public_path)
       if paths.respond_to?(:'[]') && paths.respond_to?(:keys)
         # Rails 3.1/3.2/4.0: paths["app/controllers"] style
         old_public  = Pathname.new(paths['public'].to_a.first)
@@ -35,7 +35,7 @@ module JRuby::Rack
 
     initializer "set_servlet_logger", :before => :initialize_logger do |app|
       app.config.logger ||= begin
-        logger = JRuby::Rack.booter.logger
+        logger = JRuby::Rack.logger
         logger.level = logger.class.const_get(app.config.log_level.to_s.upcase)
         if defined?(ActiveSupport::TaggedLogging)
           if ActiveSupport::TaggedLogging.is_a?(Class) # Rails 3.2

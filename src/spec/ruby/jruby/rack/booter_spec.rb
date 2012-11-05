@@ -10,7 +10,11 @@ require 'jruby/rack/booter'
 
 describe JRuby::Rack::Booter do
   
-  let(:booter) { JRuby::Rack::Booter.new(@rack_context) }
+  let(:booter) do 
+    JRuby::Rack::Booter.new JRuby::Rack.context = @rack_context
+  end
+  
+  after(:all) { JRuby::Rack.context = nil }
 
   @@rack_env = ENV['RACK_ENV']
   
@@ -89,6 +93,7 @@ describe JRuby::Rack::Booter do
     ENV['GEM_PATH'] = '/some/other/gems'
     booter.layout = layout = mock('layout')
     layout.stub!(:app_path).and_return '.'
+    layout.stub!(:public_path).and_return nil
     layout.should_receive(:gem_path).and_return nil
     booter.boot!
     ENV['GEM_PATH'].should == "/some/other/gems"

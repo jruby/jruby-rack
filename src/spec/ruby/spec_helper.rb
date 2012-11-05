@@ -49,7 +49,13 @@ module SharedHelpers
   
   def raise_logger
     @@raise_logger ||= org.jruby.rack.RackLogger.impl do |name, *args|
-      raise args[1] if name.to_s == 'log' && args[1] != nil # log(str, error)
+      if name.to_s == 'log' && args[0] =~ /^(ERROR|WARN):/
+        puts args[0]
+        if error = args[1] # org.jruby.exceptions.RaiseException
+          error.printStackTrace if error.is_a?(java.lang.Throwable)
+        end
+        raise args[0]
+      end
     end
   end
   
