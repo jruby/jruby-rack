@@ -20,7 +20,7 @@ import java.io.IOException;
  */
 public class DefaultRackApplication implements RackApplication {
 
-    private final RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
+    protected final RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
     private IRubyObject application;
 
     public DefaultRackApplication() {
@@ -47,11 +47,9 @@ public class DefaultRackApplication implements RackApplication {
         }
     }
 
-    public void init() throws RackInitializationException {
-    }
+    public void init() { /* NOOP */ }
 
-    public void destroy() {
-    }
+    public void destroy() { /* NOOP */ }
 
     public Ruby getRuntime() {
         return getApplication().getRuntime();

@@ -340,26 +340,40 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       @rack_context.stub!(:getRealPath).and_return Dir::tmpdir
     end
 
-    it "should create a Ruby object from the script snippet given" do
+    it "creates a Ruby object from the script snippet given" do
       @rack_config.should_receive(:getRackup).and_return("require 'rack/lobster'; Rack::Lobster.new")
-      @app_factory.init @rack_context
-      object = @app_factory.newApplication
-      object.respond_to?(:call).should == true
+      app_factory = mocked_runtime_application_factory
+      app_factory.init @rack_context
+      app_object = app_factory.newApplication
+      app_object.respond_to?(:call).should == true
     end
 
-    it "should raise an exception if creation failed" do
+    it "raises an exception if creation failed" do
       @rack_config.should_receive(:getRackup).and_return("raise 'something went wrong'")
-      @app_factory.init @rack_context
-      object = @app_factory.newApplication
-      lambda { object.init }.should raise_error
+      app_factory = mocked_runtime_application_factory
+      app_factory.init @rack_context
+      app_object = app_factory.newApplication
+      begin
+        app_object.init
+        fail "expected to raise"
+      rescue => e
+        expect( e.message ).to eql 'something went wrong'
+      end
     end
   end
 
   describe "getApplication" do
-    it "should create an application and initialize it" do
+    it "creates an application and initializes it" do
       @rack_config.should_receive(:getRackup).and_return("raise 'init was called'")
-      @app_factory.init @rack_context
-      lambda { @app_factory.getApplication }.should raise_error
+      app_factory = mocked_runtime_application_factory
+      app_factory.init @rack_context
+      begin
+        app_factory.getApplication
+        fail "expected to raise"
+      rescue => e
+        expect( e.message ).to eql 'init was called'
+      end
+      #lambda { app_factory.getApplication }.should raise_error
     end
   end
 

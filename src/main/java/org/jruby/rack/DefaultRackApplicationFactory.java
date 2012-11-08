@@ -25,7 +25,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- *
+ * Default application factory creates a new application instance on each
+ * {@link #getApplication()} invocation. It does not manage applications it
+ * creates (except for the error application that is assumed to be shared).
+ * 
+ * @see SharedRackApplicationFactory
+ * @see PoolingRackApplicationFactory
+ * 
  * @author nicksieger
  */
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
@@ -55,7 +61,16 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return rackupScript;
     }
     
-    public void init(RackContext rackContext) {
+    /**
+     * Initialize this factory using the given context.
+     * <br/>
+     * NOTE: exception handling is left to the outer factory.
+     * @param rackContext 
+     */
+    public void init(final RackContext rackContext) {
+        // NOTE: this factory is not supposed to be directly exposed
+        // thus does not wrap exceptions into RackExceptions here ...
+        // same applies for #newApplication() and #getApplication()
         this.rackContext = (ServletRackContext) rackContext;
         resolveRackupScript();
         this.runtimeConfig = createRuntimeConfig();
@@ -63,7 +78,13 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         configureDefaults();
     }
 
-    public RackApplication newApplication() throws RackInitializationException {
+    /**
+     * Creates a new application instance (without initializing it).
+     * <br/>
+     * NOTE: exception handling is left to the outer factory.
+     * @return new application instance
+     */
+    public RackApplication newApplication() {
         return createApplication(new ApplicationObjectFactory() {
             public IRubyObject create(Ruby runtime) {
                 return createApplicationObject(runtime);
@@ -71,22 +92,38 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         });
     }
 
-    public RackApplication getApplication() throws RackInitializationException {
-        RackApplication app = newApplication();
+    /**
+     * Creates a new application and initializes it.
+     * <br/>
+     * NOTE: exception handling is left to the outer factory.
+     * @return new, initialized application
+     */
+    public RackApplication getApplication() {
+        final RackApplication app = newApplication();
         app.init();
         return app;
     }
 
-    public void finishedWithApplication(RackApplication app) {
-        if (app != null) app.destroy();
+    /**
+     * Destroys the application (assumably) created by this factory.
+     * <br/>
+     * NOTE: exception handling is left to the outer factory.
+     * @param app the application to "release"
+     */
+    public void finishedWithApplication(final RackApplication app) {
+        if ( app != null ) app.destroy();
     }
 
     /**
      * @return the (default) error application
      */
-    public synchronized RackApplication getErrorApplication() {
+    public RackApplication getErrorApplication() {
         if (errorApplication == null) {
-            errorApplication = newErrorApplication();
+            synchronized(this) {
+                if (errorApplication == null) {
+                    errorApplication = newErrorApplication();
+                }
+            }
         }
         return errorApplication;
     }
@@ -101,8 +138,12 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     
     public void destroy() {
         if (errorApplication != null) {
-	        errorApplication.destroy();
-	        errorApplication = null;
+            synchronized(this) {
+                if (errorApplication != null) {
+                    errorApplication.destroy();
+                    errorApplication = null;
+                }
+            }
         }
     }
 
@@ -145,7 +186,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public RackApplication newErrorApplication() {
         try {
-            RackApplication app = createApplication(
+            RackApplication app = createErrorApplication(
                 new ApplicationObjectFactory() {
                     public IRubyObject create(Ruby runtime) {
                         return createErrorApplicationObject(runtime);
@@ -155,16 +196,29 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             app.init();
             return app;
         }
-        catch (final Exception e) {
+        catch (Exception e) {
             rackContext.log(RackLogger.WARN, "error application could not be initialized", e);
-            return new DefaultErrorApplication(rackContext);
+            return new DefaultErrorApplication(rackContext); // backwards compatibility
         }
     }
 
+    /**
+     * @see #createRackServletWrapper(Ruby, String, String) 
+     * @param runtime
+     * @param rackup
+     * @return (Ruby) built Rack Servlet handler
+     */
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup) {
         return createRackServletWrapper(runtime, rackup, null);
     }
 
+    /**
+     * Creates the handler to bridge the Servlet and Rack worlds.
+     * @param runtime
+     * @param rackup
+     * @param filename
+     * @return (Ruby) built Rack Servlet handler
+     */
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup, String filename) {
         return runtime.executeScript(
             "Rack::Handler::Servlet.new( " +
@@ -215,77 +269,91 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
         return config;
     }
-
-    // NOTE: only visible due #jruby/rack/application_spec.rb on JRuby 1.7.x
-    void initializeRuntime(Ruby runtime) throws RackInitializationException {
-        try {
-            IRubyObject context = JavaUtil.convertJavaToRuby(runtime, rackContext);
-            runtime.getGlobalVariables().set("$servlet_context", context);
-            if ( rackContext.getConfig().isIgnoreEnvironment() ) {
-                runtime.evalScriptlet("ENV.clear");
-                // bundler 1.1.x assumes ENV['PATH'] is a string
-                // `ENV['PATH'].split(File::PATH_SEPARATOR)` ...
-                runtime.evalScriptlet("ENV['PATH'] = ''");
-            }
-            runtime.evalScriptlet("require 'rack/handler/servlet'");
-            
-            Boolean dechunk = rackContext.getConfig().getBooleanProperty("jruby.rack.response.dechunk");
-            if ( dechunk != null ) {
-                runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunk + "");
-                // TODO it would be useful by default or when dechunk is on
-                // to remove Rack::Chunked from the middleware stack ... ?!
-            }
-            // NOTE: this is experimental stuff and might change in the future :
-            String env = rackContext.getConfig().getProperty("jruby.rack.handler.env");
-            // currently supported "env" values are 'default' and 'servlet'
-            if ( env != null ) {
-                runtime.evalScriptlet("Rack::Handler::Servlet.env = '" + env + "'");
-            }
-        }
-        catch (RaiseException e) {
-            throw new RackInitializationException(e);
-        }
-    }
-
-    /** This method is only public for unit tests */
-    public Ruby newRuntime() throws RackInitializationException {
+    
+    public Ruby newRuntime() throws RaiseException {
         Ruby runtime = Ruby.newInstance(runtimeConfig);
         initializeRuntime(runtime);
         return runtime;
     }
+    
+    // NOTE: only visible due #jruby/rack/application_spec.rb on JRuby 1.7.x
+    void initializeRuntime(Ruby runtime) {
+        IRubyObject context = JavaUtil.convertJavaToRuby(runtime, rackContext);
+        runtime.getGlobalVariables().set("$servlet_context", context);
+        if ( rackContext.getConfig().isIgnoreEnvironment() ) {
+            runtime.evalScriptlet("ENV.clear");
+            // bundler 1.1.x assumes ENV['PATH'] is a string
+            // `ENV['PATH'].split(File::PATH_SEPARATOR)` ...
+            runtime.evalScriptlet("ENV['PATH'] = ''");
+        }
+        runtime.evalScriptlet("require 'rack/handler/servlet'");
 
-    private RackApplication createApplication(final ApplicationObjectFactory appFactory)
-            throws RackInitializationException {
-        try {
-            final Ruby runtime = newRuntime();
-            return new DefaultRackApplication() {
-                @Override
-                public void init() throws RackInitializationException {
-                    try {
-                        setApplication(appFactory.create(runtime));
-                    }
-                    catch (RaiseException re) {
-                        captureMessage(re);
-                        throw new RackInitializationException(re);
-                    }
-                }
-                @Override
-                public void destroy() {
-                    runtime.tearDown(false);
-                }
-            };
+        Boolean dechunk = rackContext.getConfig().getBooleanProperty("jruby.rack.response.dechunk");
+        if ( dechunk != null ) {
+            runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunk + "");
+            // TODO it would be useful by default or when dechunk is on
+            // to remove Rack::Chunked from the middleware stack ... ?!
         }
-        catch (RackInitializationException e) {
-            throw e;
-        }
-        catch (RaiseException e) {
-            throw new RackInitializationException(e);
+        // NOTE: this is experimental stuff and might change in the future :
+        String env = rackContext.getConfig().getProperty("jruby.rack.handler.env");
+        // currently supported "env" values are 'default' and 'servlet'
+        if ( env != null ) {
+            runtime.evalScriptlet("Rack::Handler::Servlet.env = '" + env + "'");
         }
     }
 
-    private void captureMessage(RaiseException rex) {
+    private RackApplication createApplication(final ApplicationObjectFactory appFactory) {
+        return new RackApplicationImpl(appFactory);
+    }
+    
+    /**
+     * The application implementation this factory is producing.
+     */
+    private class RackApplicationImpl extends DefaultRackApplication {
+        
+        private final Ruby runtime;
+        final ApplicationObjectFactory appFactory;
+        
+        RackApplicationImpl(ApplicationObjectFactory appFactory) {
+            this.runtime = newRuntime();
+            this.appFactory = appFactory;
+        }
+        
+        @Override
+        public void init() {
+            try {
+                setApplication(appFactory.create(runtime));
+            }
+            catch (RaiseException e) {
+                captureMessage(e);
+                throw e;
+            }
+        }
+        
+        @Override
+        public void destroy() {
+            runtime.tearDown(false);
+        }
+        
+    }
+    
+    private RackApplication createErrorApplication(final ApplicationObjectFactory appFactory) {
+        final Ruby runtime = newRuntime();
+        return new DefaultErrorApplication() {
+            @Override
+            public void init() {
+                setApplication(appFactory.create(runtime));
+            }
+            @Override
+            public void destroy() {
+                runtime.tearDown(false);
+            }
+        };
+    }
+    
+    private void captureMessage(final RaiseException re) {
         try {
-            IRubyObject rubyException = rex.getException();
+            IRubyObject rubyException = re.getException();
             ThreadContext context = rubyException.getRuntime().getCurrentContext();
             rubyException.callMethod(context, "capture");
             rubyException.callMethod(context, "store");
@@ -321,7 +389,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return null;
     }
 
-    private String resolveRackupScript() {
+    private String resolveRackupScript() throws RackInitializationException {
         rackupLocation = "<web.xml>";
 
         String rackup = rackContext.getConfig().getRackup();
@@ -359,7 +427,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             System.setProperty("jruby.management.enabled", "true");
         }
     }
-
+    
     private void configureDefaults() {
         // configure (default) jruby.rack.request.size.[...] parameters :
         final RackConfig config = rackContext.getConfig();

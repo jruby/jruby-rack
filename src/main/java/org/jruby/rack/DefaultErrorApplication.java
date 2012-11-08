@@ -28,6 +28,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
+
 import org.jruby.Ruby;
 
 /**
@@ -37,14 +38,20 @@ import org.jruby.Ruby;
  * 
  * @author kares
  */
-public class DefaultErrorApplication implements RackApplication {
+public class DefaultErrorApplication extends DefaultRackApplication
+    implements ErrorApplication {
     
     protected final RackContext context;
     
-    public DefaultErrorApplication(RackContext context) {
+    public DefaultErrorApplication() {
+        this.context = null;
+    }
+    
+    DefaultErrorApplication(RackContext context) {
         this.context = context;
     }
     
+    @Override
     public Ruby getRuntime() {
         throw new UnsupportedOperationException("getRuntime() not supported");
     }
@@ -57,11 +64,12 @@ public class DefaultErrorApplication implements RackApplication {
         // NOOP
     }
     
-    public RackResponse call(RackEnvironment env) {
-        return new Response(env);
+    @Override
+    public RackResponse call(RackEnvironment env) throws RackException {
+        return new Response(env); // backwards compatibility
     }
     
-    private static Exception getException(RackEnvironment env) {
+    static Exception getException(RackEnvironment env) {
         return (Exception) env.getAttribute(RackEnvironment.EXCEPTION);
     }
     
