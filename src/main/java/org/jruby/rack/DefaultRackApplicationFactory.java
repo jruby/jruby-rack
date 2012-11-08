@@ -21,26 +21,31 @@ import java.io.IOException;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author nicksieger
  */
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
+    
     private String rackupScript, rackupLocation;
     private ServletRackContext rackContext;
     private RubyInstanceConfig runtimeConfig;
     private RackApplication errorApplication;
 
+    public RackContext getRackContext() {
+        return rackContext;
+    }
+    
+    public String getRackupScript() {
+        return rackupScript;
+    }
+    
     public void init(RackContext rackContext) {
         this.rackContext = (ServletRackContext) rackContext;
-        this.rackupScript = findRackupScript();
+        resolveRackupScript();
         this.runtimeConfig = createRuntimeConfig();
         rackContext.log(RackLogger.INFO, runtimeConfig.getVersionString());
         configureDefaults();
@@ -64,6 +69,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         if (app != null) app.destroy();
     }
 
+    /**
+     * @return the (default) error application
+     */
     public synchronized RackApplication getErrorApplication() {
         if (errorApplication == null) {
             errorApplication = newErrorApplication();
@@ -71,6 +79,14 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return errorApplication;
     }
 
+    /** 
+     * Set the (default) error application to be used.
+     * @param errorApplication
+     */
+    public synchronized void setErrorApplication(RackApplication errorApplication) {
+        this.errorApplication = errorApplication;
+    }
+    
     public void destroy() {
         if (errorApplication != null) {
 	        errorApplication.destroy();
@@ -78,70 +94,75 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
-    public RackContext getRackContext() {
-        return rackContext;
-    }
-
-    public IRubyObject createApplicationObject(Ruby runtime) {
+    public IRubyObject createApplicationObject(final Ruby runtime) {
         if (rackupScript == null) {
             rackContext.log(RackLogger.WARN, "no rackup script found - starting empty Rack application!");
             rackupScript = "";
         }
         runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
-        return createRackServletWrapper(runtime, rackupScript);
+        return createRackServletWrapper(runtime, rackupScript, rackupLocation);
     }
 
-    public IRubyObject createErrorApplicationObject(Ruby runtime) {
+    public IRubyObject createErrorApplicationObject(final Ruby runtime) {
+        String errorApp = rackContext.getConfig().getProperty("jruby.rack.error.app");
+        String errorAppPath = null;
+        if (errorApp == null) {
+            errorApp = rackContext.getConfig().getProperty("jruby.rack.error.app.path");
+            if (errorApp != null) {
+                errorAppPath = rackContext.getRealPath(errorApp);
+                try {
+                    errorApp = IOHelpers.inputStreamToString(rackContext.getResourceAsStream(errorApp));
+                }
+                catch (IOException e) {
+                    rackContext.log(RackLogger.WARN,
+                        "failed to read jruby.rack.error.app.path = '" + errorApp + "' " +
+                        "will use default error application", e);
+                    errorApp = errorAppPath = null;
+                }
+            }
+            
+        }
+        if (errorApp == null) {
+            errorApp = "require 'jruby/rack/error_app' \n" +
+            "use Rack::ShowStatus \n" +
+            "run JRuby::Rack::ErrorApp.new";
+        }
         runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
-        return createRackServletWrapper(runtime, "run JRuby::Rack::ErrorsApp.new");
+        return createRackServletWrapper(runtime, errorApp, errorAppPath);
     }
 
     public RackApplication newErrorApplication() {
         try {
-            RackApplication app =
-                    createApplication(new ApplicationObjectFactory() {
-                public IRubyObject create(Ruby runtime) {
-                    return createErrorApplicationObject(runtime);
+            RackApplication app = createApplication(
+                new ApplicationObjectFactory() {
+                    public IRubyObject create(Ruby runtime) {
+                        return createErrorApplicationObject(runtime);
+                    }
                 }
-            });
+            );
             app.init();
             return app;
-        } catch (final Exception e) {
+        }
+        catch (final Exception e) {
             rackContext.log(RackLogger.WARN, "error application could not be initialized", e);
-            return new RackApplication() {
-                public void init() throws RackInitializationException { }
-                public RackResponse call(RackEnvironment env) {
-                    return new RackResponse() {
-                        public int getStatus() { return 500; }
-                        public Map getHeaders() { return Collections.EMPTY_MAP; }
-                        public String getBody() {
-                            return "application initialization failed: " + e.getMessage();
-                        }
-                        public void respond(RackResponseEnvironment response) {
-                            try {
-                                response.defaultRespond(this);
-                            } catch (IOException ex) {
-                                rackContext.log(RackLogger.WARN, "could not write response body", e);
-                            }
-                        }
-                    };
-                }
-                public void destroy() { }
-                public Ruby getRuntime() { throw new UnsupportedOperationException("not supported"); }
-            };
+            return new DefaultErrorApplication(rackContext);
         }
     }
 
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup) {
-        return runtime.executeScript(
-                "Rack::Handler::Servlet.new( " + 
-                    "Rack::Builder.new { (" + rackup + "\n) }.to_app " + 
-                ")",
-                rackupLocation);
+        return createRackServletWrapper(runtime, rackup, null);
     }
 
-    private interface ApplicationObjectFactory {
-        IRubyObject create(Ruby runtime);
+    protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup, String filename) {
+        return runtime.executeScript(
+            "Rack::Handler::Servlet.new( " +
+                "Rack::Builder.new { (" + rackup + "\n) }.to_app " +
+            ")", filename
+        );
+    }
+    
+    static interface ApplicationObjectFactory {
+        IRubyObject create(Ruby runtime) ;
     }
 
     private RubyInstanceConfig createRuntimeConfig() {
@@ -175,7 +196,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 }
                 config.setJRubyHome(home);
             }
-        } catch (Exception e) { }
+        }
+        catch (Exception e) { 
+            rackContext.log(RackLogger.DEBUG, "won't set-up jruby.home from jar", e);
+        }
 
         return config;
     }
@@ -205,9 +229,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             if ( env != null ) {
                 runtime.evalScriptlet("Rack::Handler::Servlet.env = '" + env + "'");
             }
-            
-        } catch (RaiseException re) {
-            throw new RackInitializationException(re);
+        }
+        catch (RaiseException e) {
+            throw new RackInitializationException(e);
         }
     }
 
@@ -227,7 +251,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 public void init() throws RackInitializationException {
                     try {
                         setApplication(appFactory.create(runtime));
-                    } catch (RaiseException re) {
+                    }
+                    catch (RaiseException re) {
                         captureMessage(re);
                         throw new RackInitializationException(re);
                     }
@@ -237,10 +262,12 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                     runtime.tearDown(false);
                 }
             };
-        } catch (RackInitializationException rie) {
-            throw rie;
-        } catch (RaiseException re) {
-            throw new RackInitializationException(re);
+        }
+        catch (RackInitializationException e) {
+            throw e;
+        }
+        catch (RaiseException e) {
+            throw new RackInitializationException(e);
         }
     }
 
@@ -250,7 +277,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             ThreadContext context = rubyException.getRuntime().getCurrentContext();
             rubyException.callMethod(context, "capture");
             rubyException.callMethod(context, "store");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            rackContext.log(RackLogger.INFO, "failed to capture exception message", e);
             // won't be able to capture anything
         }
     }
@@ -280,38 +309,37 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return null;
     }
 
-    private String findRackupScript() {
+    private String resolveRackupScript() {
         rackupLocation = "<web.xml>";
 
         String rackup = rackContext.getConfig().getRackup();
-        if (rackup != null) return rackup;
-
-        rackup = rackContext.getConfig().getRackupPath();
-
         if (rackup == null) {
-            rackup = findConfigRuPathInSubDirectories("/WEB-INF/", 1);
-        }
-        if (rackup == null) { // google-appengine gem prefers it at /config.ru
-            // appengine misses "/" resources. Search for it directly.
-            String rackupPath = rackContext.getRealPath("/config.ru");
-            if (rackupPath != null && new File(rackupPath).exists()) {
-                rackup = "/config.ru";
+            rackup = rackContext.getConfig().getRackupPath();
+
+            if (rackup == null) {
+                rackup = findConfigRuPathInSubDirectories("/WEB-INF/", 1);
+            }
+            if (rackup == null) { // google-appengine gem prefers it at /config.ru
+                // appengine misses "/" resources. Search for it directly.
+                String rackupPath = rackContext.getRealPath("/config.ru");
+                if (rackupPath != null && new File(rackupPath).exists()) {
+                    rackup = "/config.ru";
+                }
+            }
+
+            if (rackup != null) {
+                rackupLocation = rackContext.getRealPath(rackup);
+                try {
+                    rackup = IOHelpers.inputStreamToString(rackContext.getResourceAsStream(rackup));
+                }
+                catch (IOException e) {
+                    rackContext.log(RackLogger.ERROR, "failed to read rackup from '"+ rackup + "' (" + e + ")");
+                    throw new RackInitializationException("failed to read rackup input", e);
+                }
             }
         }
 
-        if (rackup != null) {
-            rackupLocation = rackContext.getRealPath(rackup);
-            try {
-                rackup = IOHelpers.inputStreamToString(rackContext.getResourceAsStream(rackup));
-            }
-            catch (IOException e) {
-                rackContext.log(RackLogger.ERROR, "failed to read rackup '"+ rackup +
-                                "' from path: "+ rackupLocation +" (" + e + ")");
-                throw new RackInitializationException("failed to read rackup input", e);
-            }
-        }
-
-        return rackup;
+        return this.rackupScript = rackup;
     }
 
     private void setupJRubyManagement() {
@@ -331,16 +359,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         
         RewindableInputStream.setDefaultInitialBufferSize(iniSize);
         RewindableInputStream.setDefaultMaximumBufferSize(maxSize);
-    }
-    
-    /** Used only by unit tests */
-    public void setErrorApplication(RackApplication app) {
-        this.errorApplication = app;
-    }
-
-    /** Used only by unit tests */
-    public String getRackupScript() {
-        return rackupScript;
     }
     
 }

@@ -1,0 +1,61 @@
+#--
+# This source code is available under the MIT license.
+# See the file LICENSE.txt for details.
+#++
+
+require 'jruby/rack'
+
+module JRuby
+  module Rack
+    class ErrorApp
+      
+      EXCEPTION = org.jruby.rack.RackEnvironment::EXCEPTION
+      
+      def initialize(file_server = nil)
+        @file_server = file_server || ::Rack::File.new(JRuby::Rack.public_path)
+      end
+
+      def call(env)
+        [code = response_code(env), *response_content(env, code)]
+      end
+
+      def response_code(env)
+        exc = env[EXCEPTION]
+        if exc
+          env['rack.showstatus.detail'] = exc.getMessage
+          if exc.getCause.kind_of?(Java::JavaLang::InterruptedException)
+            503
+          else
+            500
+          end
+        else
+          500
+        end
+      end
+
+      def response_content(env, code)
+        @responses ||= Hash.new do |h,k|
+          env["PATH_INFO"] = "/#{code}.html"
+          response = @file_server.call(env)
+          body = response[2]
+          unless Array === body
+            newbody = ""
+            body.each do |chunk|
+              newbody << chunk
+            end
+            response[2] = [newbody]
+          end
+          h[k] = response
+        end
+        response = @responses[code]
+        if response[0] != 404
+          env["rack.showstatus.detail"] = nil
+          response[1..2]
+        else
+          [{}, []]
+        end
+      end
+      
+    end
+  end
+end

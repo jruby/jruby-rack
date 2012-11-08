@@ -8,12 +8,13 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'jruby/rack/errors'
 
-describe JRuby::Rack::Errors do
+describe JRuby::Rack::ErrorApp do
+  
   before :each do
     @servlet_request = mock "servlet request"
     @env = {'java.servlet_request' => @servlet_request}
     @file_server = mock "file server"
-    @errors = JRuby::Rack::Errors.new @file_server
+    @error_app = JRuby::Rack::ErrorApp.new @file_server
   end
 
   def init_exception(cause = nil)
@@ -24,14 +25,14 @@ describe JRuby::Rack::Errors do
   it "should determine the response status code based on the exception in the servlet attribute" do
     init_exception
     @file_server.stub!(:call).and_return [404, {}, []]
-    @errors.call(@env).should == [500, {}, []]
+    @error_app.call(@env).should == [500, {}, []]
     @env["rack.showstatus.detail"].should == "something went wrong"
   end
 
   it "should return 503 if there is a nested InterruptedException" do
     init_exception java.lang.InterruptedException.new
     @file_server.stub!(:call).and_return [404, {}, []]
-    @errors.call(@env).should == [503, {}, []]
+    @error_app.call(@env).should == [503, {}, []]
   end
 
   it "should invoke the file server with PATH_INFO=/500.html" do
@@ -40,7 +41,7 @@ describe JRuby::Rack::Errors do
       env["PATH_INFO"].should == "/500.html"
       [200, {"Content-Type" => "text/html"}, ["custom error page"]]
     end
-    @errors.call(@env).should == [500, {"Content-Type" => "text/html"}, ["custom error page"]]
+    @error_app.call(@env).should == [500, {"Content-Type" => "text/html"}, ["custom error page"]]
     @env["rack.showstatus.detail"].should be_nil
   end
 
@@ -50,9 +51,9 @@ describe JRuby::Rack::Errors do
       env["PATH_INFO"].should == "/500.html"
       [200, {"Content-Type" => "text/html"}, ["custom error page"]]
     end
-    @errors.call(@env)
-    @errors.call(@env)
-    @errors.call(@env).should == [500, {"Content-Type" => "text/html"}, ["custom error page"]]
+    @error_app.call(@env)
+    @error_app.call(@env)
+    @error_app.call(@env).should == [500, {"Content-Type" => "text/html"}, ["custom error page"]]
   end
 
   it "should expand and cache the body of the file" do
@@ -67,8 +68,14 @@ describe JRuby::Rack::Errors do
       env["PATH_INFO"].should == "/500.html"
       [200, {"Content-Type" => "text/html"}, object]
     end
-    @errors.call(@env)
-    @errors.call(@env)
-    @errors.call(@env).should == [500, {"Content-Type" => "text/html"}, ["123"]]
+    @error_app.call(@env)
+    @error_app.call(@env)
+    @error_app.call(@env).should == [500, {"Content-Type" => "text/html"}, ["123"]]
+  end
+end
+
+describe 'JRuby::Rack::Errors' do
+  it "still works (backward compat)" do
+    expect( JRuby::Rack::Errors ).to be JRuby::Rack::ErrorApp
   end
 end
