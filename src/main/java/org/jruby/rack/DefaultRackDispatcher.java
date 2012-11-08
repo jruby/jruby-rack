@@ -9,6 +9,7 @@ package org.jruby.rack;
 
 import java.io.IOException;
 
+import org.jruby.exceptions.RaiseException;
 import org.jruby.rack.servlet.ServletRackContext;
 
 /**
@@ -28,13 +29,22 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
     }
 
     @Override
-    protected void afterException(RackEnvironment request, Exception re,
-            RackResponseEnvironment response) throws IOException {
+    protected void afterException(
+            final RackEnvironment request, 
+            final Exception ex,
+            final RackResponseEnvironment response) 
+        throws IOException, RackException {
+        
+        RackApplication errorApp = getRackFactory().getErrorApplication();
+        request.setAttribute(RackEnvironment.EXCEPTION, ex);
         try {
-            RackApplication errorApp = getRackFactory().getErrorApplication();
-            request.setAttribute(RackEnvironment.EXCEPTION, re);
             errorApp.call(request).respond(response);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            // allow the error app to re-throw Ruby/JRuby-Rack exceptions :
+            if (e instanceof RackException) throw (RackException) e;
+            //if (e instanceof RaiseException) throw (RaiseException) e;
+            // TODO seems redundant maybe we should let the container decide ?!
             context.log(RackLogger.ERROR, "couldn't handle error", e);
             response.sendError(500);
         }
