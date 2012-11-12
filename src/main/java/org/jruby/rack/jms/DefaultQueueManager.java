@@ -10,21 +10,25 @@ package org.jruby.rack.jms;
 import org.jruby.Ruby;
 import org.jruby.RubyModule;
 import org.jruby.RubyObjectAdapter;
-import org.jruby.RubyRuntimeAdapter;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.RackApplication;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackContext;
-import org.jruby.rack.servlet.DefaultServletRackContext;
 import org.jruby.rack.servlet.ServletRackContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,8 +40,7 @@ public class DefaultQueueManager implements QueueManager {
     private ConnectionFactory connectionFactory = null;
     private ServletRackContext context;
     private Context jndiContext;
-    private Map<String,Connection> queues = new HashMap<String,Connection>();
-    private RubyRuntimeAdapter rubyRuntimeAdapter = JavaEmbedUtils.newRuntimeAdapter();
+    private Map<String, Connection> queues = new HashMap<String, Connection>();
     private RubyObjectAdapter rubyObjectAdapter = JavaEmbedUtils.newObjectAdapter();
 
     public DefaultQueueManager() {
@@ -91,14 +94,12 @@ public class DefaultQueueManager implements QueueManager {
         return connectionFactory;
     }
 
-    public Object lookup(String name) throws javax.naming.NamingException {
+    public Object lookup(String name) throws NamingException {
         return jndiContext.lookup(name);
     }
 
-    @SuppressWarnings("unchecked")
     public void destroy() {
-        for (Iterator it = queues.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<String,Connection> entry = (Map.Entry<String, Connection>) it.next();
+        for ( Map.Entry<String,Connection> entry : queues.entrySet() ) {
             closeConnection(entry.getValue());
         }
         queues.clear();
@@ -131,9 +132,11 @@ public class DefaultQueueManager implements QueueManager {
                 rubyObjectAdapter.callMethod(obj, "receive_message", new IRubyObject[] {
                     JavaEmbedUtils.javaToRuby(runtime, queueName),
                     JavaEmbedUtils.javaToRuby(runtime, message)});
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 context.log("exception during message reception: " + e.getMessage(), e);
-            } finally {
+            }
+            finally {
                 if (app != null) {
                     rackFactory.finishedWithApplication(app);
                 }
