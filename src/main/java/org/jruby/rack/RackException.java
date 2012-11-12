@@ -23,4 +23,19 @@ public class RackException extends RuntimeException {
         super(message, cause);
     }
     
+    /**
+     * Returns the root cause exception.
+     *
+     * @return	the (root) <code>Throwable</code> that caused this exception
+     */
+    public Throwable getRootCause() {
+        Throwable cause = getCause();
+        if ( cause != null ) {
+            while ( cause.getCause() != null ) {
+                cause = cause.getCause();
+            }
+        }
+        return cause;
+    }
+    
 }
