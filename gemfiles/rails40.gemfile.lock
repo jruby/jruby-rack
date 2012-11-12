@@ -66,7 +66,7 @@ GEM
     activerecord-jdbcsqlite3-adapter (1.2.1)
       activerecord-jdbc-adapter (~> 1.2.1)
       jdbc-sqlite3 (~> 3.7.2)
-    appraisal (0.4.1)
+    appraisal (0.5.1)
       bundler
       rake
     arel (3.0.2)

@@ -1,7 +1,7 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    appraisal (0.4.1)
+    appraisal (0.5.1)
       bundler
       rake
     bouncy-castle-java (1.5.0146.1)
