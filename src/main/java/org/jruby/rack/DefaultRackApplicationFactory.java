@@ -35,6 +35,18 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private RubyInstanceConfig runtimeConfig;
     private RackApplication errorApplication;
 
+    /**
+     * Convenience helper for unwrapping a {@link RackApplicationFactory#Decorator}
+     * @param factory
+     * @return unwrapped factory
+     */
+    public static RackApplicationFactory getRealFactory(final RackApplicationFactory factory) {
+        if ( factory instanceof RackApplicationFactory.Decorator ) {
+            return getRealFactory( ((RackApplicationFactory.Decorator) factory).getDelegate() );
+        }
+        return factory;
+    }
+    
     public RackContext getRackContext() {
         return rackContext;
     }
