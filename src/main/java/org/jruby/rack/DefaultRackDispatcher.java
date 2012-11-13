@@ -9,7 +9,6 @@ package org.jruby.rack;
 
 import java.io.IOException;
 
-import org.jruby.exceptions.RaiseException;
 import org.jruby.rack.servlet.ServletRackContext;
 
 /**
@@ -19,34 +18,50 @@ import org.jruby.rack.servlet.ServletRackContext;
  */
 public class DefaultRackDispatcher extends AbstractRackDispatcher {
 
-    public DefaultRackDispatcher(RackContext rackContext) {
-        super(rackContext);
+    private Integer errorApplicationFailureStatusCode = 500;
+    
+    public DefaultRackDispatcher(RackContext context) {
+        super(context);
     }
 
+    public Integer getErrorApplicationFailureStatusCode() {
+        return errorApplicationFailureStatusCode;
+    }
+
+    public void setErrorApplicationFailureStatusCode(Integer code) {
+        this.errorApplicationFailureStatusCode = code;
+    }
+    
     @Override
-    protected RackApplication getApplication() throws RackInitializationException {
+    protected RackApplication getApplication() throws RackException {
         return getRackFactory().getApplication();
     }
 
     @Override
     protected void afterException(
             final RackEnvironment request, 
-            final Exception ex,
+            final Exception e,
             final RackResponseEnvironment response) 
         throws IOException, RackException {
         
         RackApplication errorApp = getRackFactory().getErrorApplication();
-        request.setAttribute(RackEnvironment.EXCEPTION, ex);
+        request.setAttribute(RackEnvironment.EXCEPTION, e);
         try {
             errorApp.call(request).respond(response);
         }
-        catch (Exception e) {
+        catch (final RuntimeException ex) {
             // allow the error app to re-throw Ruby/JRuby-Rack exceptions :
-            if (e instanceof RackException) throw (RackException) e;
+            if (ex instanceof RackException) throw (RackException) ex;
             //if (e instanceof RaiseException) throw (RaiseException) e;
             // TODO seems redundant maybe we should let the container decide ?!
-            context.log(RackLogger.ERROR, "couldn't handle error", e);
-            response.sendError(500);
+            context.log(RackLogger.ERROR, "error app failed to handle exception: "+ e, ex);
+            Integer errorCode = getErrorApplicationFailureStatusCode();
+            if ( errorCode != null && errorCode.intValue() > 0 ) {
+                response.sendError(errorCode);
+            }
+            else {
+                throw ex;
+            }
         }
     }
 
