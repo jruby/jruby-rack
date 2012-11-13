@@ -36,7 +36,7 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
             handleException(e, request, response);
         } 
         finally {
-            afterProcess(app);
+            if ( app != null ) afterProcess(app);
         }
     }
 
