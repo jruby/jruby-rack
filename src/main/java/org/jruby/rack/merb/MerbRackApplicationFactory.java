@@ -12,9 +12,10 @@ import org.jruby.rack.DefaultRackApplicationFactory;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
- *
+ * @deprecated Merb support is deprecated and will be removed in 1.2
  * @author dudley
  */
+@Deprecated
 public class MerbRackApplicationFactory extends DefaultRackApplicationFactory {
     @Override
     public IRubyObject createApplicationObject(Ruby runtime) {

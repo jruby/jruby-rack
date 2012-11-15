@@ -8,6 +8,7 @@
 require 'jruby/rack/booter'
 
 module JRuby::Rack
+  # @deprecated Merb support is deprecated and will be removed in 1.2
   class MerbBooter < Booter
     attr_reader :merb_environment
 

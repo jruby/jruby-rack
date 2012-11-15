@@ -13,9 +13,10 @@ import org.jruby.rack.RackServletContextListener;
 import org.jruby.rack.SharedRackApplicationFactory;
 
 /**
- *
+ * @deprecated Merb support is deprecated and will be removed in 1.2
  * @author dudley
  */
+@Deprecated
 public class MerbServletContextListener extends RackServletContextListener {
     @Override
     protected RackApplicationFactory newApplicationFactory(RackConfig config) {

@@ -7,6 +7,7 @@
 
 require 'merb-core/dispatch/session'
 
+# @deprecated Merb support is deprecated and will be removed in 1.2
 module Merb
   class ServletSession < ::Merb::SessionContainer
 

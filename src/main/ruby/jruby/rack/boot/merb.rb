@@ -6,5 +6,5 @@
 #++
 
 require 'jruby/rack/merb_booter'
-
+# @deprecated Merb support is deprecated and will be removed in 1.2
 JRuby::Rack::MerbBooter.new.boot!
