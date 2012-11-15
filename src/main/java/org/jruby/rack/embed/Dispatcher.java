@@ -10,6 +10,8 @@ package org.jruby.rack.embed;
 import java.io.IOException;
 
 import org.jruby.Ruby;
+import org.jruby.RubyModule;
+import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.javasupport.JavaUtil;
 
 import org.jruby.rack.AbstractRackDispatcher;
@@ -22,11 +24,14 @@ import org.jruby.rack.RackResponseEnvironment;
 
 import org.jruby.runtime.builtin.IRubyObject;
 
+/**
+ * An embedded dispatcher.
+ */
 public class Dispatcher extends AbstractRackDispatcher {
 
-    private final IRubyObject application;
+    protected final IRubyObject application;
     private RackApplication rackApplication;
-
+    
     public Dispatcher(RackContext rackContext, IRubyObject application) {
         super(rackContext);
         this.application = application;
@@ -39,8 +44,12 @@ public class Dispatcher extends AbstractRackDispatcher {
         if (context instanceof Context) {
             ((Context) context).getConfig().doInitialize(runtime);
         }
-        // TODO seems confusing as we're not really exposing a servlet context:
         IRubyObject rubyContext = JavaUtil.convertJavaToRuby(runtime, context);
+        IRubyObject rackModule = runtime.getModule("JRuby").getConstantAt("Rack");
+        // `JRuby::Rack.context = context`
+        rackModule.callMethod(runtime.getCurrentContext(), "context=", rubyContext);
+        // TODO @deprecated only doing this due backwards compatibility :
+        // user code should use JRuby::Rack.context instead of $servlet_context
         runtime.getGlobalVariables().set("$servlet_context", rubyContext);
     }
     
@@ -51,6 +60,12 @@ public class Dispatcher extends AbstractRackDispatcher {
             rackApplication.init();
         }
         return rackApplication;
+    }
+    
+    @Override
+    public void destroy() {
+        if (rackApplication != null) rackApplication.destroy();
+        rackApplication = null;
     }
     
     @Override
@@ -65,11 +80,6 @@ public class Dispatcher extends AbstractRackDispatcher {
     @Override
     protected void afterProcess(RackApplication app) throws IOException {
         // NOOP
-    }
-
-    @Override
-    public void destroy() {
-        rackApplication.destroy();
     }
     
 }

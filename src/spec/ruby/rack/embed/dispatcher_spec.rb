@@ -7,16 +7,24 @@ describe org.jruby.rack.embed.Dispatcher do
   let(:application) { mock "application" }
   let(:context) { org.jruby.rack.embed.Context.new "test" }
   
-  it "initializes $servlet_context" do
-    $servlet_context = nil
-    begin
-      org.jruby.rack.embed.Dispatcher.new context, application
-      $servlet_context.should be context
-    ensure
-      $servlet_context = nil
-    end
+  before { $servlet_context = nil }; after { $servlet_context = nil }
+  
+  it "initializes $servlet_context", :deprecated => true do
+    org.jruby.rack.embed.Dispatcher.new context, application
+    $servlet_context.should be context
   end
 
+  it "initializes JRuby::Rack.context" do
+    prev_context = JRuby::Rack.context
+    JRuby::Rack.context = nil
+    begin
+      org.jruby.rack.embed.Dispatcher.new context, application
+      expect( JRuby::Rack.context ).to be context
+    ensure
+      JRuby::Rack.context = prev_context
+    end
+  end
+  
   it "initializes config from runtime" do
     out = java.io.ByteArrayOutputStream.new
     err = java.io.ByteArrayOutputStream.new
