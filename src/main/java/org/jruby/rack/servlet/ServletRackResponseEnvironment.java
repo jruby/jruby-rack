@@ -10,14 +10,17 @@ package org.jruby.rack.servlet;
 import org.jruby.rack.RackResponse;
 import org.jruby.rack.RackResponseEnvironment;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
- *
+ * Servlet response wrapper Rack (response) implementation.
+ * 
  * @author nicksieger
  */
 public class ServletRackResponseEnvironment extends HttpServletResponseWrapper 
@@ -29,9 +32,13 @@ public class ServletRackResponseEnvironment extends HttpServletResponseWrapper
     
     public void defaultRespond(final RackResponse response) throws IOException {
         setStatus(response.getStatus());
-        for (Iterator it = response.getHeaders().entrySet().iterator(); it.hasNext();) {
-            Entry entry = (Entry) it.next();
-            addHeader(entry.getKey().toString(), entry.getValue().toString());
+        @SuppressWarnings("unchecked")
+        final Set<Map.Entry> headers = response.getHeaders().entrySet();
+        for ( Iterator<Map.Entry> it = headers.iterator(); it.hasNext(); ) {
+            final Map.Entry entry = it.next();
+            final String key = entry.getKey().toString();
+            final Object value = entry.getValue();
+            addHeader(key, value != null ? value.toString() : null);
         }
         getWriter().write(response.getBody());
     }
