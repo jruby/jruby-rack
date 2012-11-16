@@ -47,19 +47,19 @@ public class RackServletContextListener implements ServletContextListener {
         try {
             factory.init(rackContext);
         } 
-        catch (Exception e) {
+        catch (RuntimeException e) {
             handleInitializationException(e, factory, rackContext);
         }
     }
 
-    public void contextDestroyed(ServletContextEvent ctxEvent) {
-        final ServletContext context = ctxEvent.getServletContext();
+    public void contextDestroyed(final ServletContextEvent event) {
+        final ServletContext context = event.getServletContext();
         final RackApplicationFactory factory =
                 (RackApplicationFactory) context.getAttribute(RackApplicationFactory.FACTORY);
-        if (factory != null) {
-            factory.destroy();
+        if ( factory != null ) {
             context.removeAttribute(RackApplicationFactory.FACTORY);
             context.removeAttribute(RackApplicationFactory.RACK_CONTEXT);
+            factory.destroy();
         }
     }
 
@@ -84,7 +84,10 @@ public class RackServletContextListener implements ServletContextListener {
             final Exception e,
             final RackApplicationFactory factory,
             final ServletRackContext rackContext) {
-        rackContext.log("Error: application initialization failed", e);
+        // NOTE: factory should have already logged the error ...
+        //rackContext.log(RackLogger.ERROR, "initialization failed", e);
+        // TODO for backwards compat we do 'nothing' here but should :
+        // throw (RuntimeException) e;
     }
     
 }
