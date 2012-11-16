@@ -33,13 +33,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author nicksieger
  */
-public class PoolingRackApplicationFactory implements RackApplicationFactory {
+public class PoolingRackApplicationFactory implements RackApplicationFactory,
+    RackApplicationFactory.Decorator {
     
     // 10 seconds seems still too much for a default, has been 30 previously :
     private static final float ACQUIRE_DEFAULT = 10.0f;
     
     protected RackContext rackContext;
-    private final RackApplicationFactory realFactory;
+    private final RackApplicationFactory delegate;
     
     protected final Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
     private Integer initialSize, maximumSize;
@@ -50,12 +51,17 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     private float acquireTimeout = ACQUIRE_DEFAULT; // in seconds
     private Semaphore permits;
 
-    public PoolingRackApplicationFactory(RackApplicationFactory factory) {
-        realFactory = factory;
+    public PoolingRackApplicationFactory(RackApplicationFactory delegate) {
+        this.delegate = delegate;
     }
 
+    public RackApplicationFactory getDelegate() {
+        return delegate;
+    }
+    
+    @Deprecated
     public RackApplicationFactory getRealFactory() {
-        return realFactory;
+        return getDelegate();
     }
     
     public RackContext getRackContext() {
@@ -99,7 +105,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     
     public void init(final RackContext rackContext) throws RackInitializationException {
         this.rackContext = rackContext;
-        realFactory.init(rackContext);
+        delegate.init(rackContext);
 
         final RackConfig config = rackContext.getConfig();
         // TODO until config.getRuntimeTimeoutSeconds returns an integer :
@@ -234,7 +240,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
      * @see RackApplicationFactory#getErrorApplication() 
      */
     public RackApplication getErrorApplication() {
-        return realFactory.getErrorApplication();
+        return delegate.getErrorApplication();
     }
 
     /**
@@ -243,11 +249,12 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
     public void destroy() {
         synchronized (applicationPool) {
             for (RackApplication app : applicationPool) {
-                app.destroy();
+                delegate.finishedWithApplication(app);
+                // DefaultRackAppFactory: app.destroy();
             }
             applicationPool.clear();
         }
-        realFactory.destroy();
+        delegate.destroy();
     }
     
     /**
@@ -320,7 +327,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory {
         throws RackInitializationException {
         createdApplications.incrementAndGet();
         if ( init ) initedApplications.incrementAndGet();
-        return init ? realFactory.getApplication() : realFactory.newApplication();
+        return init ? delegate.getApplication() : delegate.newApplication();
     }
     
     /** Called when a thread initialized an application. */

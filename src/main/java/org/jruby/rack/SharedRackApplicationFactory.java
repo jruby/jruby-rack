@@ -7,40 +7,36 @@
 
 package org.jruby.rack;
 
-import org.jruby.Ruby;
-
 /**
  *
  * @author nicksieger
  */
-public class SharedRackApplicationFactory implements RackApplicationFactory {
+public class SharedRackApplicationFactory implements RackApplicationFactory,
+    RackApplicationFactory.Decorator {
     
-    private final RackApplicationFactory realFactory;
+    private final RackApplicationFactory delegate;
     private RackApplication application;
 
-    public SharedRackApplicationFactory(RackApplicationFactory factory) {
-        realFactory = factory;
+    public SharedRackApplicationFactory(RackApplicationFactory delegate) {
+        this.delegate = delegate;
     }
 
+    public RackApplicationFactory getDelegate() {
+        return delegate;
+    }
+    
+    @Deprecated
     public RackApplicationFactory getRealFactory() {
-        return realFactory;
+        return getDelegate();
     }
     
     public void init(RackContext rackContext) throws RackInitializationException {
         try {
-            realFactory.init(rackContext);
+            delegate.init(rackContext);
             rackContext.log(RackLogger.INFO, "using a shared (threadsafe!) runtime");
-            application = realFactory.getApplication();
-        } catch (final Exception e) {
-            application = new RackApplication() {
-                public void init() throws RackInitializationException { }
-                public RackResponse call(RackEnvironment env) {
-                    env.setAttribute(RackEnvironment.EXCEPTION, e);
-                    return realFactory.getErrorApplication().call(env);
-                }
-                public void destroy() { }
-                public Ruby getRuntime() { throw new UnsupportedOperationException("not supported"); }
-            };
+            application = delegate.getApplication();
+        }
+        catch (Exception e) {
             rackContext.log(RackLogger.ERROR, "unable to create shared application instance", e);
             if (e instanceof RackInitializationException) throw ((RackInitializationException) e);
             throw new RackInitializationException("unable to create shared application instance", e);
@@ -59,11 +55,19 @@ public class SharedRackApplicationFactory implements RackApplicationFactory {
     }
 
     public RackApplication getErrorApplication() {
-        return realFactory.getErrorApplication();
+        return delegate.getErrorApplication();
     }
 
     public void destroy() {
-        application.destroy();
-        realFactory.destroy();
+        if (application != null) {
+            synchronized(this) {
+                if (application != null) {
+                    delegate.finishedWithApplication(application);
+                    // DefaultRackAppFactory: application.destroy();
+                }
+            }
+        }
+        delegate.destroy();
     }
+    
 }
