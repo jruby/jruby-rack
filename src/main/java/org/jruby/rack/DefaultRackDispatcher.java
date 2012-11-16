@@ -44,10 +44,9 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
             final RackResponseEnvironment response) 
         throws IOException, RackException {
         
-        RackApplication errorApp = getRackFactory().getErrorApplication();
-        request.setAttribute(RackEnvironment.EXCEPTION, e);
+        RackApplication errorHandler = new ErrorApplicationHandler(getErrorApplication(), e);
         try {
-            errorApp.call(request).respond(response);
+            errorHandler.call(request).respond(response);
         }
         catch (final RuntimeException ex) {
             // allow the error app to re-throw Ruby/JRuby-Rack exceptions :
@@ -80,6 +79,10 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
             return ((ServletRackContext) context).getRackFactory();
         }
         throw new IllegalStateException("not a servlet rack context");
+    }
+    
+    private RackApplication getErrorApplication() {
+        return getRackFactory().getErrorApplication();
     }
     
 }
