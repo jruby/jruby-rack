@@ -70,6 +70,11 @@ public interface RackConfig {
     /** Return the maximum size of the in-memory buffer used for request bodies. */
     Integer getMaximumMemoryBufferSize();
     
+    /**
+     * @return whether we allow the initialization exception to bubble up
+     */
+    //boolean isThrowInitException();
+    
     /** 
      * Return true if passing through the filter should append '.html' 
      * (or 'index.html') to the path.

@@ -11,7 +11,7 @@ import java.util.Queue;
 
 /**
  * Works like the pooling application factory, with the variation that it will
- * create all runtimes serially, using no extra threads.
+ * create all application instances (runtimes) serially, using no extra threads.
  *
  * @author Ola Bini <ola.bini@gmail.com>
  */
@@ -28,10 +28,10 @@ public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationF
             try {
                 app.init();
                 applicationPool.add(app);
-                rackContext.log(RackLogger.INFO, "added application to pool, size now = " + applicationPool.size());
+                log(RackLogger.INFO, "added application to pool, size now = " + applicationPool.size());
             }
             catch (RackInitializationException e) {
-                rackContext.log(RackLogger.ERROR, "unable to initialize application", e);
+                log(RackLogger.ERROR, "unable to initialize application", e);
             }
         }
     }

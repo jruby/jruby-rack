@@ -15,35 +15,51 @@ import org.jruby.runtime.builtin.IRubyObject;
 import java.io.IOException;
 
 /**
- *
+ * Default {@link RackApplication} implementation.
+ * Takes a Servlet {@link RackEnvironment} and calls the Ruby application 
+ * (which is wrapped in a <code>Rack::Handler::Servlet</code> instance).
+ * Returns the response converted to a Java {@link RackResponse} object.
+ * 
+ * @see rack/handler/servlet.rb
+ * 
  * @author nicksieger
  */
 public class DefaultRackApplication implements RackApplication {
 
     protected final RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
-    private IRubyObject application;
+    protected IRubyObject application;
 
+    /**
+     * Implicit constructor, expects the {@link #setApplication(IRubyObject)} to
+     * be called before this constructed application can be used.
+     */
     public DefaultRackApplication() {
     }
 
-    public DefaultRackApplication(IRubyObject application) {
+    /**
+     * @see #setApplication(IRubyObject)
+     * @param application 
+     */
+    public DefaultRackApplication(final IRubyObject application) {
         setApplication(application);
     }
 
     public RackResponse call(final RackEnvironment env) {
         final Ruby runtime = getRuntime();
         try {
-            RackInput io = new RackInput(runtime, env);
+            final RackInput io = new RackInput(runtime, env);
             try {
                 IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
                 adapter.setInstanceVariable(servlet_env, "@_io", io);
-                IRubyObject response = __call(servlet_env);
+                IRubyObject response = adapter.callMethod(getApplication(), "call", servlet_env);
                 return (RackResponse) JavaEmbedUtils.rubyToJava(runtime, response, RackResponse.class);
-            } finally {
+            }
+            finally {
                 io.close();
             }
-        } catch (IOException ex) {
-            throw RaiseException.createNativeRaiseException(runtime, ex);
+        }
+        catch (IOException e) {
+            throw RaiseException.createNativeRaiseException(runtime, e);
         }
     }
 
@@ -51,10 +67,19 @@ public class DefaultRackApplication implements RackApplication {
 
     public void destroy() { /* NOOP */ }
 
+    /**
+     * @return the application's Ruby runtime
+     */
     public Ruby getRuntime() {
         return getApplication().getRuntime();
     }
 
+    /**
+     * An application is expected to be set, if you need to test whether an
+     * application is not null use the {@link #isApplicationSet()} method.
+     * @return the application (Ruby) object
+     * @throws IllegalStateException if not application is set
+     */
     public IRubyObject getApplication() {
         if (application == null) {
             throw new IllegalStateException("no application set");
@@ -62,10 +87,26 @@ public class DefaultRackApplication implements RackApplication {
         return application;
     }
     
+    /**
+     * Sets the application object.
+     * @param application 
+     */
     public void setApplication(IRubyObject application) {
         this.application = application;
     }
 
+    /**
+     * @see #getApplication()
+     * @return true if an application has been set
+     */
+    public boolean isApplicationSet() {
+        return this.application != null;
+    }
+    
+    /**
+     * @deprecated no longer used
+     */
+    @Deprecated
     public IRubyObject __call(final IRubyObject env) {
         return adapter.callMethod(getApplication(), "call", env);
     }

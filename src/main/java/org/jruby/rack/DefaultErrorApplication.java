@@ -32,9 +32,11 @@ import java.util.Map;
 import org.jruby.Ruby;
 
 /**
- * Default error application if the Rack error application can not be setup.
+ * Default error application if the Rack error application can not be setup or
+ * "jruby.rack.error" handling is turned off (set to false).
  * 
- * Prints the error stack trace and responds with HTTP 500 without headers.
+ * By default, this application re-throws the error wrapped into a 
+ * {@link RackException} on {@link #call(org.jruby.rack.RackEnvironment)}.
  * 
  * @author kares
  */
@@ -44,7 +46,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
     protected final RackContext context;
     
     public DefaultErrorApplication() {
-        this.context = null;
+        this(null);
     }
     
     DefaultErrorApplication(RackContext context) {
@@ -73,13 +75,17 @@ public class DefaultErrorApplication extends DefaultRackApplication
         return (Exception) env.getAttribute(RackEnvironment.EXCEPTION);
     }
     
-    public class Response implements RackResponse {
+    /**
+     * Backwards compatibility error response.
+     * Prints the error stack trace and responds with HTTP 500 without headers.
+     */
+    private class Response implements RackResponse {
 
         private int status = 500;
         private Map headers = Collections.EMPTY_MAP;
         private String body;
         
-        private final RackEnvironment env;
+        protected final RackEnvironment env;
         
         public Response(RackEnvironment env) { this.env = env; }
         

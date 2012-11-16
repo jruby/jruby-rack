@@ -42,13 +42,13 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private RackApplication errorApplication;
 
     /**
-     * Convenience helper for unwrapping a {@link RackApplicationFactory#Decorator}
-     * @param factory
-     * @return unwrapped factory
+     * Convenience helper for unwrapping a {@link RackApplicationFactoryDecorator}.
+     * @param factory the (likely decorated) factory
+     * @return unwrapped "real" factory (might be the same as given)
      */
     public static RackApplicationFactory getRealFactory(final RackApplicationFactory factory) {
         if ( factory instanceof RackApplicationFactory.Decorator ) {
-            return getRealFactory( ((RackApplicationFactory.Decorator) factory).getDelegate() );
+            return getRealFactory( ((Decorator) factory).getDelegate() );
         }
         return factory;
     }
@@ -158,7 +158,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public IRubyObject createErrorApplicationObject(final Ruby runtime) {
         String errorApp = rackContext.getConfig().getProperty("jruby.rack.error.app");
-        String errorAppPath = null;
+        String errorAppPath = "<web.xml>";
         if (errorApp == null) {
             errorApp = rackContext.getConfig().getProperty("jruby.rack.error.app.path");
             if (errorApp != null) {
@@ -185,6 +185,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     public RackApplication newErrorApplication() {
+        Boolean error = rackContext.getConfig().getBooleanProperty("jruby.rack.error");
+        if ( error != null && ! error.booleanValue() ) { // jruby.rack.error = false
+            return new DefaultErrorApplication(rackContext);
+        }
         try {
             RackApplication app = createErrorApplication(
                 new ApplicationObjectFactory() {
@@ -355,6 +359,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         try {
             IRubyObject rubyException = re.getException();
             ThreadContext context = rubyException.getRuntime().getCurrentContext();
+            // JRuby-Rack internals (@see jruby/rack/capture.rb) :
             rubyException.callMethod(context, "capture");
             rubyException.callMethod(context, "store");
         }
@@ -421,12 +426,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
         return this.rackupScript = rackup;
     }
-
-    private void setupJRubyManagement() {
-        if (!"false".equalsIgnoreCase(System.getProperty("jruby.management.enabled"))) {
-            System.setProperty("jruby.management.enabled", "true");
-        }
-    }
     
     private void configureDefaults() {
         // configure (default) jruby.rack.request.size.[...] parameters :
@@ -439,6 +438,13 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         
         RewindableInputStream.setDefaultInitialBufferSize(iniSize);
         RewindableInputStream.setDefaultMaximumBufferSize(maxSize);
+    }
+    
+    private static void setupJRubyManagement() {
+        final String jrubyMxEnabled = "jruby.management.enabled";
+        if ( ! "false".equalsIgnoreCase( System.getProperty(jrubyMxEnabled) ) ) {
+            System.setProperty(jrubyMxEnabled, "true");
+        }
     }
     
 }

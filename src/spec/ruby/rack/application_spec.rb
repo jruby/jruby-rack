@@ -11,7 +11,7 @@ require 'jruby/rack/environment'
 describe org.jruby.rack.DefaultRackApplication, "call" do
   
   before :each do
-    @rack_env = mock("rack_request_env")
+    @rack_env = mock("rack request env")
     @rack_env.stub!(:getContext).and_return @rack_context
     @rack_env.stub!(:getInput).and_return(StubInputStream.new("hello world!"))
     @rack_env.stub!(:getContentLength).and_return(12)
@@ -118,7 +118,8 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
   it "should look for a rackup script via the 'rackup.path' parameter" do
     @rack_config.should_receive(:getRackupPath).and_return '/WEB-INF/hello.ru'
-    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/hello.ru').and_return StubInputStream.new("run MyRackApp")
+    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/hello.ru').
+      and_return StubInputStream.new("run MyRackApp")
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == 'run MyRackApp'
   end
@@ -127,7 +128,8 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     @rack_context.should_receive(:getResourcePaths).with('/WEB-INF/').and_return(
       java.util.HashSet.new(%w(app/ config/ config.ru lib/ vendor/).map{|f| "/WEB-INF/#{f}"}))
     @rack_context.should_receive(:getRealPath).with('/WEB-INF/config.ru')
-    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/config.ru').and_return StubInputStream.new("run MyRackApp")
+    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/config.ru').
+      and_return StubInputStream.new("run MyRackApp")
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == 'run MyRackApp'
   end
@@ -138,14 +140,16 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       java.util.HashSet.new(%w(app/ config/ lib/ vendor/).map{|f| "/WEB-INF/#{f}"}))
     @rack_context.should_receive(:getResourcePaths).with('/WEB-INF/lib/').and_return(
       java.util.HashSet.new(["/WEB-INF/lib/config.ru"]))
-    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/lib/config.ru').and_return StubInputStream.new("run MyRackApp")
+    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/lib/config.ru').
+      and_return StubInputStream.new("run MyRackApp")
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == 'run MyRackApp'
   end
 
   it "should handle config.ru files with a coding: pragma" do
     @rack_config.should_receive(:getRackupPath).and_return '/WEB-INF/hello.ru'
-    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/hello.ru').and_return StubInputStream.new("# coding: us-ascii\nrun MyRackApp")
+    @rack_context.should_receive(:getResourceAsStream).with('/WEB-INF/hello.ru').
+      and_return StubInputStream.new("# coding: us-ascii\nrun MyRackApp")
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == "# coding: us-ascii\nrun MyRackApp"
   end
@@ -202,40 +206,112 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     JRuby::Rack.send(:instance_variable_set, :@booter, self)
   end
   
+  def mocked_runtime_application_factory(factory_class = nil)
+    factory_class ||= org.jruby.rack.DefaultRackApplicationFactory
+    klass = Class.new(factory_class) do
+      def newRuntime() # use the current runtime instead of creating new
+        require 'jruby'
+        runtime = JRuby.runtime
+        initializeRuntime(runtime)
+        runtime
+      end
+    end
+    klass.new
+  end
+  
   context "initialized" do
     
     before :each do
       @rack_context.stub!(:getInitParameter).and_return nil
       @rack_context.stub!(:getResourcePaths).and_return nil
+      @rack_context.stub!(:getRealPath) { |path| path }
+      #@rack_context.stub!(:log).with do |*args|
+        #puts args.inspect
+      #end
     end
     
-    let(:app_factory) { @app_factory.init(@rack_context); @app_factory }
-
-    describe "init" do
+    let(:app_factory) do 
+      app_factory = mocked_runtime_application_factory
+      app_factory.init(@rack_context); app_factory
+    end
+    
+    describe "error application" do
       
-      it "should create an error application" do
+      it "creates an error application (by default)" do
         app_factory.getErrorApplication.should respond_to(:call)
+      end
+
+      it "creates a Rack error application" do
+        error_application = app_factory.getErrorApplication
+        expect( error_application ).to be_a(org.jruby.rack.ErrorApplication)
+        expect( error_application ).to be_a(org.jruby.rack.DefaultRackApplication)
+        # NOTE: these get created in a new Ruby runtime :
+        rack_app = error_application.getApplication
+        #expect( rack_app ).to be_a Rack::Handler::Servlet
+        expect( rack_app.class.name ).to eql 'Rack::Handler::Servlet'
+        app = rack_app.instance_variable_get('@app')
+        expect( app ).to be_a Rack::ShowStatus
+        #expect( app.class.name ).to eql 'Rack::ShowStatus'
+        error_app = app.instance_variable_get('@app')
+        expect( error_app ).to be_a JRuby::Rack::ErrorApp
+        #expect( error_app.class.name ).to eql 'JRuby::Rack::ErrorApp'
+      end
+
+      it "rackups a configured error application" do
+        @rack_config.stub!(:getProperty) do |name|
+          if name == 'jruby.rack.error.app'
+            "run Proc.new { 'error.app' }"
+          else
+            nil
+          end
+        end
+        error_application = app_factory.getErrorApplication
+        expect( error_application ).to be_a(org.jruby.rack.ErrorApplication)
+        expect( error_application ).to be_a(org.jruby.rack.DefaultRackApplication)
+        rack_app = error_application.getApplication
+        expect( rack_app ).to be_a Rack::Handler::Servlet
+        #expect( rack_app.class.name ).to eql 'Rack::Handler::Servlet'
+        app = rack_app.instance_variable_get('@app')
+        expect( app ).to be_a Proc
+        #expect( app.class.name ).to eql 'Proc'
+        expect( app.call ).to eql 'error.app'
+      end
+      
+      it "creates a 'default' error application as a fallback" do
+        @rack_config.stub!(:getProperty) do |name|
+          name == 'jruby.rack.error.app' ? "run MissingConstantApp" : nil
+        end
+        error_application = app_factory.getErrorApplication
+        expect( error_application ).to be_a(org.jruby.rack.ErrorApplication)
+        
+        rack_env = mock("rack env")
+        rack_env.should_receive(:getAttribute).with('jruby.rack.exception').
+          at_least(:once).and_return java.lang.RuntimeException.new('42')
+        response = error_application.call rack_env
+        expect( response.getStatus ).to eql 500
+        expect( response.getHeaders ).to be_empty
+        expect( response.getBody ).to_not be nil
       end
       
     end
 
     describe "newRuntime" do
       
-      it "should create a new Ruby runtime with the jruby-rack environment pre-loaded" do
+      it "creates a new Ruby runtime with the jruby-rack environment pre-loaded" do
         @runtime = app_factory.new_runtime
         should_not_eval_as_nil "defined?(::Rack)"
         should_not_eval_as_nil "defined?(::Rack::Handler::Servlet)"
         should_eval_as_nil "defined?(Rack::Handler::Bogus)"
       end
 
-      it "should not require 'rack' (until booter is called)" do
+      it "does not require 'rack' (until booter is called)" do
         @runtime = app_factory.new_runtime
         should_eval_as_nil "defined?(::Rack::VERSION)"
       end
 
       # should not matter on 1.7.x due https://github.com/jruby/jruby/pull/123
-      if JRUBY_VERSION < '1.7.0'        
-        it "should not load any features (until load path is adjusted)" do
+      if JRUBY_VERSION < '1.7.0'
+        it "does not load any features (until load path is adjusted)" do
           # due to incorrectly detected jruby.home some container e.g. WebSphere 8
           # fail if things such as 'fileutils' get required during runtime init !
 
@@ -379,17 +455,17 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
   describe "finishedWithApplication" do
     it "should call destroy on the application object" do
-      app = mock "application"
-      app.should_receive(:destroy)
-      @app_factory.finishedWithApplication app
+      rack_app = mock "application"
+      rack_app.should_receive(:destroy)
+      @app_factory.finishedWithApplication rack_app
     end
   end
 
   describe "destroy" do
     it "should call destroy on the error application" do
-      app = mock "error app"
-      app.should_receive(:destroy)
-      @app_factory.setErrorApplication app
+      rack_app = mock "error app"
+      rack_app.should_receive(:destroy)
+      @app_factory.setErrorApplication rack_app
       @app_factory.destroy
     end
   end
@@ -436,14 +512,10 @@ end
 
 describe org.jruby.rack.PoolingRackApplicationFactory do
   
-  class Java::OrgJrubyRack::PoolingRackApplicationFactory
-    field_writer :rackContext
-  end
-  
   before :each do
     @factory = mock "factory"
     @pooling_factory = org.jruby.rack.PoolingRackApplicationFactory.new @factory
-    @pooling_factory.rackContext = @rack_context
+    @pooling_factory.context = @rack_context
   end
 
   it "should initialize the delegate factory when initialized" do
@@ -480,8 +552,8 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     app1, app2 = mock("app1"), mock("app2")
     @pooling_factory.finishedWithApplication app1
     @pooling_factory.finishedWithApplication app2
-    app1.should_receive(:destroy)
-    app2.should_receive(:destroy)
+    @factory.should_receive(:finishedWithApplication).with(app1) # app1.should_receive(:destroy)
+    @factory.should_receive(:finishedWithApplication).with(app2) # app2.should_receive(:destroy)
     @factory.should_receive(:destroy)
     
     @pooling_factory.destroy
@@ -561,7 +633,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   end
   
   it "throws an exception from getApplication when an app failed to initialize " + 
-     "(with wait set to false)" do
+     "(even when only a single application initialization fails)" do
     @factory.stub!(:init)
     app_count = java.util.concurrent.atomic.AtomicInteger.new(0)
     @factory.stub!(:newApplication).and_return do
@@ -585,11 +657,11 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     3.times do
       begin
         @pooling_factory.getApplication
-      rescue java.lang.IllegalStateException
+      rescue org.jruby.rack.RackInitializationException
         failed += 1
       end
     end
-    if failed != 1
+    if failed != 3
       fail "@pooling_factory.getApplication expected to fail once, but failed #{failed}-time(s)"
     end
   end
@@ -705,7 +777,7 @@ describe org.jruby.rack.SerialPoolingRackApplicationFactory do
   before :each do
     @factory = mock "factory"
     @pooling_factory = org.jruby.rack.SerialPoolingRackApplicationFactory.new @factory
-    @pooling_factory.rackContext = @rack_context
+    @pooling_factory.context = @rack_context
   end
   
   it "initializes initial runtimes in serial order" do
@@ -733,37 +805,58 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     @shared_factory = org.jruby.rack.SharedRackApplicationFactory.new @factory
   end
 
-  it "should initialize the delegate factory and create the shared application when initialized" do
+  it "initializes the delegate factory and creates the (shared) application when initialized" do
     @factory.should_receive(:init).with(@rack_context)
-    app = mock "application"
-    @factory.should_receive(:getApplication).and_return app
+    @factory.should_receive(:getApplication).and_return app = mock("application")
     @shared_factory.init(@rack_context)
   end
 
-  it "should throw a servlet exception if the shared application cannot be initialized" do
+  # NOTE: should be removed if the decision about throwing exception moves to the listener :
+  it "does not throw an exception if the shared app can not be initialized by default " + 
+     "(only logs for backward compatibility)" do
     @factory.should_receive(:init).with(@rack_context)
-    app = mock "application"
     @factory.should_receive(:getApplication).and_raise java.lang.RuntimeException.new('42')
-    lambda {
-      @shared_factory.init(@rack_context)
-    }.should raise_error(org.jruby.rack.RackInitializationException)
-  end
-
-  it "should return a valid application object even if initialization fails" do
-    @factory.should_receive(:init).with(@rack_context)
-    app = mock "application"
-    @factory.should_receive(:getApplication).and_raise java.lang.RuntimeException.new('42')
-    begin
-      @shared_factory.init(@rack_context)
-    rescue org.jruby.rack.RackInitializationException
+    
+    @rack_context.should_receive(:log).with do |level, msg, e|
+      e.message == '42' && ! msg.nil? if level == 'ERROR'
     end
-    @shared_factory.getApplication.should_not be nil
+    
+    expect( lambda {
+      @shared_factory.init(@rack_context)
+    } ).to_not raise_error
+  end
+  
+  it "throws an exception if the shared application cannot be initialized " + 
+     "(and jruby.rack.error = false)" do
+    @factory.should_receive(:init).with(@rack_context)
+    @factory.should_receive(:getApplication).and_raise java.lang.ArithmeticException.new('42')
+    
+    @rack_config.stub!(:getBooleanProperty).with("jruby.rack.error").and_return false
+    @rack_context.should_receive(:log).with do |level, msg ,e|
+      level == 'ERROR' ? fail(msg) : true
+    end
+    
+    expect( lambda {
+      @shared_factory.init(@rack_context)
+    } ).to raise_error(java.lang.ArithmeticException)
   end
 
-  it "should return the same application for any newApplication or getApplication call" do
+  it "throws initialization exception on each getApplication call if init failed" do
     @factory.should_receive(:init).with(@rack_context)
-    app = mock "application"
-    @factory.should_receive(:getApplication).and_return app
+    @factory.should_receive(:getApplication).and_raise java.lang.RuntimeException.new('42')
+    @factory.should_not_receive(:getErrorApplication) # dispacther invokes this ...
+    
+    #@rack_config.stub!(:getBooleanProperty).with("jruby.rack.exception").and_return false
+    
+    @shared_factory.init(@rack_context)
+    expect( lambda {
+      @shared_factory.getApplication
+    }).to raise_error(org.jruby.rack.RackInitializationException)
+  end
+
+  it "returns the same application for any newApplication or getApplication call" do
+    @factory.should_receive(:init).with(@rack_context)
+    @factory.should_receive(:getApplication).and_return app = mock("application")
     @shared_factory.init(@rack_context)
     1.upto(5) do
       @shared_factory.newApplication.should == app
@@ -772,19 +865,18 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     end
   end
 
-  it "should call destroy on the shared application when destroyed" do
+  it "finished with application using delegate factory when destroyed" do
     @factory.should_receive(:init).with(@rack_context)
-    app = mock "application"
-    @factory.should_receive(:getApplication).and_return app
+    @factory.should_receive(:getApplication).and_return app = mock("application")
     @factory.should_receive(:destroy)
-    app.should_receive(:destroy)
+    @factory.should_receive(:finishedWithApplication).with(app)
     @shared_factory.init(@rack_context)
     @shared_factory.destroy
   end
 
-  it "should retrieve the error application from the delegate factory" do
-    app = mock("app")
-    @factory.should_receive(:getErrorApplication).and_return app
+  it "retrieves the error application from the delegate factory" do
+    @factory.should_receive(:getErrorApplication).and_return app = mock("error app")
     @shared_factory.getErrorApplication.should == app
   end
+  
 end

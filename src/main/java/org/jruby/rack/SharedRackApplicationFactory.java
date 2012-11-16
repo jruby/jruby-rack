@@ -8,66 +8,58 @@
 package org.jruby.rack;
 
 /**
- *
+ * Shared application factory that only creates a single application instance.
+ * This factory implementation is the most effective on performance and esp. 
+ * memory consumption but the underlying Ruby code in the application is assumed
+ * to be thread-safe. If you're using a Rails application make sure it is 
+ * configured as <code>config.threadsafe!</code>.
+ * 
  * @author nicksieger
  */
-public class SharedRackApplicationFactory implements RackApplicationFactory,
-    RackApplicationFactory.Decorator {
+public class SharedRackApplicationFactory extends RackApplicationFactoryDecorator {
     
-    private final RackApplicationFactory delegate;
     private RackApplication application;
 
     public SharedRackApplicationFactory(RackApplicationFactory delegate) {
-        this.delegate = delegate;
-    }
-
-    public RackApplicationFactory getDelegate() {
-        return delegate;
+        super(delegate);
     }
     
-    @Deprecated
-    public RackApplicationFactory getRealFactory() {
-        return getDelegate();
-    }
-    
-    public void init(RackContext rackContext) throws RackInitializationException {
-        try {
-            delegate.init(rackContext);
-            rackContext.log(RackLogger.INFO, "using a shared (threadsafe!) runtime");
-            application = delegate.getApplication();
-        }
-        catch (Exception e) {
-            rackContext.log(RackLogger.ERROR, "unable to create shared application instance", e);
-            if (e instanceof RackInitializationException) throw ((RackInitializationException) e);
-            throw new RackInitializationException("unable to create shared application instance", e);
-        }
+    @Override
+    protected void doInit() throws RackInitializationException {
+        super.doInit(); // delegate.init(rackContext);
+        log(RackLogger.INFO, "using a shared (threadsafe!) runtime");
+        application = getDelegate().getApplication();
     }
 
-    public RackApplication newApplication() throws RackInitializationException {
-        return getApplication();
-    }
-
-    public RackApplication getApplication() throws RackInitializationException {
+    @Override
+    protected RackApplication getApplicationImpl() {
         return application;
     }
 
+    /**
+     * We do not create any new applications since we're sharing.
+     * @see #getApplication() 
+     * @return an application
+     */
+    public RackApplication newApplication() {
+        return getApplication();
+    }
+    
     public void finishedWithApplication(RackApplication app) {
+        /* NOOP we keep the shared application until #destroy() */
     }
 
-    public RackApplication getErrorApplication() {
-        return delegate.getErrorApplication();
-    }
-
+    @Override
     public void destroy() {
         if (application != null) {
             synchronized(this) {
                 if (application != null) {
-                    delegate.finishedWithApplication(application);
+                    getDelegate().finishedWithApplication(application);
                     // DefaultRackAppFactory: application.destroy();
                 }
             }
         }
-        delegate.destroy();
+        super.destroy(); // delegate.destroy();
     }
     
 }

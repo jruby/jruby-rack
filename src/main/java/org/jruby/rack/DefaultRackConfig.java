@@ -230,6 +230,22 @@ public class DefaultRackConfig implements RackConfig {
         return getBooleanProperty("jruby.rack.ignore.env", false);
     }
 
+    public boolean isThrowInitException() {
+        return isThrowInitException(this);
+    }
+    
+    static boolean isThrowInitException(RackConfig config) {
+        Boolean error = config.getBooleanProperty("jruby.rack.error");
+        if ( error != null && ! error.booleanValue() ) {
+            return true; // jruby.rack.error = false
+        }
+        error = config.getBooleanProperty("jruby.rack.exception");
+        if ( error != null && ! error.booleanValue() ) {
+            return true; // jruby.rack.exception = false
+        }
+        return false;
+    }
+    
     public String getProperty(String key) {
         return getProperty(key, null);
     }

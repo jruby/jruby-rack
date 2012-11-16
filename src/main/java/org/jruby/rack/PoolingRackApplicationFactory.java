@@ -15,32 +15,35 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * A pooling application factory that creates runtimes and manages a fixed- or
- * unlimited-size pool.
+ * A pooling application factory that creates applications (runtimes) and 
+ * manages a fixed-size (or upper unlimited-size) application pool.
  * <p>
- * It has several context init parameters to control behavior:
+ * It has several context initialization parameters to control behavior :
  * <ul>
- * <li> jruby.min.runtimes: Initial number of runtimes to create and put in
- *  the pool. Default is none.
- * <li> jruby.max.runtimes: Maximum size of the pool. Default is unlimited, in
- *  which case new requests for an application object will create one if none
- *  are available.
- * <li> jruby.runtime.timeout.sec: Value (in seconds) indicating when
- *  a thread will timeout when no runtimes are available. Default is 30.
- * <li> jruby.runtime.initializer.threads: Number of threads to use at startup to
- *  intialize and fill the pool. Default is 4.
+ * <li><code>jruby.min.runtimes</code>: 
+ *  Initial number of runtimes to create and put in the pool. Default is none.
+ * <li><code>jruby.max.runtimes</code>: 
+ *  Maximum size of the pool. Default is unlimited, in which case new requests 
+ *  for an application object will create one if none are available.
+ * <li><code>jruby.runtime.acquire.timeout</code>: Value (in seconds) 
+ *  indicating when a thread will timeout waiting for an application instance 
+ *  when no runtimes are available in the pool. Default is 10.0 (seconds), an 
+ *  {@link AcquireTimeoutException} is thrown if such a condition occurs.
+ * <li><code>jruby.runtime.init.threads</code>: 
+ *  Number of threads to use at startup to fill the pool. Default is 4.
+ * <li><code>jruby.runtime.init.wait</code>: 
+ *  Whether to wait for initialization to complete before the factory is usable.
+ *  In case it's a integer value it waits for until given number of application
+ *  instances are in the pool. Default is true (waits till at least min runtimes
+ *  are initialized).
  * </ul>
  *
  * @author nicksieger
  */
-public class PoolingRackApplicationFactory implements RackApplicationFactory,
-    RackApplicationFactory.Decorator {
+public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorator {
     
     // 10 seconds seems still too much for a default, has been 30 previously :
     private static final float ACQUIRE_DEFAULT = 10.0f;
-    
-    protected RackContext rackContext;
-    private final RackApplicationFactory delegate;
     
     protected final Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
     private Integer initialSize, maximumSize;
@@ -52,26 +55,19 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
     private Semaphore permits;
 
     public PoolingRackApplicationFactory(RackApplicationFactory delegate) {
-        this.delegate = delegate;
-    }
-
-    public RackApplicationFactory getDelegate() {
-        return delegate;
+        super(delegate);
     }
     
-    @Deprecated
-    public RackApplicationFactory getRealFactory() {
-        return getDelegate();
-    }
-    
-    public RackContext getRackContext() {
-        return rackContext;
-    }
-    
+    /**
+     * @return the (unmodifiable) pool snapshot
+     */
     public Collection<RackApplication> getApplicationPool() {
         return Collections.unmodifiableCollection(applicationPool);
     }
 
+    /**
+     * @return <code>jruby.min.runtimes</code>
+     */
     public Integer getInitialSize() {
         return initialSize;
     }
@@ -83,6 +79,9 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
         }
     }
 
+    /**
+     * @return <code>jruby.max.runtimes</code>
+     */
     public Integer getMaximumSize() {
         return maximumSize;
     }
@@ -94,6 +93,9 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
         this.maximumSize = maximumSize;
     }
     
+    /**
+     * @return the timeout to wait for the pool to return an application if empty
+     */
     public Number getAcquireTimeout() {
         return acquireTimeout;
     }
@@ -103,29 +105,26 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
             ACQUIRE_DEFAULT : acquireTimeout.floatValue();
     }
     
-    public void init(final RackContext rackContext) throws RackInitializationException {
-        this.rackContext = rackContext;
-        delegate.init(rackContext);
-
-        final RackConfig config = rackContext.getConfig();
+    @Override
+    protected void doInit() throws RackInitializationException {
+        super.doInit(); // delegate.init(rackContext);
+        final RackConfig config = getConfig();
         // TODO until config.getRuntimeTimeoutSeconds returns an integer :
-        Number timeout = rackContext.getConfig()
-                .getNumberProperty("jruby.runtime.acquire.timeout");
+        Number timeout = config.getNumberProperty("jruby.runtime.acquire.timeout");
         if (timeout == null) { // backwards compatibility with 1.0.x :
-            timeout =rackContext.getConfig()
-                    .getNumberProperty("jruby.runtime.timeout.sec");
+            timeout = config.getNumberProperty("jruby.runtime.timeout.sec");
         }
         setAcquireTimeout( timeout );
 
         setInitialSize( config.getInitialRuntimes() );
         setMaximumSize( config.getMaximumRuntimes() );
-        
-        rackContext.log( RackLogger.INFO, "using "+ // using 4:8 runtime pool
+
+        log( RackLogger.INFO, "using "+ // using 4:8 runtime pool
                 ( initialSize == null ? "" : initialSize ) + ":" + 
                 ( maximumSize == null ? "" : maximumSize ) +
                 " runtime pool with acquire timeout of " + 
                 acquireTimeout + " seconds" );
-        
+
         fillInitialPool();
     }
 
@@ -141,12 +140,14 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
     /**
      * Returns an application instance from the pool.
      * If no instances in pool attempts to wait a specified timeout of seconds.
-     * Creates a new instance on demand if the pool is not limited with a 
-     * upper maximum.
+     * Creates a new instance on demand if the pool is not limited with an
+     * upper maximum (or the upper bound has not been reached yet).
      * @see RackApplicationFactory#getApplication() 
      */
-    public RackApplication getApplication() 
+    @Override
+    protected RackApplication getApplicationImpl() 
         throws RackInitializationException, AcquireTimeoutException {
+        
         RackApplication app = null;
         final boolean permit = acquireApplicationPermit();
         // if a permit is gained we can retrieve an app from the pool
@@ -172,7 +173,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
         // NOTE: for apps that take a long time to boot simply set values
         // initial == maximum to avoid creating an application on demand
         if ( ! permit || ( maximumSize == null || maximumSize > createdApplications.get() ) ) {
-            rackContext.log(RackLogger.INFO, "pool was empty - getting new application instance");
+            log(RackLogger.INFO, "pool was empty - getting new application instance");
             // we'll try to put it "back" to pool from finishedWithApplication(app)
             return createApplication(true);
         }
@@ -203,7 +204,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
             if ( ! acquired ) {
                 String message = "could not acquire application permit" + 
                         " within " + acquireTimeout + " seconds";
-                rackContext.log(RackLogger.INFO, message + " (try increasing the pool size)");
+                log(RackLogger.INFO, message + " (try increasing the pool size)");
                 throw new AcquireTimeoutException(message);
             }
             return true; // acquired permit
@@ -218,7 +219,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
         if (app == null) {
             // seems to sometimes happen when an error occurs during boot
             // and thus on destroy app.destroy(); will fail with a NPE !
-            rackContext.log(RackLogger.WARN, "ignoring null application");
+            log(RackLogger.WARN, "ignoring null application");
             return;
         }
         synchronized (applicationPool) {
@@ -237,24 +238,18 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
     }
 
     /**
-     * @see RackApplicationFactory#getErrorApplication() 
-     */
-    public RackApplication getErrorApplication() {
-        return delegate.getErrorApplication();
-    }
-
-    /**
      * @see RackApplicationFactory#destroy() 
      */
+    @Override
     public void destroy() {
         synchronized (applicationPool) {
             for (RackApplication app : applicationPool) {
-                delegate.finishedWithApplication(app);
+                getDelegate().finishedWithApplication(app);
                 // DefaultRackAppFactory: app.destroy();
             }
             applicationPool.clear();
         }
-        delegate.destroy();
+        super.destroy(); // delegate.destroy();
     }
     
     /**
@@ -286,7 +281,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
      * @param apps the (initial) instances (for the pool) to be initialized
      */
     protected void launchInitialization(final Queue<RackApplication> apps) {
-        Integer initThreads = rackContext.getConfig().getNumInitializerThreads();
+        Integer initThreads = getConfig().getNumInitializerThreads();
         if ( initThreads == null ) initThreads = 4; // quad-core baby
         
         for (int i = 0; i < initThreads; i++) {
@@ -299,22 +294,36 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
                             if ( apps.isEmpty() ) break;
                             app = apps.remove();
                         }
-                        try {
-                            app.init();
-                            if ( ! putApplicationToPool(app) ) break;
-                        }
-                        catch (RackInitializationException e) {
-                            rackContext.log(RackLogger.ERROR, "unable to initialize application", e);
-                            // we're put a null to make sure we get notified :
-                            if ( ! putApplicationToPool(null) ) break;
-                        }
+                        if ( ! initAndPutApplicationToPool(app) ) break;
                     }
                 }
                 
             }, "JRuby-Rack-App-Init-" + i).start();
         }
     }
-
+    
+    private String appInitErrorMessage;
+    
+    private boolean initAndPutApplicationToPool(final RackApplication app) {
+        try {
+            app.init();
+        }
+        catch (final RuntimeException e) {
+            synchronized(this) {
+                setInitError(e);
+                // only log once for all apps (if same exception happens) :
+                if ( appInitErrorMessage != null && 
+                        ! appInitErrorMessage.equals(e.getMessage()) ) {
+                    appInitErrorMessage = e.getMessage();
+                    log(RackLogger.ERROR, "unable to initialize application", e);
+                }
+            }
+            // we're put a null to make sure we get notified :
+            return putApplicationToPool(null);
+        }
+        return putApplicationToPool(app);
+    }
+    
     protected Queue<RackApplication> createApplications() throws RackInitializationException {
         Queue<RackApplication> apps = new LinkedList<RackApplication>();
         for (int i = 0; i < initialSize; i++) {
@@ -327,7 +336,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
         throws RackInitializationException {
         createdApplications.incrementAndGet();
         if ( init ) initedApplications.incrementAndGet();
-        return init ? delegate.getApplication() : delegate.newApplication();
+        return init ? getDelegate().getApplication() : getDelegate().newApplication();
     }
     
     /** Called when a thread initialized an application. */
@@ -337,8 +346,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
                 return false;
             }
             applicationPool.add(app);
-            rackContext.log(RackLogger.INFO, "added application " + 
-                    "to pool, size now = " + applicationPool.size());
+            log(RackLogger.INFO, "added application to pool, size now = " + applicationPool.size());
             initedApplications.incrementAndGet();
             // in case we're waiting from waitForNextAvailable() :
             applicationPool.notifyAll();
@@ -375,8 +383,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
      * in the pool (less or equal than zero means not to wait at all).
      */
     private int getInitialPoolSizeWait() {
-        Number waitNum = rackContext.getConfig()
-                .getNumberProperty("jruby.runtime.init.wait");
+        Number waitNum = getConfig().getNumberProperty("jruby.runtime.init.wait");
         if ( waitNum != null ) {
             int wait = waitNum.intValue();
             if (maximumSize != null && wait > maximumSize) {
@@ -385,8 +392,7 @@ public class PoolingRackApplicationFactory implements RackApplicationFactory,
             return wait;
         }
         // otherwise we assume it to be a boolean true/false flag :
-        Boolean waitFlag = rackContext.getConfig()
-                .getBooleanProperty("jruby.runtime.init.wait");
+        Boolean waitFlag = getConfig().getBooleanProperty("jruby.runtime.init.wait");
         if ( waitFlag == null ) waitFlag = Boolean.TRUE;
         return waitFlag ? ( initialSize == null ? 1 : initialSize.intValue() ) : 0;
         // NOTE: this slightly changes the behavior in 1.1.8, in previous

@@ -47,7 +47,7 @@ public interface RackApplicationFactory {
      * The error application is expected to be a singleton and should not be 
      * returned to the factory. 
      */
-    RackApplication getErrorApplication();
+    RackApplication getErrorApplication(); // TODO return ErrorApplication
     
     /** 
      * Destroy the factory.

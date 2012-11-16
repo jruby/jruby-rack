@@ -4,6 +4,10 @@
  */
 package org.jruby.rack;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import org.jruby.exceptions.RaiseException;
+
 /**
  * A base class for JRuby-Rack exceptions.
  * 
@@ -36,6 +40,25 @@ public class RackException extends RuntimeException {
             }
         }
         return cause;
+    }
+    
+    static RackException wrap(final Exception e) {
+        if (e instanceof RackException) return (RackException) e;
+        return new RackException(e);
+    }
+
+    static String exceptionMessage(final RaiseException e) {
+        if (e != null) {
+            StringBuilder st = new StringBuilder();
+            st.append(e.getException().toString()).append('\n');
+            ByteArrayOutputStream b = new ByteArrayOutputStream();
+            e.getException().printBacktrace(new PrintStream(b));
+            st.append(b.toString());
+            return st.toString();
+        }
+        else {
+            return null;
+        }
     }
     
 }
