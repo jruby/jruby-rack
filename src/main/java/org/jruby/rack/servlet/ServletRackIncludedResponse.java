@@ -30,8 +30,13 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	private ServletResponse wrappedResponse;
 	private PrintWriter writer;
 	private ServletOutputStream outputStream;
-	private ByteArrayOutputStream byteOutputStream;
+	private ByteArrayOutputStream outputStreamBuffer;
 	
+    /**
+     * Wraps a response.
+     * @param response 
+     * @see #setBufferSize(int)
+     */
 	public ServletRackIncludedResponse(HttpServletResponse response) {
 		super(response);
 		bufferSize = BUFFER_SIZE;
@@ -40,17 +45,13 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	
 	/**
 	 * Returns the output of the include as a string, encoded by the
-	 * character encoding available in {@link ServletReponse.getCharacterEncoding()}}
-	 * @return
+	 * character encoding available {@link #getCharacterEncoding()}}.
+	 * @return the included output as a String
 	 */
-	public String getOutput() {
-		String charSet = super.getResponse().getCharacterEncoding();
-		try {
-			flushBuffer();
-			return byteOutputStream.toString(charSet);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+	public String getOutput() throws IOException {
+        flushBuffer();
+        String charEnc = super.getResponse().getCharacterEncoding();
+        return outputStreamBuffer.toString(charEnc);
 	}
 	
 	@Override
@@ -73,19 +74,30 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	}
 
 	/**
-	 * All content written to this response is buffered,
-	 * but this method will return either the initial buffer size
+	 * All content written to an included response is buffered,
+	 * this method will return either the initial buffer size
 	 * or the one specified using {@link #setBufferSize(int)}.
+     * @return the (initial/set) buffer size
 	 */
 	@Override
 	public int getBufferSize() {
 		return bufferSize;
 	}
 
+	/**
+	 * Calls to this method has no effect if the stream has already been written
+     * to, unless {@link #resetBuffer()} is called.
+     * @param size the buffer size (in bytes)
+	 */
 	@Override
-	public ServletOutputStream getOutputStream() throws IOException {
+	public void setBufferSize(int size) {
+		bufferSize = size;
+	}
+    
+	@Override
+	public ServletOutputStream getOutputStream() throws IllegalStateException {
 		if (writer != null) {
-			throw new IllegalStateException("Cannot return output stream after a writer has been returned");
+			throw new IllegalStateException("getWriter() has already been called for this response");
 		}
 		if (outputStream == null) {
 			initializeOutputStream();
@@ -94,9 +106,9 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	}
 
 	@Override
-	public PrintWriter getWriter() throws IOException {
+	public PrintWriter getWriter() throws UnsupportedEncodingException, IllegalStateException {
 		if (outputStream != null) {
-			throw new IllegalStateException("Cannot return writer after an output stream has been returned");
+			throw new IllegalStateException("getOutputStream() has already been called for this response");
 		}
 		if (writer == null) {
 			initializeWriter();
@@ -105,52 +117,45 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	}
 
 	@Override
-	public void reset() {
-		throw new UnsupportedOperationException("Cannot reset a response from inside a server-side include");
+	public void reset() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException("Cannot reset an included response");
 	}
 
 	@Override
-	public void resetBuffer() {
-		if (getResponse().isCommitted()) {
-			throw new IllegalArgumentException("Illegal call to resetBuffer() after response has been committed");
+	public void resetBuffer() throws IllegalStateException {
+		if ( getResponse().isCommitted() ) {
+			throw new IllegalStateException("Illegal call to resetBuffer() after response has been committed");
 		}
-		if (writer != null) {
-			initializeWriter();
-		} else if (outputStream != null) {
+		if ( writer != null ) {
+            try {
+                initializeWriter();
+            } // NOTE: should not happen since we've created a writer previously
+            catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException(e);
+            }
+		}
+        else if ( outputStream != null ) {
 			initializeOutputStream();
 		}
 	}
-
-	/**
-	 *  Calls to this method are ignored if the stream has already been written to,
-	 *  unless {@link #resetBuffer()} is called.
-	 */
-	@Override
-	public void setBufferSize(int size) {
-		bufferSize = size;
-	}
 	
-	private void initializeWriter() {
+	private void initializeWriter() throws UnsupportedEncodingException {
 		String charSet = super.getResponse().getCharacterEncoding();
-		byteOutputStream = new ByteArrayOutputStream(bufferSize);
-		try {
-			writer = new PrintWriter(new OutputStreamWriter(byteOutputStream, charSet));
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
+		outputStreamBuffer = new ByteArrayOutputStream(bufferSize);
+		writer = new PrintWriter(new OutputStreamWriter(outputStreamBuffer, charSet));
 	}
 	
 	private void initializeOutputStream() {
 		String charSet = super.getResponse().getCharacterEncoding();
-		byteOutputStream = new ByteArrayOutputStream(bufferSize);
-		outputStream = new ByteArrayServletOutputStream(byteOutputStream, charSet);
+		outputStreamBuffer = new ByteArrayOutputStream(bufferSize);
+		outputStream = new ByteArrayServletOutputStream(outputStreamBuffer, charSet);
 	}
 	
 	/**
 	 * Crunchy ServletOutputStream coating hiding a chewy ByteArrayOutputStream center. 
 	 * @author bhaidri
 	 */
-	private final static class ByteArrayServletOutputStream extends ServletOutputStream {
+	private static class ByteArrayServletOutputStream extends ServletOutputStream {
 		
 		private final static String LINE_SEPARATOR = System.getProperty("line.separator");
 		private final DataOutputStream dataOutputStream;
