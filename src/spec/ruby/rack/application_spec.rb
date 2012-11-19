@@ -722,8 +722,8 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
       app
     end
     @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
-    @rack_config.should_receive(:getInitialRuntimes).and_return 2
-    @rack_config.should_receive(:getMaximumRuntimes).and_return 4
+    @rack_config.stub!(:getInitialRuntimes).and_return 2
+    @rack_config.stub!(:getMaximumRuntimes).and_return 4
 
     @pooling_factory.init(@rack_context)
     @pooling_factory.acquire_timeout = 0.10.to_java # second
@@ -761,13 +761,42 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
       app
     end
     @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
-    @rack_config.should_receive(:getInitialRuntimes).and_return 6
-    @rack_config.should_receive(:getMaximumRuntimes).and_return 8
+    @rack_config.stub!(:getInitialRuntimes).and_return 6
+    @rack_config.stub!(:getMaximumRuntimes).and_return 8
     
     @pooling_factory.init(@rack_context)
     @pooling_factory.getApplicationPool.size.should < 6
     sleep(0.45) # 6 x 0.15 == 0.9 but we're booting in paralel
     @pooling_factory.getApplicationPool.size.should >= 6
+  end
+  
+  it "throws from init when application initialization in thread failed" do
+    @factory.stub!(:init)
+    @factory.stub!(:newApplication).and_return do
+      app = mock "app"
+      app.stub!(:init).and_return do
+        sleep(0.05); raise "app.init raising"
+      end
+      app
+    end
+    @rack_config.stub!(:getInitialRuntimes).and_return 2
+    @rack_config.stub!(:getMaximumRuntimes).and_return 2
+    
+    raise_error_logged = 0
+    @rack_context.stub!(:log).with do |level, msg, e|
+      if level == 'ERROR'
+        expect( msg ).to eql 'unable to initialize application'
+        expect( e ).to be_a org.jruby.exceptions.RaiseException
+        raise_error_logged += 1
+      else
+        true
+      end
+    end
+    
+    expect(lambda {
+      @pooling_factory.init(@rack_context)
+    }).to raise_error org.jruby.rack.RackInitializationException
+    expect( raise_error_logged ).to eql 1 # logs same init exception once
   end
   
 end

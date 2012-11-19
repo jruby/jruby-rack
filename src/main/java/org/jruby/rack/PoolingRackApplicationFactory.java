@@ -126,6 +126,8 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
                 acquireTimeout + " seconds" );
 
         fillInitialPool();
+        RuntimeException error = getInitError();
+        if ( error != null ) throw error; // an init thread failed
     }
 
     /**
@@ -302,19 +304,18 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         }
     }
     
-    private String appInitErrorMessage;
-    
     private boolean initAndPutApplicationToPool(final RackApplication app) {
         try {
             app.init();
         }
         catch (final RuntimeException e) {
             synchronized(this) {
+                RuntimeException initError = getInitError();
                 setInitError(e);
-                // only log once for all apps (if same exception happens) :
-                if ( appInitErrorMessage != null && 
-                        ! appInitErrorMessage.equals(e.getMessage()) ) {
-                    appInitErrorMessage = e.getMessage();
+                
+                if ( initError == null || 
+                   ! initError.getClass().equals(e.getClass()) ||
+                   ! initError.getMessage().equals(e.getMessage()) ) {
                     log(RackLogger.ERROR, "unable to initialize application", e);
                 }
             }
