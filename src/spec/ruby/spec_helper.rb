@@ -44,7 +44,22 @@ module SharedHelpers
   def silence_warnings(&block)
     JRuby::Rack::Helpers.silence_warnings(&block)
   end
-
+  
+  def unwrap_native_exception(e)
+    # JRuby 1.6.8 issue :
+    #  begin
+    #    ...
+    #  rescue org.jruby.rack.RackInitializationException => e
+    #    # e is still wrapped in a NativeException !
+    #    e.cause.class.name == 'org.jruby.rack.RackInitializationException'
+    #  end
+    if JRUBY_VERSION < '1.7.0'
+      e.is_a?(NativeException) ? e.cause : e
+    else
+      e
+    end
+  end
+  
   @@raise_logger = nil
   
   def raise_logger

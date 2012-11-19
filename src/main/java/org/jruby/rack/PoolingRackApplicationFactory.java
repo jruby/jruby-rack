@@ -106,7 +106,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
     }
     
     @Override
-    protected void doInit() throws RackInitializationException {
+    protected void doInit() throws Exception {
         super.doInit(); // delegate.init(rackContext);
         final RackConfig config = getConfig();
         // TODO until config.getRuntimeTimeoutSeconds returns an integer :

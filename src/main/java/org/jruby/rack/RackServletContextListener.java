@@ -7,13 +7,15 @@
 
 package org.jruby.rack;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
 import org.jruby.rack.servlet.DefaultServletRackContext;
 import org.jruby.rack.servlet.ServletRackConfig;
 import org.jruby.rack.servlet.ServletRackContext;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import static org.jruby.rack.DefaultRackConfig.isThrowInitException;
 
 /**
  * Web application lifecycle listener.
@@ -84,10 +86,15 @@ public class RackServletContextListener implements ServletContextListener {
             final Exception e,
             final RackApplicationFactory factory,
             final ServletRackContext rackContext) {
+        // TODO for backwards compat we do not throw (by default) but should :
+        if ( isThrowInitException(rackContext.getConfig()) ) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            }
+            throw RackInitializationException.wrap(e);
+        }
         // NOTE: factory should have already logged the error ...
-        //rackContext.log(RackLogger.ERROR, "initialization failed", e);
-        // TODO for backwards compat we do 'nothing' here but should :
-        // throw (RuntimeException) e;
+        rackContext.log(RackLogger.ERROR, "initialization failed", e);
     }
     
 }

@@ -25,7 +25,7 @@ public class SharedRackApplicationFactory extends RackApplicationFactoryDecorato
     }
     
     @Override
-    protected void doInit() throws RackInitializationException {
+    protected void doInit() throws Exception {
         super.doInit(); // delegate.init(rackContext);
         log(RackLogger.INFO, "using a shared (threadsafe!) runtime");
         application = getDelegate().getApplication();

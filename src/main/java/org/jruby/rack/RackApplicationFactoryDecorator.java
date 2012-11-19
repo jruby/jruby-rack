@@ -23,8 +23,6 @@
  */
 package org.jruby.rack;
 
-import static org.jruby.rack.DefaultRackConfig.isThrowInitException;
-
 /**
  * An abstract base class for decorating factories.
  * 
@@ -95,22 +93,16 @@ public abstract class RackApplicationFactoryDecorator
         try {
             doInit();
         }
-        catch (RuntimeException e) {
-            initError = RackInitializationException.wrap(e);
-            // NOTE: maybe this should be exposed on the RackConfig iface and
-            // moved to {@link RackServletContext#handleInitializationException()}
-            if ( isThrowInitException(getConfig()) ) {
-                throw e;
-            }
-            log(RackLogger.ERROR, "application initialization failed", e);
+        catch (Exception e) {
+            //log(RackLogger.ERROR, "application initialization failed", e);
+            throw initError = RackInitializationException.wrap(e);
         }
     }
 
     /**
      * Perform the initialization for this factory.
-     * @throws RackInitializationException 
      */
-    protected void doInit() throws RackInitializationException {
+    protected void doInit() throws Exception {
         getDelegate().init(context);
     }
     
@@ -133,7 +125,7 @@ public abstract class RackApplicationFactoryDecorator
     public RackApplication getApplication() throws RackException {
         RuntimeException error = getInitError();
         if ( error != null ) { 
-            log(RackLogger.DEBUG, "due a previos init error application instance won't be returned");
+            log(RackLogger.DEBUG, "due a previos initialization failure application instance can not be returned");
             throw error; // this is better - we shall never return null here ...
         }
         return getApplicationImpl();

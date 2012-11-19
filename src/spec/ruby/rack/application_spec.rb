@@ -785,7 +785,7 @@ describe org.jruby.rack.SerialPoolingRackApplicationFactory do
     @factory.stub!(:newApplication).and_return do
       app = mock "app"
       app.stub!(:init).and_return do
-        sleep(0.15)
+        sleep(0.05)
       end
       app
     end
@@ -810,35 +810,27 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     @factory.should_receive(:getApplication).and_return app = mock("application")
     @shared_factory.init(@rack_context)
   end
-
-  # NOTE: should be removed if the decision about throwing exception moves to the listener :
-  it "does not throw an exception if the shared app can not be initialized by default " + 
-     "(only logs for backward compatibility)" do
-    @factory.should_receive(:init).with(@rack_context)
-    @factory.should_receive(:getApplication).and_raise java.lang.RuntimeException.new('42')
-    
-    @rack_context.should_receive(:log).with do |level, msg, e|
-      e.message == '42' && ! msg.nil? if level == 'ERROR'
-    end
-    
-    expect( lambda {
-      @shared_factory.init(@rack_context)
-    } ).to_not raise_error
-  end
   
-  it "throws an exception if the shared application cannot be initialized " + 
-     "(and jruby.rack.error = false)" do
+  it "throws an exception if the shared application cannot be initialized " do
     @factory.should_receive(:init).with(@rack_context)
     @factory.should_receive(:getApplication).and_raise java.lang.ArithmeticException.new('42')
     
-    @rack_config.stub!(:getBooleanProperty).with("jruby.rack.error").and_return false
-    @rack_context.should_receive(:log).with do |level, msg ,e|
-      level == 'ERROR' ? fail(msg) : true
+    @rack_context.should_receive(:log).with do |level, msg, e|
+      if level == 'ERROR' 
+        expect( e ).to be_a java.lang.ArithmeticException
+      else
+        true
+      end
     end
     
-    expect( lambda {
+    begin
       @shared_factory.init(@rack_context)
-    } ).to raise_error(java.lang.ArithmeticException)
+    rescue org.jruby.rack.RackInitializationException => e
+      e = unwrap_native_exception(e)
+      expect( e.message ).to eql 'java.lang.ArithmeticException: 42'
+    else
+      fail "expected to rescue RackInitializationException"
+    end
   end
 
   it "throws initialization exception on each getApplication call if init failed" do
@@ -846,9 +838,11 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     @factory.should_receive(:getApplication).and_raise java.lang.RuntimeException.new('42')
     @factory.should_not_receive(:getErrorApplication) # dispacther invokes this ...
     
-    #@rack_config.stub!(:getBooleanProperty).with("jruby.rack.exception").and_return false
-    
-    @shared_factory.init(@rack_context)
+    begin 
+      @shared_factory.init(@rack_context) 
+    rescue java.lang.RuntimeException => e
+      # NOOP
+    end
     expect( lambda {
       @shared_factory.getApplication
     }).to raise_error(org.jruby.rack.RackInitializationException)
