@@ -59,7 +59,6 @@ end
 
 require 'jruby/rack/helpers'
 require 'jruby/rack/servlet_log'
-require 'jruby/rack/environment'
 require 'jruby/rack/booter'
 require 'jruby/rack/response'
 require 'jruby/rack/servlet_ext'

@@ -50,7 +50,17 @@ public class DefaultRackApplication implements RackApplication {
             final RackInput io = new RackInput(runtime, env);
             try {
                 IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
-                adapter.setInstanceVariable(servlet_env, "@_io", io);
+                if (env instanceof RackEnvironment.ToIO) {
+                    ((RackEnvironment.ToIO) env).setIO(io);
+                }
+                else { // TODO this is @deprecated and will be removed ...
+                    // NOTE JRuby 1.7.x does not like instance vars for Java :
+                    // warning: instance vars on non-persistent Java type 
+                    // Java::OrgJrubyRackServlet::ServletRackEnvironment 
+                    // (http://wiki.jruby.org/Persistence)
+                    runtime.evalScriptlet("require 'jruby/rack/environment'");
+                    adapter.setInstanceVariable(servlet_env, "@_io", io);
+                }
                 IRubyObject response = adapter.callMethod(getApplication(), "call", servlet_env);
                 return (RackResponse) JavaEmbedUtils.rubyToJava(runtime, response, RackResponse.class);
             }

@@ -6,8 +6,9 @@
 #++
 
 module Java::OrgJrubyRack::RackEnvironment
-  # @_io instance variable should be set during incoming request; see
-  # DefaultRackApplication Java class
+  # @_io instance variable should be set during incoming request; 
+  # @deprecated replaced with org.jruby.rack.RackEnvironment#setIO
+  # @see org.jruby.rack.DefaultRackApplication
   def to_io
     @_io
   end

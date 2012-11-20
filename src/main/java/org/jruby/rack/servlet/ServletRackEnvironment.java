@@ -16,39 +16,46 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
+import org.jruby.rack.RackInput;
 
 /**
- * Implementation of RackEnvironment for the servlet environment.
+ * Rack environment (default) implementation based on {@link HttpServletRequest}..
+ * 
+ * @see RackEnvironment
+ * @see HttpServletRequest
+ * @see HttpServletRequestWrapper
+ * 
  * @author nicksieger
  */
 @SuppressWarnings("deprecation")
 public class ServletRackEnvironment extends HttpServletRequestWrapper
-    implements RackEnvironment {
+    implements RackEnvironment, RackEnvironment.ToIO {
     
     private String scriptName;
     private String requestURI;
     private String requestURIWithoutQuery;
     private String pathInfo;
     
-    private final RackContext rackContext;
+    private final RackContext context;
     private final HttpServletResponse response;
-
+    
     /**
+     * Creates an environment instance for the given request, response and context.
      * @param request
      * @param response
-     * @param rackContext 
+     * @param context 
      */
-    public ServletRackEnvironment(HttpServletRequest request, HttpServletResponse response, RackContext rackContext) {
+    public ServletRackEnvironment(HttpServletRequest request, HttpServletResponse response, RackContext context) {
         super(request);
         this.response = response;
-        this.rackContext = rackContext;
+        this.context = context;
     }
 
     /**
      * @see RackEnvironment#getContext() 
      */
     public RackContext getContext() {
-        return rackContext;
+        return context;
     }
     
     /**
@@ -142,6 +149,16 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
             requestURIWithoutQuery = "";
         }
         return requestURIWithoutQuery;
+    }
+
+    private RackInput io;
+    
+    public RackInput toIO() {
+        return io;
+    }
+    
+    public void setIO(RackInput io) {
+        this.io = io;
     }
     
 }

@@ -107,7 +107,7 @@ describe Rack::Handler::Servlet do
       @servlet_request.setScheme('http')
       @servlet_request.setContextPath('/foo')
       @servlet_request.setContent(''.to_java_bytes)
-      @servlet_env.should_receive(:to_io).and_return(StringIO.new)
+      set_rack_input @servlet_env
       
       env = servlet.create_env @servlet_env
 
@@ -364,7 +364,7 @@ describe Rack::Handler::Servlet do
         "Referer" => "http://www.example.com",
         "X-Some-Really-Long-Header" => "42"
       }.each { |name, value| @servlet_request.addHeader(name, value) }
-      define_rack_input(@servlet_env)
+      set_rack_input(@servlet_env)
       @servlet_env
     end
     
@@ -645,7 +645,7 @@ describe Rack::Handler::Servlet do
       servlet_request.addParameter('age', '30')
       servlet_request.addParameter('formula', 'a + b == 42%!')
       
-      define_rack_input(servlet_env)
+      set_rack_input(servlet_env)
 
       env = servlet.create_env(servlet_env)
       rack_request = Rack::Request.new(env)
@@ -709,10 +709,10 @@ describe Rack::Handler::Servlet do
   
   private 
   
-  def define_rack_input(servlet_env)
+  def set_rack_input(servlet_env)
     input_class = org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
     input = input_class.new(servlet_env.getInputStream)
-    servlet_env.instance_variable_set :@_io, input
+    servlet_env.set_io input # servlet_env.instance_variable_set :@_io, input
     input
   end
   
