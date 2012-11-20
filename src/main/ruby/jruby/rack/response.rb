@@ -5,6 +5,8 @@
 # See the file LICENSE.txt for details.
 #++
 
+require 'java'
+
 module JRuby
   module Rack
     # Takes a Rack response to map it into the Servlet world.
