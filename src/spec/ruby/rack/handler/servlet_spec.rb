@@ -707,13 +707,4 @@ describe Rack::Handler::Servlet do
     
   end
   
-  private 
-  
-  def set_rack_input(servlet_env)
-    input_class = org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
-    input = input_class.new(servlet_env.getInputStream)
-    servlet_env.set_io input # servlet_env.instance_variable_set :@_io, input
-    input
-  end
-  
 end

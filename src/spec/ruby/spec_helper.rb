@@ -60,6 +60,14 @@ module SharedHelpers
     end
   end
   
+  def set_rack_input(servlet_env)
+    require 'jruby'
+    input_class = org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
+    input = input_class.new(servlet_env.getInputStream)
+    servlet_env.set_io input # servlet_env.instance_variable_set :@_io, input
+    input
+  end
+  
   @@raise_logger = nil
   
   def raise_logger

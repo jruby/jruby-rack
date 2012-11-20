@@ -44,7 +44,7 @@ describe org.jruby.rack.DefaultRackDispatcher do
     context 'init error' do
       
       before do
-        @rack_factory.stub!(:getApplication).and_raise org.jruby.rack.RackInitializationException.new(nil)
+        @rack_factory.stub!(:getApplication).and_raise org.jruby.rack.RackInitializationException.new('fock')
         @rack_factory.stub!(:getErrorApplication).and_return @error_app = mock("error application")
       end
       

@@ -104,8 +104,9 @@ describe "ActionController::Session::JavaServletStore" do
     hash = {"foo" => 1, "bar" => true}
     marshal_data = Marshal.dump hash
     @request.should_receive(:getSession).with(false).and_return @session
-    @session.should_receive(:getAttributeNames).and_return [ActionController::Session::JavaServletStore::RAILS_SESSION_KEY]
-    @session.should_receive(:getAttribute).with(ActionController::Session::JavaServletStore::RAILS_SESSION_KEY).and_return marshal_data.to_java_bytes
+    session_key = ActionController::Session::JavaServletStore::RAILS_SESSION_KEY
+    @session.should_receive(:getAttributeNames).and_return [session_key]
+    @session.should_receive(:getAttribute).with(session_key).and_return marshal_data.to_java_bytes
     @session.stub!(:setAttribute)
     @app.should_receive(:call).and_return do |env|
       env['rack.session']["foo"].should == 1
@@ -220,8 +221,7 @@ describe "ActionController::Session::JavaServletStore" do
 
   it "should attempt to invalidate an invalid servlet session" do
     @request.should_receive(:getSession).with(false).and_return session = mock_http_session
-    session.stub!(:getId).and_return(nil)
-    session.invalidate
+    session.setIdNull; session.invalidate
     @app.should_receive(:call).and_return do |env|
       env['rack.session.options'].delete(:id)
       env['rack.session'] = {}
@@ -261,8 +261,8 @@ describe "ActionController::Session::JavaServletStore" do
   
   private
   
-    def mock_http_session
-      Java::OrgJrubyRackMock::MockHttpSession.new
-    end
+  def mock_http_session
+    Java::OrgJrubyRackMock::MockHttpSession.new
+  end
   
 end

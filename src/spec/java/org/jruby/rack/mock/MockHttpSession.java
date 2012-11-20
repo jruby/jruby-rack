@@ -46,7 +46,7 @@ public class MockHttpSession implements HttpSession {
 
 	private static int nextId = 1;
 
-	private final String id;
+	private String id;
 
 	private final long creationTime = System.currentTimeMillis();
 
@@ -100,6 +100,10 @@ public class MockHttpSession implements HttpSession {
 		return this.id;
 	}
 
+    public void setIdNull() {
+        this.id = null;
+    }
+    
 	public void access() {
 		this.lastAccessedTime = System.currentTimeMillis();
 		this.isNew = false;

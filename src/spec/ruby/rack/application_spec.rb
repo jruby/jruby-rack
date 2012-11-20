@@ -6,7 +6,6 @@
 #++
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
-require 'jruby/rack/environment'
 
 describe org.jruby.rack.DefaultRackApplication, "call" do
   
@@ -18,7 +17,7 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
     @rack_response = org.jruby.rack.RackResponse.impl {}
   end
   
-  it "should invoke the call method on the ruby object and return rack response" do
+  it "invokes the call method on the ruby object and returns the rack response" do
     ruby_object = mock "application"
     ruby_object.should_receive(:call).with(@rack_env).and_return do |servlet_env|
       servlet_env.to_io.read.should == "hello world!"
@@ -30,23 +29,38 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
     application.call(@rack_env).should == @rack_response
   end
 
+  let(:servlet_context) do
+    servlet_context = mock("servlet_context")
+    servlet_context.stub!(:getInitParameter).and_return do |name|
+      name && nil # return null
+    end
+    servlet_context
+  end
+  
+  let(:servlet_request) do
+    org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
+  end
+  
+  let(:servlet_response) do
+    org.jruby.rack.mock.MockHttpServletResponse.new
+  end
+
+  let(:rack_config) do
+    org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)
+  end
+  
+  let(:rack_context) do
+    org.jruby.rack.servlet.DefaultServletRackContext.new(rack_config)
+  end
+  
   context "with filter setup (using captures)" do
     
-    before :each do
-      servlet_context = mock("servlet_context")
-      servlet_context.stub!(:getInitParameter).and_return do |name|
-        name && nil # return null
-      end
-      
-      @servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
-      @servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
-
-      rack_config = org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)
-      rack_context = org.jruby.rack.servlet.DefaultServletRackContext.new(rack_config)
-      request_capture = org.jruby.rack.servlet.RequestCapture.new(@servlet_request, rack_config)
-      response_capture = org.jruby.rack.servlet.ResponseCapture.new(@servlet_response)
-
-      @rack_env = org.jruby.rack.servlet.ServletRackEnvironment.new(request_capture, response_capture, rack_context)
+    let(:rack_env) do
+      request_capture = org.jruby.rack.servlet.RequestCapture.new(servlet_request, rack_config)
+      response_capture = org.jruby.rack.servlet.ResponseCapture.new(servlet_response)
+      rack_env = org.jruby.rack.servlet.ServletRackEnvironment.new(request_capture, response_capture, rack_context)
+      set_rack_input rack_env
+      rack_env
     end
     
     it "should rewind body" do
@@ -57,19 +71,10 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
   
   context "with servlet setup (no captures)" do
     
-    before :each do
-      servlet_context = mock("servlet_context")
-      servlet_context.stub!(:getInitParameter).and_return do |name|
-        name && nil # return null
-      end
-      
-      @servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
-      @servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
-
-      rack_config = org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)
-      rack_context = org.jruby.rack.servlet.DefaultServletRackContext.new(rack_config)
-
-      @rack_env = org.jruby.rack.servlet.ServletRackEnvironment.new(@servlet_request, @servlet_response, rack_context)
+    let(:rack_env) do
+      rack_env = org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, rack_context)
+      set_rack_input rack_env
+      rack_env
     end
     
     it "should rewind body" do
@@ -79,13 +84,13 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
   end
   
   def it_should_rewind_body
-    content = "Answer to the Ultimate Question of Life, the Universe, and Everything ..." # ''
-    #42.times { content << "Answer to the Ultimate Question of Life, the Universe, and Everything ...\n" }
-    @servlet_request.setContent content.to_java_bytes
+    content = ''
+    42.times { content << "Answer to the Ultimate Question of Life, the Universe, and Everything ...\n" }
+    servlet_request.setContent content.to_java_bytes
 
-    ruby_object = mock "application"
-    ruby_object.should_receive(:call).with(@rack_env).and_return do |servlet_env|
-      body = servlet_env.to_io
+    rack_app = mock "application"
+    rack_app.should_receive(:call) do |env|
+      body = env.to_io
 
       body.read.should == content
       body.read.should == ""
@@ -95,9 +100,22 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
       org.jruby.rack.RackResponse.impl {}
     end
 
+#    rack_app = Object.new
+#    def rack_app.call(env)
+#      body = env.to_io
+#
+#      body.read.should == @content
+#      body.read.should == ""
+#      body.rewind
+#      body.read.should == @content
+#
+#      org.jruby.rack.RackResponse.impl {}
+#    end
+#    rack_app.instance_variable_set :@content, content
+    
     application = org.jruby.rack.DefaultRackApplication.new
-    application.setApplication(ruby_object)
-    application.call(@rack_env)
+    application.setApplication(rack_app)
+    application.call(rack_env)
   end
   
 end
