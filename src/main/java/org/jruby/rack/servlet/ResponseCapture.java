@@ -180,7 +180,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     }
     
     /**
-     * @return true if {@link #getInputStream()} (or {@link #getReader()}) has 
+     * @return true if {@link #getOutputStream()} (or {@link #getWriter()}) has 
      * been accessed
      */
     public boolean isOutputAccessed() {

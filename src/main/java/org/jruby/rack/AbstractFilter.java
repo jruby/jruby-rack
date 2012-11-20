@@ -23,7 +23,7 @@ import org.jruby.rack.servlet.ServletRackEnvironment;
 import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 
 /**
- * A base filter implementation.
+ * A base (servlet) filter implementation.
  * 
  * @see UnmappedRackFilter
  * @see RackFilter
@@ -96,7 +96,7 @@ public abstract class AbstractFilter implements Filter {
     }
 
     /**
-     * @deprecated use {@link #isDoDispatch(RequestCapture, ResponseCapture, FilterChain, RackEnvironment) 
+     * @deprecated use {@link #isDoDispatch(RequestCapture, ResponseCapture, FilterChain, RackEnvironment)}
      */
     @Deprecated
     protected boolean isDoDispatch(
