@@ -6,6 +6,7 @@
 #++
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
+require 'tempfile'
 
 describe org.jruby.rack.DefaultRackApplication, "call" do
   
@@ -327,6 +328,52 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_eval_as_nil "defined?(::Rack::VERSION)"
       end
 
+      it "loads specified version of rack", :lib => :stub do
+        gem_install_rack_unless_installed '1.3.6'
+        script = "" +
+          "# rack.version: ~>1.3.6\n" +
+          "Proc.new { 'proc-rack-app' }"
+        app_factory.setRackupScript script
+        @runtime = app_factory.new_runtime
+        
+        app_factory.checkAndSetRackVersion(@runtime)
+        @runtime.evalScriptlet "require 'rack'"
+        
+        should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
+        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.6'
+      end
+
+      it "loads bundler with rack", :lib => :stub do
+        gem_install_rack_unless_installed '1.3.6'
+        script = "# encoding: UTF-8\n" +
+          "# rack.version: bundler \n" +
+          "Proc.new { 'proc-rack-app' }"
+        app_factory.setRackupScript script
+        @runtime = app_factory.new_runtime
+        
+        file = Tempfile.new('Gemfile')
+        file << "source 'http://rubygems.org'\n gem 'rack', '1.3.6'"
+        file.flush
+        @runtime.evalScriptlet "ENV['BUNDLE_GEMFILE'] = #{file.path.inspect}"
+        
+        app_factory.checkAndSetRackVersion(@runtime)
+        @runtime.evalScriptlet "require 'rack'"
+        
+        should_not_eval_as_nil "defined?(::Bundler)"
+        should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
+        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.6'
+      end
+      
+      def gem_install_rack_unless_installed(version)
+        begin
+          Gem::Specification.find_by_name 'rack', version
+        rescue Gem::LoadError
+          require 'rubygems/dependency_installer'
+          installer = Gem::DependencyInstaller.new
+          installer.install 'rack', version
+        end
+      end
+      
       # should not matter on 1.7.x due https://github.com/jruby/jruby/pull/123
       if JRUBY_VERSION < '1.7.0'
         it "does not load any features (until load path is adjusted)" do

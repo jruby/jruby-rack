@@ -23,10 +23,12 @@
  */
 package org.jruby.rack.util;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,13 +43,12 @@ public abstract class IOHelpers {
         throws IOException {
         if ( stream == null ) return null;
         
-        final StringBuilder str = new StringBuilder();
-        int c = stream.read();
-        Reader reader;
+        final StringBuilder str = new StringBuilder(128);
         String coding = "UTF-8";
-        if (c == '#') {     // look for a coding: pragma
+        int c = stream.read();
+        if ( c == '#' ) { // look for a coding: pragma
             str.append((char) c);
-            while ((c = stream.read()) != -1 && c != 10) {
+            while ( (c = stream.read()) != -1 && c != 10 ) {
                 str.append((char) c);
             }
             Pattern pattern = Pattern.compile("coding:\\s*(\\S+)");
@@ -58,13 +59,35 @@ public abstract class IOHelpers {
         }
 
         str.append((char) c);
-        reader = new InputStreamReader(stream, coding);
+        Reader reader = new InputStreamReader(stream, coding);
 
-        while ((c = reader.read()) != -1) {
+        while ( (c = reader.read()) != -1 ) {
             str.append((char) c);
         }
 
         return str.toString();
+    }
+
+    public static String rubyMagicCommentValue(final String script, final String prefix) 
+        throws IOException {
+        
+        final BufferedReader reader = new BufferedReader(new StringReader(script), 80);
+        
+        String line, comment = null; Pattern pattern = null;
+        while ( (line = reader.readLine()) != null ) {
+            if ( line.charAt(0) == '#' ) {
+                if (pattern == null) {
+                    pattern = Pattern.compile(prefix + "\\s*(\\S+)");
+                }
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.find()) {
+                    comment = matcher.group(1); break;
+                }
+            }
+            else break; // (magic) comment expected at the beginning
+        }
+        reader.close();
+        return comment;
     }
     
 }

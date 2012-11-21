@@ -1,0 +1,51 @@
+# encoding: UTF-8
+#--
+# This source code is available under the MIT license.
+# See the file LICENSE.txt for details.
+#++
+
+require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
+
+describe org.jruby.rack.util.IOHelpers do
+  
+  IOHelpers = org.jruby.rack.util.IOHelpers
+  
+  it "reads a stream into a string" do
+    code = "# comment\n" +
+    "puts 'vůl or kôň';\n" +
+    "exit(0)\n"
+    stream = java.io.ByteArrayInputStream.new code.to_java.getBytes('UTF-8')
+    stream = java.io.BufferedInputStream.new(stream, 8)
+    string = IOHelpers.inputStreamToString(stream)
+    expect( string ).to eql "# comment\nputs 'vůl or kôň';\nexit(0)\n"
+  end
+
+#  it "reads a stream into a string with encoding comment" do
+#    code = "# encoding: ISO-8859-1\n" +
+#    "# another comment \n" +
+#    "puts 'vůl or kôň';\n"
+#    #"puts 'v\xC5\xAFl or k\xC3\xB4\xC5\x88';\n"
+#    bytes = java.lang.String.new(code.to_java.getBytes, "UTF-8").getBytes("ISO-8859-1")
+#    stream = java.io.ByteArrayInputStream.new bytes
+#    string = IOHelpers.inputStreamToString(stream)
+#    expect( string ).to eql "# encoding: ISO-8859-1\n# another comment \nputs 'vůl or kôň';\n"
+#  end
+ 
+  it "reads magic comment 1" do
+    code = "# hello: world \n" +
+    "# comment\n" +
+    "exit(0);"
+    string = IOHelpers.rubyMagicCommentValue(code, "hello:")
+    expect( string ).to eql "world"
+  end
+
+  it "reads magic comment 2" do
+    code = "# encoding: UTF-8 \n" +
+    "# comment\n" +
+    "# rack.version: 1.3.6 \n" +
+    "exit(0)\n'42'"
+    string = IOHelpers.rubyMagicCommentValue(code, "rack.version:")
+    expect( string ).to eql "1.3.6"
+  end
+  
+end

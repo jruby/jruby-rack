@@ -60,6 +60,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     public String getRackupScript() {
         return rackupScript;
     }
+
+    public void setRackupScript(String rackupScript) {
+        this.rackupScript = rackupScript;
+        this.rackupLocation = null;
+    }
     
     /**
      * Initialize this factory using the given context.
@@ -72,7 +77,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         // thus does not wrap exceptions into RackExceptions here ...
         // same applies for #newApplication() and #getApplication()
         this.rackContext = (ServletRackContext) rackContext;
-        resolveRackupScript();
+        if ( getRackupScript() == null ) resolveRackupScript();
         this.runtimeConfig = createRuntimeConfig();
         rackContext.log(RackLogger.INFO, runtimeConfig.getVersionString());
         configureDefaults();
@@ -152,6 +157,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             rackContext.log(RackLogger.WARN, "no rackup script found - starting empty Rack application!");
             rackupScript = "";
         }
+        checkAndSetRackVersion(runtime);
         runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
         return createRackServletWrapper(runtime, rackupScript, rackupLocation);
     }
@@ -229,6 +235,31 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 "Rack::Builder.new { (" + rackup + "\n) }.to_app " +
             ")", filename
         );
+    }
+    
+    String checkAndSetRackVersion(final Ruby runtime) {
+        String rackVersion = null;
+        try {
+            rackVersion = IOHelpers.rubyMagicCommentValue(rackupScript, "rack.version:");
+        }
+        catch (Exception e) {
+            rackContext.log(RackLogger.DEBUG, "could not read 'rack.version' magic comment from rackup", e);
+        }
+        if ( rackVersion == null ) {
+            // NOTE: try matching a `require 'bundler/setup'` line ... maybe not ?!
+        }
+        if ( rackVersion != null ) {
+            runtime.evalScriptlet("begin; require 'rubygems'; rescue LoadError; end");
+            if ( rackVersion.equalsIgnoreCase("bundler") ) {
+                runtime.evalScriptlet("require 'bundler/setup'");
+            }
+            else {
+                rackContext.log(RackLogger.DEBUG, "detected 'rack.version' magic comment, " + 
+                        "will use `gem 'rack', '"+ rackVersion +"'`");
+                runtime.evalScriptlet("gem 'rack', '"+ rackVersion +"' if defined? gem");
+            }
+        }
+        return rackVersion;
     }
     
     static interface ApplicationObjectFactory {
