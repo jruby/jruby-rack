@@ -7,6 +7,14 @@
 
 package org.jruby.rack;
 
+import java.io.IOException;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
@@ -17,12 +25,7 @@ import org.jruby.rack.util.IOHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
-import java.io.IOException;
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.Set;
+import static org.jruby.rack.DefaultRackConfig.isIgnoreRUBYOPT;
 
 /**
  * Default application factory creates a new application instance on each
@@ -237,49 +240,54 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         );
     }
     
-    String checkAndSetRackVersion(final Ruby runtime) {
-        String rackVersion = null;
-        try {
-            rackVersion = IOHelpers.rubyMagicCommentValue(rackupScript, "rack.version:");
-        }
-        catch (Exception e) {
-            rackContext.log(RackLogger.DEBUG, "could not read 'rack.version' magic comment from rackup", e);
-        }
-        if ( rackVersion == null ) {
-            // NOTE: try matching a `require 'bundler/setup'` line ... maybe not ?!
-        }
-        if ( rackVersion != null ) {
-            runtime.evalScriptlet("begin; require 'rubygems'; rescue LoadError; end");
-            if ( rackVersion.equalsIgnoreCase("bundler") ) {
-                runtime.evalScriptlet("require 'bundler/setup'");
-            }
-            else {
-                rackContext.log(RackLogger.DEBUG, "detected 'rack.version' magic comment, " + 
-                        "will use `gem 'rack', '"+ rackVersion +"'`");
-                runtime.evalScriptlet("gem 'rack', '"+ rackVersion +"' if defined? gem");
-            }
-        }
-        return rackVersion;
-    }
-    
     static interface ApplicationObjectFactory {
         IRubyObject create(Ruby runtime) ;
     }
 
-    private RubyInstanceConfig createRuntimeConfig() {
+    public RubyInstanceConfig createRuntimeConfig() {
         setupJRubyManagement();
-        final RubyInstanceConfig config = new RubyInstanceConfig();
-        config.setLoader(Thread.currentThread().getContextClassLoader());
-        // Process arguments, namely any that might be in RUBYOPT
-        config.processArguments(rackContext.getConfig().getRuntimeArguments());
+        return initRuntimeConfig(new RubyInstanceConfig());
+    }
+    
+    protected RubyInstanceConfig initRuntimeConfig(final RubyInstanceConfig config) {
+        final RackConfig rackConfig = rackContext.getConfig();
         
-        if (rackContext.getConfig().getCompatVersion() != null) {
-            config.setCompatVersion(rackContext.getConfig().getCompatVersion());
-        }
-
-        // Don't affect the container and sibling web apps when ENV changes are made inside the Ruby app
+        config.setLoader(Thread.currentThread().getContextClassLoader());
+        
+        // Don't affect the container and sibling web apps when ENV changes are 
+        // made inside the Ruby app ... 
         // There are quite a such things made in a typical Bundler based app.
         config.setUpdateNativeENVEnabled(false);
+        
+        final Map<String, String> newEnv = rackConfig.getRuntimeEnvironment();
+        if ( newEnv != null ) {
+            if ( ! newEnv.containsKey("PATH") ) {
+                // bundler 1.1.x assumes ENV['PATH'] is a string
+                // `ENV['PATH'].split(File::PATH_SEPARATOR)` ...
+                newEnv.put("PATH", ""); // ENV['PATH'] = ''
+            }
+            // bundle exec sets RUBYOPT="-I[...]/gems/bundler/lib -rbundler/setup"
+            if ( isIgnoreRUBYOPT(rackConfig) ) {
+                if ( newEnv.containsKey("RUBYOPT") ) newEnv.put("RUBYOPT", "");
+            }
+            else {
+                // allow to work (backwards) "compatibly" with previous `ENV.clear`
+                // RUBYOPT was processed since it happens on config.processArguments
+                @SuppressWarnings("unchecked")
+                final Map<String, String> env = config.getEnvironment();
+                if ( env != null && env.containsKey("RUBYOPT") ) {
+                    newEnv.put( "RUBYOPT", env.get("RUBYOPT") );
+                }
+            }
+            config.setEnvironment(newEnv);
+        }
+        
+        // Process arguments, namely any that might be in RUBYOPT
+        config.processArguments(rackConfig.getRuntimeArguments());
+        
+        if ( rackConfig.getCompatVersion() != null ) {
+            config.setCompatVersion(rackConfig.getCompatVersion());
+        }
 
         try { // try to set jruby home to jar file path
             URL resource = RubyInstanceConfig.class.getResource("/META-INF/jruby.home");
@@ -287,10 +295,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 String home;
                 try { // http://weblogs.java.net/blog/2007/04/25/how-convert-javaneturl-javaiofile
                     home = resource.toURI().getSchemeSpecificPart();
-                } catch (URISyntaxException urise) {
+                }
+                catch (URISyntaxException e) {
                     home = resource.getPath();
                 }
-
                 // Trim trailing slash. It confuses OSGi containers...
                 if (home.endsWith("/")) {
                     home = home.substring(0, home.length() - 1);
@@ -306,23 +314,20 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
     
     public Ruby newRuntime() throws RaiseException {
-        Ruby runtime = Ruby.newInstance(runtimeConfig);
-        initializeRuntime(runtime);
+        final Ruby runtime = Ruby.newInstance(runtimeConfig);
+        initRuntime(runtime);
         return runtime;
     }
     
     // NOTE: only visible due #jruby/rack/application_spec.rb on JRuby 1.7.x
-    void initializeRuntime(Ruby runtime) {
-        IRubyObject context = JavaUtil.convertJavaToRuby(runtime, rackContext);
-        runtime.getGlobalVariables().set("$servlet_context", context);
-        if ( rackContext.getConfig().isIgnoreEnvironment() ) {
-            runtime.evalScriptlet("ENV.clear");
-            // bundler 1.1.x assumes ENV['PATH'] is a string
-            // `ENV['PATH'].split(File::PATH_SEPARATOR)` ...
-            runtime.evalScriptlet("ENV['PATH'] = ''");
-        }
+    void initRuntime(final Ruby runtime) {
+        // set $servlet_context :
+        runtime.getGlobalVariables().set(
+            "$servlet_context", JavaUtil.convertJavaToRuby(runtime, rackContext)
+        );
+        // load our (servlet) Rack handler :
         runtime.evalScriptlet("require 'rack/handler/servlet'");
-
+        // configure (Ruby) bits and pieces :
         Boolean dechunk = rackContext.getConfig().getBooleanProperty("jruby.rack.response.dechunk");
         if ( dechunk != null ) {
             runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunk + "");
@@ -337,6 +342,33 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
     }
 
+    private String checkAndSetRackVersion(final Ruby runtime) {
+        String rackVersion = null;
+        try {
+            rackVersion = IOHelpers.rubyMagicCommentValue(rackupScript, "rack.version:");
+        }
+        catch (Exception e) {
+            rackContext.log(RackLogger.DEBUG, "could not read 'rack.version' magic comment from rackup", e);
+        }
+        
+        if ( rackVersion == null ) {
+            // NOTE: try matching a `require 'bundler/setup'` line ... maybe not ?!
+        }
+        if ( rackVersion != null ) {
+            runtime.evalScriptlet("require 'rubygems'");
+            
+            if ( rackVersion.equalsIgnoreCase("bundler") ) {
+                runtime.evalScriptlet("require 'bundler/setup'");
+            }
+            else {
+                rackContext.log(RackLogger.DEBUG, "detected 'rack.version' magic comment, " + 
+                        "will use `gem 'rack', '"+ rackVersion +"'`");
+                runtime.evalScriptlet("gem 'rack', '"+ rackVersion +"' if defined? gem");
+            }
+        }
+        return rackVersion;
+    }
+    
     private RackApplication createApplication(final ApplicationObjectFactory appFactory) {
         return new RackApplicationImpl(appFactory);
     }

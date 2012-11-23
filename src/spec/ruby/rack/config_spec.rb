@@ -18,9 +18,7 @@ describe org.jruby.rack.servlet.ServletRackConfig do
     
     let(:logger) { config.getLogger }
 
-    after :each do
-      java.lang.System.clearProperty("jruby.rack.logging")
-    end
+    after { java.lang.System.clearProperty("jruby.rack.logging") }
 
     it "constructs a slf4j logger from the context init param" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.rack.logging").and_return "slf4j"
@@ -120,16 +118,58 @@ describe org.jruby.rack.servlet.ServletRackConfig do
     end
   end
   
-  describe "rewindable" do
-    it "defaults to true" do
-      config.should be_rewindable
+  describe "runtime environment" do
+    
+    it "defaults to nil (runtime should keep default from System env)" do
+      @servlet_context.should_receive(:getInitParameter).
+        with("jruby.runtime.environment").and_return nil
+      expect( config.getRuntimeEnvironment ).to be nil
     end
 
-    it "is false when overridden by jruby.rack.input.rewindable" do
-      @servlet_context.should_receive(:getInitParameter).with("jruby.rack.input.rewindable").
-        and_return "false"
-      config.should_not be_rewindable
+    it "is empty when set to false" do
+      @servlet_context.should_receive(:getInitParameter).
+        with("jruby.runtime.environment").and_return 'false'
+      expect_empty_env config.getRuntimeEnvironment
     end
+    
+    it "setting jruby.rack.ignore.env returns empty env (backwards compat)" do
+      @servlet_context.should_receive(:getInitParameter).
+        with("jruby.rack.ignore.env").and_return 'true'
+      expect_empty_env config.getRuntimeEnvironment
+    end
+    
+    it "custom env hash" do
+      @servlet_context.should_receive(:getInitParameter).
+        with("jruby.runtime.environment").
+        and_return "PATH=~/bin,HOME=/home/kares\nNAMES=Jozko, Ferko,Janko,GEM_HOME=/opt/rvm/gems\n"
+      expect( config.getRuntimeEnvironment ).to eql({
+        "PATH"=>"~/bin", "HOME"=>"/home/kares", "NAMES"=>"Jozko, Ferko,Janko", "GEM_HOME"=>"/opt/rvm/gems"  
+      })
+    end
+    
+    private
+    
+    def expect_empty_env(env)
+      expect( env ).to_not be nil
+      expect( env ).to be_empty
+      # but mutable :
+      env.put 'PATH', '~/bin'      
+    end
+    
+  end
+  
+  describe "rewindable" do
+    
+    it "defaults to true" do
+      expect( config ).to be_rewindable
+    end
+
+    it "can be configured" do
+      @servlet_context.should_receive(:getInitParameter).
+        with("jruby.rack.input.rewindable").and_return "false"
+      expect( config ).to_not be_rewindable
+    end
+    
   end
 
   it "sets compat version from init parameter" do

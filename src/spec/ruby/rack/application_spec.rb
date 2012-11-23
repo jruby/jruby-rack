@@ -231,7 +231,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       def newRuntime() # use the current runtime instead of creating new
         require 'jruby'
         runtime = JRuby.runtime
-        initializeRuntime(runtime)
+        initRuntime(runtime)
         runtime
       end
     end
@@ -316,25 +316,36 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
     describe "newRuntime" do
       
+      let(:app_factory) do
+        @rack_config = org.jruby.rack.DefaultRackConfig.new
+        @rack_context.stub!(:getConfig).and_return @rack_config
+        app_factory = org.jruby.rack.DefaultRackApplicationFactory.new
+        app_factory.init(@rack_context); app_factory
+      end
+      
       it "creates a new Ruby runtime with the jruby-rack environment pre-loaded" do
-        @runtime = app_factory.new_runtime
+        @runtime = app_factory.newRuntime
         should_not_eval_as_nil "defined?(::Rack)"
         should_not_eval_as_nil "defined?(::Rack::Handler::Servlet)"
         should_eval_as_nil "defined?(Rack::Handler::Bogus)"
       end
 
       it "does not require 'rack' (until booter is called)" do
-        @runtime = app_factory.new_runtime
+        @runtime = app_factory.newRuntime
         should_eval_as_nil "defined?(::Rack::VERSION)"
       end
 
       it "loads specified version of rack", :lib => :stub do
         gem_install_rack_unless_installed '1.3.6'
+        set_config 'jruby.runtime.env', 'false'
+        
         script = "" +
           "# rack.version: ~>1.3.6\n" +
           "Proc.new { 'proc-rack-app' }"
         app_factory.setRackupScript script
-        @runtime = app_factory.new_runtime
+        @runtime = app_factory.newRuntime
+        @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
+        @runtime.evalScriptlet "ENV['GEM_PATH'] = #{ENV['GEM_PATH'].inspect}"
         
         app_factory.checkAndSetRackVersion(@runtime)
         @runtime.evalScriptlet "require 'rack'"
@@ -345,21 +356,25 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
       it "loads bundler with rack", :lib => :stub do
         gem_install_rack_unless_installed '1.3.6'
+        set_config 'jruby.runtime.env', 'false'
+        
         script = "# encoding: UTF-8\n" +
           "# rack.version: bundler \n" +
           "Proc.new { 'proc-rack-app' }"
         app_factory.setRackupScript script
-        @runtime = app_factory.new_runtime
+        @runtime = app_factory.newRuntime
         
         file = Tempfile.new('Gemfile')
         file << "source 'http://rubygems.org'\n gem 'rack', '1.3.6'"
         file.flush
         @runtime.evalScriptlet "ENV['BUNDLE_GEMFILE'] = #{file.path.inspect}"
+        @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
+        @runtime.evalScriptlet "ENV['GEM_PATH'] = #{ENV['GEM_PATH'].inspect}"
         
         app_factory.checkAndSetRackVersion(@runtime)
         @runtime.evalScriptlet "require 'rack'"
         
-        should_not_eval_as_nil "defined?(::Bundler)"
+        should_not_eval_as_nil "defined?(Bundler)"
         should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
         should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.6'
       end
@@ -377,6 +392,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       # should not matter on 1.7.x due https://github.com/jruby/jruby/pull/123
       if JRUBY_VERSION < '1.7.0'
         it "does not load any features (until load path is adjusted)" do
+          set_runtime_environment("false")
           # due to incorrectly detected jruby.home some container e.g. WebSphere 8
           # fail if things such as 'fileutils' get required during runtime init !
 
@@ -385,9 +401,9 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
           # but only if it's executed with bundler e.g. `bundle exec rake spec`
           #@runtime = app_factory.new_runtime
           @runtime = org.jruby.Ruby.newInstance
-          app_factory.send :initializeRuntime, @runtime
+          app_factory.send :initRuntime, @runtime
 
-          #@runtime.evalScriptlet 'puts "initializeRuntime $LOADED_FEATURES: #{$LOADED_FEATURES.inspect}"'
+          #@runtime.evalScriptlet 'puts "initRuntime $LOADED_FEATURES: #{$LOADED_FEATURES.inspect}"'
           # NOTE: the above scriptlet behaves slightly different on Travis-CI
           # depending on whether jruby + JRUBY_OPTS="--1.9" is used and or using
           # jruby-19mode with the later the LOADED_FEATURES do get expanded e.g. :
@@ -430,34 +446,71 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       end
 
       it "clears environment variables if the configuration ignores the environment" do
-        ENV["HOME"].should_not == ""
-        @rack_config.stub!(:isIgnoreEnvironment).and_return true
-        @runtime = app_factory.new_runtime
+        expect( ENV['HOME'] ).to_not eql ""
+        set_config 'jruby.runtime.env', ''
+        
+        @runtime = app_factory.newRuntime
         should_eval_as_nil "ENV['HOME']"
+        should_eval_as_nil "ENV['RUBYOPT']"
       end
 
       it "sets ENV['PATH'] to an empty string if the configuration ignores the environment" do
-        ENV["PATH"].should_not be nil
-        ENV["PATH"].should_not == ""
-        @rack_config.stub!(:isIgnoreEnvironment).and_return true
-        @runtime = app_factory.new_runtime
+        expect( ENV['PATH'] ).to_not be_empty
+        set_config 'jruby.runtime.env', 'false'
+        
+        @runtime = app_factory.newRuntime
         should_eval_as_eql_to "ENV['PATH']", ''
+      end
+
+      it "allows to keep RUBYOPT with a clear environment" do
+        set_config 'jruby.runtime.env', 'false'
+        set_config 'jruby.runtime.env.rubyopt', 'true'
+        
+        app_factory = app_factory_with_RUBYOPT '-rubygems'
+        @runtime = app_factory.newRuntime
+        should_eval_as_nil "ENV['HOME']"
+        should_eval_as_eql_to "ENV['RUBYOPT']", '-rubygems'
+      end
+      
+      it "keeps RUBYOPT by default with empty ENV (backwards compat)" do
+        set_config 'jruby.rack.ignore.env', 'true'
+        
+        app_factory = app_factory_with_RUBYOPT '-ryaml'
+        @runtime = app_factory.newRuntime
+        should_eval_as_nil "ENV['HOME']"
+        should_eval_as_eql_to "ENV['RUBYOPT']", '-ryaml' # changed with jruby.runtime.env
+        # it was processed - feature got required :
+        should_eval_as_eql_to "require 'yaml'", false
+      end
+
+      it "does a complete ENV clean including RUBYOPT" do
+        set_config 'jruby.runtime.env', 'false'
+        #set_config 'jruby.runtime.env.rubyopt', 'false'
+        
+        app_factory = app_factory_with_RUBYOPT '-ryaml'
+        @runtime = app_factory.newRuntime
+        
+        should_eval_as_nil "ENV['HOME']"
+        should_eval_as_nil "ENV['RUBYOPT']"
+        should_eval_as_eql_to "require 'yaml'", true # -ryaml not processed
       end
       
       it "handles jruby.compat.version == '1.9' and starts in 1.9 mode" do
-        @rack_config.stub!(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
+        set_config 'jruby.compat.version', '1.9'
+        #@rack_config.stub!(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
         @runtime = app_factory.new_runtime
         @runtime.is1_9.should be_true
       end
       
       it "handles jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
-        @rack_config.stub!(:getRuntimeArguments).and_return ['-X+O', '-Ke'].to_java(:String)
+        set_config 'jruby.runtime.arguments', '-X+O -Ke'
+        #@rack_config.stub!(:getRuntimeArguments).and_return ['-X+O', '-Ke'].to_java(:String)
         @runtime = app_factory.new_runtime
         @runtime.object_space_enabled.should be_true
         @runtime.kcode.should == Java::OrgJrubyUtil::KCode::EUC
       end
 
-      it "should not propagate ENV changes to JVM (and indirectly to other JRuby VM instances)" do
+      it "does not propagate ENV changes to JVM (and indirectly to other JRuby VM instances)" do
         runtime = app_factory.new_runtime
 
         java.lang.System.getenv['VAR1'].should be_nil
@@ -472,6 +525,51 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         java.lang.System.getenv['VAR1'].should be_nil
       end
 
+      private
+      
+      def app_factory_with_RUBYOPT(rubyopt = '-rubygems')
+        app_factory = 
+          Class.new(org.jruby.rack.DefaultRackApplicationFactory) do
+            
+            def initialize(rubyopt); super(); @rubyopt = rubyopt; end
+          
+            def initRuntimeConfig(config)
+              env = java.util.HashMap.new config.getEnvironment
+              env.put 'RUBYOPT', @rubyopt
+              config.setEnvironment env
+              super
+            end
+            
+          end.new(rubyopt)
+        @rack_config = org.jruby.rack.DefaultRackConfig.new
+        @rack_context.stub!(:getConfig).and_return @rack_config
+        app_factory.init(@rack_context)
+        app_factory
+      end
+        
+      def set_runtime_environment(value)
+        set_config 'jruby.runtime.env', value.to_s
+      end
+      
+      def set_config(name, value)
+        # NOTE: we're using DefaultRackConfig which checks java.lang.System
+        @_prev_properties ||= {}
+        @_prev_properties[name] = java.lang.System.getProperty(name)
+        java.lang.System.setProperty(name, value)
+      end
+      
+      def reset_config
+        (@_prev_properties || {}).each do |key, val|
+          if val.nil?
+            java.lang.System.clearProperty(key)
+          else
+            java.lang.System.setProperty(key, val)
+          end
+        end
+      end
+      
+      after { reset_config }
+      
     end
     
   end

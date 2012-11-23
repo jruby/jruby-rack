@@ -181,6 +181,10 @@ public class Config implements RackConfig {
         throw new UnsupportedOperationException("isIgnoreEnvironment()");
     }
     
+    public Map<String, String> getRuntimeEnvironment() {
+        throw new UnsupportedOperationException("getRuntimeEnvironment()");
+    }
+    
     // RackFilter aint's used with embed :
     
     public boolean isFilterAddsHtml() {

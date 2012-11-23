@@ -7,22 +7,30 @@
 
 package org.jruby.rack;
 
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.StringReader;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.jruby.CompatVersion;
 import org.jruby.rack.logging.OutputStreamLogger;
 import org.jruby.rack.logging.StandardOutLogger;
 import org.jruby.util.SafePropertyAccessor;
 
-import java.io.PrintStream;
-import java.io.OutputStream;
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
- * Base implementation of RackConfig that retrieves settings from system properties.
+ * A base implementation of that retrieves settings from system properties.
+ * 
+ * @see System#getProperty(String) 
+ * @see RackConfig
  */
+@SuppressWarnings("deprecation")
 public class DefaultRackConfig implements RackConfig {
 
     private RackLogger logger;
@@ -225,11 +233,41 @@ public class DefaultRackConfig implements RackConfig {
         }
         return max;
     }
+    
+    public Map<String, String> getRuntimeEnvironment() {
+        String env = getProperty("jruby.runtime.env");
+        if ( env == null ) env = getProperty("jruby.runtime.environment");
+        final Object envFlag = toStrictBoolean(env, null);
+        if ( envFlag != null ) {
+            boolean keep = ((Boolean) envFlag).booleanValue();
+            // jruby.runtime.env = true keep as is (return null)
+            // jruby.runtime.env = false clear env (return empty)
+            //return keep ? null : new HashMap<String, String>();
+            if ( keep ) {
+                return new HashMap<String, String>(System.getenv());
+            }
+            else {
+                return new HashMap<String, String>();
+            }
+        }
+        if ( isIgnoreEnvironment() ) return new HashMap<String, String>();
+        // TODO maybe support custom value 'servlet' to use init params ?
+        return toStringMap(env);
+    }
 
+    // NOTE: this is only here to be able to maintain previous behavior
+    // jruby.rack.ignore.env did ENV.clear but after RUBYOPT has been processed
+    static boolean isIgnoreRUBYOPT(RackConfig config) {
+        // RUBYOPT ignored if jruby.runtime.env.rubyopt = false
+        Boolean rubyopt = config.getBooleanProperty("jruby.runtime.env.rubyopt");
+        if ( rubyopt == null ) return ! config.isIgnoreEnvironment();
+        return rubyopt != null && ! rubyopt.booleanValue();
+    }
+    
     public boolean isIgnoreEnvironment() {
         return getBooleanProperty("jruby.rack.ignore.env", false);
     }
-
+    
     public boolean isThrowInitException() {
         return isThrowInitException(this);
     }
@@ -297,6 +335,12 @@ public class DefaultRackConfig implements RackConfig {
         return defaultValue;
     }
 
+    protected static Object toStrictBoolean(String value, Object defaultValue) {
+        if ( "true".equalsIgnoreCase(value) ) return Boolean.TRUE;
+        if ( "false".equalsIgnoreCase(value) ) return Boolean.FALSE;
+        return defaultValue;
+    }
+    
     protected static Number toNumber(String value, Number defaultValue) {
         if (value == null) return defaultValue;
         try {
@@ -320,6 +364,41 @@ public class DefaultRackConfig implements RackConfig {
         return defaultValue;
     }
     
+    private Map<String, String> toStringMap(final String env) {
+        if ( env == null ) return null;
+        /*
+          USER=kares,TERM=xterm,SHELL=/bin/bash
+          PATH=/opt/local/rvm/gems/jruby-1.6.8@jruby-rack/bin:/opt/local/rvm/gems/jruby-1.6.8@global/bin
+          GEM_HOME=/opt/local/rvm/gems/jruby-1.6.8@jruby-rack
+         */
+        LineNumberReader reader = new LineNumberReader(new StringReader(env.trim()));
+        Map<String, String> map = new LinkedHashMap<String, String>(); String line;
+        try {
+            while ( (line = reader.readLine()) != null ) {
+                final String[] entries = line.split(",");
+                String lastKey = null, lastVal = null;
+                for ( final String entry : entries ) {
+                    String[] pair = entry.split("=", 2);
+                    if ( pair.length == 1 ) { // no = separator
+                        if ( entry.trim().length() == 0 ) continue;
+                        if ( lastKey == null ) continue; // missing key
+                        map.put( lastKey, lastVal = lastVal + ',' + entry );
+                    }
+                    else {
+                        map.put( lastKey = pair[0], lastVal = pair[1] );
+                    }
+                }
+            }
+        }
+        catch (IOException e) {
+            if ( ! isQuiet() ) {
+                err.println("Failed parsing env: \n" + env);
+                e.printStackTrace(err);
+            }
+        }
+        return map;
+    }
+    
     private static Map<String,String> getLoggerTypes() {
         final Map<String,String> loggerTypes = new HashMap<String, String>();
         loggerTypes.put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
@@ -330,5 +409,5 @@ public class DefaultRackConfig implements RackConfig {
         loggerTypes.put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");
         return loggerTypes;
     }
-
+    
 }
