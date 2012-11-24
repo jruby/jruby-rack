@@ -92,7 +92,8 @@ public class MockHttpSession implements HttpSession {
 		this.id = (id != null ? id : Integer.toString(nextId++));
 	}
 
-	public long getCreationTime() {
+	public long getCreationTime() throws IllegalStateException {
+        checkInvalid("getCreationTime()");
 		return this.creationTime;
 	}
 
@@ -100,8 +101,8 @@ public class MockHttpSession implements HttpSession {
 		return this.id;
 	}
 
-    public void setIdNull() {
-        this.id = null;
+    void setId(String id) {
+        this.id = id;
     }
     
 	public void access() {
@@ -109,7 +110,8 @@ public class MockHttpSession implements HttpSession {
 		this.isNew = false;
 	}
 
-	public long getLastAccessedTime() {
+	public long getLastAccessedTime() throws IllegalStateException {
+        checkInvalid("getLastAccessedTime()");
 		return this.lastAccessedTime;
 	}
 
@@ -129,7 +131,8 @@ public class MockHttpSession implements HttpSession {
 		throw new UnsupportedOperationException("getSessionContext");
 	}
 
-	public Object getAttribute(String name) {
+	public Object getAttribute(String name) throws IllegalStateException {
+        checkInvalid("getAttribute("+ name +")");
 		return this.attributes.get(name);
 	}
 
@@ -137,15 +140,18 @@ public class MockHttpSession implements HttpSession {
 		return getAttribute(name);
 	}
 
-	public Enumeration<String> getAttributeNames() {
+	public Enumeration<String> getAttributeNames() throws IllegalStateException {
+        checkInvalid("getAttributeNames()");
 		return new Vector<String>(this.attributes.keySet()).elements();
 	}
 
-	public String[] getValueNames() {
+	public String[] getValueNames() throws IllegalStateException {
+        checkInvalid("getValueNames()");
 		return this.attributes.keySet().toArray(new String[this.attributes.size()]);
 	}
 
-	public void setAttribute(String name, Object value) {
+	public void setAttribute(String name, Object value) throws IllegalStateException {
+        checkInvalid("setAttribute("+ name + ")");
 		if (value != null) {
 			this.attributes.put(name, value);
 			if (value instanceof HttpSessionBindingListener) {
@@ -161,7 +167,8 @@ public class MockHttpSession implements HttpSession {
 		setAttribute(name, value);
 	}
 
-	public void removeAttribute(String name) {
+	public void removeAttribute(String name) throws IllegalStateException {
+        checkInvalid("removeAttribute("+ name + ")");
 		Object value = this.attributes.remove(name);
 		if (value instanceof HttpSessionBindingListener) {
 			((HttpSessionBindingListener) value).valueUnbound(new HttpSessionBindingEvent(this, name, value));
@@ -187,7 +194,8 @@ public class MockHttpSession implements HttpSession {
 		}
 	}
 
-	public void invalidate() {
+	public void invalidate() throws IllegalStateException {
+        checkInvalid("invalidate()");
 		this.invalid = true;
 		clearAttributes();
 	}
@@ -200,7 +208,8 @@ public class MockHttpSession implements HttpSession {
 		this.isNew = value;
 	}
 
-	public boolean isNew() {
+	public boolean isNew() throws IllegalStateException {
+        checkInvalid("isNew()");
 		return this.isNew;
 	}
 
@@ -242,4 +251,20 @@ public class MockHttpSession implements HttpSession {
 		this.attributes.putAll((Map<String, Object>) state);
 	}
 
+    @Override
+    public String toString() {
+        return getClass().getName() + "@" + Integer.toHexString(hashCode()) + this.attributes;
+    }
+
+    Map<String, Object> getAttributes() {
+        return attributes;
+    }
+    
+    private void checkInvalid(String method) throws IllegalStateException {
+        if ( invalid == true ) {
+            if ( method == null ) method = "";
+            throw new IllegalStateException(method + ": session already invalidated");
+        }
+    }
+    
 }

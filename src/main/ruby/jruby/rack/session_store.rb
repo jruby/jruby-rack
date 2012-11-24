@@ -65,18 +65,20 @@ module JRuby::Rack
         super(app, options.merge!(:cookie_only => false, :defer => true))
       end
 
-      def context(env, app=@app) # adapt Rack 1.1/1.2 to be compatible with 1.3+
+      def context(env, app = @app) # adapt Rack 1.1/1.2 to be compatible with 1.3+
         prepare_session(env)
         status, headers, body = app.call(env)
         commit_session(env, status, headers, body)
       end
 
-      # public servlet specific methods :
+      # (public) servlet specific methods :
 
       def get_servlet_session(env, create = false)
-        unless servlet_session = env[ENV_SERVLET_SESSION_KEY]
+        servlet_session = env[ENV_SERVLET_SESSION_KEY]
+        if servlet_session.nil? || # cached session might be invalidated ...
+            ( create && ( servlet_session.getCreationTime < 0 ) rescue true )
           unless servlet_request = env['java.servlet_request']
-            raise "JavaServletStore should only be used with JRuby-Rack"
+            raise "JavaServletStore expects a servlet request at env['java.servlet_request']"
           end
           servlet_session = servlet_request.getSession(create)
           env[ENV_SERVLET_SESSION_KEY] = servlet_session
@@ -152,12 +154,13 @@ module JRuby::Rack
 
           if options[:drop] || options[:renew]
             destroy_session(env, options[:id], options)
-            return [status, headers, body]
           end
-
+          
+          return [status, headers, body] if options[:drop] || options[:skip]
+          
           if loaded_session?(session)
             unless set_session(env, options[:id], session.to_hash, options)
-              env["rack.errors"].puts("Warning! #{self.class.name} failed to save session. Content dropped.")
+              env["rack.errors"].puts("WARNING #{self.class.name} failed to save session. Content dropped.")
             end
           end
 
