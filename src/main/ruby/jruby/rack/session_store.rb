@@ -75,13 +75,18 @@ module JRuby::Rack
 
       def get_servlet_session(env, create = false)
         servlet_session = env[ENV_SERVLET_SESSION_KEY]
-        if servlet_session.nil? || # cached session might be invalidated ...
-            ( create && ( servlet_session.getCreationTime < 0 ) rescue true )
-          unless servlet_request = env['java.servlet_request']
-            raise "JavaServletStore expects a servlet request at env['java.servlet_request']"
+        invalid = false
+        begin
+          if servlet_session.nil? ||
+              ( create && ( invalid || servlet_session.getCreationTime.nil? ) )
+            unless servlet_request = env['java.servlet_request']
+              raise "JavaServletStore expects a servlet request at env['java.servlet_request']"
+            end
+            servlet_session = servlet_request.getSession(create)
+            env[ENV_SERVLET_SESSION_KEY] = servlet_session
           end
-          servlet_session = servlet_request.getSession(create)
-          env[ENV_SERVLET_SESSION_KEY] = servlet_session
+        rescue java.lang.IllegalStateException # cached session invalidated
+          invalid = true; retry # servlet_session.getCreationTime failed ...
         end
         servlet_session
       end
