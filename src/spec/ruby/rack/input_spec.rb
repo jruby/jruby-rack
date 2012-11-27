@@ -9,8 +9,7 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
 # Force the class to be loaded on the Ruby side
 require 'jruby'
-import 'org.jruby.rack.RackInput'
-RackInput.getRackInputClass(JRuby.runtime)
+org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
 
 module InputSpec
 
@@ -100,115 +99,122 @@ module InputSpec
   
 end
 
-describe JRuby::RackInput, "for rewindable input" do
-  include InputSpec
+describe JRuby::Rack::Input do
   
-  let(:input) { JRuby::RackInput.new(rewindable_input) }
+  describe "rewindable" do
+    include InputSpec
 
-  it_should_behave_like_rewindable_rack_input
+    let(:input) { JRuby::Rack::Input.new(rewindable_input) }
 
-  let(:image_path) { File.expand_path('../files/image.jpg', File.dirname(__FILE__)) }
-  
-  it "reads an image" do
-    file = java.io.RandomAccessFile.new(image_path, "r") # length == 4278
-    file.read @content = Java::byte[file.length].new
-    
-    input = self.input
-    
-    buf = ""
-    input.read(nil, buf)
-    buf.size.should == file.length
-    
-    file.seek(0)
-    buf.each_byte { |b| b.should == file.read }
+    it_should_behave_like_rewindable_rack_input
 
-    input.rewind
+    let(:image_path) { File.expand_path('../files/image.jpg', File.dirname(__FILE__)) }
 
-    file.seek(0)
-    buf = input.read(1000)
-    buf.size.should == 1000
-    buf.each_byte { |b| b.should == file.read }
-    
-    buf = input.read(2000)
-    buf.size.should == 2000
-    buf.each_byte { |b| b.should == file.read }
-    
-    buf = input.read(2000)
-    buf.size.should == 1278
-    buf.each_byte { |b| b.should == file.read }
-    
-    10.times { input.read(2000).should be nil }
-    
-    input.rewind
-    
-    file.seek(0)
-    buf = input.read
-    buf.size.should == 4278
-    buf.each_byte { |b| b.should == file.read }
-    
-    10.times { input.read.should == '' }
+    it "reads an image" do
+      file = java.io.RandomAccessFile.new(image_path, "r") # length == 4278
+      file.read @content = Java::byte[file.length].new
+
+      input = self.input
+
+      buf = ""
+      input.read(nil, buf)
+      buf.size.should == file.length
+
+      file.seek(0)
+      buf.each_byte { |b| b.should == file.read }
+
+      input.rewind
+
+      file.seek(0)
+      buf = input.read(1000)
+      buf.size.should == 1000
+      buf.each_byte { |b| b.should == file.read }
+
+      buf = input.read(2000)
+      buf.size.should == 2000
+      buf.each_byte { |b| b.should == file.read }
+
+      buf = input.read(2000)
+      buf.size.should == 1278
+      buf.each_byte { |b| b.should == file.read }
+
+      10.times { input.read(2000).should be nil }
+
+      input.rewind
+
+      file.seek(0)
+      buf = input.read
+      buf.size.should == 4278
+      buf.each_byte { |b| b.should == file.read }
+
+      10.times { input.read.should == '' }
+    end
+
+    it "fully reads an image" do
+      file = java.io.RandomAccessFile.new(image_path, "r") # length == 4278
+      file.read @content = Java::byte[file.length].new
+      file.seek(0)
+
+      input = self.input
+
+      buf = input.read(file.length)
+      buf.size.should == 4278
+      buf.each_byte { |b| b.should == file.read }
+    end
   end
   
-  it "fully reads an image" do
-    file = java.io.RandomAccessFile.new(image_path, "r") # length == 4278
-    file.read @content = Java::byte[file.length].new
-    file.seek(0)
-    
-    input = self.input
-    
-    buf = input.read(file.length)
-    buf.size.should == 4278
-    buf.each_byte { |b| b.should == file.read }
-  end
-  
-end
+  describe "rewindable (with buffer size)" do
+    include InputSpec
 
-describe JRuby::RackInput, "for rewindable input (with buffer size)" do
-  include InputSpec
-  
-  let(:input) { JRuby::RackInput.new(rewindable_input(2)) }
+    let(:input) { JRuby::Rack::Input.new(rewindable_input(2)) }
 
-  it_should_behave_like_rewindable_rack_input
-end
-
-describe JRuby::RackInput, "for rewindable input (with buffer size and max)" do
-  include InputSpec
-  
-  before :each do
-    @content = "1\n 2\n  3\n   4\n    5\r\t\n     6\n      7\n       8\n        9\n"
-  end
-  
-  let(:input) { JRuby::RackInput.new(rewindable_input(4, 16)) }
-
-  it "should be kind and rewind" do
-    input.read.should == @content
-    input.read.should == ""
-    input.rewind
-    input.read.should == @content
+    it_should_behave_like_rewindable_rack_input
   end
 
-  it "should be kind and rewind before read" do
-    input.rewind
-    input.read.should == @content
+  describe "rewindable (with buffer size and max)" do
+    include InputSpec
+
+    before :each do
+      @content = "1\n 2\n  3\n   4\n    5\r\t\n     6\n      7\n       8\n        9\n"
+    end
+
+    let(:input) { JRuby::Rack::Input.new(rewindable_input(4, 16)) }
+
+    it "should be kind and rewind" do
+      input.read.should == @content
+      input.read.should == ""
+      input.rewind
+      input.read.should == @content
+    end
+
+    it "should be kind and rewind before read" do
+      input.rewind
+      input.read.should == @content
+    end
+
+    it "should be kind and rewind when gets some" do
+      input.gets.should == "1\n"
+      input.gets.should == " 2\n"
+      input.rewind
+      input.gets.should == "1\n"
+      input.gets.should == " 2\n"
+      input.gets.should == "  3\n"
+      input.gets.should == "   4\n"
+      input.read.should == "    5\r\t\n     6\n      7\n       8\n        9\n"
+    end
+
+  end
+
+  describe "non-rewindable" do
+    include InputSpec
+
+    let(:input) { JRuby::Rack::Input.new(stream_input) }
+
+    it_should_behave_like_rack_input
   end
   
-  it "should be kind and rewind when gets some" do
-    input.gets.should == "1\n"
-    input.gets.should == " 2\n"
-    input.rewind
-    input.gets.should == "1\n"
-    input.gets.should == " 2\n"
-    input.gets.should == "  3\n"
-    input.gets.should == "   4\n"
-    input.read.should == "    5\r\t\n     6\n      7\n       8\n        9\n"
+  it "is exposed as JRuby::RackInput (backwards compat)" do
+    expect( JRuby::RackInput ).to be JRuby::Rack::Input
   end
   
-end
-
-describe JRuby::RackInput, "for non-rewindable input" do
-  include InputSpec
-  
-  let(:input) { JRuby::RackInput.new(stream_input) }
-
-  it_should_behave_like_rack_input
 end

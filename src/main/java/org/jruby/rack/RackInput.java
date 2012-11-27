@@ -29,29 +29,52 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 
 /**
- * Specification for Rack input, translated to a Java interface.
+ * Native (Java) implementation of a Rack input.
+ * Available in Ruby as the class <code>JRuby::Rack::Input</code>.
+ * 
  * @author nicksieger
  */
 public class RackInput extends RubyObject {
+    
     private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klass) {
             return new RackInput(runtime, klass);
         }
     };
 
+    @Deprecated
     public static RubyClass getClass(Ruby runtime, String name, RubyClass parent,
                                      ObjectAllocator allocator, Class annoClass) {
-        RubyModule jrubyMod = runtime.getOrCreateModule("JRuby");
-        RubyClass klass = jrubyMod.getClass(name);
+        RubyModule jruby = runtime.getOrCreateModule("JRuby");
+        
+        RubyClass klass = jruby.getClass(name);
         if (klass == null) {
-            klass = jrubyMod.defineClassUnder(name, parent, allocator);
+            klass = jruby.defineClassUnder(name, parent, allocator);
             klass.defineAnnotatedMethods(annoClass);
         }
         return klass;
     }
 
-    public static RubyClass getRackInputClass(Ruby runtime) {
-        return getClass(runtime, "RackInput", runtime.getObject(), ALLOCATOR, RackInput.class);
+    public static RubyClass getRackInputClass(final Ruby runtime) { // JRuby::Rack::Input
+        
+        RubyModule jruby = runtime.getOrCreateModule("JRuby");
+        RubyModule rack = (RubyModule) jruby.getConstantAt("Rack");
+        if (rack == null) {
+            rack = runtime.defineModuleUnder("Rack", jruby);
+        }
+  
+        RubyClass klass = rack.getClass("Input"); // JRuby::Rack getClass('Input')
+        if (klass == null) {
+            final RubyClass parent = runtime.getObject();
+            klass = rack.defineClassUnder("Input", parent, ALLOCATOR);
+            klass.defineAnnotatedMethods(RackInput.class);
+        }
+        
+        if (jruby.getConstantAt("RackInput") == null) { // backwards compatibility
+            jruby.setConstant("RackInput", klass); // JRuby::RackInput #deprecated
+        }
+        
+        return klass;
     }
 
     private boolean rewindable;
