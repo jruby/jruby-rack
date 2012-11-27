@@ -315,7 +315,9 @@ describe "integration" do
     @rack_context = servlet_context.getAttribute("rack.context")
     @rack_factory = servlet_context.getAttribute("rack.factory")
     # Travis-CI might have RAILS_ENV=test set, which is not desired for us :
-    servlet_context.addInitParameter("jruby.rack.ignore.env", true.to_s) if ENV['RAILS_ENV']
+    #if ENV['RAILS_ENV'] || ENV['RACK_ENV']
+    servlet_context.addInitParameter("jruby.runtime.env", '')
+    #end
     servlet_context.addInitParameter("rails.env", env.to_s) if env
     @servlet_context ||= servlet_context
   end
