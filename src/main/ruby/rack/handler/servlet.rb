@@ -41,9 +41,16 @@ module Rack
         if klass && ! klass.is_a?(Module)
           # accepting a String or Symbol:
           unless (const_defined?(klass) rescue nil)
-            klass = "#{klass.to_s.capitalize}Env" # :default => 'DefaultEnv'
+            klass_env = "#{klass.to_s.capitalize}Env" # :default => 'DefaultEnv'
+            if (const_defined?(klass_env) rescue nil)
+              klass = const_get(klass_env)
+            end
+          else
+            klass = const_get(klass)
           end
-          klass = const_get(klass)
+          unless klass.is_a?(Module)
+            klass = JRuby::Rack::Helpers.resolve_constant(klass)
+          end
         end
         @@env = klass
       end

@@ -38,7 +38,7 @@ module JRuby::Rack
     
     def default_layout_class
       klass = @rack_context.getInitParameter 'jruby.rack.layout_class'
-      klass.nil? ? WebInfLayout : eval(klass) # TODO really eval ?!
+      klass.nil? ? WebInfLayout : Helpers.resolve_constant(klass, JRuby::Rack)
     end
 
     def layout_class
