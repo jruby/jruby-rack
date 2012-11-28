@@ -16,7 +16,7 @@ module Rack
       # Parameter parsing is left to be done by Rack::Request itself (e.g. by 
       # consuming the request body in case of a POST), thus this expects the 
       # ServletRequest input stream to be not read (e.g. for POSTs).
-      class DefaultEnv
+      class DefaultEnv < Hash # The environment must be an instance of Hash !
         
         BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme 
           rack.multithread rack.multiprocess rack.run_once
@@ -48,22 +48,57 @@ module Rack
         # returned from #to_hash will be filled on demand), one can use 
         # #populate to fill in the env keys eagerly.
         def initialize(servlet_env)
-          @servlet_env = servlet_env
-          @env = Hash.new { |env, key| load_env_key(env, key) }
+          super()
+          if ( @servlet_env = servlet_env ) == nil
+            raise ArgumentError, "nil servlet_env"
+          end
+          @env = self
           # always pre-load since they might override variables
           load_attributes
         end
-
+        
         def populate
+          unless @populated
+            populate!
+            @populated = true
+          end
+          self
+        end
+        
+        def populate!
           load_builtins
           load_variables
           load_headers
-          @env
+          self
         end
+        
+        def to_hash(bare = nil)
+          if bare
+            {}.update(populate)
+          else
+            self
+          end
+        end
+        
+        def [](key)
+          val = super
+          val.nil? ? load_env_key(self, key) : val
+        end
+        
+        def key?(key)
+          super || load_env_key(self, key) != nil
+        end
+        alias_method :has_key?, :key?
+        alias_method :include?, :key?
+        alias_method :member?, :key?
 
-        def to_hash
-          @env
-        end
+        def keys; populate; super; end
+        def values; populate; super; end
+        
+        def each(&block); populate; super;end
+        def each_key(&block); populate; super; end
+        def each_value(&block); populate; super; end
+        def each_pair(&block); populate; super; end
         
         protected
 
@@ -107,19 +142,17 @@ module Rack
         end
 
         def load_env_key(env, key)
-          # rack-cache likes to freeze: `Request.new(@env.dup.freeze)`
-          return if env.frozen?
-          
-          if key =~ /^(rack|java|jruby)/
-            load_builtin(env, key)
-          elsif key[0, 5] == 'HTTP_'
+          if key[0, 5] == 'HTTP_'
             load_header(env, key)
+          elsif key =~ /^(rack|java|jruby)/
+            load_builtin(env, key)
           else
             load_variable(env, key)
           end
         end
 
         def load_header(env, key)
+          return nil if @servlet_env.nil?
           name = key.sub('HTTP_', '').
             split('_').each { |w| w.downcase!; w.capitalize! }.join('-')
           return if name =~ @@content_header_names
@@ -127,34 +160,9 @@ module Rack
             env[key] = header # null if it does not have a header of that name
           end
         end
-
-        def load_builtin(env, key)
-          case key
-          when 'rack.version'         then env[key] = ::Rack::VERSION
-          when 'rack.multithread'     then env[key] = true
-          when 'rack.multiprocess'    then env[key] = false
-          when 'rack.run_once'        then env[key] = false
-          when 'rack.input'           then env[key] = @servlet_env.to_io
-          when 'rack.errors'          then env[key] = JRuby::Rack::ServletLog.new(rack_context)
-          when 'rack.url_scheme'
-            env[key] = scheme = @servlet_env.getScheme
-            env['HTTPS'] = 'on' if scheme == 'https'
-            scheme
-          when 'java.servlet_request'
-            env[key] = @servlet_env.respond_to?(:request) ? @servlet_env.request : @servlet_env
-          when 'java.servlet_response'
-            env[key] = @servlet_env.respond_to?(:response) ? @servlet_env.response : @servlet_env
-          when 'java.servlet_context' then env[key] = servlet_context
-          when 'jruby.rack.context'   then env[key] = rack_context
-          when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
-          when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
-          when 'jruby.rack.rack.release'  then env[key] = ::Rack.release
-          else
-            nil
-          end
-        end
-
+        
         def load_variable(env, key)
+          return nil if @servlet_env.nil?
           case key
           when 'CONTENT_TYPE'
             content_type = @servlet_env.getContentType
@@ -178,10 +186,35 @@ module Rack
           end
         end
 
+        def load_builtin(env, key)
+          case key
+          when 'rack.version'         then env[key] = ::Rack::VERSION
+          when 'rack.multithread'     then env[key] = true
+          when 'rack.multiprocess'    then env[key] = false
+          when 'rack.run_once'        then env[key] = false
+          when 'rack.input'           then env[key] = @servlet_env ? @servlet_env.to_io : nil
+          when 'rack.errors'          then env[key] = JRuby::Rack::ServletLog.new(rack_context) rescue nil
+          when 'rack.url_scheme'
+            env[key] = scheme = @servlet_env ? @servlet_env.getScheme : nil
+            env['HTTPS'] = 'on' if scheme == 'https'
+            scheme
+          when 'java.servlet_request'  then env[key] = servlet_request
+          when 'java.servlet_response' then env[key] = servlet_response
+          when 'java.servlet_context' then env[key] = servlet_context
+          when 'jruby.rack.context'   then env[key] = rack_context rescue nil
+          when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
+          when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
+          when 'jruby.rack.rack.release'  then env[key] = ::Rack.release
+          else
+            nil
+          end
+        end
+        
         private
 
         def rack_context
-          @rack_context ||=            
+          return @rack_context || nil unless @rack_context.nil?
+          @rack_context =
             if @servlet_env.respond_to?(:context)
               @servlet_env.context # RackEnvironment#getContext()
             else
@@ -189,16 +222,43 @@ module Rack
             end
         end
 
+        def servlet_request
+          @servlet_env.respond_to?(:request) ? @servlet_env.request : @servlet_env
+        end
+        
+        def servlet_response
+          @servlet_env.respond_to?(:response) ? @servlet_env.response : @servlet_env
+        end
+        
         def servlet_context
           if @servlet_env.respond_to?(:servlet_context) # @since Servlet 3.0
             @servlet_env.servlet_context # ServletRequest#getServletContext()
           else
-            if @servlet_env.context.is_a?(javax.servlet.ServletContext)
+            if @servlet_env.respond_to?(:context) && 
+                @servlet_env.context.is_a?(javax.servlet.ServletContext)
               @servlet_env.context
             else
-              JRuby::Rack.context || @env['java.servlet_request'].servlet_context
+              JRuby::Rack.context || 
+                ( servlet_request ? servlet_request.servlet_context : nil )
             end
           end
+        end
+        
+        TRANSIENT_KEYS = [ 'rack.input', 'rack.errors',
+          'java.servlet_request', 'java.servlet_response',
+          'java.servlet_context', 'jruby.rack.context'
+        ]
+        
+        def marshal_dump
+          hash = to_hash(true)
+          TRANSIENT_KEYS.each { |key| hash.delete(key) }
+          hash
+        end
+        
+        def marshal_load(hash)
+          hash.each { |key, value| self[key] = value }
+          @populated = true
+          @env = self
         end
         
       end

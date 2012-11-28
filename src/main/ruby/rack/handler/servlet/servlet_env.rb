@@ -18,20 +18,30 @@ module Rack
       # (previously) by the time it reaches JRuby::Rack (e.g. in a filter).
       # http://docs.oracle.com/javaee/6/api/javax/servlet/ServletRequest.html#getParameter(java.lang.String)
       class ServletEnv < DefaultEnv
-
-        def initialize(servlet_env)
-          super
-          load_parameters
-        end
         
-        def populate
-          super
+        def populate!
+          load_parameters
           load_cookies
-          @env
+          super
         end
         
         protected
 
+        def load_env_key(env, key)
+          if key == QUERY_STRING || key == FORM_INPUT
+            load_parameters; @env[key]
+          elsif key == COOKIE_STRING
+            load_cookies; @env[key]
+          else
+            super
+          end
+        end
+        
+        QUERY_STRING = "rack.request.query_string".freeze
+        QUERY_HASH = "rack.request.query_hash".freeze
+        FORM_INPUT = "rack.request.form_input".freeze
+        FORM_HASH = "rack.request.form_hash".freeze
+        
         # Load parameters into the (Rack) env from the Servlet API.
         # using javax.servlet.http.HttpServletRequest#getParameterMap
         def load_parameters
@@ -65,12 +75,12 @@ module Rack
             end
           end
           # Rack::Request#GET
-          @env[ "rack.request.query_string".freeze ] = query_string
-          @env[ "rack.request.query_hash".freeze ] = query_hash
+          @env[ QUERY_STRING ] = query_string
+          @env[ QUERY_HASH ] = query_hash
           # Rack::Request#POST
           # TODO should recreate the input e.g. multipart/form-data ...
-          @env[ "rack.request.form_input".freeze ] = @env["rack.input"]
-          @env[ "rack.request.form_hash".freeze ] = form_hash
+          @env[ FORM_INPUT ] = @env["rack.input"]
+          @env[ FORM_HASH ] = form_hash
         end
         
         # Store the parameter into the given Hash.
@@ -88,9 +98,12 @@ module Rack
             hash[ key[0...-2] ] = val.to_a # String[]
           else
             hash[ key ] = val[ val.length - 1 ] # last
-          end      
+          end
         end
 
+        COOKIE_STRING = "rack.request.cookie_string".freeze
+        COOKIE_HASH = "rack.request.cookie_hash".freeze
+        
         # Load cookies into the (Rack) env from the Servlet API.
         # using javax.servlet.http.HttpServletRequest#getCookies
         def load_cookies
@@ -105,8 +118,8 @@ module Rack
             end
           end
           # Rack::Request#cookies
-          @env["rack.request.cookie_string"] = ( @env["HTTP_COOKIE"] ||= '' )
-          @env["rack.request.cookie_hash"] = cookie_hash
+          @env[ COOKIE_STRING ] = ( @env["HTTP_COOKIE"] ||= '' )
+          @env[ COOKIE_HASH ] = cookie_hash
         end
         
         private
