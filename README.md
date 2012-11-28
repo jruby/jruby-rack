@@ -17,7 +17,6 @@ in your WAR file when it gets built.
 If you're assembling your own WAR using other means, you can install the
 **jruby-rack** gem. It provides a method to locate the jar file:
 
-    require 'fileutils'
     require 'jruby-rack'
     FileUtils.cp JRubyJars.jruby_rack_jar_path, '.'
 
@@ -207,10 +206,15 @@ as context init parameters in web.xml or as VM-wide system properties.
   when acquiring a runtime from the pool (while a pool maximum is set), an 
   exception will be thrown if a runtime can not be acquired within this time (
   accepts decimal values for fine tuning e.g. 1.25).
+- `jruby.runtime.env`: Allows to set a custom ENV hash for your Ruby environment
+  and thus insulate the application from the environment it is running. By setting 
+  this option to en empty string (or 'false') it acts as if the ENV hash was 
+  cleared out (similar to the now deprecated `jruby.rack.ignore.env` option).
+- `jruby.runtime.env.rubyopt`: This option is used for compatibility with the 
+  (deprecated) `jruby.rack.ignore.env` option since it cleared out the ENV after
+  RUBYOPT has been processed, by setting it to true ENV['RUBYOPT'] will be kept.
 - `jruby.rack.logging`: Specify the logging device to use. Defaults to
   `servlet_context`. See below.
-- `jruby.rack.ignore.env`: Clears out the `ENV` hash in each runtime to insulate 
-  the application from the environment.
 - `jruby.rack.request.size.initial.bytes`: Initial size for request body memory 
    buffer, see also `jruby.rack.request.size.maximum.bytes` bellow.
 - `jruby.rack.request.size.maximum.bytes`: The maximum size for the request in
@@ -220,6 +224,13 @@ as context init parameters in web.xml or as VM-wide system properties.
   as frameworks such as Rails might use `Rack::Chunked::Body` as a Rack response
   body but since most servlet containers perform dechunking automatically things
   might end double-chunked in such cases.
+- `jruby.rack.handler.env`: **EXPERIMENTAL** Allows to change Rack's behavior 
+  on obtaining the Rack environment. The default behavior is that parameter 
+  parsing is left to be done by the Rack::Request itself (by consuming the 
+  request body in case of a POST), but if the servlet request's input stream has 
+  been previously read this leads to a limitation (Rack won't see the POST paras).
+  Thus an alternate pure 'servlet' env "conversion" is provided that maps servlet
+  parameters (and cookies) directly to Rack params, avoiding Rack's input parsing.
 - `jruby.rack.filter.adds.html`: 
   **deprecated** use `addsHtmlToPathInfo` filter config init parameter.
   The default behavior for Rails and many other Ruby applications is to add an 
@@ -242,6 +253,22 @@ Ruby environment before booting the application. You can create a file called
 *META-INF/init.rb* or *WEB-INF/init.rb* inside the war file for this purpose. 
 These files, if found, will be evaluated before booting the Rack environment, 
 allowing you to set environment variables, load scripts, etc.
+
+For plain Rack applications, JRuby-Rack also supports a magic comment to solve
+the "rackup" chicken-egg problem (you need Rack's builder loaded before loading
+the *config.ru*, yet you may want to setup the gem version from within the rackup
+ file). As we ship with the Rack gem bundled, otherwise when executing the 
+provided *config.ru* the bundled (latest) version of Rack will get loaded.
+
+Use **rack.version** to specify the Rack gem version to be loaded before rackup :
+
+    # encoding: UTF-8
+    # rack.version: ~>1.3.6 (before code is loaded gem '~>1.3.6' will be called)
+
+Or the equivalent of doing `bundle exec rackup ...` if you're using Bundler :
+
+    # rack.version: bundler (requires 'bundler/setup' before loading the script)
+
 
 ## Logging
 
