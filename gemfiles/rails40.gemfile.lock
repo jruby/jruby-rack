@@ -1,6 +1,7 @@
 GIT
   remote: git://github.com/kares/activerecord-jdbc-adapter.git
   revision: beecf1e5152d1f510c377411ed102d7fe7f7da82
+  branch: rails-4.0
   specs:
     activerecord-jdbc-adapter (1.2.2)
     jdbc-sqlite3 (3.7.2)
