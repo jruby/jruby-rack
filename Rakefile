@@ -76,16 +76,6 @@ task :unpack_gem => "target" do |t|
 end
 GENERATED << 'target/vendor/rack.rb'
 
-load version_file = 'src/main/ruby/jruby/rack/version.rb'
-
-task :update_version do
-  if ENV["VERSION"] && ENV["VERSION"] != JRuby::Rack::VERSION
-    lines = File.readlines(version_file)
-    lines.each {|l| l.sub!(/VERSION =.*$/, %{VERSION = "#{ENV["VERSION"]}"})}
-    File.open(version_file, "wb") { |f| f.puts *lines }
-  end
-end
-
 desc "Generate (ruby) resources"
 task :resources => ['target/classes', :unpack_gem, :update_version] do |t|
   rack_dir = File.basename(FileList["target/rack-*"].first)
@@ -128,6 +118,9 @@ end
 desc "Run specs"
 task :spec => [:compile, :test_compile, :speconly]
 task :test => :spec
+
+pom_file = 'pom.xml'
+load version_file = 'src/main/ruby/jruby/rack/version.rb'
 
 file "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" => :always_build do |t|
   Rake::Task['spec'].invoke
@@ -187,7 +180,7 @@ task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
     rm_f 'jruby-rack.gemspec'
     gemspec = Gem::Specification.new do |s|
       s.name = %q{jruby-rack}
-      s.version = JRuby::Rack::VERSION.sub(/-SNAPSHOT/, '')
+      s.version = JRuby::Rack::VERSION.sub('-', '.') # Gem::Version does not accept e.g. '1.1.1-SNAPSHOT'
       s.authors = ["Nick Sieger"]
       s.date = Date.today.to_s
       s.description = %{JRuby-Rack is a combined Java and Ruby library that adapts the Java Servlet API to Rack. For JRuby only.}
@@ -206,11 +199,11 @@ end
 GENERATED << 'target/gem/jruby-rack.gemspec'
 
 task :release_checks do
-  sh "git diff --exit-code > /dev/null" do |ok,status|
+  sh "git diff --exit-code > /dev/null" do |ok,_|
     fail "There are uncommitted changes.\nPlease commit changes or clean workspace before releasing." unless ok
   end
 
-  sh "git rev-parse #{JRuby::Rack::VERSION} > /dev/null 2>&1" do |ok, status|
+  sh "git rev-parse #{JRuby::Rack::VERSION} > /dev/null 2>&1" do |ok,_|
     fail "Tag #{JRuby::Rack::VERSION} already exists.\n" +
       "Please execute these commands to remove it before releasing:\n" +
       "  git tag -d #{JRuby::Rack::VERSION}\n" +
@@ -236,7 +229,46 @@ end
 desc "Release the gem to rubygems and jar to repository.codehaus.org"
 task :release => [:release_checks, :clean, :gem] do
   sh "git tag #{JRuby::Rack::VERSION}"
-  sh "git push --tags origin master"
   sh "mvn deploy -DupdateReleaseInfo=true"
   sh "gem push target/jruby-rack-#{JRuby::Rack::VERSION}.gem"
+  sh "git push --tags origin master"
+  puts "released JRuby-Rack #{JRuby::Rack::VERSION} update next SNAPSHOT version using `rake update_version`"
+end
+
+task :update_version do
+  version = ENV["VERSION"] || ''
+  if version.empty? # next version
+    gem_version = Gem::Version.create(JRuby::Rack::VERSION)
+    if gem_version.segments.last.is_a?(String)
+      version = gem_version.segments[0...-1] # 1.1.1.SNAPSHOT -> 1.1.1
+    else  # 1.1.1 -> 1.1.2.SNAPSHOT
+      version = gem_version.segments.dup
+      version[-1] = version[-1] + 1
+      version = version + ['SNAPSHOT']
+    end
+    version = version.join('.')
+  end
+  if version != JRuby::Rack::VERSION
+    gem_version = Gem::Version.create(version) # validates VERSION string
+    
+    lines = File.readlines(version_file) # update JRuby::Rack::VERSION
+    lines.each {|l| l.sub!(/VERSION =.*$/, %{VERSION = '#{version}'})}
+    File.open(version_file, "wb") { |f| f.puts *lines }
+    
+    pom_version = if gem_version.prerelease?
+      segs = gem_version.segments
+      "#{segs[0...-1].join('.')}-#{segs[-1]}"
+    else
+      gem_version.version
+    end
+    doc = nil # update pom.xml <version>
+    File.open(pom_file, 'r') do |file|
+      require "rexml/document"
+      doc = REXML::Document.new file
+      doc.root.elements.each('version') { |el| el.text = pom_version }
+    end
+    File.open(pom_file, 'w') do |file|
+      file.puts doc.to_s
+    end if doc
+  end
 end
