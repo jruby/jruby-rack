@@ -77,7 +77,7 @@ end
 GENERATED << 'target/vendor/rack.rb'
 
 desc "Generate (ruby) resources"
-task :resources => ['target/classes', :unpack_gem, :update_version] do |t|
+task :resources => ['target/classes', :unpack_gem] do |t|
   rack_dir = File.basename(FileList["target/rack-*"].first)
   classes_dir = t.prerequisites.first
   { 'target/vendor' => "#{classes_dir}/vendor",
