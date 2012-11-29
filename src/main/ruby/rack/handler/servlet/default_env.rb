@@ -103,28 +103,28 @@ module Rack
         protected
 
         def load_attributes
-          @servlet_env.getAttributeNames.each do |k|
-            v = @servlet_env.getAttribute(k)
-            case k
+          for name in @servlet_env.getAttributeNames
+            value = @servlet_env.getAttribute(name)
+            case name
             when 'SERVER_PORT', 'CONTENT_LENGTH'
-              @env[k] = v.to_s if v.to_i >= 0
+              @env[name] = value.to_s if value.to_i >= 0
             when 'CONTENT_TYPE'
-              @env[k] = v if v
+              @env[name] = value if value
             else
-              @env[k] = v ? v : ''
+              @env[name] = value ? value : ''
             end
           end
         end
 
         def load_builtins
           for b in BUILTINS
-            load_builtin(@env, b) unless @env.has_key?(b)
+            load_builtin(@env, b) unless @env.key?(b)
           end
         end
 
         def load_variables
           for v in VARIABLES
-            load_variable(@env, v) unless @env.has_key?(v)
+            load_variable(@env, v) unless @env.key?(v)
           end
         end
         
@@ -134,10 +134,10 @@ module Rack
           # NOTE: getHeaderNames and getHeaders might return null !
           # if the container does not allow access to header information
           return unless @servlet_env.getHeaderNames
-          @servlet_env.getHeaderNames.each do |name|
+          for name in @servlet_env.getHeaderNames
             next if name =~ @@content_header_names
             key = "HTTP_#{name.upcase.gsub(/-/, '_')}".freeze
-            @env[key] = @servlet_env.getHeader(name) unless @env.has_key?(key)
+            @env[key] = @servlet_env.getHeader(name) unless @env.key?(key)
           end
         end
 
@@ -251,12 +251,16 @@ module Rack
         
         def marshal_dump
           hash = to_hash(true)
-          TRANSIENT_KEYS.each { |key| hash.delete(key) }
+          for key in TRANSIENT_KEYS
+            hash.delete(key)
+          end
           hash
         end
         
         def marshal_load(hash)
-          hash.each { |key, value| self[key] = value }
+          for key, value in hash
+            self[key] = value
+          end
           @populated = true
           @env = self
         end

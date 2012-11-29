@@ -55,7 +55,7 @@ module Rack
           # - multi values are kept even when they do not end with '[]'
           # - if there's a query param and the same param name is in the (POST) 
           #   body, both are kept and present as a multi-value
-          @servlet_env.getParameterMap.each do |key, val| # String, String[]
+          for key, val in @servlet_env.getParameterMap # String, String[]
             if get_only || ( q_vals = query_values(key) )
               if q_vals.length != val.length
                 # some are GET params some POST params
