@@ -290,6 +290,7 @@ logging system, configure `jruby.rack.logging` as follows:
 For those loggers that require a specific named logger, set it with the
 `jruby.rack.logging.name` option, by default "jruby.rack" name will be used.
 
+
 ## Building
 
 Checkout the JRuby-Rack code using [git](http://git-scm.com/) :
@@ -316,11 +317,13 @@ is compiled and generated on-demand during the build (it would require us to
 package and push the .jar every time a commit changes a source file).
 
 
-## Issues
+## Support
 
 Please use [github][4] to file bugs, patches and pull requests.
-
 More information at the [wiki][5] or ask us at the #jruby IRC channel.
+
+If you need more help (e.g. migrating your application to JRuby/JRuby-Rack) 
+feel free to contact the current [maintainer](https://github.com/kares).
 
 [0]: https://secure.travis-ci.org/jruby/jruby-rack.png?branch=master
 [1]: http://caldersphere.rubyforge.org/warbler

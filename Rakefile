@@ -119,17 +119,24 @@ desc "Run specs"
 task :spec => [:compile, :test_compile, :speconly]
 task :test => :spec
 
-pom_file = 'pom.xml'
-load version_file = 'src/main/ruby/jruby/rack/version.rb'
+POM_FILE = 'pom.xml'
+VERSION_FILE = 'src/main/ruby/jruby/rack/version.rb'
 
-file "target/jruby-rack-#{JRuby::Rack::VERSION}.jar" => :always_build do |t|
-  Rake::Task['spec'].invoke
-  sh "jar cf #{t.name} -C target/classes ."
+GEM_VERSION = 
+  if File.read(VERSION_FILE).match(/VERSION =.*?['"](.+)['"].*?$/m)
+    $1
+  else
+    raise "VERSION = ... not matched in #{VERSION_FILE}"
+  end
+  
+JAR_VERSION = GEM_VERSION.sub(/\.(\D+\w*)/, '-\1') # 1.1.1.SNAPSHOT -> 1.1.1-SNAPSHOT
+
+file "target/jruby-rack-#{JAR_VERSION}.jar" => :compile do |t|
+  sh "jar cf #{t.name} -C target/classes ." # TODO `mvn package` instead ?
 end
-task :always_build # dummy task to force jar to get built
 
-desc "Create the jruby-rack-#{JRuby::Rack::VERSION}.jar"
-task :jar => "target/jruby-rack-#{JRuby::Rack::VERSION}.jar"
+desc "Create the jruby-rack-#{JAR_VERSION}.jar"
+task :jar => (target_jar = "target/jruby-rack-#{JAR_VERSION}.jar")
 
 task :default => :jar
 
@@ -149,10 +156,10 @@ end
 file 'target/gem/lib/jruby-rack.rb' do |t|
   mkdir_p File.dirname(t.name)
   File.open(t.name, "wb") do |f|
-    f << %q{require 'jruby/rack/version'
+    f << %Q{
 module JRubyJars
   def self.jruby_rack_jar_path
-    File.expand_path("../jruby-rack-#{JRuby::Rack::VERSION}.jar", __FILE__)
+    File.expand_path("../jruby-rack-#{JAR_VERSION}.jar", __FILE__)
   end
   require jruby_rack_jar_path if defined?(JRUBY_VERSION)
 end
@@ -166,26 +173,25 @@ file "target/gem/lib/jruby/rack/version.rb" => "src/main/ruby/jruby/rack/version
   cp t.prerequisites.first, t.name
 end
 
-desc "Build the jruby-rack-#{JRuby::Rack::VERSION}.gem"
-task :gem => ["target/jruby-rack-#{JRuby::Rack::VERSION}.jar",
-              "target/gem/lib/jruby-rack.rb",
-              "target/gem/lib/jruby/rack/version.rb"] do |t|
+desc "Build the jruby-rack-#{GEM_VERSION}.gem"
+task :gem => [target_jar, "target/gem/lib/jruby-rack.rb", "target/gem/lib/jruby/rack/version.rb"] do |t|
+  Rake::Task['spec'].invoke
   cp FileList["History.txt", "LICENSE.txt", "README.md"], "target/gem"
   cp t.prerequisites.first, "target/gem/lib"
   if (jars = FileList["target/gem/lib/*.jar"].to_a).size > 1
-    abort "Too many jars! #{jars.map{|j| File.basename(j)}.inspect}\nRun a clean build first"
+    abort "Too many jars! #{jars.map{|j| File.basename(j)}.inspect}\nRun a clean build `rake clean` first"
   end
   require 'date'
   Dir.chdir("target/gem") do
     rm_f 'jruby-rack.gemspec'
     gemspec = Gem::Specification.new do |s|
       s.name = %q{jruby-rack}
-      s.version = JRuby::Rack::VERSION.sub('-', '.') # Gem::Version does not accept e.g. '1.1.1-SNAPSHOT'
-      s.authors = ["Nick Sieger"]
+      s.version = GEM_VERSION
+      s.authors = ['Nick Sieger']
       s.date = Date.today.to_s
       s.description = %{JRuby-Rack is a combined Java and Ruby library that adapts the Java Servlet API to Rack. For JRuby only.}
       s.summary = %q{Rack adapter for JRuby and Servlet Containers}
-      s.email = ["nick@nicksieger.com"]
+      s.email = ['nick@nicksieger.com']
       s.files = FileList["./**/*"].exclude("*.gem").map{|f| f.sub(/^\.\//, '')}
       s.homepage = %q{http://jruby.org}
       s.has_rdoc = false
@@ -203,11 +209,11 @@ task :release_checks do
     fail "There are uncommitted changes.\nPlease commit changes or clean workspace before releasing." unless ok
   end
 
-  sh "git rev-parse #{JRuby::Rack::VERSION} > /dev/null 2>&1" do |ok,_|
-    fail "Tag #{JRuby::Rack::VERSION} already exists.\n" +
+  sh "git rev-parse #{GEM_VERSION} > /dev/null 2>&1" do |ok,_|
+    fail "Tag #{GEM_VERSION} already exists.\n" +
       "Please execute these commands to remove it before releasing:\n" +
-      "  git tag -d #{JRuby::Rack::VERSION}\n" +
-      "  git push origin :#{JRuby::Rack::VERSION}" if ok
+      "  git tag -d #{GEM_VERSION}\n" +
+      "  git push origin :#{GEM_VERSION}" if ok
   end
 
   pom_version = `mvn help:evaluate -Dexpression=project.version`.
@@ -217,9 +223,9 @@ task :release_checks do
       "Please update pom.xml to the final release version, run `mvn install', and commit the result."
   end
 
-  unless pom_version == JRuby::Rack::VERSION
+  unless pom_version.sub(/\-(\D+\w*)/, '.\1') == GEM_VERSION
     fail "Can't release because pom.xml version (#{pom_version}) is different than " +
-      "jruby/rack/version.rb (#{JRuby::Rack::VERSION}).\n" +
+      "jruby/rack/version.rb (#{GEM_VERSION}).\n" +
       "Please run `mvn install' to bring the two files in sync."
   end
 
@@ -228,17 +234,17 @@ end
 
 desc "Release the gem to rubygems and jar to repository.codehaus.org"
 task :release => [:release_checks, :clean, :gem] do
-  sh "git tag #{JRuby::Rack::VERSION}"
+  sh "git tag #{GEM_VERSION}"
   sh "mvn deploy -DupdateReleaseInfo=true"
-  sh "gem push target/jruby-rack-#{JRuby::Rack::VERSION}.gem"
-  sh "git push --tags origin master"
-  puts "released JRuby-Rack #{JRuby::Rack::VERSION} update next SNAPSHOT version using `rake update_version`"
+  sh "gem push target/jruby-rack-#{GEM_VERSION}.gem"
+  sh "git push --tags #{ENV['GIT_REMOTE'] || 'origin'} master"
+  puts "released JRuby-Rack #{GEM_VERSION} update next SNAPSHOT version using `rake update_version`"
 end
 
 task :update_version do
   version = ENV["VERSION"] || ''
   if version.empty? # next version
-    gem_version = Gem::Version.create(JRuby::Rack::VERSION)
+    gem_version = Gem::Version.create(GEM_VERSION)
     if gem_version.segments.last.is_a?(String)
       version = gem_version.segments[0...-1] # 1.1.1.SNAPSHOT -> 1.1.1
     else  # 1.1.1 -> 1.1.2.SNAPSHOT
@@ -248,12 +254,12 @@ task :update_version do
     end
     version = version.join('.')
   end
-  if version != JRuby::Rack::VERSION
+  if version != GEM_VERSION
     gem_version = Gem::Version.create(version) # validates VERSION string
     
-    lines = File.readlines(version_file) # update JRuby::Rack::VERSION
+    lines = File.readlines(VERSION_FILE) # update JRuby::Rack::VERSION
     lines.each {|l| l.sub!(/VERSION =.*$/, %{VERSION = '#{version}'})}
-    File.open(version_file, "wb") { |f| f.puts *lines }
+    File.open(VERSION_FILE, "wb") { |f| f.puts *lines }
     
     pom_version = if gem_version.prerelease?
       segs = gem_version.segments
@@ -262,12 +268,12 @@ task :update_version do
       gem_version.version
     end
     doc = nil # update pom.xml <version>
-    File.open(pom_file, 'r') do |file|
+    File.open(POM_FILE, 'r') do |file|
       require "rexml/document"
       doc = REXML::Document.new file
       doc.root.elements.each('version') { |el| el.text = pom_version }
     end
-    File.open(pom_file, 'w') do |file|
+    File.open(POM_FILE, 'w') do |file|
       file.puts doc.to_s
     end if doc
   end
