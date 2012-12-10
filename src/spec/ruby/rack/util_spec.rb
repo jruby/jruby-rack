@@ -48,4 +48,10 @@ describe org.jruby.rack.util.IOHelpers do
     expect( string ).to eql "1.3.6"
   end
   
+  it "works when reading an empty/null string" do
+    expect( IOHelpers.rubyMagicCommentValue(nil, 'ruby.version:') ).to be nil
+    expect( IOHelpers.rubyMagicCommentValue('', 'ruby.version:') ).to be nil
+    expect( IOHelpers.rubyMagicCommentValue("\n", 'ruby.version:') ).to be nil
+  end
+  
 end

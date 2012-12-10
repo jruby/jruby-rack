@@ -70,21 +70,22 @@ public abstract class IOHelpers {
 
     public static String rubyMagicCommentValue(final String script, final String prefix) 
         throws IOException {
+        if ( script == null ) return null;
         
         final BufferedReader reader = new BufferedReader(new StringReader(script), 80);
         
         String line, comment = null; Pattern pattern = null;
         while ( (line = reader.readLine()) != null ) {
-            if ( line.charAt(0) == '#' ) {
-                if (pattern == null) {
-                    pattern = Pattern.compile(prefix + "\\s*(\\S+)");
-                }
-                Matcher matcher = pattern.matcher(line);
-                if (matcher.find()) {
-                    comment = matcher.group(1); break;
-                }
+            // we only support (magic) comments at the beginning :
+            if ( line.length() == 0 || line.charAt(0) != '#' ) break;
+            
+            if (pattern == null) {
+                pattern = Pattern.compile(prefix + "\\s*(\\S+)");
             }
-            else break; // (magic) comment expected at the beginning
+            Matcher matcher = pattern.matcher(line);
+            if (matcher.find()) {
+                comment = matcher.group(1); break;
+            }
         }
         reader.close();
         return comment;
