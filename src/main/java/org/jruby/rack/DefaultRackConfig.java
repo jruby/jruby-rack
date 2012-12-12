@@ -326,7 +326,7 @@ public class DefaultRackConfig implements RackConfig {
         return null;
     }
     
-    protected static Boolean toBoolean(String value, Boolean defaultValue) {
+    public static Boolean toBoolean(String value, Boolean defaultValue) {
         if (value == null) return defaultValue;
         try {
             return Boolean.valueOf(value);
@@ -335,13 +335,13 @@ public class DefaultRackConfig implements RackConfig {
         return defaultValue;
     }
 
-    protected static Object toStrictBoolean(String value, Object defaultValue) {
+    public static Object toStrictBoolean(String value, Object defaultValue) {
         if ( "true".equalsIgnoreCase(value) ) return Boolean.TRUE;
         if ( "false".equalsIgnoreCase(value) ) return Boolean.FALSE;
         return defaultValue;
     }
     
-    protected static Number toNumber(String value, Number defaultValue) {
+    public static Number toNumber(String value, Number defaultValue) {
         if (value == null) return defaultValue;
         try {
             float number = Float.parseFloat(value);

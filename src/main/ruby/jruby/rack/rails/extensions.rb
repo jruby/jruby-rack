@@ -5,6 +5,10 @@
 # See the file LICENSE.txt for details.
 #++
 
+JRuby::Rack::RailsBooter.run_boot_hooks!
+
+require 'jruby/rack/rack_ext'
+
 require 'action_controller'
 
 module ActionController
@@ -18,5 +22,3 @@ module ActionController
     end
   end
 end
-
-require 'jruby/rack/rack_ext'

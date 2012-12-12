@@ -128,7 +128,7 @@ describe "integration" do
     end
 
   end
-
+    
   describe 'rails 3.0', :lib => :rails30 do
 
     before(:all) { copy_gemfile("rails30") }
@@ -149,6 +149,11 @@ describe "integration" do
         should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.2'
       end
 
+      it "disables rack's chunked support (by default)" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        expect_to_have_monkey_patched_chunked
+      end
+      
     end
 
     context "initialized (custom)" do
@@ -204,6 +209,11 @@ describe "integration" do
         should_eval_as_eql_to "Rails.logger.level", Logger::DEBUG
       end
 
+      it "disables rack's chunked support (by default)" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        expect_to_have_monkey_patched_chunked
+      end
+      
     end
 
   end
@@ -253,6 +263,11 @@ describe "integration" do
           image_path = asset_paths.compute_public_path('image.jpg', 'images');
           image_path[0, 18]
         }, '/images/image.jpg?'
+      end
+      
+      it "disables rack's chunked support (by default)" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        expect_to_have_monkey_patched_chunked
       end
       
     end
@@ -305,6 +320,27 @@ describe "integration" do
     
   end
   
+  def expect_to_have_monkey_patched_chunked
+    @runtime.evalScriptlet "require 'rack/chunked'"
+    script = %{
+      headers = { 'Transfer-Encoding' => 'chunked' }
+
+      body = [ \"1\".freeze, \"\", \"\nsecond\" ] 
+
+      if defined? Rack::Chunked::Body # Rails 3.x
+        body = Rack::Chunked::Body.new body
+      else # Rack 1.1 / 1.2
+        chunked = Rack::Chunked.new(nil)
+        chunked.chunk(200, headers, body)
+        body = chunked
+      end
+
+      parts = []; body.each { |part| parts << part }
+      parts.join
+    }
+    should_eval_as_eql_to script, "1\nsecond"
+  end
+  
   def initialize_rails(env = nil, servlet_context = @servlet_context)
     if ! servlet_context || servlet_context.is_a?(String)
       base = servlet_context.is_a?(String) ? servlet_context : nil
@@ -339,11 +375,11 @@ describe "integration" do
 
   private
 
-    GEMFILES_DIR = File.expand_path('../../../gemfiles', STUB_DIR)
+  GEMFILES_DIR = File.expand_path('../../../gemfiles', STUB_DIR)
 
-    def copy_gemfile(name) # e.g. 'rails30'
-      FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile")
-      FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile.lock")
-    end
+  def copy_gemfile(name) # e.g. 'rails30'
+    FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile")
+    FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile.lock")
+  end
 
 end

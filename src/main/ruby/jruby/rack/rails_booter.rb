@@ -8,6 +8,7 @@
 require 'jruby/rack/booter'
 
 module JRuby::Rack
+  # A booter for loading and booting `Rails` applications.
   class RailsBooter < Booter
     attr_reader :rails_env
 
@@ -17,6 +18,10 @@ module JRuby::Rack
         @rack_context.getInitParameter('rails.env') || rack_env || 'production'
     end
 
+    # @see Booter#default_layout_class
+    def self.default_layout_class; RailsWebInfLayout; end
+    
+    # @see Booter#boot!
     def boot!
       super
       ENV['RAILS_ROOT'] = app_path
@@ -35,11 +40,6 @@ module JRuby::Rack
       self
     end
     
-    def default_layout_class
-      klass = super
-      klass == WebInfLayout ? RailsWebInfLayout : klass
-    end
-    
     protected
     
     def set_relative_url_root
@@ -50,30 +50,43 @@ module JRuby::Rack
       end
     end
 
+    # @see JRuby::Rack::RailsBooter::Rails2Environment#set_public_root
+    # @see JRuby::Rack::RailsBooter::Rails3Environment#set_public_root
     def set_public_root
-      # NOOP by default - leave as it is
+      # no-op by default - leave as it is
     end
     
+    # @deprecated no longer used, replaced with {#run_boot_hooks}
     def load_extensions
-      # no rack etc extensions required here (called during boot!)
-      # require 'jruby/rack/rails/extensions' on #load_environment
+      # no-op
+    end
+
+    # no rack etc extensions required here (called during boot!)
+    # require 'jruby/rack/rails/extensions' on #load_environment
+    
+    # For a Rails booter the boot hooks are delayed to be run after the
+    # (Rails) environment gets loaded.
+    # @see JRuby::Rack::Railtie
+    # @see JRuby::Rack::Booter#run_boot_hooks
+    def run_boot_hooks
+      # no-op hooks run when 'jruby/rack/rails/extensions' gets loaded
     end
     
     public
     
     # @see #RailsRackApplicationFactory
-    def self.load_environment
+    def self.load_environment # :nodoc
       rails_booter.load_environment
     end
 
     # @see #RailsRackApplicationFactory
-    def self.to_app
+    def self.to_app # :nodoc
       rails_booter.to_app
     end
 
     private
 
-    def self.rails_booter
+    def self.rails_booter # :nodoc
       raise "no booter set" unless booter = JRuby::Rack.booter
       raise "not a rails booter" unless booter.is_a?(JRuby::Rack::RailsBooter)
       booter

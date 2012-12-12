@@ -120,6 +120,10 @@ module SharedHelpers
   
 end
 
+# NOTE: avoid chunked-patch (loaded by default from a hook at 
+# DefaultRackApplicationFactory.initRuntime) to be loaded in (spec) runtime :
+$LOADED_FEATURES << 'jruby/rack/chunked.rb'
+
 STUB_DIR = File.expand_path('../stub', File.dirname(__FILE__))
 
 WD_START = Dir.getwd

@@ -137,7 +137,7 @@ describe JRuby::Rack::Response do
     end
 
     it "dechunks the body when a chunked response is detected", 
-      :lib => [ :rails31, :rails32, :rails40 ] do
+      :lib => [ :rails23, :rails31, :rails32, :rails40 ] do
       require 'rack/chunked'
       
       headers = { 
@@ -153,32 +153,40 @@ describe JRuby::Rack::Response do
         "", # should be skipped
         "\r\nthe very\r\n last\r\n\r\n chunk"
       ]
-      body = Rack::Chunked::Body.new body
-      response = JRuby::Rack::Response.new([ 200, headers, body ])
-      @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")
-      @servlet_response.stub!(:addHeader)
-      response.write_headers(@servlet_response)
-
-      times = 0
-      stream.should_receive(:write).exactly(6).times.with do |bytes|
-        str = String.from_java_bytes(bytes)
-        str = str.force_encoding('UTF-8') if str.respond_to?(:force_encoding)
-        case times += 1
-        when 1 then str.should == "1"
-        when 2 then str.should == "\nsecond chunk"
-        when 3 then str.should == "a multi\nline chunk \n42"
-        when 4 then str.should == "utf-8 chunk 'ty píčo'!\n"
-        when 5 then str.should == "terminated chunk\r\n"
-        when 6 then str.should == "\r\nthe very\r\n last\r\n\r\n chunk"
-        else
-          fail("unexpected :write received with #{str.inspect}")
-        end
-      end
-      stream.should_receive(:flush).exactly(6+1).times # +1 for tail chunk
       
-      response.write_body(@servlet_response)
-    end
+      with_dechunk do
+        if defined? Rack::Chunked::Body # Rails 3.x
+          body = Rack::Chunked::Body.new body
+          response = JRuby::Rack::Response.new([ 200, headers, body ])
+        else # Rails 2.3 -> Rack 1.1
+          chunked = Rack::Chunked.new 
+          response = JRuby::Rack::Response.new chunked.chunk(200, headers, body)
+        end
+        @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")
+        @servlet_response.stub!(:addHeader)
+        response.write_headers(@servlet_response)
 
+        times = 0
+        stream.should_receive(:write).exactly(6).times.with do |bytes|
+          str = String.from_java_bytes(bytes)
+          str = str.force_encoding('UTF-8') if str.respond_to?(:force_encoding)
+          case times += 1
+          when 1 then str.should == "1"
+          when 2 then str.should == "\nsecond chunk"
+          when 3 then str.should == "a multi\nline chunk \n42"
+          when 4 then str.should == "utf-8 chunk 'ty píčo'!\n"
+          when 5 then str.should == "terminated chunk\r\n"
+          when 6 then str.should == "\r\nthe very\r\n last\r\n\r\n chunk"
+          else
+            fail("unexpected :write received with #{str.inspect}")
+          end
+        end
+        stream.should_receive(:flush).exactly(6+1).times # +1 for tail chunk
+
+        response.write_body(@servlet_response)
+      end
+    end
+    
     it "does not dechunk body when dechunkins is turned off",
       :lib => [ :rails31, :rails32, :rails40 ] do
       dechunk = JRuby::Rack::Response.dechunk?
@@ -401,5 +409,19 @@ describe JRuby::Rack::Response do
       @response.write_body(@servlet_response)
       stream.to_s.should == "hello"
     end
+    
+    private
+    
+    def with_dechunk(dechunk = true)
+      begin
+        prev_dechunk = JRuby::Rack::Response.dechunk?
+        JRuby::Rack::Response.dechunk = dechunk
+        yield
+      ensure
+        JRuby::Rack::Response.dechunk = prev_dechunk
+      end
+    end
+    
   end
+  
 end

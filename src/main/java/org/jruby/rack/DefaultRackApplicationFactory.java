@@ -334,11 +334,14 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         // load our (servlet) Rack handler :
         runtime.evalScriptlet("require 'rack/handler/servlet'");
         // configure (Ruby) bits and pieces :
-        Boolean dechunk = rackContext.getConfig().getBooleanProperty("jruby.rack.response.dechunk");
-        if ( dechunk != null ) {
-            runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunk + "");
-            // TODO it would be useful by default or when dechunk is on
-            // to remove Rack::Chunked from the middleware stack ... ?!
+        String dechunk = rackContext.getConfig().getProperty("jruby.rack.response.dechunk");
+        Boolean dechunkFlag = (Boolean) DefaultRackConfig.toStrictBoolean(dechunk, null);
+        if ( dechunkFlag != null ) {
+            runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunkFlag + "");
+        }
+        else { // dechunk null (default) or not a true/false value ... we're patch :
+            runtime.evalScriptlet("JRuby::Rack::Booter.on_boot { require 'jruby/rack/chunked' }");
+            // `require 'jruby/rack/chunked'` that happens after Rack is loaded
         }
         // NOTE: this is experimental stuff and might change in the future :
         String env = rackContext.getConfig().getProperty("jruby.rack.handler.env");

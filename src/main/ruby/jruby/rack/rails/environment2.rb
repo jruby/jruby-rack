@@ -7,9 +7,10 @@
 
 require 'jruby/rack/rails_booter'
 
-# Rails 2.x specific booter extensions
+# Rails 2.x (JRuby-Rack >= 1.1.0 only supports 2.3) specific booter behavior.
 module JRuby::Rack::RailsBooter::Rails2Environment
-
+  
+  # @return [::Rack::Adapter::Rails] a Rack compatible Rails application wrapper
   def to_app
     # backward "compatibility" calling #to_app without a #load_environment
     load_environment unless @load_environment
@@ -18,6 +19,7 @@ module JRuby::Rack::RailsBooter::Rails2Environment
     rack_based_sessions? ? rails_adapter : RailsRequestSetup.new(rails_adapter, session_options)
   end
 
+  # Loads the Rails 2.x environment.
   def load_environment
     require 'jruby/rack/rails/boot_hook'
     load File.join(app_path, 'config', 'environment.rb')
@@ -124,7 +126,7 @@ module JRuby::Rack::RailsBooter::Rails2Environment
     session_options[:database_manager] == (defined?(::CGI::Session::PStore) && ::CGI::Session::PStore)
   end
   
-  class RailsRequestSetup # only used for (non-rack based) CGI sessions
+  class RailsRequestSetup # :nodoc only used for (non-rack based) CGI sessions
     
     def initialize(app, session_options)
       @app, @session_options = app, session_options

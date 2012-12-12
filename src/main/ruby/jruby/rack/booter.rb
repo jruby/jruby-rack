@@ -5,18 +5,90 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'jruby/rack'
 require 'jruby/rack/app_layout'
 
 module JRuby::Rack
+  # A (generic) booter responsible for racking-up `Rack` applications.
+  # @note a single instance of a `JRuby::Rack::Booter` is expected to be created
+  # and boot-ed within a single JRuby-Rack managed (Ruby) runtime.
   class Booter
-    attr_reader :rack_context, :rack_env
 
+    @@boot_hooks = []
+    
+    # Allows the define a on (load) hook to be executed during the boot.
+    # These hooks are expected to execute when the application is fully loaded.
+    # Thus e.g. in Rails they might be delayed until the actual Rails boot 
+    # process is finishing up.
+    def self.on_boot(options = {}, &block)
+      if @@boot_hooks.nil? # run immediately
+        base = options[:base] || ::Rack
+        run_boot_hook(base, options, block)
+      else
+        @@boot_hooks << [ block, options ]
+      end
+    end
+    
+    # Manually execute the given (load) hook. 
+    # Called for all hooks during {#run_boot_hooks!}.
+    # @see #on_boot
+    def self.run_boot_hook(base, options, block)
+      options[:yield] ? block.call(base) : base.instance_eval(&block)
+    end
+    
+    # Runs all registered load hooks (and clear them out than).
+    # It's safe to call this multiple times - hooks will only execute once.
+    # @see #on_boot
+    def self.run_boot_hooks!(base = nil)
+      return if @@boot_hooks.nil?
+      load_hooks = @@boot_hooks; @@boot_hooks = nil
+      load_hooks.each do |hook, options|
+        hook_base = base || options[:base] || ::Rack
+        run_boot_hook(hook_base, options, hook)
+      end
+    end
+    
+    attr_reader :rack_context, :rack_env
+    
     def initialize(rack_context = nil)
       @rack_context = rack_context || JRuby::Rack.context || raise("rack context not available")
       @rack_env = ENV['RACK_ENV'] || @rack_context.getInitParameter('rack.env') || 'production'
     end
 
+    # @return [Class] the (default) layout class to use
+    # @see #layout_class 
+    def self.default_layout_class; WebInfLayout; end
+    # @deprecated use the class method
+    def default_layout_class; self.class.default_layout_class; end
+    
+    # @return [Class] the layout class to use
+    # @see #layout
+    def layout_class
+      @layout_class ||= begin 
+        klass = @rack_context.getInitParameter 'jruby.rack.layout_class'
+        klass.nil? ? self.class.default_layout_class : Helpers.resolve_constant(klass, JRuby::Rack)
+      end
+    end
+    attr_writer :layout_class
+
+    # Returns an application layout instance (for this booter's application).
+    # @return [JRuby::Rack::AppLayout]
+    def layout
+      @layout ||= layout_class.new(@rack_context)
+    end
+    attr_writer :layout
+
+    %w( app_path gem_path public_path ).each do |path|
+      # def app_path; layout.app_path; end
+      # def app_path=(path); layout.app_path = path; end
+      class_eval "def #{path}; layout.#{path}; end"
+      class_eval "def #{path}=(path); layout.#{path} = path; end"
+    end
+
+    # @deprecated use {JRuby::Rack#logger} instead
+    # @return [Logger]
+    def logger; JRuby::Rack.logger; end
+
+    # Boot-up this booter, preparing the environment for the application.
     def boot!
       adjust_load_path
       ENV['RACK_ENV'] = rack_env
@@ -32,50 +104,28 @@ module JRuby::Rack
       export_global_settings
       change_working_directory
       load_settings_from_init_rb
-      load_extensions
+      run_boot_hooks
       self
     end
     
-    def default_layout_class
-      klass = @rack_context.getInitParameter 'jruby.rack.layout_class'
-      klass.nil? ? WebInfLayout : Helpers.resolve_constant(klass, JRuby::Rack)
-    end
-
-    def layout_class
-      @layout_class ||= default_layout_class
-    end
-    attr_writer :layout_class
-
-    def layout
-      @layout ||= layout_class.new(@rack_context)
-    end
-    attr_writer :layout
-
-    %w( app_path gem_path public_path ).each do |path|
-      # def app_path; layout.app_path; end
-      # def app_path=(path); layout.app_path = path; end
-      class_eval "def #{path}; layout.#{path}; end"
-      class_eval "def #{path}=(path); layout.#{path} = path; end"
-    end
-
-    # #deprecated use JRuby::Rack.logger
-    def logger
-      JRuby::Rack.logger
-    end
-
     protected
 
+    # @note called during {#boot!}
     def export_global_settings
       JRuby::Rack.send(:instance_variable_set, :@booter, self) # TODO
       JRuby::Rack.app_path = layout.app_path
       JRuby::Rack.public_path = layout.public_path
     end
     
+    # Changes the working directory (`Dir.chdir`) is necessary.
+    # @note called during {#boot!}
     def change_working_directory
       app_path = layout.app_path
       Dir.chdir(app_path) if app_path && File.directory?(app_path)
     end
     
+    # Adjust the load path (mostly due some J2EE servers slightly misbehaving).
+    # @note called during {#boot!}
     def adjust_load_path
       require 'jruby'
       # http://kenai.com/jira/browse/JRUBY_RACK-8 If some containers do
@@ -131,6 +181,9 @@ module JRuby::Rack
       end
     end
 
+    # Checks for *META-INF/init.rb* and *WEB-INF/init.rb* code and evals it.
+    # These init files are assumed to contain user supplied initialization code
+    # to be loaded and executed during {#boot!}.
     def load_settings_from_init_rb
       %w(META WEB).each do |where|
         url = @rack_context.getResource("/#{where}-INF/init.rb")
@@ -148,9 +201,17 @@ module JRuby::Rack
         eval code, TOPLEVEL_BINDING, path_to_file(url)
       end
     end
-
+    
+    # @deprecated no longer used, replaced with {#run_boot_hooks}
     def load_extensions
-      require 'jruby/rack/rack_ext'
+      run_boot_hooks
+    end
+
+    # Runs the "global" registered boot hooks by default.
+    # @note called (just) before {#boot!} finishes
+    # @see JRuby::Rack::Booter#run_boot_hooks!
+    def run_boot_hooks
+      self.class.run_boot_hooks!
     end
     
     private

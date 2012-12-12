@@ -21,8 +21,8 @@ module JRuby
       include org.jruby.rack.RackResponse
       java_import 'java.nio.ByteBuffer'
       java_import 'java.nio.channels.Channels'
-
-      @@dechunk = true
+      
+      @@dechunk = nil
       def self.dechunk?; @@dechunk; end
       def self.dechunk=(flag); @@dechunk = !! flag; end
       
@@ -59,34 +59,36 @@ module JRuby
         response.setStatus(@status.to_i)
       end
 
+      TRANSFER_ENCODING = 'Transfer-Encoding'.freeze # :nodoc
+      
       def write_headers(response)
-        @headers.each do |k, v|
-          case k
+        for key, value in @headers
+          case key
           when /^Content-Type$/i
-            response.setContentType(v.to_s)
+            response.setContentType(value.to_s)
           when /^Content-Length$/i
-            length = v.to_i
+            length = value.to_i
             # setContentLength(int) ... addHeader must be used for large files (>2GB)
             response.setContentLength(length) if ! chunked? && length < 2_147_483_648
           else
             # servlet container auto handle chunking when response is flushed 
             # (and Content-Length headers has not been set) :
-            next if ( k == 'Transfer-Encoding' && v == 'chunked' && dechunk? )
+            next if key == TRANSFER_ENCODING && skip_encoding_header?(value)
             # NOTE: effectively the same as `v.split("\n").each` which is what
             # rack handler does to guard against response splitting attacks !
             # https://github.com/jruby/jruby-rack/issues/81
-            if v.respond_to?(:each_line)
-              v.each_line { |val| response.addHeader(k.to_s, val.chomp("\n")) }
-            elsif v.respond_to?(:each)
-              v.each { |val| response.addHeader(k.to_s, val.chomp("\n")) }
+            if value.respond_to?(:each_line)
+              value.each_line { |val| response.addHeader(key.to_s, val.chomp("\n")) }
+            elsif value.respond_to?(:each)
+              value.each { |val| response.addHeader(key.to_s, val.chomp("\n")) }
             else
-              case v
+              case value
               when Numeric
-                response.addIntHeader(k.to_s, v.to_i)
+                response.addIntHeader(key.to_s, value.to_i)
               when Time
-                response.addDateHeader(k.to_s, v.to_i * 1000)
+                response.addDateHeader(key.to_s, value.to_i * 1000)
               else
-                response.addHeader(k.to_s, v.to_s)
+                response.addHeader(key.to_s, value.to_s)
               end
             end
           end
@@ -112,30 +114,11 @@ module JRuby
             body = @body.body_parts.to_channel # so that we close the channel
             transfer_channel(body, output_stream)
           else
-            # 1.8 has a String#each method but 1.9 does not :
-            method = @body.respond_to?(:each_line) ? :each_line : :each
             if dechunk?
-              # NOTE: due Rails 3.2 stream-ed rendering http://git.io/ooCOtA#L223
-              term = "\r\n"; tail = "0#{term}#{term}".freeze
-              # we assume no support here for chunk-extensions e.g. 
-              # chunk = chunk-size [ chunk-extension ] CRLF chunk-data CRLF
-              # no need to be handled - we simply unwrap what Rails chunked :
-              chunk = /^([0-9a-fA-F]+)#{Regexp.escape(term)}(.+)#{Regexp.escape(term)}/mo
-              @body.send(method) do |line|
-                if line == tail
-                  # "0\r\n\r\n" NOOP
-                elsif line =~ chunk # (size.to_s(16)) term (chunk) term
-                  if $1.to_i(16) == $2.bytesize
-                    output_stream.write $2.to_java_bytes
-                  else
-                    output_stream.write line.to_java_bytes
-                  end
-                else # seems it's not a chunk ... thus let it flow :
-                  output_stream.write line.to_java_bytes
-                end
-                output_stream.flush
-              end        
+              write_body_dechunked(output_stream)  
             else
+              # 1.8 has a String#each method but 1.9 does not :
+              method = @body.respond_to?(:each_line) ? :each_line : :each
               @body.send(method) do |line|
                 output_stream.write(line.to_java_bytes)
                 output_stream.flush if flush?
@@ -160,7 +143,7 @@ module JRuby
       # returns true if a chunked encoding is detected
       def chunked?
         return @chunked unless @chunked.nil?
-        @chunked = !! ( @headers && @headers['Transfer-Encoding'] == 'chunked' )
+        @chunked = !! ( @headers && @headers[TRANSFER_ENCODING] == 'chunked' )
       end
       
       # returns true if output (body) should be flushed after each written line
@@ -174,6 +157,34 @@ module JRuby
       end
       
       private
+      
+      def skip_encoding_header?(value)
+        value == 'chunked' && @@dechunk != false
+      end
+      
+      def write_body_dechunked(output_stream)
+        # NOTE: due Rails 3.2 stream-ed rendering http://git.io/ooCOtA#L223
+        # Only required if the patch at jruby/rack/chunked.rb is not applied ...
+        term = "\r\n"; tail = "0#{term}#{term}".freeze
+        # we assume no support here for chunk-extensions e.g. 
+        # chunk = chunk-size [ chunk-extension ] CRLF chunk-data CRLF
+        # no need to be handled - we simply unwrap what Rails chunked :
+        chunk = /^([0-9a-fA-F]+)#{Regexp.escape(term)}(.+)#{Regexp.escape(term)}/mo
+        @body.send(@body.respond_to?(:each_line) ? :each_line : :each) do |line|
+          if line == tail
+            # "0\r\n\r\n" NOOP
+          elsif line =~ chunk # (size.to_s(16)) term (chunk) term
+            if $1.to_i(16) == $2.bytesize
+              output_stream.write $2.to_java_bytes
+            else
+              output_stream.write line.to_java_bytes
+            end
+          else # seems it's not a chunk ... thus let it flow :
+            output_stream.write line.to_java_bytes
+          end
+          output_stream.flush
+        end
+      end
       
       BUFFER_SIZE = 16 * 1024
       
