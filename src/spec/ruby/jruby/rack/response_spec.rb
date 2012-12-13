@@ -395,8 +395,10 @@ describe JRuby::Rack::Response do
     it "uses #transfer_to to copy the stream if available" do
       channel = mock "channel"
       @body.should_receive(:to_channel).and_return channel
-      channel.stub!(:size).and_return(10); channel.stub!(:close)
-      channel.should_receive(:transfer_to).with(0, 10, anything)
+      chunk_size = JRuby::Rack::Response.channel_chunk_size
+      channel.stub!(:size).and_return(chunk_size + 10); channel.stub!(:close)
+      channel.should_receive(:transfer_to).ordered.with(0, chunk_size, anything).and_return(chunk_size)
+      channel.should_receive(:transfer_to).ordered.with(chunk_size, chunk_size, anything).and_return(10)
       stream.should be_kind_of(java.io.OutputStream)
 
       @response.write_body(@servlet_response)

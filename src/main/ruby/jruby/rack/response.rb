@@ -10,21 +10,48 @@ require 'java'
 module JRuby
   module Rack
     # Takes a Rack response to map it into the Servlet world.
+    # 
     # Assumes servlet containers auto-handle chunking when the output stream
-    # gets flushed. Thus dechunks data if Rack chunked them, to disable this
+    # gets flushed. Thus de-chunks data if Rack chunked them, to disable this
     # behavior execute the following before delivering responses :
     #
-    #  JRuby::Rack::Response.dechunk = false
+    #   JRuby::Rack::Response.dechunk = false
     #
-    # see #OrgJrubyRack::RackResponse
+    # @see #Java::OrgJrubyRack::RackResponse
     class Response
       include org.jruby.rack.RackResponse
       java_import 'java.nio.ByteBuffer'
       java_import 'java.nio.channels.Channels'
       
       @@dechunk = nil
+      # Whether responses should de-chunk data (when chunked response detected).
       def self.dechunk?; @@dechunk; end
       def self.dechunk=(flag); @@dechunk = !! flag; end
+
+      @@channel_chunk_size = 32 * 1024 * 1024 # 32 MB
+      # Returns the channel chunk size to be used e.g. when a (send) file
+      # response is detected. By setting this value to nil you force an "explicit"
+      # byte buffer to be used when copying between channels.
+      # @note High values won't hurt when sending small files since most Java
+      # (file) channel implementations handle this gracefully. However if you're
+      # on Windows it is  recommended to not set this higher than the "magic"
+      # number (64 * 1024 * 1024) - (32 * 1024) as there seems to be anecdotal
+      # evidence that attempts to transfer more than 64MB at a time on certain
+      # Windows versions results in a slow copy.
+      # @see #channel_buffer_size
+      def self.channel_chunk_size; @@channel_chunk_size; end
+      def self.channel_chunk_size=(size); @@channel_chunk_size = size; end
+      def channel_chunk_size; self.class.channel_chunk_size; end
+      
+      @@channel_buffer_size = 16 * 1024 # 16 kB
+      # Returns a byte buffer size that will be allocated when copying between
+      # channels. This usually won't happen at all (unless you return an exotic
+      # channel backed object) as with file responses the response channel is
+      # always transferable and thus {#channel_chunk_size} will be used.
+      # @see #channel_chunk_size
+      def self.channel_buffer_size; @@channel_buffer_size; end
+      def self.channel_buffer_size=(size); @@channel_buffer_size = size; end
+      def channel_buffer_size; self.class.channel_buffer_size; end
       
       # Expects a Rack response: [status, headers, body].
       def initialize(array)
@@ -186,14 +213,15 @@ module JRuby
         end
       end
       
-      BUFFER_SIZE = 16 * 1024
-      
       def transfer_channel(channel, output_stream)
         output_channel = Channels.newChannel output_stream
-        if channel.respond_to?(:transfer_to)
-          channel.transfer_to(0, channel.size, output_channel)
+        if channel.respond_to?(:transfer_to) && channel_chunk_size # FileChannel
+          pos = 0; size = channel.size; while pos < size
+            # for small sizes Java will (correctly) "ignore" the large chunk :
+            pos += channel.transfer_to(pos, channel_chunk_size, output_channel)
+          end
         else
-          buffer = ByteBuffer.allocate(BUFFER_SIZE)
+          buffer = ByteBuffer.allocate(channel_buffer_size)
           while channel.read(buffer) != -1
             buffer.flip
             output_channel.write(buffer)
@@ -205,19 +233,13 @@ module JRuby
           end
         end
       end
-
-      @@object_polluted = begin
-                            # Fixnum should not have this method, and it
-                            # shouldn't be on Object
-                            Fixnum.method('to_channel').owner == Object
-                          rescue
-                            false
-                          end
       
-      # See http://bugs.jruby.org/5444 - we need to account for pre-1.6
-      # JRuby where Object was polluted with #to_channel by
-      # IOJavaAddions.AnyIO
-      def object_polluted_with_anyio?(obj, meth)
+      # Fixnum should not have this method, and it shouldn't be on Object
+      @@object_polluted = ( Fixnum.method(:to_channel).owner == Object ) rescue nil # :nodoc
+      
+      # See http://bugs.jruby.org/5444 - we need to account for pre-1.6 JRuby 
+      # where Object was polluted with #to_channel ( by IOJavaAddions.AnyIO )
+      def object_polluted_with_anyio?(obj, meth) # :nodoc
         @@object_polluted && begin
           # The object should not have this method, and
           # it shouldn't be on Object
@@ -226,6 +248,7 @@ module JRuby
           false
         end
       end
+      
     end
   end
 end
