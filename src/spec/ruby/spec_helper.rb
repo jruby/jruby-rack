@@ -131,8 +131,8 @@ WD_START = Dir.getwd
 begin
   # NOTE: only if running with a `bundle exec` to better isolate
   if $LOAD_PATH.find { |path| path =~ /\/rails\-[\w\.]*\// }
-    require 'rails' # attempt to load rails - for "real life" testing
     require 'rails/version' # use Rails::VERSION to detect current env
+    require 'rails' # attempt to load rails - for "real life" testing
   end
 rescue LoadError
 end
