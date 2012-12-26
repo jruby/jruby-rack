@@ -320,6 +320,44 @@ describe "integration" do
     
   end
   
+  describe 'rails 2.3', :lib => :rails23 do
+
+    before(:all) { copy_gemfile("rails23") }
+
+    let(:base_path) { "file://#{STUB_DIR}/rails23" }
+
+    it_should_behave_like 'a rails app'
+
+    context "initialized" do
+
+      before :all do
+        initialize_rails nil, base_path
+      end
+
+      it "loaded rack ~> 1.1" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rack.release)"
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.1'
+      end
+      
+      it "booted with a servlet logger" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rails)"
+        should_eval_as_not_nil "defined?(Rails.logger)"
+        
+        should_eval_as_not_nil "defined?(ActiveSupport::BufferedLogger) && Rails.logger.is_a?(ActiveSupport::BufferedLogger)"
+        should_eval_as_not_nil "Rails.logger.send(:instance_variable_get, '@log')"
+        should_eval_as_eql_to "log = Rails.logger.send(:instance_variable_get, '@log');" + 
+                              "log.class.name", 'JRuby::Rack::ServletLog'
+        should_eval_as_eql_to "Rails.logger.level", Logger::INFO
+        
+        @runtime.evalScriptlet "Rails.logger.debug 'logging works'"
+      end
+      
+    end
+
+  end
+  
   def expect_to_have_monkey_patched_chunked
     @runtime.evalScriptlet "require 'rack/chunked'"
     script = %{

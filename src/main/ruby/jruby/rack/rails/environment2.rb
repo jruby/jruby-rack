@@ -96,20 +96,17 @@ module JRuby::Rack::RailsBooter::Rails2Environment
   end
 
   def setup_logger
-    if defined?(::RAILS_DEFAULT_LOGGER)
-      class << ::RAILS_DEFAULT_LOGGER # Make these accessible to wire in the log device
-        public :instance_variable_get, :instance_variable_set
-      end
-
-      # use config.logger?
-      if defined?(ActiveSupport::BufferedLogger) # Rails 2.x
-        old_device = ::RAILS_DEFAULT_LOGGER.instance_variable_get "@log"
-        old_device.close rescue nil
-        ::RAILS_DEFAULT_LOGGER.instance_variable_set "@log", logdev
-      else # Rails 1.x
-        old_device = ::RAILS_DEFAULT_LOGGER.instance_variable_get "@logdev"
-        old_device.close rescue nil
-        ::RAILS_DEFAULT_LOGGER.instance_variable_set "@logdev", Logger::LogDevice.new(logdev)
+    if logger = defined?(::RAILS_DEFAULT_LOGGER) && ::RAILS_DEFAULT_LOGGER
+      if defined?(ActiveSupport::BufferedLogger) && # we only support Rails 2.3
+          logger.is_a?(ActiveSupport::BufferedLogger)
+        # since there's no way to detect whether this is a custom config.logger
+        # declaration or the (default) Rails configured logger we assume all 
+        # ActiveSupport::BufferedLogger instances to be the default and patch :
+        old_dev = logger.send :instance_variable_get, "@log"
+        old_dev.close rescue nil
+        logger.send :instance_variable_set, "@log", JRuby::Rack.send(:logdev)
+      else # keep custom e.g. Logger instance setup as is ...
+        JRuby::Rack.context.log "keeping custom (config.logger) Rails logger instance"
       end
     end
   end

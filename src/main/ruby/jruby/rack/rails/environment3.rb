@@ -11,7 +11,7 @@ require 'jruby/rack/rails_booter'
 # @see JRuby::Rack::Railtie
 module JRuby::Rack::RailsBooter::Rails3Environment
 
-  # @return [Rails::Application] the (loaded) application instance.
+  # @return [Rails::Application] the (loaded) application instance
   def to_app
     # backward "compatibility" calling #to_app without a #load_environment
     load_environment
