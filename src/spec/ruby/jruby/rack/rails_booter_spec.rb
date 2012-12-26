@@ -154,7 +154,7 @@ describe JRuby::Rack::RailsBooter do
     end
   end
   
-  describe "Rails 2 environment", :lib => [ :rails23, :stub ] do
+  describe "Rails 2 environment", :lib => :stub do
     
     before :each do
       $servlet_context = @servlet_context

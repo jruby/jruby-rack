@@ -7,17 +7,12 @@
 
 require 'cgi'
 
-# Based loosely on http://github.com/macournoyer/thin/tree/master/lib/rack/adapter/rails.rb
-# Adapter to run a Rails app with any supported Rack handler.
-# By default it will try to load the Rails application in the
-# current directory in the development environment.
-# Options:
-#  root: Root directory of the Rails app
-#  env: Rails environment to run in (development, production or test)
-# Based on http://fuzed.rubyforge.org/ Rails adapter
 module Rack
   module Adapter
+    # Based loosely on Thin's Rails adapter (http://git.io/JKeAwA).
+    # Allows to run a Rails application with any supported Rack handler.
     class RailsCgi
+      
       def call(env)
         request   = Request.new(env)
         response  = Response.new

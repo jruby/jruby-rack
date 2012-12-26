@@ -159,7 +159,7 @@ describe JRuby::Rack::Response do
           body = Rack::Chunked::Body.new body
           response = JRuby::Rack::Response.new([ 200, headers, body ])
         else # Rails 2.3 -> Rack 1.1
-          chunked = Rack::Chunked.new 
+          chunked = Rack::Chunked.new nil # nil application
           response = JRuby::Rack::Response.new chunked.chunk(200, headers, body)
         end
         @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")

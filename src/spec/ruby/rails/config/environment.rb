@@ -7,35 +7,10 @@
 
 # This is a fake Rails config/environment file to be used during testing.
 
-RAILS_ROOT = ENV['RAILS_ROOT']
-RAILS_ENV = ENV['RAILS_ENV']
+# Specifies gem version of Rails to use when vendor/rails is not present
+RAILS_GEM_VERSION = '2.3.14' # unless defined? RAILS_GEM_VERSION
 
-# Simulate the Rails 2.0 boot process here, to test our boot hook
-module Rails
-  class << self
-    def boot!
-      unless booted?
-        pick_boot.run
-      end
-    end
+# Bootstrap the Rails environment, frameworks, and default configuration
+require File.join(File.dirname(__FILE__), 'boot')
 
-    def booted?
-      defined? Rails::Initializer
-    end
-
-    def pick_boot
-      Boot.new
-    end
-  end
-
-  class Boot
-    def run
-      require 'initializer'
-      Rails::Initializer.run(:set_load_path)
-    end
-  end
-end
-
-Rails.boot!
-
-Rails::Initializer.run
+Rails::Initializer.run { |config| config }
