@@ -10,17 +10,33 @@ package org.jruby.rack;
 import java.util.Map;
 
 /**
- *
+ * Represents a Rack response for the Java world.
+ * 
+ * Rack response is an array of exactly three values: status, headers, and body.
+ * 
  * @author nicksieger
  */
 public interface RackResponse {
-    /** Return the response status. */
+    
+    /** 
+     * @return the response (HTTP) status
+     */
     int getStatus();
-    /** Return the response headers. */
+    
+    /**  
+     * @return the response headers
+     */
     Map getHeaders();
-    /** Return the response body */
+    
+    /** 
+     * @return the response body
+     */
     String getBody();
 
-    /** Write the status, headers, and body to the response. */
+    /** 
+     * Writes the response (status, headers, and body) to the response environment.
+     * @param response the (servlet) response environment
+     */
     void respond(RackResponseEnvironment response);
+    
 }

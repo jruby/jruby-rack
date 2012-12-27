@@ -57,15 +57,24 @@ module JRuby
       def initialize(array)
         @status, @headers, @body = *array
       end
-      
+
+      # Return the response status.
+      # @return [Integer]
+      # @see #Java::OrgJrubyRack::RackResponse#getStatus
       def getStatus
         @status
       end
 
+      # Return the headers hash.
+      # @return [Hash]
+      # @see #Java::OrgJrubyRack::RackResponse#getHeaders
       def getHeaders
         @headers
       end
 
+      # Return the response body.
+      # @return [String]
+      # @see #Java::OrgJrubyRack::RackResponse#getBody
       def getBody
         body = ""
         @body.each { |part| body << part }
@@ -74,6 +83,9 @@ module JRuby
         @body.close if @body.respond_to?(:close)
       end
 
+      # Respond this response with the given (Servlet) response environment.
+      # @param [Java::OrgJrubyRack::RackResponseEnvironment]
+      # @see #Java::OrgJrubyRack::RackResponse#respond
       def respond(response)
         unless response.committed?
           write_status(response)
@@ -82,12 +94,16 @@ module JRuby
         end
       end
       
+      # Writes the response status.
+      # @see #respond
       def write_status(response)
         response.setStatus(@status.to_i)
       end
 
       TRANSFER_ENCODING = 'Transfer-Encoding'.freeze # :nodoc
-      
+
+      # Writes the response headers.
+      # @see #respond
       def write_headers(response)
         for key, value in @headers
           case key
@@ -122,6 +138,8 @@ module JRuby
         end
       end
 
+      # Writes the response body.
+      # @see #respond
       def write_body(response)
         output_stream = response.getOutputStream; body = nil
         begin
@@ -167,18 +185,22 @@ module JRuby
 
       protected
       
-      # returns true if a chunked encoding is detected
+      # @return [true, false] whether a chunked encoding is detected
       def chunked?
         return @chunked unless @chunked.nil?
         @chunked = !! ( @headers && @headers[TRANSFER_ENCODING] == 'chunked' )
       end
       
-      # returns true if output (body) should be flushed after each written line
+      # @return [true, false] whether output (body) should be flushed after each
+      # written (yielded) line
+      # @see #chunked?
       def flush?
         chunked? || ! ( @headers && @headers['Content-Length'] )
       end
       
-      # this should be true whenever the response should be de-chunked
+      # Whether de-chunking (a chunked Rack response) should be performed.
+      # @see JRuby::Rack::Response#dechunk?
+      # @see #chunked?
       def dechunk?
         self.class.dechunk? && chunked?
       end

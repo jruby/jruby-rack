@@ -10,18 +10,39 @@ package org.jruby.rack;
 import java.io.IOException;
 
 /**
- *
+ * Rack response environment interface that is likely to be only implemented 
+ * as a servlet response.
+ * 
+ * @see javax.servlet.ServletResponse
+ * @see RackResponse
+ * 
  * @author nicksieger
  */
 public interface RackResponseEnvironment {
+    
+    /**
+     * @see RackResponse#respond(RackResponseEnvironment)
+     * @param response
+     * @throws IOException 
+     */
     void defaultRespond(RackResponse response) throws IOException;
 
-    /** Return true if the response has been committed to the socket yet. */
+    /**
+     * @return whether the underlying (servlet) response has been committed.
+     */
     boolean isCommitted();
 
-    /** Reset the response buffer so we can begin a new response. */
+    /**
+     * Reset the response buffer so we can begin a new response.
+     */
     void reset();
 
-    /** Tell the server to send a simple error page response. */
+    /**
+     * Tell the server to send a simple error page response (based on the 
+     * status code).
+     * @param code the (HTTP) status code
+     * @throws IOException 
+     */
     void sendError(int code) throws IOException;
+    
 }
