@@ -411,6 +411,37 @@ describe JRuby::Rack::Response do
       @response.write_body(@servlet_response)
       stream.to_s.should == "hello"
     end
+
+    it "sends a file when file (body) response detected" do
+      path = File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
+      
+      response = JRuby::Rack::Response.new [ 200, {}, FileBody.new(path) ]
+      response.should_receive(:send_file).with do |path, response|
+        expect( path ).to eql path
+        expect( response).to be @servlet_response
+      end
+      response.write_body(@servlet_response)
+    end
+    
+    # Similar to {ActionController::DataStreaming::FileBody}
+    class FileBody #:nodoc:
+      
+      attr_reader :to_path
+
+      def initialize(path)
+        @to_path = path
+      end
+
+      # Stream the file's contents if Rack::Sendfile isn't present.
+      def each
+        File.open(to_path, 'rb') do |file|
+          while chunk = file.read(16384)
+            yield chunk
+          end
+        end
+      end
+      
+    end
     
     private
     

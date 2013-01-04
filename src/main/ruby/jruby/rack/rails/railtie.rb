@@ -53,9 +53,10 @@ module JRuby::Rack
     end
 
     initializer "set_relative_url_root", :after => "action_controller.set_configs" do |app|
-      if ENV['RAILS_RELATIVE_URL_ROOT'] && ActionController::Base.respond_to?(:relative_url_root=)
-        app.config.action_controller.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT']
-        ActionController::Base.config.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT']
+      relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT']
+      if relative_url_root && ActionController::Base.respond_to?(:relative_url_root=)
+        app.config.action_controller.relative_url_root = relative_url_root
+        ActionController::Base.config.relative_url_root = relative_url_root
       end
     end
 

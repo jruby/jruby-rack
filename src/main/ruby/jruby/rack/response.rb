@@ -141,27 +141,30 @@ module JRuby
       # Writes the response body.
       # @see #respond
       def write_body(response)
-        output_stream = response.getOutputStream; body = nil
+        body = nil
         begin
           if @body.respond_to?(:call) && ! @body.respond_to?(:each)
-            @body.call(output_stream)
+            @body.call response.getOutputStream
+          elsif @body.respond_to?(:to_path) # send_file
+            send_file @body.to_path, response
           elsif @body.respond_to?(:to_channel) && 
               ! object_polluted_with_anyio?(@body, :to_channel)
             body = @body.to_channel # so that we close the channel
-            transfer_channel(body, output_stream)
+            transfer_channel body, response.getOutputStream
           elsif @body.respond_to?(:to_inputstream) && 
               ! object_polluted_with_anyio?(@body, :to_inputstream)
             body = @body.to_inputstream # so that we close the stream
-            transfer_channel(Channels.newChannel(body), output_stream)
+            transfer_channel Channels.newChannel(body), response.getOutputStream
           elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel) && 
               ! object_polluted_with_anyio?(@body.body_parts, :to_channel)
             # ActionDispatch::Response "raw" body access in case it's a File
             body = @body.body_parts.to_channel # so that we close the channel
-            transfer_channel(body, output_stream)
+            transfer_channel body, response.getOutputStream
           else
             if dechunk?
-              write_body_dechunked(output_stream)  
+              write_body_dechunked response.getOutputStream
             else
+              output_stream = response.getOutputStream
               # 1.8 has a String#each method but 1.9 does not :
               method = @body.respond_to?(:each_line) ? :each_line : :each
               @body.send(method) do |line|
@@ -170,7 +173,7 @@ module JRuby
               end
             end
           end
-        rescue LocalJumpError => e
+        rescue LocalJumpError
           # HACK: deal with objects that don't comply with Rack specification
           @body = [ @body.to_s ]
           retry
@@ -203,6 +206,25 @@ module JRuby
       # @see #chunked?
       def dechunk?
         self.class.dechunk? && chunked?
+      end
+      
+      # Sends a file when a Rails/Rack file response (`body.to_path`) is detected.
+      # This allows for potential application server overrides when file streaming.
+      # By default JRuby-Rack will stream the file using a (native) file channel.
+      # 
+      # @param path the file path
+      # @param response the response environment
+      # 
+      # @note That this is not related to `Rack::Sendfile` support, since if you
+      # have configured *sendfile.type* (e.g. to Apache's "X-Sendfile") this part
+      # would not have been executing at all.
+      def send_file(path, response)
+        input = java.io.FileInputStream.new(path.to_s)
+        begin
+          transfer_channel input.getChannel, response.getOutputStream
+        ensure
+          input.close rescue nil
+        end
       end
       
       private
