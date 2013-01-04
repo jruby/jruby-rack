@@ -26,12 +26,13 @@ module Rack
         end
         
         protected
-
+        
         def load_env_key(env, key)
+          return unless @servlet_env
           if key == QUERY_STRING || key == FORM_INPUT
-            load_parameters; @env[key]
+            load_parameters; @env.fetch(key, nil)
           elsif key == COOKIE_STRING
-            load_cookies; @env[key]
+            load_cookies;@env.fetch(key, nil)
           else
             super
           end
@@ -79,7 +80,7 @@ module Rack
           @env[ QUERY_HASH ] = query_hash
           # Rack::Request#POST
           # TODO should recreate the input e.g. multipart/form-data ...
-          @env[ FORM_INPUT ] = @env["rack.input"]
+          @env[ FORM_INPUT ] = @env['rack.input']
           @env[ FORM_HASH ] = form_hash
         end
         
@@ -118,7 +119,7 @@ module Rack
             end
           end
           # Rack::Request#cookies
-          @env[ COOKIE_STRING ] = ( @env["HTTP_COOKIE"] ||= '' )
+          @env[ COOKIE_STRING ] = ( @env['HTTP_COOKIE'] ||= '' )
           @env[ COOKIE_HASH ] = cookie_hash
         end
         

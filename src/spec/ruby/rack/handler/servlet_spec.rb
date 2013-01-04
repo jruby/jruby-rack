@@ -604,11 +604,70 @@ describe Rack::Handler::Servlet do
     
   end
   
-  describe 'env (default)' do
+  shared_examples "hash-instance" do
+    
+    before do
+      @servlet_request ||= servlet_request
+      @servlet_response ||= servlet_response
+      @servlet_env ||= org.jruby.rack.servlet.ServletRackEnvironment.new(
+        @servlet_request, @servlet_response, @rack_context
+      )
+    end
+    
+    it "creates a new Hash" do
+      hash = new_hash
+      expect( hash ).to be_a Hash
+    end
+
+    it "a new Hash is empty" do
+      hash = new_hash
+      expect( hash ).to be_empty
+    end
+    
+    it "allows filling a new Hash" do
+      hash = new_hash
+      hash['some'] = 'SOME'
+      expect( hash['some'] ).to eql 'SOME'
+    end
+
+    it "allows iterating over a new Hash" do
+      hash = new_hash
+      hash['some'] = 'SOME'
+      hash['more'] =[ 'MORE' ]
+      expect( hash.keys.size ).to be 2
+      expect( hash.values.size ).to be 2
+      hash.each do |key, val|
+        case key
+        when 'some' then expect( val ).to eql 'SOME'
+        when 'more' then expect( val ).to eql [ 'MORE' ]
+        else fail("unexpected #{key.inspect} = #{val.inspect}")
+        end
+      end
+    end
+    
+    it "sets all keys from the env Hash" do
+      env = servlet.create_env(@servlet_env)
+      hash = env.class.new
+      env.keys.each { |k| hash[k] = env[k] if env.has_key?(k) }
+      expect( hash.size ).to eql env.size
+    end
+    
+    private
+    
+    def new_hash
+      hash = servlet.create_env(@servlet_env)
+      hash.class.new
+    end
+    
+  end
+  
+  describe '(default) env' do
     
     it_behaves_like "env"
     
     it_behaves_like "(eager)rack-env"
+    
+    it_behaves_like "hash-instance"
     
   end
 
@@ -784,6 +843,8 @@ describe Rack::Handler::Servlet do
     it_behaves_like "env"
  
     it_behaves_like "(eager)rack-env"
+    
+    it_behaves_like "hash-instance"
     
     let(:servlet_request) { org.jruby.rack.mock.MockHttpServletRequest.new }
     let(:servlet_response) { org.jruby.rack.mock.MockHttpServletResponse.new }

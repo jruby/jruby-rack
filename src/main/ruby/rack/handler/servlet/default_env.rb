@@ -39,6 +39,7 @@ module Rack
         # However keep in mind that some Rack middleware or extension might
         # dislike a lazy env since it does not reflect env.keys "correctly".
         def self.create(servlet_env)
+          raise ArgumentError, "nil servlet_env" if servlet_env.nil?
           self.new(servlet_env).populate
         end
         
@@ -47,19 +48,20 @@ module Rack
         # The returned instance is lazy as much as possible (the env hash 
         # returned from #to_hash will be filled on demand), one can use 
         # #populate to fill in the env keys eagerly.
-        def initialize(servlet_env)
+        def initialize(servlet_env = nil)
           super()
-          if ( @servlet_env = servlet_env ) == nil
-            raise ArgumentError, "nil servlet_env"
+          # NOTE: due AS Hash extensions we shall support `self.class.new`
+          # happens e.g. during `env.slice(*keys)` in rescue .erb template
+          unless servlet_env.nil?
+            @servlet_env = servlet_env; @env = self
+            # always pre-load since they might override variables
+            load_attributes
           end
-          @env = self
-          # always pre-load since they might override variables
-          load_attributes
         end
         
         def populate
           unless @populated
-            populate!
+            populate! if @servlet_env
             @populated = true
           end
           self
@@ -142,6 +144,7 @@ module Rack
         end
 
         def load_env_key(env, key)
+          return unless @servlet_env
           if key[0, 5] == 'HTTP_'
             load_header(env, key)
           elsif key =~ /^(rack|java|jruby)/
