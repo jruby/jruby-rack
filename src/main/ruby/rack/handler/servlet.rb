@@ -19,7 +19,7 @@ module Rack
       end
 
       def call(servlet_env)
-        JRuby::Rack::Response.new(@app.call(create_env(servlet_env)))
+        self.class.response.new(@app.call(create_env(servlet_env)))
       end
 
       def create_env(servlet_env)
@@ -32,10 +32,7 @@ module Rack
       end
       
       @@env = nil
-      
-      def self.env
-        @@env ||= DefaultEnv
-      end
+      def self.env; @@env ||= DefaultEnv; end
       
       def self.env=(klass)
         if klass && ! klass.is_a?(Module)
@@ -57,6 +54,16 @@ module Rack
       
       autoload :DefaultEnv, "rack/handler/servlet/default_env"
       autoload :ServletEnv, "rack/handler/servlet/servlet_env"
+      
+      @@response = nil
+      def self.response; @@response ||= JRuby::Rack::Response; end
+      
+      def self.response=(klass)
+        if klass && ! klass.is_a?(Module)
+          klass = JRuby::Rack::Helpers.resolve_constant(klass, JRuby::Rack)
+        end
+        @@response = klass
+      end
       
     end
     # #deprecated backwards compatibility

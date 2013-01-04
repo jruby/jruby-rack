@@ -750,7 +750,27 @@ describe Rack::Handler::Servlet do
     end
     
   end
+  
+  describe 'response' do
 
+    before do
+      Rack::Handler::Servlet.response = 'Rack::Handler::CustomResponse'
+    end
+    
+    after do
+      Rack::Handler::Servlet.response = nil
+    end
+    
+    it "uses custom response class" do
+      servlet.should_receive(:create_env).and_return({})
+      app.should_receive(:call)
+      
+      servlet_env = mock("servlet request")
+      expect( servlet.call(servlet_env) ).to be_a Rack::Handler::CustomResponse
+    end
+    
+  end
+  
   describe 'servlet-env' do
 
     before do

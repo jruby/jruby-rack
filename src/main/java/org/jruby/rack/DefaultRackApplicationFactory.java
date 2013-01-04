@@ -333,6 +333,21 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         );
         // load our (servlet) Rack handler :
         runtime.evalScriptlet("require 'rack/handler/servlet'");
+        
+        // NOTE: this is experimental stuff and might change in the future :
+        String env = rackContext.getConfig().getProperty("jruby.rack.handler.env");
+        // currently supported "env" values are 'default' and 'servlet'
+        if ( env != null ) {
+            runtime.evalScriptlet("Rack::Handler::Servlet.env = '" + env + "'");
+        }
+        String response = rackContext.getConfig().getProperty("jruby.rack.handler.response");
+        if ( response == null ) {
+            response = rackContext.getConfig().getProperty("jruby.rack.response");
+        }
+        if ( response != null ) { // JRuby::Rack::JettyResponse -> 'jruby/rack/jetty_response'
+            runtime.evalScriptlet("Rack::Handler::Servlet.response = '" + response + "'");
+        }
+        
         // configure (Ruby) bits and pieces :
         String dechunk = rackContext.getConfig().getProperty("jruby.rack.response.dechunk");
         Boolean dechunkFlag = (Boolean) DefaultRackConfig.toStrictBoolean(dechunk, null);
@@ -342,12 +357,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         else { // dechunk null (default) or not a true/false value ... we're patch :
             runtime.evalScriptlet("JRuby::Rack::Booter.on_boot { require 'jruby/rack/chunked' }");
             // `require 'jruby/rack/chunked'` that happens after Rack is loaded
-        }
-        // NOTE: this is experimental stuff and might change in the future :
-        String env = rackContext.getConfig().getProperty("jruby.rack.handler.env");
-        // currently supported "env" values are 'default' and 'servlet'
-        if ( env != null ) {
-            runtime.evalScriptlet("Rack::Handler::Servlet.env = '" + env + "'");
         }
     }
 
