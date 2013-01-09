@@ -45,21 +45,21 @@ module JRuby::Rack
         if backtrace
           require 'jruby'
           if JRuby.runtime.instance_config.respond_to?(:trace_type)
-            full_trace = get_backtrace
+            trace_type = JRuby.runtime.instance_config.trace_type # getTraceType
+            begin
+              if JRUBY_VERSION < '1.7'
+                full_trace = trace_type.print_backtrace(self)
+              else
+                full_trace = trace_type.print_backtrace(self, false)
+              end
+            rescue => e
+              warn "failed to print backtrace due: #{e}" rescue nil
+              full_trace = backtrace.join("\n")
+            end
           else
             full_trace = backtrace.join("\n")
           end
           output.puts("\n--- Backtrace", full_trace)
-        end
-      end
-
-      private
-
-      def get_backtrace
-        if JRUBY_VERSION =~ /1\.6/
-          JRuby.runtime.instance_config.trace_type.print_backtrace(self)
-        else
-          JRuby.runtime.instance_config.trace_type.print_backtrace(self, false)
         end
       end
     end
