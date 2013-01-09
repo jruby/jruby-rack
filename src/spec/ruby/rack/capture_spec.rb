@@ -16,11 +16,22 @@ describe JRuby::Rack::Capture do
     @servlet_context.stub!(:init_parameter_names).and_return []
   end
 
-  it "should capture environment information" do
+  it "captures environment information" do
     @servlet_context.should_receive(:log)
     error = StandardError.new
     error.capture
     error.store
+    expect( error.output ).to be_a StringIO
+  end
+
+  it "captures exception backtrace" do
+    begin
+      raise ZeroDivisionError.new
+    rescue ZeroDivisionError => e
+      e.capture
+      expect( e.output.string ).to match /--- Backtrace/
+      expect( e.output.string ).to match /ZeroDivisionError/
+    end
   end
   
 end
