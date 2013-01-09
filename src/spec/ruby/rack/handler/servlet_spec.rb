@@ -317,12 +317,12 @@ describe Rack::Handler::Servlet do
 
     it "exposes the servlet request" do
       env = servlet.create_env @servlet_env
-      env['java.servlet_request'].should == @servlet_request
+      expect( env['java.servlet_request'] ).to be @servlet_request
     end
 
     it "exposes the servlet response" do
       env = servlet.create_env @servlet_env
-      env['java.servlet_response'].should == @servlet_response
+      expect( env['java.servlet_response'] ).to be @servlet_response
     end
 
     it "exposes the servlet context" do
@@ -340,7 +340,7 @@ describe Rack::Handler::Servlet do
 
     it "exposes the rack context" do
       env = servlet.create_env @servlet_env
-      env['jruby.rack.context'].should == @rack_context
+      expect( env['jruby.rack.context'] ).to be @rack_context
     end
     
   end
@@ -781,12 +781,12 @@ describe Rack::Handler::Servlet do
     
     it "returns the servlet request when queried with java.servlet_request" do
       env = servlet.create_env @servlet_env
-      env['java.servlet_request'].should == @servlet_request
+      expect( env['java.servlet_request'] ).to be @servlet_request
     end
     
     it "returns the servlet response when queried with java.servlet_response" do
       env = servlet.create_env @servlet_env
-      env['java.servlet_response'].should == @servlet_response
+      expect( env['java.servlet_response'] ).to be @servlet_response
     end
     
   end
