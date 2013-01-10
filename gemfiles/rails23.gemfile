@@ -7,5 +7,5 @@ gem "appraisal"
 gem "rake", :group=>:test
 gem "rspec", "~> 2.11", :group=>:test
 gem "jruby-openssl", :group=>:test
-gem "rails", "~> 2.3.14"
+gem "rails", "~> 2.3.15"
 

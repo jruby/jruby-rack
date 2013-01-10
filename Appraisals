@@ -1,17 +1,17 @@
 appraise "rails23" do
-  gem "rails", "~> 2.3.14"
+  gem "rails", "~> 2.3.15"
 end
 
 appraise "rails30" do
-  gem "rails", "~> 3.0.18"
+  gem "rails", "~> 3.0.19"
 end
 
 appraise "rails31" do
-  gem "rails", "~> 3.1.9"
+  gem "rails", "~> 3.1.10"
 end
 
 appraise "rails32" do
-  gem "rails", "~> 3.2.10"
+  gem "rails", "~> 3.2.11"
 end
 
 appraise "rails40" do
