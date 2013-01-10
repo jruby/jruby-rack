@@ -322,7 +322,11 @@ describe "integration" do
   
   describe 'rails 2.3', :lib => :rails23 do
 
-    before(:all) { copy_gemfile("rails23") }
+    before(:all) do
+      copy_gemfile('rails23')
+      path = File.join(STUB_DIR, 'rails23/WEB-INF/init.rb') # hard-coded RAILS_GEM_VERSION
+      File.open(path, 'w') { |f| f << "RAILS_GEM_VERSION = '#{Rails::VERSION::STRING}'\n" }
+    end
 
     let(:base_path) { "file://#{STUB_DIR}/rails23" }
 
@@ -385,6 +389,7 @@ describe "integration" do
       servlet_context = new_servlet_context(base)
     end
     listener = org.jruby.rack.rails.RailsServletContextListener.new
+    yield(servlet_context, listener) if block_given?
     listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
     @rack_context = servlet_context.getAttribute("rack.context")
     @rack_factory = servlet_context.getAttribute("rack.factory")
