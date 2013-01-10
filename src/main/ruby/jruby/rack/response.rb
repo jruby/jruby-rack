@@ -154,7 +154,8 @@ module JRuby
           elsif @body.respond_to?(:to_inputstream) && 
               ! object_polluted_with_anyio?(@body, :to_inputstream)
             body = @body.to_inputstream # so that we close the stream
-            transfer_channel Channels.newChannel(body), response.getOutputStream
+            body = Channels.newChannel(body) # closing the channel closes the stream
+            transfer_channel body, response.getOutputStream
           elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel) && 
               ! object_polluted_with_anyio?(@body.body_parts, :to_channel)
             # ActionDispatch::Response "raw" body access in case it's a File
@@ -220,9 +221,11 @@ module JRuby
       # would not have been executing at all.
       def send_file(path, response)
         input = java.io.FileInputStream.new(path.to_s)
+        channel = input.getChannel
         begin
-          transfer_channel input.getChannel, response.getOutputStream
+          transfer_channel channel, response.getOutputStream
         ensure
+          channel.close
           input.close rescue nil
         end
       end

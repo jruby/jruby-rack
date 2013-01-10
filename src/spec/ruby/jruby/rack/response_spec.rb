@@ -350,24 +350,24 @@ describe JRuby::Rack::Response do
       body = wrap_file_body path = 
         File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
       
-      response = JRuby::Rack::Response.new [ 200, body.headers, body ]
       stream = self.stream
+      response = JRuby::Rack::Response.new [ 200, body.headers, body ]
       response.should_receive(:transfer_channel).with do |ch, s|
-        s.should == stream 
-        ch.should be_a java.nio.channels.FileChannel
-        ch.size.should == File.size(path)
+        expect( s ).to be stream
+        expect( ch ).to be_a java.nio.channels.FileChannel
+        expect( ch.size ).to eql File.size(path)
       end
 
       response.write_body(@servlet_response)
     end
 
-    it "closes original body and during write_body", 
-      :lib => [ :rails30, :rails31, :rails32 ] do
+    it "closes original body during write_body", :lib => [ :rails30, :rails31, :rails32 ] do
       body = wrap_file_body File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
       
-      response = JRuby::Rack::Response.new [ 200, body.headers, body ]
       stream = self.stream
+      response = JRuby::Rack::Response.new [ 200, body.headers, body ]
       response.should_receive(:transfer_channel).with do |ch, s|
+        expect( s ).to be stream
         ch.should_receive(:close)
       end
 
