@@ -1,3 +1,19 @@
+== 1.1.13 (13/01/13)
+
+ - make sure (body) Java channel is always closed on Response#write_body
+ - deal with capture backtrace incompatibility on JRuby 1.7 (#139)
+ - bundle (latest) rack 1.4.2
+ - make sure out custom (env) Hash sub-classes behave more Hash-y (#134)
+ - support for setting a custom JRuby-Rack Response class (e.g. due #send_file)
+ - explicit support for sending file bodies with the possibility to re-define 
+   #send_file per app-server
+ - make sure we still maintain 2.3 compatibility (fix for #138)
+ - fix send_file not being able to handle large > 2GB files (#133)
+ - review chunked support - changed default behavior into patching Rack::Chunked
+   the old behavior still works by setting jruby.rack.response.chunked = true
+ - handle empty (null) strings when parsing (Ruby) magic comments e.g. config.ru
+ - versioning review - make sure versions are always "valid" even for SNAPSHOTs 
+
 == 1.1.12 (28/11/12)
 
  - make (Default)Env to be the environment Hash instance itself since we need 
