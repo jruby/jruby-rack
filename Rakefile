@@ -131,20 +131,6 @@ GEM_VERSION =
   
 JAR_VERSION = GEM_VERSION.sub(/\.(\D+\w*)/, '-\1') # 1.1.1.SNAPSHOT -> 1.1.1-SNAPSHOT
 
-file "target/jruby-rack-#{JAR_VERSION}.jar" => :compile do |t|
-  sh "jar cf #{t.name} -C target/classes ." # TODO `mvn package` instead ?
-end
-
-desc "Create the jruby-rack-#{JAR_VERSION}.jar"
-task :jar => (target_jar = "target/jruby-rack-#{JAR_VERSION}.jar")
-
-task :default => :jar
-
-task :debug do
-  ENV['DEBUG'] = 'true'
-  Rake::Task['jar'].invoke
-end
-
 desc "Print the (Maven) class-path"
 task :classpath => 'target/classpath.rb' do
   require './target/classpath'
@@ -153,7 +139,7 @@ task :classpath => 'target/classpath.rb' do
   puts *classpath
 end
 
-file 'target/gem/lib/jruby-rack.rb' do |t|
+file (target_jruby_rack = 'target/gem/lib/jruby-rack.rb') do |t|
   mkdir_p File.dirname(t.name)
   File.open(t.name, "wb") do |f|
     f << %Q{
@@ -167,15 +153,30 @@ require 'jruby/rack/version' # @deprecated to be removed in 1.2
 }
   end
 end
-GENERATED << 'target/gem/lib/jruby-rack.rb'
+GENERATED << target_jruby_rack
 
-file "target/gem/lib/jruby/rack/version.rb" => "src/main/ruby/jruby/rack/version.rb" do |t|
+file (target_jar = "target/jruby-rack-#{JAR_VERSION}.jar") => [:compile, :resources] do |t|
+  sh "jar cf #{t.name} -C target/classes ." # TODO `mvn package` instead ?
+end
+
+desc "Create the jruby-rack-#{JAR_VERSION}.jar"
+task :jar => target_jar
+
+task :default => :jar
+
+task :debug do
+  ENV['DEBUG'] = 'true'
+  Rake::Task['jar'].invoke
+end
+
+file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") => 
+  "src/main/ruby/jruby/rack/version.rb" do |t|
   mkdir_p File.dirname(t.name)
   cp t.prerequisites.first, t.name
 end
 
 desc "Build the jruby-rack-#{GEM_VERSION}.gem"
-task :gem => [target_jar, "target/gem/lib/jruby-rack.rb", "target/gem/lib/jruby/rack/version.rb"] do |t|
+task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do |t|
   Rake::Task['spec'].invoke
   cp FileList["History.txt", "LICENSE.txt", "README.md"], "target/gem"
   cp t.prerequisites.first, "target/gem/lib"
