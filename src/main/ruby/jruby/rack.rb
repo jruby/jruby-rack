@@ -73,6 +73,8 @@ module JRuby
   end
 end
 
+# TODO remove require 'jruby/rack/version' from jruby-rack in 1.2
+require 'jruby/rack/version' unless defined? JRuby::Rack::VERSION
 require 'jruby/rack/helpers'
 require 'jruby/rack/servlet_log'
 require 'jruby/rack/booter'
