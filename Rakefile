@@ -164,11 +164,6 @@ task :jar => target_jar
 
 task :default => :jar
 
-task :debug do
-  ENV['DEBUG'] = 'true'
-  Rake::Task['jar'].invoke
-end
-
 file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") => 
   "src/main/ruby/jruby/rack/version.rb" do |t|
   mkdir_p File.dirname(t.name)
@@ -235,11 +230,12 @@ task :release_checks do
 end
 
 desc "Release the gem to rubygems and jar to repository.codehaus.org"
-task :release => [:release_checks, :clean, :gem] do
+task :release => [:release_checks, :clean] do
   sh "git tag #{GEM_VERSION}"
   sh "mvn deploy -DupdateReleaseInfo=true"
+  sh "rake gem SKIP_SPECS=true" # already run specs with mvn
   sh "gem push target/jruby-rack-#{GEM_VERSION}.gem"
-  sh "git push --tags #{ENV['GIT_REMOTE'] || 'origin'} master"
+  sh "git push --tags #{ENV['GIT_REMOTE'] || 'origin'} `git rev-parse --abbrev-ref HEAD`" # master
   puts "released JRuby-Rack #{GEM_VERSION} update next SNAPSHOT version using `rake update_version`"
 end
 
