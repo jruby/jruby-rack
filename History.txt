@@ -1,3 +1,7 @@
+== 1.1.13.1 (14/01/13)
+
+ - fix missing explicit require 'jruby/rack/version' in 1.1.13
+
 == 1.1.13 (13/01/13)
 
  - make sure (body) Java channel is always closed on Response#write_body
