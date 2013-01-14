@@ -163,6 +163,7 @@ module JRubyJars
   end
   require jruby_rack_jar_path if defined?(JRUBY_VERSION)
 end
+require 'jruby/rack/version' # @deprecated to be removed in 1.2
 }
   end
 end
