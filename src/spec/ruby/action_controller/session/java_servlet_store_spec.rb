@@ -67,9 +67,13 @@ describe "ActionController::Session::JavaServletStore" do
       env['rack.session']['foo']
     end
     @session_store.call(@env)
-    @env['rack.session'].should_not be_nil
-    @env['rack.session.options'].should_not be_nil
-    @env['rack.session.options'][:id].should_not be_nil
+    @env['rack.session'].should_not be nil
+    @env['rack.session.options'].should_not be nil
+    if defined? ::Rack::Session::Abstract::OptionsHash
+      @env['rack.session.options'][:id].should_not be nil
+    else
+      @env['rack.session'].id.should_not be nil
+    end
   end
 
   it "should report session loaded when accessed" do
@@ -196,14 +200,16 @@ describe "ActionController::Session::JavaServletStore" do
     @session_store.call(@env)
   end
 
-  it "should remove keys that are not present at the end of the request" do
+  it "should remove keys that are not present at the end of the request 007" do
     @request.stub!(:getSession).and_return @session
-    @session.should_receive(:getAttributeNames).and_return ["foo", "bar"]
+    @session.stub!(:getAttributeNames).and_return ["foo", "bar", "baz"]
     @session.stub!(:setAttribute); @session.stub!(:getCreationTime).and_return 1
     @session.should_receive(:removeAttribute).with("foo")
-    @session.should_receive(:removeAttribute).with("bar")
+    @session.should_receive(:removeAttribute).with("baz")
     @app.should_receive(:call).and_return do |env|
-      env['rack.session'] = {}
+      env['rack.session'].delete('foo')
+      env['rack.session']['baz'] = nil
+      env['rack.session']['bar'] = 'x'
     end
     @session_store.call(@env)
   end
@@ -214,7 +220,8 @@ describe "ActionController::Session::JavaServletStore" do
     @session.should_receive(:invalidate).ordered
     @app.should_receive(:call).and_return do |env|
       env['rack.session.options'].delete(:id)
-      env['rack.session'] = {}
+      #env['rack.session'] = new_session_hash(env)
+      env['rack.session'].send :load!
     end
     @session_store.call(@env)
   end
@@ -225,7 +232,7 @@ describe "ActionController::Session::JavaServletStore" do
     
     @app.should_receive(:call).and_return do |env|
       env['rack.session.options'].delete(:id)
-      env['rack.session'] = {}
+      env['rack.session'].send :load!
     end
     expect( lambda { @session_store.call(@env) } ).to_not raise_error
   end
@@ -249,7 +256,7 @@ describe "ActionController::Session::JavaServletStore" do
     @request.should_receive(:getSession).with(false).any_number_of_times.and_return nil
     @app.should_receive(:call).and_return do |env|
       env['rack.session.options'].delete(:id)
-      env['rack.session'] = {}
+      env['rack.session'] = new_session_hash(env) # not loaded?
     end
     @session_store.call(@env)
   end
@@ -304,6 +311,15 @@ describe "ActionController::Session::JavaServletStore" do
     session = Java::OrgJrubyRackMock::MockHttpSession.new
     session.send(:setId, id) if id != false
     session
+  end
+  
+  def new_session_hash(*args)
+    if args.size > 1
+      store = args[0]; env = args[1];
+    else
+      store = @session_store; env = args[0];
+    end
+    ::JRuby::Rack::Session::SessionHash.new(store, env)
   end
   
 end
