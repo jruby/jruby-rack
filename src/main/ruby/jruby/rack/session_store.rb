@@ -16,7 +16,8 @@ module JRuby::Rack
       # rather than the custom rails AbstractStore::SessionHash class
       class SessionHash < ::Rack::Session::Abstract::SessionHash; end
       
-      OptionsHash = ::Rack::Session::Abstract::OptionsHash
+      # 1.5.0 removed SessionHash http://github.com/rack/rack/commit/83a270d64820
+      OptionsHash = ::Rack::Session::Abstract::OptionsHash rescue nil
 
     elsif defined?(ActionDispatch::Session::AbstractStore) # Rails 3.0
       
@@ -37,14 +38,19 @@ module JRuby::Rack
     class SessionHash
       
       # Allows direct delegation to servlet session methods when session is active
-      def method_missing(meth, *args, &block)
-        servlet_session = @by.get_servlet_session(@env)
-        if servlet_session && servlet_session.respond_to?(meth)
-          servlet_session.send(meth, *args, &block)
+      def method_missing(method, *args, &block)
+        servlet_session = store.get_servlet_session(@env)
+        if servlet_session && servlet_session.respond_to?(method)
+          servlet_session.send(method, *args, &block)
         else
           super
         end
-      end      
+      end
+      
+      private
+      def store
+        @store ||= defined?(@store) ? @store : @by # Rack 1.5 renamed @by
+      end
       
     end
     
@@ -93,6 +99,8 @@ module JRuby::Rack
 
       private # Rack::Session::Abstract::ID overrides :
 
+        def session_class; ::JRuby::Rack::Session::SessionHash; end # Rack 1.5
+      
         def initialize_sid
           nil # dummy method - not usable with servlet API
         end
@@ -102,10 +110,14 @@ module JRuby::Rack
         end
 
         def prepare_session(env) # exist since Rack 1.3
-          existing = env[ENV_SESSION_KEY]
-          env[ENV_SESSION_KEY] = JRuby::Rack::Session::SessionHash.new(self, env)
-          env[ENV_SESSION_KEY].merge! existing if existing
-          env[ENV_SESSION_OPTIONS_KEY] = JRuby::Rack::Session::OptionsHash.new(self, env, @default_options)
+          session_was = env[ENV_SESSION_KEY]
+          env[ENV_SESSION_KEY] = session_class.new(self, env)
+          if options_hash = ::JRuby::Rack::Session::OptionsHash
+            env[ENV_SESSION_OPTIONS_KEY] = options_hash.new(self, env, @default_options)
+          else
+            env[ENV_SESSION_OPTIONS_KEY] = @default_options.dup
+          end
+          env[ENV_SESSION_KEY].merge! session_was if session_was
         end
 
         def load_session(env, session_id = nil) # session_id arg for get_session alias
@@ -138,11 +150,11 @@ module JRuby::Rack
           servlet_session = get_servlet_session(env)
           servlet_session.getId rescue nil if servlet_session
         end
-
+        
         def current_session_id(env)
-          env[ENV_SESSION_OPTIONS_KEY][:id]
-        end
-
+          env[ENV_SESSION_OPTIONS_KEY][:id] # 1.5.0: env[ENV_SESSION_KEY].id
+        end if ::JRuby::Rack::Session::OptionsHash
+        
         def session_exists?(env)
           value = current_session_id(env)
           value && ! value.empty?
@@ -150,13 +162,13 @@ module JRuby::Rack
         alias :exists? :session_exists? # for AbstractStore::SessionHash compatibility
         
         def loaded_session?(session)
-          ! session.is_a?(JRuby::Rack::Session::SessionHash) || session.loaded?
+          ! session.is_a?(::JRuby::Rack::Session::SessionHash) || session.loaded?
         end
         
         def commit_session(env, status, headers, body)
           session = env[ENV_SESSION_KEY]
           options = env[ENV_SESSION_OPTIONS_KEY]
-
+          
           if options[:drop] || options[:renew]
             destroy_session(env, options[:id], options)
           end
@@ -164,7 +176,9 @@ module JRuby::Rack
           return [status, headers, body] if options[:drop] || options[:skip]
           
           if loaded_session?(session)
-            unless set_session(env, options[:id], session.to_hash, options)
+            session_id = session.respond_to?(:id=) ? session.id : options[:id]
+            session_data = session.to_hash.delete_if { |_,v| v.nil? }
+            unless set_session(env, session_id, session_data, options)
               env["rack.errors"].puts("WARNING #{self.class.name} failed to save session. Content dropped.")
             end
           end
@@ -224,7 +238,7 @@ module JRuby::Rack
           nil
         end
         alias :destroy :destroy_session # for AbstractStore::SessionHash compatibility
-
+        
     end
 
   end
