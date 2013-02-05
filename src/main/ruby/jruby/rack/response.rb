@@ -105,7 +105,7 @@ module JRuby
       # Writes the response headers.
       # @see #respond
       def write_headers(response)
-        for key, value in @headers
+        @headers.each do |key, value|
           case key
           when /^Content-Type$/i
             response.setContentType(value.to_s)
