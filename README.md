@@ -30,7 +30,7 @@ with sensible defaults, without the need to configure a deployment descriptor.
 ### Rails
 
 Here's sample *web.xml* configuration for Rails. Note the environment and 
-min/max runtime parameters. For **multi-threaded** (a.k.a. `thread-safe!`) 
+min/max runtime parameters. For **multi-threaded** (a.k.a. `threadsafe!`) 
 Rails with a single runtime, set min/max both to 1. Otherwise, define the size 
 of the runtime pool as you wish.
 
