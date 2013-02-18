@@ -10,6 +10,6 @@ gem "jruby-openssl", :group=>:test
 gem "rails", :github=>"rails/rails"
 gem "journey", :github=>"rails/journey"
 gem "activerecord-deprecated_finders", :require=>nil, :github=>"rails/activerecord-deprecated_finders"
-gem "activerecord-jdbc-adapter", :github=>"kares/activerecord-jdbc-adapter", :branch=>"rails-4.0"
-gem "activerecord-jdbcsqlite3-adapter"
+gem "activerecord-jdbc-adapter", :github=>"jruby/activerecord-jdbc-adapter"
+gem "activerecord-jdbcsqlite3-adapter", :github=>"jruby/activerecord-jdbc-adapter"
 

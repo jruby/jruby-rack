@@ -1,5 +1,5 @@
 appraise "rails23" do
-  gem "rails", "~> 2.3.16"
+  gem "rails", "~> 2.3.17"
 end
 
 appraise "rails30" do
@@ -7,11 +7,11 @@ appraise "rails30" do
 end
 
 appraise "rails31" do
-  gem "rails", "~> 3.1.10"
+  gem "rails", "~> 3.1.11"
 end
 
 appraise "rails32" do
-  gem "rails", "~> 3.2.11"
+  gem "rails", "~> 3.2.12"
 end
 
 appraise "rails40" do
@@ -22,8 +22,6 @@ appraise "rails40" do
   # TODO Rails 4.0 (once again) forces us to use ActiveRecord :
   # Java::OrgJrubyRack::RackInitializationException:
   # No such file or directory - [...]/jruby-rack/src/spec/stub/rails40/WEB-INF/config/database.yml
-  # NOTE: AR-JDBC stable (nor master) ain't 4.0 ready yet, thus :
-  gem 'activerecord-jdbc-adapter', 
-      :github => 'kares/activerecord-jdbc-adapter', :branch => 'rails-4.0'
-  gem 'activerecord-jdbcsqlite3-adapter'
+  gem 'activerecord-jdbc-adapter', :github => 'jruby/activerecord-jdbc-adapter'
+  gem 'activerecord-jdbcsqlite3-adapter', :github => 'jruby/activerecord-jdbc-adapter'
 end
