@@ -1,4 +1,4 @@
-source "http://rubygems.org"
+source "https://rubygems.org"
 
 if rack_version = ENV['RACK_VERSION']
   gem 'rack', rack_version
