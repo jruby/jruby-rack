@@ -15,10 +15,10 @@ appraise "rails32" do
 end
 
 appraise "rails40" do
-  gem 'rails', :github => 'rails/rails'
-  gem 'journey', :github => 'rails/journey'
-  gem 'activerecord-deprecated_finders', :require => nil,
-      :github => 'rails/activerecord-deprecated_finders'
+  gem 'rails', '4.0.0.beta1' #:github => 'rails/rails'
+  #gem 'journey', :github => 'rails/journey'
+  #gem 'activerecord-deprecated_finders', :require => nil,
+      #:github => 'rails/activerecord-deprecated_finders'
   # TODO Rails 4.0 (once again) forces us to use ActiveRecord :
   # Java::OrgJrubyRack::RackInitializationException:
   # No such file or directory - [...]/jruby-rack/src/spec/stub/rails40/WEB-INF/config/database.yml
