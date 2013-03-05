@@ -167,7 +167,7 @@ specified pooling is supported for plain Rack applications as well.
 We do recommend to boot your runtimes up-front to avoid the cost of initializing
 one while a request kicks in and find the pool empty, this can be easily avoided
 by setting *jruby.min.runtimes* equal to *jruby.max.runtimes*. You might also 
-want to consider tunning the *jruby.runtime.acquire.timeout* parameter to not 
+want to consider tuning the *jruby.runtime.acquire.timeout* parameter to not 
 wait too long when all (max) runtimes from the pool are busy.
 
 ## JRuby-Rack Configuration
@@ -216,7 +216,7 @@ as context init parameters in web.xml or as VM-wide system properties.
 - `jruby.rack.logging`: Specify the logging device to use. Defaults to
   `servlet_context`. See below.
 - `jruby.rack.request.size.initial.bytes`: Initial size for request body memory 
-   buffer, see also `jruby.rack.request.size.maximum.bytes` bellow.
+   buffer, see also `jruby.rack.request.size.maximum.bytes` below.
 - `jruby.rack.request.size.maximum.bytes`: The maximum size for the request in
    memory buffer, if the body is larger than this it gets spooled to a tempfile.
 - `jruby.rack.response.dechunk`: Set to false to turn off response dechunking 
