@@ -7,19 +7,19 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
-describe org.jruby.rack.RackServletContextListener do
+RackServletContextListener = org.jruby.rack.RackServletContextListener
+
+describe RackServletContextListener do
   
-  RackServletContextListener = org.jruby.rack.RackServletContextListener
-  RackApplicationFactory = org.jruby.rack.RackApplicationFactory
-  
-  before(:each) do
+  before do
     @servlet_context.stub!(:getInitParameter).and_return nil
     @factory = mock "application factory"
     # @listener = RackServletContextListener.new(@factory) :
+    application_factory = org.jruby.rack.RackApplicationFactory
     constructor = RackServletContextListener.java_class.to_java.
-      getDeclaredConstructor(RackApplicationFactory.java_class)
+      getDeclaredConstructor(application_factory.java_class)
     constructor.accessible = true
-    @listener = constructor.newInstance(@factory.to_java(RackApplicationFactory))
+    @listener = constructor.newInstance(@factory.to_java(application_factory))
   end
 
   let(:servlet_context_event) do
@@ -29,8 +29,10 @@ describe org.jruby.rack.RackServletContextListener do
   describe "contextInitialized" do
     
     it "creates a Rack application factory and store it in the context" do
-      @servlet_context.should_receive(:setAttribute).with(RackApplicationFactory::FACTORY, @factory)
-      @servlet_context.should_receive(:setAttribute).with(RackApplicationFactory::RACK_CONTEXT, anything())
+      @servlet_context.should_receive(:setAttribute).with(
+        org.jruby.rack.RackApplicationFactory::FACTORY, @factory)
+      @servlet_context.should_receive(:setAttribute).with(
+        org.jruby.rack.RackApplicationFactory::RACK_CONTEXT, anything())
       @factory.stub!(:init)
       @listener.contextInitialized servlet_context_event
     end
@@ -64,18 +66,18 @@ describe org.jruby.rack.RackServletContextListener do
     
     it "removes the application factory from the servlet context" do
       @servlet_context.should_receive(:getAttribute).with(
-        RackApplicationFactory::FACTORY).and_return @factory
+        org.jruby.rack.RackApplicationFactory::FACTORY).and_return @factory
       @servlet_context.should_receive(:removeAttribute).with(
-        RackApplicationFactory::FACTORY)
+        org.jruby.rack.RackApplicationFactory::FACTORY)
       @servlet_context.should_receive(:removeAttribute).with(
-        RackApplicationFactory::RACK_CONTEXT)
+        org.jruby.rack.RackApplicationFactory::RACK_CONTEXT)
       @factory.stub!(:destroy)
       @listener.contextDestroyed servlet_context_event
     end
 
     it "destroys the application factory" do
       @servlet_context.should_receive(:getAttribute).with(
-        RackApplicationFactory::FACTORY).and_return @factory
+        org.jruby.rack.RackApplicationFactory::FACTORY).and_return @factory
       @servlet_context.stub!(:removeAttribute)
       @factory.should_receive(:destroy)
       @listener.contextDestroyed servlet_context_event
@@ -83,7 +85,7 @@ describe org.jruby.rack.RackServletContextListener do
 
     it "does nothing if no application is found in the context" do
       @servlet_context.should_receive(:getAttribute).with(
-        RackApplicationFactory::FACTORY).and_return nil
+        org.jruby.rack.RackApplicationFactory::FACTORY).and_return nil
       @listener.contextDestroyed servlet_context_event
     end
     
@@ -115,9 +117,9 @@ describe org.jruby.rack.RackServletContextListener do
   
 end
 
-describe org.jruby.rack.rails.RailsServletContextListener do
+RailsServletContextListener = org.jruby.rack.rails.RailsServletContextListener
 
-  RailsServletContextListener = org.jruby.rack.rails.RailsServletContextListener
+describe RailsServletContextListener do
   
   it "has a default constructor (for servlet container)" do
     lambda { RailsServletContextListener.new }.should_not raise_error
