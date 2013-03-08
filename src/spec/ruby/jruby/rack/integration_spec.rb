@@ -100,7 +100,7 @@ describe "integration" do
     it "initializes (pooling by default)" do
       listener = org.jruby.rack.rails.RailsServletContextListener.new
       listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
-
+      
       rack_factory = servlet_context.getAttribute("rack.factory")
       rack_factory.should be_a(RackApplicationFactory)
       rack_factory.should be_a(PoolingRackApplicationFactory)
@@ -288,10 +288,10 @@ describe "integration" do
         initialize_rails 'production', base_path
       end
 
-      it "loaded rack ~> 1.4" do
+      it "loaded rack ~> 1.5" do
         @runtime = @rack_factory.getApplication.getRuntime
         should_eval_as_not_nil "defined?(Rack.release)"
-        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.4'
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.5'
       end
 
       it "booted with a servlet logger" do
@@ -307,7 +307,7 @@ describe "integration" do
       
       it "sets up public_path (as for a war)" do
         @runtime = @rack_factory.getApplication.getRuntime
-        should_eval_as_eql_to "Rails.public_path", "#{STUB_DIR}/rails40"
+        should_eval_as_eql_to "Rails.public_path.to_s", "#{STUB_DIR}/rails40"
         should_eval_as_eql_to %q{ 
           config = ActionController::Base.config;
           asset_paths = ActionView::Helpers::AssetTagHelper::AssetPaths.new(config);

@@ -7,7 +7,7 @@ gem "appraisal"
 gem "rake", :group=>:test
 gem "rspec", "~> 2.11", :group=>:test
 gem "jruby-openssl", :group=>:test
-gem "rails", "4.0.0.beta1"
+gem "rails", :github=>"rails/rails"
 gem "activerecord-jdbc-adapter", :github=>"jruby/activerecord-jdbc-adapter"
 gem "activerecord-jdbcsqlite3-adapter", :github=>"jruby/activerecord-jdbc-adapter"
 

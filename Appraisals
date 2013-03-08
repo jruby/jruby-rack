@@ -15,7 +15,7 @@ appraise "rails32" do
 end
 
 appraise "rails40" do
-  gem 'rails', '4.0.0.beta1' #:github => 'rails/rails'
+  gem 'rails', :github => 'rails/rails'
   #gem 'journey', :github => 'rails/journey'
   #gem 'activerecord-deprecated_finders', :require => nil,
       #:github => 'rails/activerecord-deprecated_finders'
