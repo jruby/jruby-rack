@@ -1,3 +1,8 @@
+== 1.1.13.2 (02/04/13)
+
+ - fix warning in Rack::Utils::Response#write_headers
+ - bundle latest Rack 1.4 (1.4.5)
+
 == 1.1.13.1 (14/01/13)
 
  - fix missing explicit require 'jruby/rack/version' in 1.1.13
