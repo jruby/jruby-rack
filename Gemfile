@@ -1,9 +1,9 @@
-source "http://rubygems.org"
+source "https://rubygems.org"
 
 if rack_version = ENV['RACK_VERSION']
   gem 'rack', rack_version
 else
-  gem 'rack'
+  gem 'rack', '~> 1.4.5'
 end
 
 gem "appraisal"
