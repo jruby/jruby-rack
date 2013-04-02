@@ -7,6 +7,6 @@
 
 module JRuby
   module Rack
-    VERSION = '1.1.13.1'
+    VERSION = '1.1.13.2'
   end
 end
