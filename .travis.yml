@@ -8,6 +8,7 @@ rvm:
 branches:
   only:
     - master
+    - maintenance-1.1.13
 gemfile:
   - Gemfile
   - gemfiles/rails23.gemfile
