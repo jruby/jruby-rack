@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
 
+@SuppressWarnings("serial")
 public class RackTag extends TagSupport {
     private String path;
     private String params;

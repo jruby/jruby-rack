@@ -9,6 +9,7 @@ package org.jruby.rack.fake;
 
 import java.io.IOException;
 import java.util.Enumeration;
+
 import javax.el.ELContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -27,6 +28,7 @@ import javax.servlet.jsp.el.VariableResolver;
 /**
  * Currently only used as a mock for testing.
  */
+@SuppressWarnings("deprecation")
 public class FakePageContext extends PageContext {
     private ServletContext context;
     private ServletRequest request;

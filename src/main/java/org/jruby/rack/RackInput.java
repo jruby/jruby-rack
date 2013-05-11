@@ -34,6 +34,7 @@ import org.jruby.util.ByteList;
  * 
  * @author nicksieger
  */
+@SuppressWarnings("serial")
 public class RackInput extends RubyObject {
     
     private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
@@ -44,7 +45,7 @@ public class RackInput extends RubyObject {
 
     @Deprecated
     public static RubyClass getClass(Ruby runtime, String name, RubyClass parent,
-                                     ObjectAllocator allocator, Class annoClass) {
+                                     ObjectAllocator allocator, Class<?> annoClass) {
         RubyModule jruby = runtime.getOrCreateModule("JRuby");
         
         RubyClass klass = jruby.getClass(name);

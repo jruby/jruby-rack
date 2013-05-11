@@ -53,9 +53,11 @@ public class DefaultQueueManager implements QueueManager {
 
     public void init(RackContext context) throws Exception {
         this.context = (ServletRackContext) context;
+        @SuppressWarnings("deprecation")
         String jndiName = context.getConfig().getJmsConnectionFactory();
         if (jndiName != null && connectionFactory == null) {
             Properties properties = new Properties();
+            @SuppressWarnings("deprecation")
             String jndiProperties = context.getConfig().getJmsJndiProperties();
             if (jndiProperties != null) {
                 properties.load(new ByteArrayInputStream(jndiProperties.getBytes("UTF-8")));

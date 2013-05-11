@@ -8,6 +8,7 @@
 package org.jruby.rack;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -22,6 +23,7 @@ import org.jruby.rack.servlet.ServletRackResponseEnvironment;
  *
  * @author nicksieger
  */
+@SuppressWarnings("serial")
 public abstract class AbstractServlet extends HttpServlet {
 
     @Override

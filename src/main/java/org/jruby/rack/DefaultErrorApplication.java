@@ -82,6 +82,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
     private class Response implements RackResponse {
 
         private int status = 500;
+        @SuppressWarnings("rawtypes")
         private Map headers = Collections.EMPTY_MAP;
         private String body;
         
@@ -93,15 +94,18 @@ public class DefaultErrorApplication extends DefaultRackApplication
             return status;
         }
 
+        @SuppressWarnings("unused")
         public void setStatus(int status) {
             this.status = status;
         }
         
+        @SuppressWarnings("rawtypes")
         public Map getHeaders() {
             return headers;
         }
 
-        public void setHeaders(Map headers) {
+        @SuppressWarnings("unused")
+        public void setHeaders(@SuppressWarnings("rawtypes") Map headers) {
             this.headers = headers == null ? Collections.EMPTY_MAP : headers;
         }
         
@@ -118,6 +122,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
             return body;
         }
 
+        @SuppressWarnings("unused")
         public void setBody(String body) {
             this.body = body;
         }

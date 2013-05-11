@@ -10,10 +10,7 @@ package org.jruby.rack.embed;
 import java.io.IOException;
 
 import org.jruby.Ruby;
-import org.jruby.RubyModule;
-import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.javasupport.JavaUtil;
-
 import org.jruby.rack.AbstractRackDispatcher;
 import org.jruby.rack.DefaultRackApplication;
 import org.jruby.rack.RackApplication;
@@ -21,7 +18,6 @@ import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.RackInitializationException;
 import org.jruby.rack.RackResponseEnvironment;
-
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**

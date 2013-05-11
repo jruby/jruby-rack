@@ -283,6 +283,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
      * @param apps the (initial) instances (for the pool) to be initialized
      */
     protected void launchInitialization(final Queue<RackApplication> apps) {
+        @SuppressWarnings("deprecation")
         Integer initThreads = getConfig().getNumInitializerThreads();
         if ( initThreads == null ) initThreads = 4; // quad-core baby
         
