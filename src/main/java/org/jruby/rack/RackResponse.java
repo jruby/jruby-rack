@@ -26,6 +26,7 @@ public interface RackResponse {
     /**  
      * @return the response headers
      */
+    @SuppressWarnings("rawtypes")
     Map getHeaders();
     
     /** 

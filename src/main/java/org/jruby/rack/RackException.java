@@ -13,6 +13,7 @@ import org.jruby.exceptions.RaiseException;
  * 
  * @author kares
  */
+@SuppressWarnings("serial")
 public class RackException extends RuntimeException {
 
     public RackException(String message) {

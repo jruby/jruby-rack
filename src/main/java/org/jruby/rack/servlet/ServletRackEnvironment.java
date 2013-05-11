@@ -27,7 +27,7 @@ import org.jruby.rack.RackInput;
  * 
  * @author nicksieger
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings("unchecked")
 public class ServletRackEnvironment extends HttpServletRequestWrapper
     implements RackEnvironment, RackEnvironment.ToIO {
     

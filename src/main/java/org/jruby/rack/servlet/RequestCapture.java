@@ -26,6 +26,7 @@ import org.jruby.rack.RackConfig;
 /**
  * Request wrapper passed to filter chain.
  */
+@SuppressWarnings("rawtypes")
 public class RequestCapture extends HttpServletRequestWrapper {
 
     private Map<String,String[]> requestParams;

@@ -96,7 +96,7 @@ class HeaderValueHolder {
 	 * @param array the array to merge (may be <code>null</code>)
 	 * @param collection the target Collection to merge the array into
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked","rawtypes"})
 	private static void mergeArrayIntoCollection(Object array, Collection collection) {
 		if (collection == null) {
 			throw new IllegalArgumentException("Collection must not be null");
@@ -130,7 +130,7 @@ class HeaderValueHolder {
 		if (length == 0) {
 			return new Object[0];
 		}
-		Class wrapperType = Array.get(source, 0).getClass();
+		Class<?> wrapperType = Array.get(source, 0).getClass();
 		Object[] newArray = (Object[]) Array.newInstance(wrapperType, length);
 		for (int i = 0; i < length; i++) {
 			newArray[i] = Array.get(source, i);

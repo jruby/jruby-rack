@@ -30,6 +30,7 @@ public class ServletRackResponseEnvironment extends HttpServletResponseWrapper
         super(response);
     }
     
+    @SuppressWarnings("rawtypes")
     public void defaultRespond(final RackResponse response) throws IOException {
         setStatus(response.getStatus());
         @SuppressWarnings("unchecked")

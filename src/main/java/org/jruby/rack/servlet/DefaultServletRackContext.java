@@ -25,6 +25,7 @@ import java.util.Set;
  *
  * @author nicksieger
  */
+@SuppressWarnings("rawtypes")
 public class DefaultServletRackContext implements ServletRackContext {
     
     private final RackConfig config;

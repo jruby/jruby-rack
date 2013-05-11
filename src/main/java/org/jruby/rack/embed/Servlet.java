@@ -13,6 +13,7 @@ import org.jruby.rack.AbstractServlet;
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackDispatcher;
 
+@SuppressWarnings("serial")
 public class Servlet extends AbstractServlet {
 
     private final Dispatcher dispatcher;
