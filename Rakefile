@@ -190,7 +190,7 @@ task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do |t|
       s.has_rdoc = false
       s.rubyforge_project = %q{jruby-extras}
     end
-    Gem::Builder.new(gemspec).build
+    defined?(Gem::Builder) ? Gem::Builder.new(gemspec).build : Gem::Package.build(gemspec)
     File.open('jruby-rack.gemspec', 'w') {|f| f << gemspec.to_ruby }
     mv FileList['*.gem'], '..'
   end
