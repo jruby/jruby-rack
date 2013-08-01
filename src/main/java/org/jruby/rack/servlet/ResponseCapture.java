@@ -28,7 +28,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     
     private static Collection<Integer> defaultNotHandledStatuses = Collections.singleton(404);
     
-    private int status = 200;
+    private int status = 404;
     private Object output;
     
     private Collection<Integer> notHandledStatuses = defaultNotHandledStatuses;
