@@ -33,16 +33,16 @@ public class CommonsLoggingLogger implements RackLogger {
     }
     
     public void log(String level, String message) {
-        if (level == ERROR) {
+        if (ERROR.equals(level)) {
             logger.error(message);
         }
-        else if (level == WARN) {
+        else if (WARN.equals(level)) {
             logger.warn(message);
         }
-        else if (level == INFO) {
+        else if (INFO.equals(level)) {
             logger.info(message);
         }
-        else if (level == DEBUG) {
+        else if (DEBUG.equals(level)) {
             logger.debug(message);
         }
         else {
@@ -51,16 +51,16 @@ public class CommonsLoggingLogger implements RackLogger {
     }
 
     public void log(String level, String message, Throwable e) {
-        if (level == ERROR) {
+        if (ERROR.equals(level)) {
             logger.error(message, e);
         }
-        else if (level == WARN) {
+        else if (WARN.equals(level)) {
             logger.warn(message, e);
         }
-        else if (level == INFO) {
+        else if (INFO.equals(level)) {
             logger.info(message, e);
         }
-        else if (level == DEBUG) {
+        else if (DEBUG.equals(level)) {
             logger.debug(message, e);
         }
         else {
