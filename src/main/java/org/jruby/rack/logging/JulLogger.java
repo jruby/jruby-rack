@@ -48,10 +48,10 @@ public class JulLogger implements RackLogger {
     }
     
     private static Level mapLevel(String level, Level defaultLevel) {
-        if ( level == ERROR ) return Level.SEVERE;
-        if ( level == WARN )  return Level.WARNING;
-        if ( level == INFO )  return Level.INFO;
-        if ( level == DEBUG ) return Level.FINE;
+        if (ERROR.equals(level)) return Level.SEVERE;
+        if (WARN.equals(level))  return Level.WARNING;
+        if (INFO.equals(level))  return Level.INFO;
+        if (DEBUG.equals(level)) return Level.FINE;
         return defaultLevel;
     }
     
