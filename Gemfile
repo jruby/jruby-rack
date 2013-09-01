@@ -9,5 +9,5 @@ end
 gem "appraisal"
 
 gem 'rake', :group => :test
-gem 'rspec', '~> 2.11', :group => :test
-gem 'jruby-openssl', :group => :test
+gem 'rspec', '~> 2.13.0', :group => :test
+gem 'jruby-openssl', '>= 0.8.2', :group => :test

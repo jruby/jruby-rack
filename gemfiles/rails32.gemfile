@@ -5,7 +5,7 @@ source "https://rubygems.org"
 gem "rack"
 gem "appraisal"
 gem "rake", :group=>:test
-gem "rspec", "~> 2.11", :group=>:test
-gem "jruby-openssl", :group=>:test
-gem "rails", "~> 3.2.12"
+gem "rspec", "~> 2.13.0", :group=>:test
+gem "jruby-openssl", ">= 0.8.2", :group=>:test
+gem "rails", "~> 3.2.14"
 
