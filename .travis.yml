@@ -15,6 +15,18 @@ gemfile:
   - gemfiles/rails30.gemfile
   - gemfiles/rails31.gemfile
   - gemfiles/rails32.gemfile
+  - gemfiles/rails40.gemfile
 env:
-  - JRUBY_OPTS="--1.8 --server -Xcext.enabled=false -Xcompile.invokedynamic=false"
-  - JRUBY_OPTS="--1.9 --server -Xcext.enabled=false -Xcompile.invokedynamic=false"
+  - JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+  - JRUBY_OPTS="--1.9 $JRUBY_OPTS"
+matrix:
+  allow_failures:
+    #- rvm: jruby-head
+  exclude:
+    # Rails 4 prefers Ruby 2.0 (or at least >= 1.9.3) :
+    - rvm: jruby
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+    - rvm: jruby-head
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
