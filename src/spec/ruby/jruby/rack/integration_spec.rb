@@ -14,9 +14,9 @@ java_import org.jruby.rack.PoolingRackApplicationFactory
 java_import org.jruby.rack.rails.RailsRackApplicationFactory
 
 describe "integration" do
-  
+
   #after(:all) { JRuby::Rack.context = nil }
-  
+
   describe 'rack (lambda)' do
 
     before do
@@ -96,11 +96,11 @@ describe "integration" do
       set_compat_version servlet_context
       servlet_context
     end
-    
+
     it "initializes (pooling by default)" do
       listener = org.jruby.rack.rails.RailsServletContextListener.new
       listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
-      
+
       rack_factory = servlet_context.getAttribute("rack.factory")
       rack_factory.should be_a(RackApplicationFactory)
       rack_factory.should be_a(PoolingRackApplicationFactory)
@@ -128,12 +128,12 @@ describe "integration" do
     end
 
   end
-    
+
   describe 'rails 3.0', :lib => :rails30 do
 
     before(:all) { copy_gemfile("rails30") }
 
-    let(:base_path) { "file://#{STUB_DIR}/rails30" }
+    def base_path; "file://#{STUB_DIR}/rails30" end
 
     it_should_behave_like 'a rails app'
 
@@ -153,7 +153,7 @@ describe "integration" do
         @runtime = @rack_factory.getApplication.getRuntime
         expect_to_have_monkey_patched_chunked
       end
-      
+
     end
 
     context "initialized (custom)" do
@@ -178,7 +178,7 @@ describe "integration" do
 
     before(:all) { copy_gemfile("rails31") }
 
-    let(:base_path) { "file://#{STUB_DIR}/rails31" }
+    def base_path; "file://#{STUB_DIR}/rails31" end
 
     it_should_behave_like 'a rails app'
 
@@ -213,7 +213,7 @@ describe "integration" do
         @runtime = @rack_factory.getApplication.getRuntime
         expect_to_have_monkey_patched_chunked
       end
-      
+
     end
 
   end
@@ -222,7 +222,7 @@ describe "integration" do
 
     before(:all) { copy_gemfile("rails32") }
 
-    let(:base_path) { "file://#{STUB_DIR}/rails32" }
+    def base_path; "file://#{STUB_DIR}/rails32" end
 
     it_should_behave_like 'a rails app'
 
@@ -249,7 +249,7 @@ describe "integration" do
 
         should_eval_as_eql_to "Rails.logger.level", Logger::INFO
       end
-      
+
       it "sets up public_path (as for a war)" do
         @runtime = @rack_factory.getApplication.getRuntime
         should_eval_as_eql_to "Rails.public_path", "#{STUB_DIR}/rails32"
@@ -257,28 +257,28 @@ describe "integration" do
         should_eval_as_not_nil "defined? Rails32::Application::PUBLIC_PATH"
         should_eval_as_eql_to "Rails32::Application::PUBLIC_PATH", "#{STUB_DIR}/rails32"
         # check if image_tag resolves path to images correctly :
-        should_eval_as_eql_to %q{ 
+        should_eval_as_eql_to %q{
           config = ActionController::Base.config;
           asset_paths = ActionView::Helpers::AssetTagHelper::AssetPaths.new(config);
           image_path = asset_paths.compute_public_path('image.jpg', 'images');
           image_path[0, 18]
         }, '/images/image.jpg?'
       end
-      
+
       it "disables rack's chunked support (by default)" do
         @runtime = @rack_factory.getApplication.getRuntime
         expect_to_have_monkey_patched_chunked
       end
-      
+
     end
-    
+
   end
 
   describe 'rails 4.0', :lib => :rails40 do
 
     before(:all) { copy_gemfile("rails40") }
 
-    let(:base_path) { "file://#{STUB_DIR}/rails40" }
+    def base_path; "file://#{STUB_DIR}/rails40" end
 
     it_should_behave_like 'a rails app'
 
@@ -300,26 +300,26 @@ describe "integration" do
         should_eval_as_not_nil "Rails.logger"
         # NOTE: TaggedLogging is a module that extends the instance now :
         should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::TaggedLogging", true
-        should_eval_as_eql_to "Rails.logger.instance_variable_get(:'@logdev').dev.class.name", 
+        should_eval_as_eql_to "Rails.logger.instance_variable_get(:'@logdev').dev.class.name",
                               'JRuby::Rack::ServletLog'
         should_eval_as_eql_to "Rails.logger.level", Logger::INFO
       end
-      
+
       it "sets up public_path (as for a war)" do
         @runtime = @rack_factory.getApplication.getRuntime
         should_eval_as_eql_to "Rails.public_path.to_s", "#{STUB_DIR}/rails40"
-        should_eval_as_eql_to %q{ 
-          config = ActionController::Base.config;
-          asset_paths = ActionView::Helpers::AssetTagHelper::AssetPaths.new(config);
-          image_path = asset_paths.compute_public_path('image.jpg', 'images');
-          image_path[0, 18]
-        }, '/images/image.jpg?'
+        should_eval_as_eql_to %q{
+          class AssetPathTest; include ActionView::Helpers::AssetUrlHelper end;
+          asset_helper = AssetPathTest.new;
+          image_path = asset_helper.image_path('image.jpg');
+          image_path[0, 17]
+        }, '/images/image.jpg'
       end
-      
+
     end
-    
+
   end
-  
+
   describe 'rails 2.3', :lib => :rails23 do
 
     before(:all) do
@@ -343,31 +343,31 @@ describe "integration" do
         should_eval_as_not_nil "defined?(Rack.release)"
         should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.1'
       end
-      
+
       it "booted with a servlet logger" do
         @runtime = @rack_factory.getApplication.getRuntime
         should_eval_as_not_nil "defined?(Rails)"
         should_eval_as_not_nil "defined?(Rails.logger)"
-        
+
         should_eval_as_not_nil "defined?(ActiveSupport::BufferedLogger) && Rails.logger.is_a?(ActiveSupport::BufferedLogger)"
         should_eval_as_not_nil "Rails.logger.send(:instance_variable_get, '@log')"
-        should_eval_as_eql_to "log = Rails.logger.send(:instance_variable_get, '@log');" + 
+        should_eval_as_eql_to "log = Rails.logger.send(:instance_variable_get, '@log');" +
                               "log.class.name", 'JRuby::Rack::ServletLog'
         should_eval_as_eql_to "Rails.logger.level", Logger::INFO
-        
+
         @runtime.evalScriptlet "Rails.logger.debug 'logging works'"
       end
-      
+
     end
 
   end
-  
+
   def expect_to_have_monkey_patched_chunked
     @runtime.evalScriptlet "require 'rack/chunked'"
     script = %{
       headers = { 'Transfer-Encoding' => 'chunked' }
 
-      body = [ \"1\".freeze, \"\", \"\nsecond\" ] 
+      body = [ \"1\".freeze, \"\", \"\nsecond\" ]
 
       if defined? Rack::Chunked::Body # Rails 3.x
         body = Rack::Chunked::Body.new body
@@ -382,7 +382,7 @@ describe "integration" do
     }
     should_eval_as_eql_to script, "1\nsecond"
   end
-  
+
   def initialize_rails(env = nil, servlet_context = @servlet_context)
     if ! servlet_context || servlet_context.is_a?(String)
       base = servlet_context.is_a?(String) ? servlet_context : nil
@@ -407,7 +407,7 @@ describe "integration" do
     set_compat_version servlet_context
     servlet_context
   end
-  
+
   def set_compat_version(servlet_context = @servlet_context)
     if JRuby.runtime.is1_9
       servlet_context.addInitParameter("jruby.compat.version", '1.9')
