@@ -29,12 +29,9 @@ public abstract class AbstractServlet extends HttpServlet {
     @Override
     public void service(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-        
-        HttpServletRequest httpRequest   = (HttpServletRequest) request;
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        RackEnvironment env                 = new ServletRackEnvironment(httpRequest, httpResponse, getContext());
-        RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment(httpResponse);
+        RackEnvironment env = new ServletRackEnvironment(request, response, getContext());
+        RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment(response);
         
         getDispatcher().process(env, responseEnv);
     }
