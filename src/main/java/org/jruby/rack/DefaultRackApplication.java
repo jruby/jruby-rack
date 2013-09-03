@@ -6,22 +6,24 @@
  */
 package org.jruby.rack;
 
+import java.io.IOException;
+
 import org.jruby.Ruby;
 import org.jruby.RubyObjectAdapter;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 
-import java.io.IOException;
+import org.jruby.rack.ext.RackInput;
 
 /**
  * Default {@link RackApplication} implementation.
- * Takes a Servlet {@link RackEnvironment} and calls the Ruby application 
+ * Takes a Servlet {@link RackEnvironment} and calls the Ruby application
  * (which is wrapped in a <code>Rack::Handler::Servlet</code> instance).
  * Returns the response converted to a Java {@link RackResponse} object.
- * 
+ *
  * @see rack/handler/servlet.rb
- * 
+ *
  * @author nicksieger
  */
 public class DefaultRackApplication implements RackApplication {
@@ -38,7 +40,7 @@ public class DefaultRackApplication implements RackApplication {
 
     /**
      * @see #setApplication(IRubyObject)
-     * @param application 
+     * @param application
      */
     public DefaultRackApplication(final IRubyObject application) {
         setApplication(application);
@@ -55,8 +57,8 @@ public class DefaultRackApplication implements RackApplication {
                 }
                 else { // TODO this is @deprecated and will be removed ...
                     // NOTE JRuby 1.7.x does not like instance vars for Java :
-                    // warning: instance vars on non-persistent Java type 
-                    // Java::OrgJrubyRackServlet::ServletRackEnvironment 
+                    // warning: instance vars on non-persistent Java type
+                    // Java::OrgJrubyRackServlet::ServletRackEnvironment
                     // (http://wiki.jruby.org/Persistence)
                     runtime.evalScriptlet("require 'jruby/rack/environment'");
                     adapter.setInstanceVariable(servlet_env, "@_io", io);
@@ -96,10 +98,10 @@ public class DefaultRackApplication implements RackApplication {
         }
         return application;
     }
-    
+
     /**
      * Sets the application object.
-     * @param application 
+     * @param application
      */
     public void setApplication(IRubyObject application) {
         this.application = application;
@@ -112,7 +114,7 @@ public class DefaultRackApplication implements RackApplication {
     public boolean isApplicationSet() {
         return this.application != null;
     }
-    
+
     /**
      * @deprecated no longer used
      */
@@ -120,5 +122,5 @@ public class DefaultRackApplication implements RackApplication {
     public IRubyObject __call(final IRubyObject env) {
         return adapter.callMethod(getApplication(), "call", env);
     }
-    
+
 }

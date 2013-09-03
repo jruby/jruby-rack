@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
-import org.jruby.rack.RackInput;
+import org.jruby.rack.ext.RackInput;
 
 /**
  * Rack environment (default) implementation based on {@link HttpServletRequest}..

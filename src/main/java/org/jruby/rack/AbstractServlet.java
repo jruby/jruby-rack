@@ -32,7 +32,7 @@ public abstract class AbstractServlet extends HttpServlet {
 
         RackEnvironment env = new ServletRackEnvironment(request, response, getContext());
         RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment(response);
-        
+
         getDispatcher().process(env, responseEnv);
     }
 
@@ -44,12 +44,12 @@ public abstract class AbstractServlet extends HttpServlet {
 
     @Override
     public void destroy() {
-        super.destroy();
         getDispatcher().destroy();
+        super.destroy();
     }
 
     protected abstract RackDispatcher getDispatcher();
-    
+
     protected abstract RackContext getContext();
-    
+
 }
