@@ -7,7 +7,7 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.ext.RackInput;
+import org.jruby.rack.ext.Input;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -157,7 +157,7 @@ public interface RackEnvironment {
          * Replaces the <code>to_io</code> monkey-patch ...
          * @return rack.input
          */
-        public RackInput toIO() ;
+        public Input toIO();
         
         /**
          * Set the rack.input, this is an optional operation and implementers
@@ -165,7 +165,7 @@ public interface RackEnvironment {
          * the rack.input themselves.
          * @param io the rack.input instance
          */
-        void setIO(RackInput io) ;
+        void setIO(Input io) ;
         
     }
     

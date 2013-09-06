@@ -14,7 +14,7 @@ import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
 
-import org.jruby.rack.ext.RackInput;
+import org.jruby.rack.ext.Input;
 
 /**
  * Default {@link RackApplication} implementation.
@@ -29,31 +29,36 @@ import org.jruby.rack.ext.RackInput;
 public class DefaultRackApplication implements RackApplication {
 
     protected final RubyObjectAdapter adapter = JavaEmbedUtils.newObjectAdapter();
+
     protected IRubyObject application;
 
     /**
      * Implicit constructor, expects the {@link #setApplication(IRubyObject)} to
      * be called before this constructed application can be used.
      */
-    public DefaultRackApplication() {
-    }
+    public DefaultRackApplication() { /* NOOP */ }
 
     /**
      * @see #setApplication(IRubyObject)
      * @param application
      */
     public DefaultRackApplication(final IRubyObject application) {
+        this();
         setApplication(application);
     }
 
+    /**
+     * @see RackApplication#call(RackEnvironment)
+     */
+    @Override
     public RackResponse call(final RackEnvironment env) {
         final Ruby runtime = getRuntime();
         try {
-            final RackInput io = new RackInput(runtime, env);
+            final Input io = new Input(runtime, env);
             try {
-                IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
-                if (env instanceof RackEnvironment.ToIO) {
-                    ((RackEnvironment.ToIO) env).setIO(io);
+                final IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
+                if ( env instanceof RackEnvironment.ToIO ) {
+                    ( (RackEnvironment.ToIO) env ).setIO(io);
                 }
                 else { // TODO this is @deprecated and will be removed ...
                     // NOTE JRuby 1.7.x does not like instance vars for Java :
@@ -63,8 +68,9 @@ public class DefaultRackApplication implements RackApplication {
                     runtime.evalScriptlet("require 'jruby/rack/environment'");
                     adapter.setInstanceVariable(servlet_env, "@_io", io);
                 }
-                IRubyObject response = adapter.callMethod(getApplication(), "call", servlet_env);
-                return (RackResponse) JavaEmbedUtils.rubyToJava(runtime, response, RackResponse.class);
+                final IRubyObject response = // app.call(env)
+                    adapter.callMethod(getApplication(), "call", servlet_env);
+                return (RackResponse) response.toJava(RackResponse.class);
             }
             finally {
                 io.close();
@@ -75,13 +81,16 @@ public class DefaultRackApplication implements RackApplication {
         }
     }
 
+    @Override
     public void init() { /* NOOP */ }
 
+    @Override
     public void destroy() { /* NOOP */ }
 
     /**
      * @return the application's Ruby runtime
      */
+    @Override
     public Ruby getRuntime() {
         return getApplication().getRuntime();
     }
@@ -113,14 +122,6 @@ public class DefaultRackApplication implements RackApplication {
      */
     public boolean isApplicationSet() {
         return this.application != null;
-    }
-
-    /**
-     * @deprecated no longer used
-     */
-    @Deprecated
-    public IRubyObject __call(final IRubyObject env) {
-        return adapter.callMethod(getApplication(), "call", env);
     }
 
 }

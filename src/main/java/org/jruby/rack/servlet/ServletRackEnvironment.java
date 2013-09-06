@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
-import org.jruby.rack.ext.RackInput;
+import org.jruby.rack.ext.Input;
 
 /**
  * Rack environment (default) implementation based on {@link HttpServletRequest}..
@@ -151,13 +151,13 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
         return requestURIWithoutQuery;
     }
 
-    private RackInput io;
+    private Input io;
     
-    public RackInput toIO() {
+    public Input toIO() {
         return io;
     }
     
-    public void setIO(RackInput io) {
+    public void setIO(Input io) {
         this.io = io;
     }
     

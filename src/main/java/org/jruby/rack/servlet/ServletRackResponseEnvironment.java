@@ -20,16 +20,16 @@ import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * Servlet response wrapper Rack (response) implementation.
- * 
+ *
  * @author nicksieger
  */
-public class ServletRackResponseEnvironment extends HttpServletResponseWrapper 
+public class ServletRackResponseEnvironment extends HttpServletResponseWrapper
     implements RackResponseEnvironment {
-    
+
     public ServletRackResponseEnvironment(HttpServletResponse response) {
         super(response);
     }
-    
+
     @SuppressWarnings("rawtypes")
     public void defaultRespond(final RackResponse response) throws IOException {
         setStatus(response.getStatus());
@@ -43,5 +43,5 @@ public class ServletRackResponseEnvironment extends HttpServletResponseWrapper
         }
         getWriter().write(response.getBody());
     }
-    
+
 }

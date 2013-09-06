@@ -36,16 +36,15 @@ import org.jruby.rack.servlet.RewindableInputStream;
  * @author nicksieger
  */
 @SuppressWarnings("serial")
-public class RackInput extends RubyObject {
+public class Input extends RubyObject {
 
     private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-            return new RackInput(runtime, klass);
+            return new Input(runtime, klass);
         }
     };
 
     public static RubyClass getRackInputClass(final Ruby runtime) { // JRuby::Rack::Input
-
         RubyModule jruby = runtime.getOrCreateModule("JRuby");
         RubyModule rack = (RubyModule) jruby.getConstantAt("Rack");
         if (rack == null) {
@@ -56,13 +55,8 @@ public class RackInput extends RubyObject {
         if (klass == null) {
             final RubyClass parent = runtime.getObject();
             klass = rack.defineClassUnder("Input", parent, ALLOCATOR);
-            klass.defineAnnotatedMethods(RackInput.class);
+            klass.defineAnnotatedMethods(Input.class);
         }
-
-        if (jruby.getConstantAt("RackInput") == null) { // backwards compatibility
-            jruby.setConstant("RackInput", klass); // JRuby::RackInput #deprecated
-        }
-
         return klass;
     }
 
@@ -70,11 +64,11 @@ public class RackInput extends RubyObject {
     private InputStream input;
     private int length;
 
-    public RackInput(Ruby runtime, RubyClass klass) {
+    public Input(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
 
-    public RackInput(Ruby runtime, RackEnvironment env) throws IOException {
+    public Input(Ruby runtime, RackEnvironment env) throws IOException {
         super(runtime, getRackInputClass(runtime));
         this.rewindable = env.getContext().getConfig().isRewindable();
         setInput( env.getInput() );
@@ -82,30 +76,32 @@ public class RackInput extends RubyObject {
     }
 
     @JRubyMethod(required = 1)
-    public IRubyObject initialize(ThreadContext context, IRubyObject arg) {
-        Object obj = JavaEmbedUtils.rubyToJava(arg);
-        if (obj instanceof InputStream) {
-            setInput( (InputStream) obj );
+    public IRubyObject initialize(final ThreadContext context, final IRubyObject input) {
+        final Object in = JavaEmbedUtils.rubyToJava(input);
+        if ( in instanceof InputStream ) {
+            setInput( (InputStream) in );
         }
         this.length = 0;
-        return getRuntime().getNil();
+        return context.runtime.getNil();
     }
 
     /**
      * gets must be called without arguments and return a string, or nil on EOF.
      */
     @JRubyMethod()
-    public IRubyObject gets(ThreadContext context) {
+    public IRubyObject gets(final ThreadContext context) {
         try {
             final int NEWLINE = 10;
-            byte[] bytes = readUntil(NEWLINE, 0);
-            if (bytes != null) {
-                return getRuntime().newString(new ByteList(bytes));
-            } else {
-                return getRuntime().getNil();
+            final byte[] bytes = readUntil(NEWLINE, 0);
+            if ( bytes != null ) {
+                return context.runtime.newString(new ByteList(bytes));
             }
-        } catch (IOException io) {
-            throw getRuntime().newIOErrorFromException(io);
+            else {
+                return context.runtime.getNil();
+            }
+        }
+        catch (IOException io) {
+            throw context.runtime.newIOErrorFromException(io);
         }
     }
 
@@ -120,46 +116,38 @@ public class RackInput extends RubyObject {
      * buffer instead of a newly created String object.
      */
     @JRubyMethod(optional = 2)
-    public IRubyObject read(ThreadContext context, IRubyObject[] args) {
-        int count = 0;
-        if (args.length > 0) {
-            long arg = args[0].convertToInteger("to_i").getLongValue();
-            count = (int) Math.min(arg, Integer.MAX_VALUE);
+    public IRubyObject read(final ThreadContext context, final IRubyObject[] args) {
+        int readLen = 0;
+        if ( args.length > 0 ) {
+            long len = args[0].convertToInteger("to_i").getLongValue();
+            readLen = (int) Math.min(len, Integer.MAX_VALUE);
         }
-        RubyString string = null;
-        if (args.length == 2) {
-            string = args[1].convertToString();
-        }
-
+        final RubyString buffer = args.length >= 2 ? args[1].convertToString() : null;
         try {
-            byte[] bytes = readUntil(Integer.MAX_VALUE, count);
-            if (bytes != null) {
-                if (string != null) {
-                    string.clear();
-                    string.cat(bytes);
-                    return string;
+            final byte[] bytes = readUntil(MATCH_NONE, readLen);
+            if ( bytes != null ) {
+                if (buffer != null) {
+                    buffer.clear();
+                    buffer.cat(bytes);
+                    return buffer;
                 }
-                return getRuntime().newString(new ByteList(bytes));
-            } else {
-                if (count > 0) {
-                    return getRuntime().getNil();
-                } else {
-                    return RubyString.newEmptyString(getRuntime());
-                }
+                return context.runtime.newString(new ByteList(bytes));
             }
-        } catch (IOException io) {
-            throw getRuntime().newIOErrorFromException(io);
+            return readLen > 0 ? context.runtime.getNil() : RubyString.newEmptyString(context.runtime);
+        }
+        catch (IOException io) {
+            throw context.runtime.newIOErrorFromException(io);
         }
     }
 
     /**
      * each must be called without arguments and only yield Strings.
      */
-    @JRubyMethod()
-    public IRubyObject each(ThreadContext context, Block block) {
-        IRubyObject nil = getRuntime().getNil();
-        IRubyObject line = null;
-        while ((line = gets(context)) != nil) {
+    @JRubyMethod
+    public IRubyObject each(final ThreadContext context, final Block block) {
+        final IRubyObject nil = context.runtime.getNil();
+        IRubyObject line;
+        while ( ( line = gets(context) ) != nil ) {
             block.yield(context, line);
         }
         return nil;
@@ -171,35 +159,34 @@ public class RackInput extends RubyObject {
      * a pipe or a socket. Therefore, handler developers must buffer the input
      * data into some rewindable object if the underlying input stream is not rewindable.
      */
-    @JRubyMethod()
-    public IRubyObject rewind(ThreadContext context) {
-        if (input != null) {
+    @JRubyMethod
+    public IRubyObject rewind(final ThreadContext context) {
+        if ( input != null ) {
             try { // inputStream.rewind if inputStream.respond_to?(:rewind)
                 final Method rewind = getRewindMethod(input);
-                if (rewind != null) rewind.invoke(input, (Object[]) null);
+                if ( rewind != null ) rewind.invoke(input, (Object[]) null);
             }
             catch (IllegalArgumentException e) {
-                throw getRuntime().newArgumentError(e.getMessage());
+                throw context.runtime.newArgumentError(e.getMessage());
             }
             catch (InvocationTargetException e) {
                 final Throwable target = e.getCause();
-                if (target instanceof IOException) {
-                    throw getRuntime().newIOErrorFromException((IOException) target);
+                if ( target instanceof IOException ) {
+                    throw context.runtime.newIOErrorFromException((IOException) target);
                 }
-                throw getRuntime().newRuntimeError(target.getMessage());
+                throw context.runtime.newRuntimeError(target.getMessage());
             }
             catch (IllegalAccessException e) { /* NOOP */ }
         }
-
-        return getRuntime().getNil();
+        return context.runtime.getNil();
     }
 
     /**
      * Returns the size of the input.
      */
-    @JRubyMethod()
-    public IRubyObject size(ThreadContext context) {
-        return getRuntime().newFixnum(length);
+    @JRubyMethod
+    public IRubyObject size(final ThreadContext context) {
+        return context.runtime.newFixnum(length);
     }
 
     /**
@@ -230,6 +217,8 @@ public class RackInput extends RubyObject {
         catch (SecurityException e) { /* NOOP */ }
         return null;
     }
+
+    private static final int MATCH_NONE = Integer.MAX_VALUE;
 
     private byte[] readUntil(final int match, final int count) throws IOException {
         ByteArrayOutputStream bs = null;

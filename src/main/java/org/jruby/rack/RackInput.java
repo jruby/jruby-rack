@@ -30,12 +30,12 @@ import org.jruby.RubyModule;
 import org.jruby.runtime.ObjectAllocator;
 
 /**
- * @deprecated Moved into {@link org.jruby.rack.ext.RackInput}.
+ * @deprecated Moved into {@link org.jruby.rack.ext.Input}.
  *
  * @author kares
  */
 @Deprecated
-public class RackInput extends org.jruby.rack.ext.RackInput {
+public class RackInput extends org.jruby.rack.ext.Input {
 
     @Deprecated
     public static RubyClass getClass(Ruby runtime, String name, RubyClass parent,
