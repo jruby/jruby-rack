@@ -7,13 +7,13 @@
 
 module JRuby
   module Rack
-    # An AppLayout is defined as responding to three methods:
-    # {app,public,gem}_path. Each method returns a filesystem path
-    # where that portion of the application can be loaded. The class
-    # hierarchy here is just for implementation sharing; if you
-    # override the app layout by [insert mechanism here], then you
-    # only need to accept a rack context in your initializer and
-    # provide the three *_uri methods.
+    # An application layout is defined as responding to three methods:
+    # #app_path, #public_path and #gem_path.
+    # Each method returns a (virtual) FS path where that portion of the app can
+    # be loaded.
+    # If you override the app layout by setting the **jruby.rack.layout_class**
+    # option then you need to provide the three *_uri* suffixed methods.
+    # @see JRuby::Rack::Booter#layout
     class AppLayout
 
       def initialize(rack_context)
@@ -37,6 +37,8 @@ module JRuby
         real_path
       end
 
+      # Expands the given (URI) path into a real (FS) path.
+      # @return [String]
       def real_path(path)
         real_path = @rack_context.getRealPath(path)
         real_path.chomp!('/') if real_path
@@ -45,6 +47,9 @@ module JRuby
 
     end
 
+    # This is the default layout for a {JRuby::Rack::Booter} and assumes the
+    # application is packaged using Java Servlet ("WEB-INF") conventions.
+    # @note this layout is to be used when your app is packaged up with Warbler
     class WebInfLayout < AppLayout
 
       def initialize(context)
@@ -52,6 +57,9 @@ module JRuby
         $0 = File.join(app_path, 'web.xml')
       end
 
+      # Checks the **app.root** (and **rails.root**) init parameter.
+      # Defaults to the '/WEB-INF' path.
+      # @return [String]
       def app_uri
         @app_uri ||=
           @rack_context.getInitParameter('app.root') ||
@@ -59,6 +67,9 @@ module JRuby
           '/WEB-INF'
       end
 
+      # Checks the **gem.path** and **gem.home** init parameters.
+      # Defaults to the '/WEB-INF/gems' path.
+      # @return [String]
       def gem_uri
         @gem_uri ||=
           @rack_context.getInitParameter('gem.path') ||
@@ -66,6 +77,9 @@ module JRuby
           '/WEB-INF/gems'
       end
 
+      # Checks the **public.root** parameter (assumed to be a relative path).
+      # Defaults to the (root) '/' path.
+      # @return [String]
       def public_uri
         @public_uri ||= begin
           path = @rack_context.getInitParameter('public.root') || '/'
@@ -75,6 +89,8 @@ module JRuby
         end
       end
 
+      # @return [String]
+      # @see AppLayout#real_path
       def expand_path(path)
         return nil if path.nil?
         if path.start_with?(app_uri) # gem_path = '/WEB-INF/gems'
@@ -91,8 +107,13 @@ module JRuby
 
     RailsWebInfLayout = WebInfLayout
 
+    # File system layout, simply assumes application is not packaged
+    # (or expanded in a way as if it where not packaged previously).
     class FileSystemLayout < AppLayout
 
+      # Checked from **app.root** (and **rails.root**) init parameter.
+      # Defaults to '.' (current directory).
+      # @return [String]
       def app_uri
         @app_uri ||=
           @rack_context.getInitParameter('app.root') ||
@@ -100,12 +121,17 @@ module JRuby
           '.'
       end
 
+      # Checks the **gem.path** and **gem.home** init parameters.
+      # @return [String]
       def gem_uri
         @gem_uri ||=
           @rack_context.getInitParameter('gem.path') ||
           @rack_context.getInitParameter('gem.home')
       end
 
+      # Checks the **public.root** parameter (assumed to be a relative path).
+      # Defaults to the (working-directory relative) './public' path.
+      # @return [String]
       def public_uri
         @public_uri ||=
           @rack_context.getInitParameter('public.root') || 'public'
@@ -113,6 +139,8 @@ module JRuby
 
       # @override
       # @note we avoid `context.getRealPath` completely and use (JRuby's) File API
+      # @return [String]
+      # @see AppLayout#real_path
       def real_path(path)
         return nil if path.nil?
         path = File.expand_path(path, app_uri)
@@ -127,7 +155,8 @@ module JRuby
     end
 
     RailsFileSystemLayout = FileSystemLayout
-    RailsFilesystemLayout = FileSystemLayout # backwards compatibility
+    # @private backwards compatibility
+    RailsFilesystemLayout = FileSystemLayout
 
   end
 end
