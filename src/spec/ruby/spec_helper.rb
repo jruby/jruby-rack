@@ -21,6 +21,10 @@ java_import 'org.jruby.rack.servlet.RewindableInputStream'
 
 require 'rspec'
 
+require 'jruby'
+ext_class = org.jruby.rack.ext.RackLibrary
+JRuby.runtime.loadExtension ext_class.java_class.name, ext_class.new, false
+
 module SharedHelpers
 
   java_import 'org.jruby.rack.RackContext'
@@ -97,6 +101,20 @@ module SharedHelpers
     end
   end
 
+  ExpectationNotMetError = RSpec::Expectations::ExpectationNotMetError
+
+  def expect_eql_java_bytes(actual, expected)
+    if expected.length != actual.length
+      raise ExpectationNotMetError, "byte[] arrays length differs"
+    end
+    i = 0; loop do
+      if expected[i] != actual[i]
+        raise ExpectationNotMetError, "byte[] arrays differ at #{i}"
+      end
+      break if ( i += 1 ) >= expected.length
+    end
+  end
+
   # org.jruby.Ruby.evalScriptlet helpers - comparing values from different runtimes
 
   def should_eval_as_eql_to(code, expected, options = {})
@@ -133,43 +151,6 @@ module SharedHelpers
     should_eval_as_not_nil(code, runtime)
   end
 
-end
-
-# "stub" streams :
-
-class StubInputStream < java.io.InputStream
-  def initialize(val = "")
-    super()
-    @is = java.io.ByteArrayInputStream.new(val.to_s.to_java_bytes)
-  end
-  def read
-    @is.read
-  end
-end
-
-class StubOutputStream < java.io.OutputStream
-  def initialize
-    super()
-    @os = java.io.ByteArrayOutputStream.new
-  end
-
-  def write(b)
-    @os.write(b)
-  end
-
-  def to_s
-    String.from_java_bytes @os.to_byte_array
-  end
-end
-
-class StubServletInputStream < javax.servlet.ServletInputStream
-  def initialize(val = "")
-    @delegate = StubInputStream.new(val)
-  end
-
-  def method_missing(meth, *args)
-    @delegate.send(meth, *args)
-  end
 end
 
 # NOTE: avoid chunked-patch (loaded by default from a hook at
@@ -236,3 +217,51 @@ java_import org.jruby.rack.mock.MockServletConfig
 java_import org.jruby.rack.mock.MockServletContext
 java_import org.jruby.rack.mock.MockHttpServletRequest
 java_import org.jruby.rack.mock.MockHttpServletResponse
+
+class StubInputStream < java.io.InputStream
+
+  def initialize(val = "")
+    super()
+    @stream = java.io.ByteArrayInputStream.new(val.to_s.to_java_bytes)
+  end
+
+  def read
+    @stream.read
+  end
+
+end
+
+class StubOutputStream < java.io.OutputStream
+
+  def initialize
+    super()
+    @stream = java.io.ByteArrayOutputStream.new
+  end
+
+  def write(b)
+    @stream.write(b)
+  end
+
+  def to_s
+    String.from_java_bytes to_java_bytes
+  end
+
+  def to_java_bytes
+    @stream.to_byte_array
+  end
+
+  def flush; end
+
+end
+
+class StubServletInputStream < javax.servlet.ServletInputStream
+
+  def initialize(val = "")
+    @delegate = StubInputStream.new(val)
+  end
+
+  def method_missing(meth, *args)
+    @delegate.send(meth, *args)
+  end
+
+end

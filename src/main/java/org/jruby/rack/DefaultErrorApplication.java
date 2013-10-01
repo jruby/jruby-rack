@@ -27,54 +27,56 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.jruby.Ruby;
 
 /**
  * Default error application if the Rack error application can not be setup or
  * "jruby.rack.error" handling is turned off (set to false).
- * 
- * By default, this application re-throws the error wrapped into a 
+ *
+ * By default, this application re-throws the error wrapped into a
  * {@link RackException} on {@link #call(org.jruby.rack.RackEnvironment)}.
- * 
+ *
  * @author kares
  */
 public class DefaultErrorApplication extends DefaultRackApplication
     implements ErrorApplication {
-    
+
     protected final RackContext context;
-    
+
     public DefaultErrorApplication() {
         this(null);
     }
-    
+
     DefaultErrorApplication(RackContext context) {
         this.context = context;
     }
-    
+
     @Override
     public Ruby getRuntime() {
         throw new UnsupportedOperationException("getRuntime() not supported");
     }
-    
+
     public void init() {
         // NOOP
     }
-    
-    public void destroy() { 
+
+    public void destroy() {
         // NOOP
     }
-    
+
     @Override
     public RackResponse call(RackEnvironment env) throws RackException {
         return new Response(env); // backwards compatibility
     }
-    
+
     static Exception getException(RackEnvironment env) {
         return (Exception) env.getAttribute(RackEnvironment.EXCEPTION);
     }
-    
+
     /**
      * Backwards compatibility error response.
      * Prints the error stack trace and responds with HTTP 500 without headers.
@@ -85,11 +87,11 @@ public class DefaultErrorApplication extends DefaultRackApplication
         @SuppressWarnings("rawtypes")
         private Map headers = Collections.EMPTY_MAP;
         private String body;
-        
+
         protected final RackEnvironment env;
-        
+
         public Response(RackEnvironment env) { this.env = env; }
-        
+
         public int getStatus() {
             return status;
         }
@@ -98,7 +100,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
         public void setStatus(int status) {
             this.status = status;
         }
-        
+
         @SuppressWarnings("rawtypes")
         public Map getHeaders() {
             return headers;
@@ -108,7 +110,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
         public void setHeaders(@SuppressWarnings("rawtypes") Map headers) {
             this.headers = headers == null ? Collections.EMPTY_MAP : headers;
         }
-        
+
         public String getBody() {
             if ( body == null ) {
                 try {
@@ -126,11 +128,11 @@ public class DefaultErrorApplication extends DefaultRackApplication
         public void setBody(String body) {
             this.body = body;
         }
-        
+
         public Exception getError() {
             return getException(env);
         }
-        
+
         protected String buildErrorBody() {
             StringWriter stringWriter = new StringWriter(1024);
             if ( getError() != null ) {
@@ -141,20 +143,35 @@ public class DefaultErrorApplication extends DefaultRackApplication
             }
             return stringWriter.toString();
         }
-        
+
         public void respond(RackResponseEnvironment response) {
             try {
-                response.defaultRespond(this);
+                defaultRespond(this, response);
             }
             catch (IOException e) {
                 log(RackLogger.WARN, "could not write response body", e);
             }
         }
-        
+
         private void log(String level, String message, Throwable e) {
             if ( context != null ) context.log(level, message, e);
         }
-        
+
     }
-    
+
+    @SuppressWarnings("rawtypes")
+    public static void defaultRespond(final RackResponse rackResponse,
+        final RackResponseEnvironment responseEnv) throws IOException {
+        responseEnv.setStatus( rackResponse.getStatus() );
+        @SuppressWarnings("unchecked")
+        final Set<Map.Entry> headers = rackResponse.getHeaders().entrySet();
+        for ( Iterator<Map.Entry> it = headers.iterator(); it.hasNext(); ) {
+            final Map.Entry entry = it.next();
+            final String key = entry.getKey().toString();
+            final Object value = entry.getValue();
+            responseEnv.addHeader(key, value != null ? value.toString() : null);
+        }
+        responseEnv.getWriter().append( rackResponse.getBody() );
+    }
+
 }

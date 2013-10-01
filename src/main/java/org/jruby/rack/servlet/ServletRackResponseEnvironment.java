@@ -9,17 +9,15 @@ package org.jruby.rack.servlet;
 
 import org.jruby.rack.RackResponse;
 import org.jruby.rack.RackResponseEnvironment;
+import org.jruby.rack.DefaultErrorApplication;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
- * Servlet response wrapper Rack (response) implementation.
+ * The default (servlet) {@link RackResponseEnvironment} implementation.
  *
  * @author nicksieger
  */
@@ -30,18 +28,9 @@ public class ServletRackResponseEnvironment extends HttpServletResponseWrapper
         super(response);
     }
 
-    @SuppressWarnings("rawtypes")
+    @Deprecated
     public void defaultRespond(final RackResponse response) throws IOException {
-        setStatus(response.getStatus());
-        @SuppressWarnings("unchecked")
-        final Set<Map.Entry> headers = response.getHeaders().entrySet();
-        for ( Iterator<Map.Entry> it = headers.iterator(); it.hasNext(); ) {
-            final Map.Entry entry = it.next();
-            final String key = entry.getKey().toString();
-            final Object value = entry.getValue();
-            addHeader(key, value != null ? value.toString() : null);
-        }
-        getWriter().write(response.getBody());
+        DefaultErrorApplication.defaultRespond(response, this);
     }
 
 }

@@ -11,129 +11,148 @@ require 'jruby/rack/response'
 
 describe JRuby::Rack::Response do
 
-  before :each do
-    @status, @headers, @body = double("status"), double("headers"), double("body")
-    @headers.stub(:[]).and_return nil
-    @servlet_response = double "servlet response"
-    @response = JRuby::Rack::Response.new([@status, @headers, @body])
+  let(:response) do
+    status, headers, body = 200, { 'Content-Type' => 'bogus' }, [ '<h1>Hello</h1>' ]
+    JRuby::Rack::Response.new [ status, headers, body ]
   end
 
-  it "should return the status, headers and body" do
-    @response.getStatus.should == @status
-    @response.getHeaders.should == @headers
-    @body.should_receive(:each).and_yield "hello"
-    @response.getBody.should == "hello"
+  let(:servlet_response) { javax.servlet.http.HttpServletResponse.impl {} }
+
+  let(:response_environment) do
+    org.jruby.rack.RackResponseEnvironment.impl do |name, *args|
+      servlet_response.send(name, *args)
+    end
   end
 
-  it "should write the status to the servlet response" do
-    @status.should_receive(:to_i).and_return(200)
-    @servlet_response.should_receive(:setStatus).with(200)
-    @response.write_status(@servlet_response)
+  it "converts status to integer" do
+    response = JRuby::Rack::Response.new [ '202', {}, [''] ]
+    expect(response.to_java.getStatus).to eql 202
   end
 
-  it "should write the headers to the servlet response" do
-    @headers.should_receive(:each). # @headers.each do |k, v|
-      and_yield("Content-Type", "text/html").
-      and_yield("Content-Length", "20").
-      and_yield("Server",  "Apache/2.2.x")
-    @servlet_response.should_receive(:setContentType).with("text/html")
-    @servlet_response.should_receive(:setContentLength).with(20)
-    @servlet_response.should_receive(:addHeader).with("Server", "Apache/2.2.x")
-    @response.write_headers(@servlet_response)
+  it "returns status, headers and body" do
+    expect(response.to_java.getStatus).to eql 200
+    expect(response.to_java.getHeaders['Content-Type']).to eql 'bogus'
+    expect(response.to_java.getBody).to eql "<h1>Hello</h1>"
   end
 
-  it "should write headers with multiple values multiple addHeader invocations" do
-    @headers.should_receive(:each). # @headers.each do |k, v|
-      and_yield("Content-Type", "text/html").
-      and_yield("Content-Length", "20").
-      and_yield("Set-Cookie",  %w(cookie1 cookie2))
-    @servlet_response.should_receive(:setContentType).with("text/html")
-    @servlet_response.should_receive(:setContentLength).with(20)
-    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
-    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
-    @response.write_headers(@servlet_response)
+  it "writes the status to the servlet response" do
+    servlet_response.should_receive(:setStatus).with(200)
+    response.write_status(response_environment)
   end
 
-  it "should write headers whose value contains newlines as multiple addHeader invocations" do
-    @headers.should_receive(:each).
-      and_yield("Set-Cookie",  "cookie1\ncookie2")
-    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
-    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
-    @response.write_headers(@servlet_response)
+  it "writes the headers to the servlet response" do
+    response.to_java.getHeaders.update({
+      "Content-Type" => "text/html",
+      "Content-Length" => '20',
+      "Server" => "Apache/2.2.x"
+    })
+    servlet_response.should_receive(:setContentType).with("text/html")
+    servlet_response.should_receive(:setContentLength).with(20)
+    servlet_response.should_receive(:addHeader).with("Server", "Apache/2.2.x")
+    response.write_headers(response_environment)
   end
 
-  it "should write headers whose value contains newlines as multiple addHeader invocations when string doesn't respond to #each" do
-    str = "cookie1\ncookie2"
-    class << str; undef_method :each; end if str.respond_to?(:each)
-    @headers.should_receive(:each).and_yield "Set-Cookie", str
-    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
-    @servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
-    @response.write_headers(@servlet_response)
+  it "accepts (non-array) body that responds to each" do
+    require 'stringio'
+    response = JRuby::Rack::Response.new [ '202', {}, StringIO.new("1\n2\n3") ]
+    expect(response.to_java.getBody).to eql "1\n2\n3"
   end
 
-  it "should call addIntHeader with integer value" do
-    @headers.should_receive(:each).and_yield "Expires", 0
-    @servlet_response.should_receive(:addIntHeader).with("Expires", 0)
-    @response.write_headers(@servlet_response)
+  it "writes headers with multiple values multiple addHeader invocations" do
+    response.to_java.getHeaders.update({
+      "Content-Type" => "text/html",
+      "Content-Length" => '20',
+      "Set-Cookie" => %w(cookie1 cookie2)
+    })
+    servlet_response.should_receive(:setContentType).with("text/html")
+    servlet_response.should_receive(:setContentLength).with(20)
+    servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
+    servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
+    response.write_headers(response_environment)
   end
 
-  it "should call addDateHeader with date value" do
-    time = Time.now - 1000
-    @headers.should_receive(:each).and_yield "Last-Modified", time
-    @servlet_response.should_receive(:addDateHeader).with("Last-Modified", time.to_i * 1000)
-    @response.write_headers(@servlet_response)
+  it "writes headers whose value contains newlines as multiple addHeader invocations" do
+    response.to_java.getHeaders.update({ "Set-Cookie" => "cookie1\ncookie2" })
+    servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
+    servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
+    response.write_headers(response_environment)
   end
 
-  it "should write the status first, followed by the headers, and the body last" do
-    @servlet_response.should_receive(:committed?).and_return false
-    @response.should_receive(:write_status).ordered
-    @response.should_receive(:write_headers).ordered
-    @response.should_receive(:write_body).ordered
-    @response.respond(@servlet_response)
+  it "writes headers whose value contains newlines as multiple addHeader invocations when string doesn't respond to #each" do
+    value = "cookie1\ncookie2"
+    class << value; undef_method :each; end if value.respond_to?(:each)
+    response.to_java.getHeaders.update({ "Set-Cookie" => value })
+
+    servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie1")
+    servlet_response.should_receive(:addHeader).with("Set-Cookie", "cookie2")
+    response.write_headers(response_environment)
   end
 
-  it "should not write the status, the headers, or the body if the request was forwarded" do
-    @servlet_response.should_receive(:committed?).and_return true
-    @response.should_not_receive(:write_status)
-    @response.should_not_receive(:write_headers)
-    @response.should_not_receive(:write_body)
-    @response.respond(@servlet_response)
+  it "adds an int header when values is a fixnum" do
+    update_response_headers "Expires" => 0
+    response_environment.should_receive(:addIntHeader).with("Expires", 0)
+    response.write_headers(response_environment)
   end
 
-  it "#getBody should call close on the body if the body responds to close" do
-    @body.should_receive(:each).ordered.and_yield "hello"
-    @body.should_receive(:close).ordered
-    @response.getBody.should == "hello"
+  it "adds date header when value is date" do
+    update_response_headers "Last-Modified" => time = Time.now
+    millis = ( time.to_f * 1000.0 ).to_i
+    servlet_response.should_receive(:addDateHeader).with("Last-Modified", millis)
+    response.write_headers(response_environment)
+  end
+
+  it "writes the status first, followed by headers, and body last" do
+    servlet_response.should_receive(:isCommitted).and_return false
+    response.should_receive(:write_status).ordered
+    response.should_receive(:write_headers).ordered
+    response.should_receive(:write_body).ordered
+    response.to_java.respond(response_environment)
+  end
+
+  it "does not write status, headers or body if the request is committed (was forwarded)" do
+    servlet_response.should_receive(:isCommitted).and_return true
+    response.to_java.respond(response_environment)
+  end
+
+  it "calls close on the body if the body responds to close" do
+    body = mock('body')
+    body.should_receive(:each).ordered.and_yield "hello"
+    body.should_receive(:close).ordered
+    response = JRuby::Rack::Response.new [ '200', {}, body ]
+    response.to_java.getBody
   end
 
   it "detects a chunked response when the Transfer-Encoding header is set" do
-    @headers = { "Transfer-Encoding" => "chunked" }
-    @response = JRuby::Rack::Response.new([@status, @headers, @body])
+    headers = { "Transfer-Encoding" => "chunked" }
+    response = JRuby::Rack::Response.new [ 200, headers, ['body'] ]
     # NOTE: servlet container auto handle chunking when flushed no need to set :
-    @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
-    @response.write_headers(@servlet_response)
-    @response.send(:chunked?).should be true
+    servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
+    response.write_headers(response_environment)
+    expect( response.chunked? ).to be true
   end
 
   describe "#write_body" do
 
     let(:stream) do
-      StubOutputStream.new.tap do |stream|
-        @servlet_response.stub(:getOutputStream).and_return stream
-      end
+      stream = StubOutputStream.new
+      response_environment.stub(:getOutputStream).and_return stream
+      stream
     end
 
+    before(:each) { self.stream }
+
     it "writes the body to the stream and flushes when the response is chunked" do
-      @headers = { "Transfer-Encoding" => "chunked" }
-      @response = JRuby::Rack::Response.new([@status, @headers, @body])
-      # NOTE: servlet container auto handle chunking when flushed no need to set :
-      @servlet_response.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
-      @response.write_headers(@servlet_response)
-      @response.send(:chunked?).should == true
-      @body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
+      headers = { "Transfer-Encoding" => "chunked" }
+      response = JRuby::Rack::Response.new [ 200, headers, ['hello', 'there'] ]
       stream.should_receive(:write).exactly(2).times
       stream.should_receive(:flush).exactly(2).times
-      @response.write_body(@servlet_response)
+
+      # NOTE: servlet container auto handle chunking when flushed no need to set :
+      response_environment.should_not_receive(:addHeader).with("Transfer-Encoding", "chunked")
+      response.write_headers(response_environment)
+      expect( response.chunked? ).to be true
+
+      response.write_body(response_environment)
     end
 
     it "dechunks the body when a chunked response is detected",
@@ -162,9 +181,8 @@ describe JRuby::Rack::Response do
           chunked = Rack::Chunked.new nil # nil application
           response = JRuby::Rack::Response.new chunked.chunk(200, headers, body)
         end
-        @servlet_response.stub(:getOutputStream).and_return stream = double("stream")
-        @servlet_response.stub(:addHeader)
-        response.write_headers(@servlet_response)
+
+        response.write_headers(response_environment)
 
         times = 0
         stream.should_receive(:write).exactly(6).times.with do |bytes|
@@ -183,7 +201,7 @@ describe JRuby::Rack::Response do
         end
         stream.should_receive(:flush).exactly(6+1).times # +1 for tail chunk
 
-        response.write_body(@servlet_response)
+        response.write_body(response_environment)
       end
     end
 
@@ -205,9 +223,8 @@ describe JRuby::Rack::Response do
         ]
         body = Rack::Chunked::Body.new body
         response = JRuby::Rack::Response.new([ 200, headers, body ])
-        @servlet_response.stub(:getOutputStream).and_return stream = double("stream")
-        @servlet_response.stub(:addHeader)
-        response.write_headers(@servlet_response)
+
+        response.write_headers(response_environment)
 
         times = 0
         stream.should_receive(:write).exactly(3).times.with do |bytes|
@@ -221,7 +238,8 @@ describe JRuby::Rack::Response do
           end
         end
         stream.should_receive(:flush).exactly(3).times
-        response.write_body(@servlet_response)
+
+        response.write_body(response_environment)
 
       ensure
         JRuby::Rack::Response.dechunk = dechunk
@@ -240,9 +258,8 @@ describe JRuby::Rack::Response do
         "21\r\n a chunk with an invalid length \r\n" # size == 32 (0x20)
       ]
       response = JRuby::Rack::Response.new([ 200, headers, body ])
-      @servlet_response.stub(:getOutputStream).and_return stream = double("stream")
-      @servlet_response.stub(:addHeader)
-      response.write_headers(@servlet_response)
+
+      response.write_headers(response_environment)
 
       times = 0
       stream.should_receive(:write).exactly(5).times.with do |bytes|
@@ -261,88 +278,90 @@ describe JRuby::Rack::Response do
       end
       stream.should_receive(:flush).exactly(5).times
 
-      response.write_body(@servlet_response)
+      response.write_body(response_environment)
     end
 
-    it "flushed the body when no Content-Length set" do
-      @response = JRuby::Rack::Response.new([ 200, {}, @body ])
-      @servlet_response.stub(:addHeader)
-      @body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
-      @response.write_headers(@servlet_response)
+    it "flushes the body (parts) when no content-length set" do
+      response = JRuby::Rack::Response.new [ 200, {}, [ 'hello', 'there' ] ]
+
+      response.write_headers(response_environment)
+
       stream.should_receive(:write).once.ordered
       stream.should_receive(:flush).once.ordered
       stream.should_receive(:write).once.ordered
       stream.should_receive(:flush).once.ordered
-      @response.write_body(@servlet_response)
+      response.write_body(response_environment)
     end
 
-    it "does not flush the body when Content-Length set" do
-      @headers = { "Content-Length" => 10 }
-      @response = JRuby::Rack::Response.new([ 200, @headers, @body ])
-      @servlet_response.stub(:addHeader)
-      @servlet_response.stub(:setContentLength)
-      @body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
-      @response.write_headers(@servlet_response)
-      stream.should_receive(:write).twice
+    it "does not flush the body when content-length set" do
+      headers = { "Content-Length" => 10 }
+      response = JRuby::Rack::Response.new [ 200, headers, [ 'hello', 'there' ] ]
+
+      response.write_headers(response_environment)
+
+      #stream.should_receive(:write).twice
       stream.should_receive(:flush).never
-      @response.write_body(@servlet_response)
+      response.write_body(response_environment)
     end
 
     it "writes the body to the servlet response" do
-      @body.should_receive(:each).
-        and_yield("hello").
-        and_yield("there")
+      response = JRuby::Rack::Response.new [ 200, {}, [ '1', '2', '3' ] ]
 
-      stream.should_receive(:write).exactly(2).times
-
-      @response.write_body(@servlet_response)
+      stream.should_receive(:write).exactly(3).times
+      response.write_body(response_environment)
     end
 
     it "calls close on the body if the body responds to close" do
-      @body.should_receive(:each).ordered.
-        and_yield("hello").
-        and_yield("there")
-      @body.should_receive(:close).ordered
+      body = mock('body')
+      body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
+      body.should_receive(:close).ordered
+      response = JRuby::Rack::Response.new [ 200, {}, body ]
+
       stream.should_receive(:write).exactly(2).times
-
-      @response.write_body(@servlet_response)
+      response.write_body(response_environment)
     end
 
-    it "yields the stream to an object that responds to #call" do
-      @body.should_receive(:call).and_return do |stream|
-        stream.write("".to_java_bytes)
-      end
-      stream.should_receive(:write).exactly(1).times
-
-      @response.write_body(@servlet_response)
-    end
+#    it "yields the stream to an object that responds to #call" do
+#      body = Proc.new { |stream| stream.write '42'.to_java_bytes }
+#      response = JRuby::Rack::Response.new [ 200, {}, body ]
+#
+#      stream.should_receive(:write).with('42').once
+#      response.write_body(response_environment)
+#    end
 
     it "does not yield the stream if the object responds to both #call and #each" do
-      @body.stub(:call)
-      @body.should_receive(:each).and_yield("hi")
-      stream.should_receive(:write)
+      response = JRuby::Rack::Response.new [ 200, {}, body = ['body'] ]
+      def body.call; raise 'yielded' end
 
-      @response.write_body(@servlet_response)
+      stream.should_receive(:write)
+      response.write_body(response_environment)
     end
 
-    it "writes the stream using a channel if the object responds to #to_channel " +
-       "(and closes the channel)" do
-      channel = double "channel"
-      @body.should_receive(:to_channel).and_return channel
-      read_done = false
-      channel.should_receive(:read).exactly(2).times.and_return do |buf|
-        if read_done
-          -1
-        else
-          buf.put "hello".to_java_bytes
-          read_done = true
-          5
-        end
-      end
-      channel.should_receive(:close)
-      stream.should_receive(:write)
+    it "writes a (Temfile) stream using a channel" do
+      body = ( require 'tempfile'; Tempfile.new 'to_channel_spec' )
+      body << "1234567890"; body << "\n"; body << '1234567890'; body.rewind
+      def body.each; raise "each not-expected"; end
+      def body.each_line; raise "each_line not-expected"; end
+      class << body; undef_method :to_path; end if body.respond_to?(:to_path)
 
-      @response.write_body(@servlet_response)
+      response = JRuby::Rack::Response.new [ 200, {}, body ]
+
+      response.write_body(response_environment)
+      expect( stream.to_s ).to eql "1234567890\n1234567890"
+      expect { body.to_channel }.to raise_error IOError, /closed/
+    end
+
+    it "writes a (StringIO) stream using a channel" do
+      body = ( require 'stringio'; StringIO.new '' )
+      body << "1234567890"; body << "\n"; body << '1234567890'; body.rewind
+      def body.each; raise "each not-expected"; end
+      def body.each_line; raise "each_line not-expected"; end
+
+      response = JRuby::Rack::Response.new [ 200, {}, body ]
+
+      response.write_body(response_environment)
+      expect( stream.to_s ).to eql "1234567890\n1234567890"
+      expect { body.close }.to raise_error IOError, /closed/
     end
 
     it "streams a file using a channel if wrapped in body_parts",
@@ -352,28 +371,21 @@ describe JRuby::Rack::Response do
 
       stream = self.stream
       response = JRuby::Rack::Response.new [ 200, body.headers, body ]
-      response.should_receive(:transfer_channel).with do |ch, s|
-        expect( s ).to be stream
-        expect( ch ).to be_a java.nio.channels.FileChannel
-        expect( ch.size ).to eql File.size(path)
-      end
 
-      response.write_body(@servlet_response)
+      response.write_body(response_environment)
+      expect_eql_java_bytes stream.to_java_bytes, File.read(path).to_java_bytes
     end
 
     it "closes original body during write_body", :lib => [ :rails30, :rails31, :rails32 ] do
       body = wrap_file_body File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
 
-      stream = self.stream
       response = JRuby::Rack::Response.new [ 200, body.headers, body ]
-      response.should_receive(:transfer_channel).with do |ch, s|
-        expect( s ).to be stream
-        ch.should_receive(:close)
-      end
-
       body.should_receive(:close)
-      response.write_body(@servlet_response)
+
+      response.write_body(response_environment)
     end
+
+    private
 
     def wrap_file_body(path) # Rails style when doing #send_file
       require 'action_dispatch/http/response'
@@ -392,39 +404,19 @@ describe JRuby::Rack::Response do
       body
     end
 
-    it "uses #transfer_to to copy the stream if available" do
-      channel = double "channel"
-      @body.should_receive(:to_channel).and_return channel
-      chunk_size = JRuby::Rack::Response.channel_chunk_size
-      channel.stub(:size).and_return(chunk_size + 10); channel.stub(:close)
-      channel.should_receive(:transfer_to).ordered.with(0, chunk_size, anything).and_return(chunk_size)
-      channel.should_receive(:transfer_to).ordered.with(chunk_size, chunk_size, anything).and_return(10)
-      stream.should be_kind_of(java.io.OutputStream)
-
-      @response.write_body(@servlet_response)
-    end
-
-    it "writes the stream using a channel if the object responds to #to_inputstream" do
-      @body.should_receive(:to_inputstream).and_return StubInputStream.new("hello")
-      stream.should be_kind_of(java.io.OutputStream)
-
-      @response.write_body(@servlet_response)
-      stream.to_s.should == "hello"
-    end
-
     it "sends a file when file (body) response detected" do
       path = File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
 
       response = JRuby::Rack::Response.new [ 200, {}, FileBody.new(path) ]
       response.should_receive(:send_file).with do |path, response|
         expect( path ).to eql path
-        expect( response).to be @servlet_response
+        expect( response).to be response_environment
       end
-      response.write_body(@servlet_response)
+      response.write_body(response_environment)
     end
 
     # Similar to {ActionController::DataStreaming::FileBody}
-    class FileBody #:nodoc:
+    class FileBody
 
       attr_reader :to_path
 
@@ -455,6 +447,12 @@ describe JRuby::Rack::Response do
       end
     end
 
+  end
+
+  private
+
+  def update_response_headers(headers, response = response)
+    response.to_java.getHeaders.update(headers)
   end
 
 end
