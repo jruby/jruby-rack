@@ -9,7 +9,7 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 require 'tempfile'
 
 describe org.jruby.rack.DefaultRackApplication, "call" do
-  
+
   before :each do
     @rack_env = mock("rack request env")
     @rack_env.stub!(:getContext).and_return @rack_context
@@ -17,7 +17,7 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
     @rack_env.stub!(:getContentLength).and_return(12)
     @rack_response = org.jruby.rack.RackResponse.impl {}
   end
-  
+
   it "invokes the call method on the ruby object and returns the rack response" do
     ruby_object = mock "application"
     ruby_object.should_receive(:call).with(@rack_env).and_return do |servlet_env|
@@ -37,11 +37,11 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
     end
     servlet_context
   end
-  
+
   let(:servlet_request) do
     org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
   end
-  
+
   let(:servlet_response) do
     org.jruby.rack.mock.MockHttpServletResponse.new
   end
@@ -49,13 +49,13 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
   let(:rack_config) do
     org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)
   end
-  
+
   let(:rack_context) do
     org.jruby.rack.servlet.DefaultServletRackContext.new(rack_config)
   end
-  
+
   context "with filter setup (using captures)" do
-    
+
     let(:rack_env) do
       request_capture = org.jruby.rack.servlet.RequestCapture.new(servlet_request, rack_config)
       response_capture = org.jruby.rack.servlet.ResponseCapture.new(servlet_response)
@@ -63,27 +63,27 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
       set_rack_input rack_env
       rack_env
     end
-    
+
     it "should rewind body" do
       it_should_rewind_body
     end
-    
+
   end
-  
+
   context "with servlet setup (no captures)" do
-    
+
     let(:rack_env) do
       rack_env = org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, rack_context)
       set_rack_input rack_env
       rack_env
     end
-    
+
     it "should rewind body" do
       it_should_rewind_body
     end
-    
+
   end
-  
+
   def it_should_rewind_body
     content = ''
     42.times { content << "Answer to the Ultimate Question of Life, the Universe, and Everything ...\n" }
@@ -113,18 +113,18 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
 #      org.jruby.rack.RackResponse.impl {}
 #    end
 #    rack_app.instance_variable_set :@content, content
-    
+
     application = org.jruby.rack.DefaultRackApplication.new
     application.setApplication(rack_app)
     application.call(rack_env)
   end
-  
+
 end
 
 describe org.jruby.rack.DefaultRackApplicationFactory do
-  
+
   java_import org.jruby.rack.DefaultRackApplicationFactory
-  
+
   before :each do
     @app_factory = DefaultRackApplicationFactory.new
   end
@@ -172,23 +172,23 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == "# coding: us-ascii\nrun MyRackApp"
   end
-  
+
   it "initializes default request memory buffer size" do
     @rack_config.should_receive(:getInitialMemoryBufferSize).and_return 42
     @rack_config.should_receive(:getMaximumMemoryBufferSize).and_return 420
     @app_factory.init @rack_context
-    
+
     a_stream = java.io.ByteArrayInputStream.new(''.to_java_bytes)
     input_stream = org.jruby.rack.servlet.RewindableInputStream.new(a_stream)
     input_stream.getCurrentBufferSize.should == 42
     input_stream.getMaximumBufferSize.should == 420
   end
-  
+
   before do
     reset_booter
     JRuby::Rack.context = $servlet_context = nil
   end
-  
+
   it "should init and create application object without a rackup script" do
     $servlet_context = @servlet_context
     # NOTE: a workaround to be able to mock it :
@@ -196,20 +196,20 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       def createRackServletWrapper(runtime, rackup); end
     end
     @app_factory = klass.new
-    
+
     @rack_context.should_receive(:getRealPath).with('/config.ru').and_return nil
     #@rack_context.should_receive(:getContextPath).and_return '/'
     @rack_config.should_receive(:getRackup).and_return nil
     @rack_config.should_receive(:getRackupPath).and_return nil
-    
+
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == nil
-    
+
     @rack_context.should_receive(:log).with do |*args|
       args.first.should == 'WARN' if args.size > 1
       args.last.should =~ /no rackup script found/
     end
-    
+
     @app_factory.should_receive(:createRackServletWrapper) do |runtime, rackup|
       runtime.should be JRuby.runtime
       rackup.should == ""
@@ -218,13 +218,13 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     @app_factory.createApplicationObject(JRuby.runtime)
     JRuby::Rack.booter.should be_a(JRuby::Rack::Booter)
   end
-  
+
   private
-  
+
   def reset_booter
     JRuby::Rack.send(:instance_variable_set, :@booter, self)
   end
-  
+
   def mocked_runtime_application_factory(factory_class = nil)
     factory_class ||= org.jruby.rack.DefaultRackApplicationFactory
     klass = Class.new(factory_class) do
@@ -237,9 +237,9 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     end
     klass.new
   end
-  
+
   context "initialized" do
-    
+
     before :each do
       @rack_context.stub!(:getInitParameter).and_return nil
       @rack_context.stub!(:getResourcePaths).and_return nil
@@ -248,14 +248,14 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         #puts args.inspect
       #end
     end
-    
-    let(:app_factory) do 
+
+    let(:app_factory) do
       app_factory = mocked_runtime_application_factory
       app_factory.init(@rack_context); app_factory
     end
-    
+
     describe "error application" do
-      
+
       it "creates an error application (by default)" do
         app_factory.getErrorApplication.should respond_to(:call)
       end
@@ -295,14 +295,14 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         #expect( app.class.name ).to eql 'Proc'
         expect( app.call ).to eql 'error.app'
       end
-      
+
       it "creates a 'default' error application as a fallback" do
         @rack_config.stub!(:getProperty) do |name|
           name == 'jruby.rack.error.app' ? "run MissingConstantApp" : nil
         end
         error_application = app_factory.getErrorApplication
         expect( error_application ).to be_a(org.jruby.rack.ErrorApplication)
-        
+
         rack_env = mock("rack env")
         rack_env.should_receive(:getAttribute).with('jruby.rack.exception').
           at_least(:once).and_return java.lang.RuntimeException.new('42')
@@ -311,18 +311,18 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         expect( response.getHeaders ).to be_empty
         expect( response.getBody ).to_not be nil
       end
-      
+
     end
 
     describe "newRuntime" do
-      
+
       let(:app_factory) do
         @rack_config = org.jruby.rack.DefaultRackConfig.new
         @rack_context.stub!(:getConfig).and_return @rack_config
         app_factory = org.jruby.rack.DefaultRackApplicationFactory.new
         app_factory.init(@rack_context); app_factory
       end
-      
+
       it "creates a new Ruby runtime with the jruby-rack environment pre-loaded" do
         @runtime = app_factory.newRuntime
         should_not_eval_as_nil "defined?(::Rack)"
@@ -338,7 +338,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       it "loads specified version of rack", :lib => :stub do
         gem_install_rack_unless_installed '1.3.6'
         set_config 'jruby.runtime.env', 'false'
-        
+
         script = "" +
           "# rack.version: ~>1.3.6\n" +
           "Proc.new { 'proc-rack-app' }"
@@ -346,10 +346,10 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         @runtime = app_factory.newRuntime
         @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
         @runtime.evalScriptlet "ENV['GEM_PATH'] = #{ENV['GEM_PATH'].inspect}"
-        
+
         app_factory.checkAndSetRackVersion(@runtime)
         @runtime.evalScriptlet "require 'rack'"
-        
+
         should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
         should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.6'
       end
@@ -357,38 +357,42 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       it "loads bundler with rack", :lib => :stub do
         gem_install_rack_unless_installed '1.3.6'
         set_config 'jruby.runtime.env', 'false'
-        
+
         script = "# encoding: UTF-8\n" +
           "# rack.version: bundler \n" +
           "Proc.new { 'proc-rack-app' }"
         app_factory.setRackupScript script
         @runtime = app_factory.newRuntime
-        
+
         file = Tempfile.new('Gemfile')
         file << "source 'http://rubygems.org'\n gem 'rack', '1.3.6'"
         file.flush
         @runtime.evalScriptlet "ENV['BUNDLE_GEMFILE'] = #{file.path.inspect}"
         @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
         @runtime.evalScriptlet "ENV['GEM_PATH'] = #{ENV['GEM_PATH'].inspect}"
-        
+
         app_factory.checkAndSetRackVersion(@runtime)
         @runtime.evalScriptlet "require 'rack'"
-        
+
         should_not_eval_as_nil "defined?(Bundler)"
         should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
         should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.6'
       end
-      
+
       def gem_install_rack_unless_installed(version)
         begin
-          Gem::Specification.find_by_name 'rack', version
+          if Gem::Specification.respond_to? :find_by_name
+            Gem::Specification.find_by_name 'rack', version
+          else
+            raise Gem::LoadError unless Gem.available? 'rack', version
+          end
         rescue Gem::LoadError
           require 'rubygems/dependency_installer'
           installer = Gem::DependencyInstaller.new
           installer.install 'rack', version
         end
       end
-      
+
       # should not matter on 1.7.x due https://github.com/jruby/jruby/pull/123
       if JRUBY_VERSION < '1.7.0'
         it "does not load any features (until load path is adjusted)" do
@@ -407,39 +411,39 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
           # NOTE: the above scriptlet behaves slightly different on Travis-CI
           # depending on whether jruby + JRUBY_OPTS="--1.9" is used and or using
           # jruby-19mode with the later the LOADED_FEATURES do get expanded e.g. :
-          # 
-          #   "/home/travis/builds/kares/jruby-rack/target/classes/rack/handler/servlet.rb", 
-          #   "/home/travis/builds/kares/jruby-rack/target/classes/jruby/rack.rb", 
-          #   "/home/travis/builds/kares/jruby-rack/target/classes/jruby/rack/environment.rb", 
-          #   "java.rb", 
-          #   "/home/travis/.rvm/rubies/jruby-1.6.8-d19/lib/ruby/site_ruby/shared/builtin/javasupport.rb", 
-          #   "/home/travis/.rvm/rubies/jruby-1.6.8-d19/lib/ruby/site_ruby/shared/builtin/javasupport/java.rb", 
+          #
+          #   "/home/travis/builds/kares/jruby-rack/target/classes/rack/handler/servlet.rb",
+          #   "/home/travis/builds/kares/jruby-rack/target/classes/jruby/rack.rb",
+          #   "/home/travis/builds/kares/jruby-rack/target/classes/jruby/rack/environment.rb",
+          #   "java.rb",
+          #   "/home/travis/.rvm/rubies/jruby-1.6.8-d19/lib/ruby/site_ruby/shared/builtin/javasupport.rb",
+          #   "/home/travis/.rvm/rubies/jruby-1.6.8-d19/lib/ruby/site_ruby/shared/builtin/javasupport/java.rb",
           #   ...
           #
           # compared to jruby --1.9 :
           #
-          #   "enumerator.jar", 
-          #   "rack/handler/servlet.rb", 
-          #   "jruby/rack.rb", 
-          #   "jruby/rack/environment.rb", 
-          #   "java.rb", 
-          #   "builtin/javasupport.rb", 
-          #   "builtin/javasupport/java.rb", 
+          #   "enumerator.jar",
+          #   "rack/handler/servlet.rb",
+          #   "jruby/rack.rb",
+          #   "jruby/rack/environment.rb",
+          #   "java.rb",
+          #   "builtin/javasupport.rb",
+          #   "builtin/javasupport/java.rb",
           #   ...
-          
-          reject_files = 
-            "p =~ /.jar$/ || " + 
-            "p =~ /^builtin/ || " + 
-            "p =~ /java.rb$/ || p =~ /jruby.rb$/ || " + 
-            "p =~ /jruby\\/java.*.rb/ || " + 
-            "p =~ /jruby\\/rack.*.rb/ || " + 
+
+          reject_files =
+            "p =~ /.jar$/ || " +
+            "p =~ /^builtin/ || " +
+            "p =~ /java.rb$/ || p =~ /jruby.rb$/ || " +
+            "p =~ /jruby\\/java.*.rb/ || " +
+            "p =~ /jruby\\/rack.*.rb/ || " +
             "p =~ /^rack\\/handler\\/servlet/"
           # NOTE: fails with JRuby 1.7 as it has all kind of things loaded e.g. :
           # thread.rb, rbconfig.rb, java.rb, lib/ruby/shared/rubygems.rb etc
           should_eval_as_eql_to "$LOADED_FEATURES.reject { |p| #{reject_files} }", []
         end
       end
-        
+
       it "initializes the $servlet_context global variable" do
         @runtime = app_factory.new_runtime
         should_not_eval_as_nil "defined?($servlet_context)"
@@ -448,7 +452,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       it "clears environment variables if the configuration ignores the environment" do
         expect( ENV['HOME'] ).to_not eql ""
         set_config 'jruby.runtime.env', ''
-        
+
         @runtime = app_factory.newRuntime
         should_eval_as_nil "ENV['HOME']"
         should_eval_as_nil "ENV['RUBYOPT']"
@@ -457,7 +461,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       it "sets ENV['PATH'] to an empty string if the configuration ignores the environment" do
         expect( ENV['PATH'] ).to_not be_empty
         set_config 'jruby.runtime.env', 'false'
-        
+
         @runtime = app_factory.newRuntime
         should_eval_as_eql_to "ENV['PATH']", ''
       end
@@ -465,16 +469,16 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       it "allows to keep RUBYOPT with a clear environment" do
         set_config 'jruby.runtime.env', 'false'
         set_config 'jruby.runtime.env.rubyopt', 'true'
-        
+
         app_factory = app_factory_with_RUBYOPT '-rubygems'
         @runtime = app_factory.newRuntime
         should_eval_as_nil "ENV['HOME']"
         should_eval_as_eql_to "ENV['RUBYOPT']", '-rubygems'
       end
-      
+
       it "keeps RUBYOPT by default with empty ENV (backwards compat)" do
         set_config 'jruby.rack.ignore.env', 'true'
-        
+
         app_factory = app_factory_with_RUBYOPT '-ryaml'
         @runtime = app_factory.newRuntime
         should_eval_as_nil "ENV['HOME']"
@@ -486,22 +490,22 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       it "does a complete ENV clean including RUBYOPT" do
         set_config 'jruby.runtime.env', 'false'
         #set_config 'jruby.runtime.env.rubyopt', 'false'
-        
+
         app_factory = app_factory_with_RUBYOPT '-ryaml'
         @runtime = app_factory.newRuntime
-        
+
         should_eval_as_nil "ENV['HOME']"
         should_eval_as_nil "ENV['RUBYOPT']"
         should_eval_as_eql_to "require 'yaml'", true # -ryaml not processed
       end
-      
+
       it "handles jruby.compat.version == '1.9' and starts in 1.9 mode" do
         set_config 'jruby.compat.version', '1.9'
         #@rack_config.stub!(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
         @runtime = app_factory.new_runtime
         @runtime.is1_9.should be_true
       end
-      
+
       it "handles jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
         set_config 'jruby.runtime.arguments', '-X+O -Ke'
         #@rack_config.stub!(:getRuntimeArguments).and_return ['-X+O', '-Ke'].to_java(:String)
@@ -526,38 +530,38 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       end
 
       private
-      
+
       def app_factory_with_RUBYOPT(rubyopt = '-rubygems')
-        app_factory = 
+        app_factory =
           Class.new(org.jruby.rack.DefaultRackApplicationFactory) do
-            
+
             def initialize(rubyopt); super(); @rubyopt = rubyopt; end
-          
+
             def initRuntimeConfig(config)
               env = java.util.HashMap.new config.getEnvironment
               env.put 'RUBYOPT', @rubyopt
               config.setEnvironment env
               super
             end
-            
+
           end.new(rubyopt)
         @rack_config = org.jruby.rack.DefaultRackConfig.new
         @rack_context.stub!(:getConfig).and_return @rack_config
         app_factory.init(@rack_context)
         app_factory
       end
-        
+
       def set_runtime_environment(value)
         set_config 'jruby.runtime.env', value.to_s
       end
-      
+
       def set_config(name, value)
         # NOTE: we're using DefaultRackConfig which checks java.lang.System
         @_prev_properties ||= {}
         @_prev_properties[name] = java.lang.System.getProperty(name)
         java.lang.System.setProperty(name, value)
       end
-      
+
       def reset_config
         (@_prev_properties || {}).each do |key, val|
           if val.nil?
@@ -567,11 +571,11 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
           end
         end
       end
-      
+
       after { reset_config }
-      
+
     end
-    
+
   end
 
   describe "newApplication" do
@@ -635,46 +639,46 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 end
 
 describe org.jruby.rack.rails.RailsRackApplicationFactory do
-  
+
   java_import org.jruby.rack.rails.RailsRackApplicationFactory
-  
+
   before :each do
     @app_factory = RailsRackApplicationFactory.new
     JRuby::Rack.context = @servlet_context
   end
-  
+
   after :each do
     JRuby::Rack.context = nil
   end
-  
+
   it "should init and create application object" do
     # NOTE: a workaround to be able to mock it :
     klass = Class.new(RailsRackApplicationFactory) do
       def createRackServletWrapper(runtime, rackup); end
     end
     @app_factory = klass.new
-    
+
     @rack_context.should_receive(:getRealPath).with('/config.ru').and_return nil
     #@rack_context.should_receive(:getContextPath).and_return '/'
     @rack_config.should_receive(:getRackup).and_return nil
     @rack_config.should_receive(:getRackupPath).and_return nil
 
     @app_factory.init @rack_context
-    
+
     @app_factory.should_receive(:createRackServletWrapper) do |runtime, rackup|
       runtime.should be JRuby.runtime
       rackup.should == "run JRuby::Rack::RailsBooter.to_app"
     end
     JRuby::Rack::RailsBooter.should_receive(:load_environment)
-    
+
     @app_factory.createApplicationObject(JRuby.runtime)
     JRuby::Rack.booter.should be_a(JRuby::Rack::RailsBooter)
   end
-  
+
 end
 
 describe org.jruby.rack.PoolingRackApplicationFactory do
-  
+
   before :each do
     @factory = mock "factory"
     @pooling_factory = org.jruby.rack.PoolingRackApplicationFactory.new @factory
@@ -702,7 +706,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @pooling_factory.getApplication.should == app
     @pooling_factory.getApplicationPool.to_a.should == []
   end
-  
+
   it "accepts an existing application and puts it back in the pool" do
     app = mock "app"
     @pooling_factory.getApplicationPool.to_a.should == []
@@ -718,11 +722,11 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @factory.should_receive(:finishedWithApplication).with(app1) # app1.should_receive(:destroy)
     @factory.should_receive(:finishedWithApplication).with(app2) # app2.should_receive(:destroy)
     @factory.should_receive(:destroy)
-    
+
     @pooling_factory.destroy
     @pooling_factory.getApplicationPool.to_a.should == [] # and empty application pool
   end
-  
+
   it "creates applications during initialization according to the jruby.min.runtimes context parameter" do
     @factory.stub!(:init)
     @factory.stub!(:newApplication).and_return do
@@ -738,7 +742,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   it "does not allow new applications beyond the maximum specified by the jruby.max.runtimes context parameter" do
     @factory.stub!(:init)
     @rack_config.should_receive(:getMaximumRuntimes).and_return 1
-    
+
     @pooling_factory.init(@rack_context)
     @pooling_factory.finishedWithApplication mock("app1")
     @pooling_factory.finishedWithApplication mock("app2")
@@ -752,7 +756,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     rack_application_1 = mock("app1")
     @pooling_factory.finishedWithApplication rack_application_1
     @pooling_factory.finishedWithApplication rack_application_1
-    
+
     @pooling_factory.getApplicationPool.size.should == 1
   end
 
@@ -765,7 +769,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     end
     @rack_config.should_receive(:getInitialRuntimes).and_return 2
     @rack_config.should_receive(:getMaximumRuntimes).and_return 1
-    
+
     @pooling_factory.init(@rack_context)
     @pooling_factory.getApplicationPool.size.should == 2
     @pooling_factory.finishedWithApplication mock("app")
@@ -790,12 +794,12 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return true
     @rack_config.should_receive(:getInitialRuntimes).and_return 4
     @rack_config.should_receive(:getMaximumRuntimes).and_return 8
-    
+
     @pooling_factory.init(@rack_context)
     @pooling_factory.getApplicationPool.size.should >= 4
   end
-  
-  it "throws an exception from getApplication when an app failed to initialize " + 
+
+  it "throws an exception from getApplication when an app failed to initialize " +
      "(even when only a single application initialization fails)" do
     @factory.stub!(:init)
     app_count = java.util.concurrent.atomic.AtomicInteger.new(0)
@@ -812,10 +816,10 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
     @rack_config.should_receive(:getInitialRuntimes).and_return 3
     @rack_config.should_receive(:getMaximumRuntimes).and_return 3
-    
+
     @pooling_factory.init(@rack_context)
     sleep(0.20)
-    
+
     failed = 0
     3.times do
       begin
@@ -828,7 +832,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
       fail "@pooling_factory.getApplication expected to fail once, but failed #{failed}-time(s)"
     end
   end
-  
+
   it "wait until pool is filled when invoking getApplication (with wait set to false)" do
     @factory.stub!(:init)
     @factory.stub!(:newApplication).and_return do
@@ -839,7 +843,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
     @rack_config.should_receive(:getInitialRuntimes).and_return 3
     @rack_config.should_receive(:getMaximumRuntimes).and_return 4
-    
+
     @pooling_factory.init(@rack_context)
     millis = java.lang.System.currentTimeMillis
     @pooling_factory.getApplication.should_not be nil
@@ -857,26 +861,26 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
     @rack_config.should_receive(:getInitialRuntimes).and_return 2
     @rack_config.should_receive(:getMaximumRuntimes).and_return 2
-    
+
     @pooling_factory.init(@rack_context)
     @pooling_factory.acquire_timeout = 1.to_java # second
     millis = java.lang.System.currentTimeMillis
     @pooling_factory.getApplication.should_not be nil
     millis = java.lang.System.currentTimeMillis - millis
     millis.should >= 150 # getApplication waited ~ 0.2 secs
-    
+
     app2 = @pooling_factory.getApplication # now the pool is empty
-    
+
     @pooling_factory.acquire_timeout = 0.1.to_java # second
     millis = java.lang.System.currentTimeMillis
     lambda { @pooling_factory.getApplication }.should raise_error(org.jruby.rack.AcquireTimeoutException)
     millis = java.lang.System.currentTimeMillis - millis
     millis.should >= 90 # waited about ~ 0.1 secs
-    
+
     @pooling_factory.finishedWithApplication(app2) # gets back to the pool
     lambda { @pooling_factory.getApplication.should == app2 }.should_not raise_error
   end
-  
+
   it "gets and initializes new applications until maximum allows to create more" do
     @factory.stub!(:init)
     @factory.should_receive(:newApplication).twice.and_return do
@@ -890,22 +894,22 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
     @pooling_factory.init(@rack_context)
     @pooling_factory.acquire_timeout = 0.10.to_java # second
-    
+
     lambda {
       2.times { @pooling_factory.getApplication.should_not be nil }
     }.should_not raise_error
-    
+
     @factory.should_receive(:getApplication).twice.and_return do
       app = mock "app (get)"; sleep(0.15); app
     end
-    
+
     millis = java.lang.System.currentTimeMillis
     lambda {
       2.times { @pooling_factory.getApplication.should_not be nil }
     }.should_not raise_error
     millis = java.lang.System.currentTimeMillis - millis
     millis.should >= 300 # waited about 2 x 0.15 secs
-    
+
     millis = java.lang.System.currentTimeMillis
     lambda {
       @pooling_factory.getApplication
@@ -913,7 +917,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     millis = java.lang.System.currentTimeMillis - millis
     millis.should >= 90 # waited about ~ 0.10 secs
   end
-  
+
   it "initializes initial runtimes in paralel (with wait set to false)" do
     @factory.stub!(:init)
     @factory.stub!(:newApplication).and_return do
@@ -926,13 +930,13 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @rack_config.stub!(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
     @rack_config.stub!(:getInitialRuntimes).and_return 6
     @rack_config.stub!(:getMaximumRuntimes).and_return 8
-    
+
     @pooling_factory.init(@rack_context)
     @pooling_factory.getApplicationPool.size.should < 6
     sleep(0.45) # 6 x 0.15 == 0.9 but we're booting in paralel
     @pooling_factory.getApplicationPool.size.should >= 6
   end
-  
+
   it "throws from init when application initialization in thread failed" do
     @factory.stub!(:init)
     @factory.stub!(:newApplication).and_return do
@@ -944,7 +948,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     end
     @rack_config.stub!(:getInitialRuntimes).and_return 2
     @rack_config.stub!(:getMaximumRuntimes).and_return 2
-    
+
     raise_error_logged = 0
     @rack_context.stub!(:log).with do |level, msg, e|
       if level == 'ERROR'
@@ -955,13 +959,13 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
         true
       end
     end
-    
+
     expect(lambda {
       @pooling_factory.init(@rack_context)
     }).to raise_error org.jruby.rack.RackInitializationException
     expect( raise_error_logged ).to eql 1 # logs same init exception once
   end
-  
+
 end
 
 describe org.jruby.rack.SerialPoolingRackApplicationFactory do
@@ -971,7 +975,7 @@ describe org.jruby.rack.SerialPoolingRackApplicationFactory do
     @pooling_factory = org.jruby.rack.SerialPoolingRackApplicationFactory.new @factory
     @pooling_factory.context = @rack_context
   end
-  
+
   it "initializes initial runtimes in serial order" do
     @factory.should_receive(:init).with(@rack_context)
     @factory.stub!(:newApplication).and_return do
@@ -983,15 +987,15 @@ describe org.jruby.rack.SerialPoolingRackApplicationFactory do
     end
     @rack_config.should_receive(:getInitialRuntimes).and_return 6
     @rack_config.should_receive(:getMaximumRuntimes).and_return 8
-    
+
     @pooling_factory.init(@rack_context)
     @pooling_factory.getApplicationPool.size.should == 6
   end
-  
+
 end
 
 describe org.jruby.rack.SharedRackApplicationFactory do
-  
+
   before :each do
     @factory = mock "factory"
     @shared_factory = org.jruby.rack.SharedRackApplicationFactory.new @factory
@@ -1002,19 +1006,19 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     @factory.should_receive(:getApplication).and_return app = mock("application")
     @shared_factory.init(@rack_context)
   end
-  
+
   it "throws an exception if the shared application cannot be initialized " do
     @factory.should_receive(:init).with(@rack_context)
     @factory.should_receive(:getApplication).and_raise java.lang.ArithmeticException.new('42')
-    
+
     @rack_context.should_receive(:log).with do |level, msg, e|
-      if level == 'ERROR' 
+      if level == 'ERROR'
         expect( e ).to be_a java.lang.ArithmeticException
       else
         true
       end
     end
-    
+
     begin
       @shared_factory.init(@rack_context)
     rescue org.jruby.rack.RackInitializationException => e
@@ -1029,9 +1033,9 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     @factory.should_receive(:init).with(@rack_context)
     @factory.should_receive(:getApplication).and_raise java.lang.RuntimeException.new('42')
     @factory.should_not_receive(:getErrorApplication) # dispacther invokes this ...
-    
-    begin 
-      @shared_factory.init(@rack_context) 
+
+    begin
+      @shared_factory.init(@rack_context)
     rescue java.lang.RuntimeException => e
       # NOOP
     end
@@ -1064,5 +1068,5 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     @factory.should_receive(:getErrorApplication).and_return app = mock("error app")
     @shared_factory.getErrorApplication.should == app
   end
-  
+
 end
