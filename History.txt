@@ -1,3 +1,7 @@
+== 1.1.13.3 (13/11/13)
+
+ - restore compatibility with JRuby < 1.6.7
+
 == 1.1.13.2 (02/04/13)
 
  - fix warning in Rack::Utils::Response#write_headers
@@ -14,44 +18,44 @@
  - bundle (latest) rack 1.4.2
  - make sure out custom (env) Hash sub-classes behave more Hash-y (#134)
  - support for setting a custom JRuby-Rack Response class (e.g. due #send_file)
- - explicit support for sending file bodies with the possibility to re-define 
+ - explicit support for sending file bodies with the possibility to re-define
    #send_file per app-server
  - make sure we still maintain 2.3 compatibility (fix for #138)
  - fix send_file not being able to handle large > 2GB files (#133)
  - review chunked support - changed default behavior into patching Rack::Chunked
    the old behavior still works by setting jruby.rack.response.chunked = true
  - handle empty (null) strings when parsing (Ruby) magic comments e.g. config.ru
- - versioning review - make sure versions are always "valid" even for SNAPSHOTs 
+ - versioning review - make sure versions are always "valid" even for SNAPSHOTs
 
 == 1.1.12 (28/11/12)
 
- - make (Default)Env to be the environment Hash instance itself since we need 
+ - make (Default)Env to be the environment Hash instance itself since we need
    to handle custom lazy-bound keys but can not use a default proc (#132)
  - support the renew (and skip) session option with servlet store (#131)
  - improve ENV isolation with booted Ruby runtimes
    - jruby.rack.env replaces jruby.rack.ignore.env (now deprecated)
-   - make sure RUBYOPT is ignored (with backwards compat) 
-   - jruby.rack.env.rubyopt for finer RUBYOPT behavior control 
+   - make sure RUBYOPT is ignored (with backwards compat)
+   - jruby.rack.env.rubyopt for finer RUBYOPT behavior control
    - allow env value to be specified from config
  - solve the rackup "chicken - egg" problem with a plain Rack app
    - with a magic comment in config.ru # rack.version: ~>1.3.6
    - for bundle exec "emulation" use # rack.version: bundler
- - (temporarily) introduce RackEnvironment.ToIO to avoid instance vars 
+ - (temporarily) introduce RackEnvironment.ToIO to avoid instance vars
    on non-persistent Java types (JRuby 1.7 warning)
  - add a JRuby::Rack::Helpers module for helper functions
  - decorating factories (e.g. pooling factory) can now be distinguished
  - refactored / updated error handling :
    - move the decision about throwing the init error into the listener
-   - unify exception handling across decorating app factories with support 
+   - unify exception handling across decorating app factories with support
      for configuring exception handling with the *jruby.rack.error* option
    - make sure init errors are thrown from pooling factory's init
    - added an ErrorApplication marker interface
    - dispatcher might now decide what status to return (or throw)
  - let the servlet container deal with null response header values
  - expose the rack context using JRuby::Rack.context= in embed scenario
- - rely less on booter and $servlet_context whenever possible 
-   - moved Booter#logger into JRuby::Rack.logger 
-   - boot! now 'exports' JRuby::Rack.app_path and public_path 
+ - rely less on booter and $servlet_context whenever possible
+   - moved Booter#logger into JRuby::Rack.logger
+   - boot! now 'exports' JRuby::Rack.app_path and public_path
    - changed $servlet_context refs to JRuby::Rack.context
  - maven + rake (joint) build review
    run mvn compile on rake compile instead of custom javac
@@ -59,23 +63,23 @@
  - removed LoggerConfigurationException used with Commons-Logging
  - fix invalid /tmp detected jruby home LOAD_PATH on 1.7.0
  - support setting compat version 2.0 (on JRuby 1.7.x)
- - application layout (JRuby::Rack::AppLayout) improvements : 
+ - application layout (JRuby::Rack::AppLayout) improvements :
    - introduce app.root context param (similar to rails.root)
-   - RailsWebInfLayout is now the same as WebInfLayout 
-   - added (generic) FileSystemLayout (handles rails apps as well) 
-   - RailsFilesystemLayout is FileSystemLayout for compatibility 
-   - make sure paths are expanded when using a FS layout 
+   - RailsWebInfLayout is now the same as WebInfLayout
+   - added (generic) FileSystemLayout (handles rails apps as well)
+   - RailsFilesystemLayout is FileSystemLayout for compatibility
+   - make sure paths are expanded when using a FS layout
    - moved change_working_directory code to happen within Booter
    - fix Booter failing to boot! when layout.gem_path nil (or empty)
  - Rails booter's RAILS_ENV should default to RACK_ENV if set
  - make sure original rack body gets always closed with optimized send_file
    might lead to side-effects such as not releasing database connections (#123)
- - some more useful Servlet API Ruby extensions ('attribute' managing objects 
+ - some more useful Servlet API Ruby extensions ('attribute' managing objects
    such as ServletContext behave similar to Hash)
 
 == 1.1.10 (04/09/12)
 
- - correctly dechunk data from response and handle flushing, 
+ - correctly dechunk data from response and handle flushing,
    finally Rails 3.1+ `render stream: true` support (#117)
  - initial compatibility with Rails master (getting torwards 4.0.0.beta)
    known issues: ActionController::Live seems to end up with a dead-lock
@@ -90,30 +94,30 @@
 == 1.1.8 (17/08/12)
 
  - introduced ServletEnv for cases when it's desirable to fully use the servlet
-   environment to create the rack env (and not let Rack::Request parse params 
+   environment to create the rack env (and not let Rack::Request parse params
    but rely on the parameters already parsed and available from the servlet
-   request #110). this is an experimental feature that might change in the 
+   request #110). this is an experimental feature that might change in the
    future and requires setting 'jruby.rack.handler.env' param to 'servlet' !
  - separated out Env (LazyEnv) into a separate file :
-   - Env got refactored into DefaultEnv (with lazyness built-in) 
-   - LazyEnv got removed as it is not longer necessary 
-   - Rack::Handler::Servlet.env sets the used env conversion class 
+   - Env got refactored into DefaultEnv (with lazyness built-in)
+   - LazyEnv got removed as it is not longer necessary
+   - Rack::Handler::Servlet.env sets the used env conversion class
  - introduce a generic getNumberProperty on RackConfig
- - introduce a base RackException and add a custom AcquireTimeoutException for 
+ - introduce a base RackException and add a custom AcquireTimeoutException for
    pool timeouts (related to jruby.runtime.acquire.timeout parameter)
- - RackInitializationException changed to unchecked as it inherits from 
+ - RackInitializationException changed to unchecked as it inherits from
    RackException now
  - PoolingRackApplication (and related) polishing :
-   - avoid creating a new application from getApplication when a permit is 
+   - avoid creating a new application from getApplication when a permit is
      granted but pool is empty
-   - support to wait till pool becomes ready by default otherwise wait until 
-     initial application objects are present in the pool before returning 
+   - support to wait till pool becomes ready by default otherwise wait until
+     initial application objects are present in the pool before returning
      (controlled with the jruby.runtime.init.wait accepting true/false/integer)
-   - edge case handling where (in case were set to not wait for initialization) 
+   - edge case handling where (in case were set to not wait for initialization)
      we should wait for an initializer thread to put an application into the pool
    - allow acquire timeout (jruby.runtime.acquire.timeout param) to be specified
-     as a decimal number for finer control and decreased the timeout default 
-     from 30s to 10s (although seems still too high for a default) 
+     as a decimal number for finer control and decreased the timeout default
+     from 30s to 10s (although seems still too high for a default)
  - jruby runtime pooling for plain Rack applications (not just Rails)
 
 == 1.1.7 (21/06/12)
