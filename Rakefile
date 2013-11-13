@@ -122,13 +122,13 @@ task :test => :spec
 POM_FILE = 'pom.xml'
 VERSION_FILE = 'src/main/ruby/jruby/rack/version.rb'
 
-GEM_VERSION = 
+GEM_VERSION =
   if File.read(VERSION_FILE).match(/VERSION =.*?['"](.+)['"].*?$/m)
     $1
   else
     raise "VERSION = ... not matched in #{VERSION_FILE}"
   end
-  
+
 JAR_VERSION = GEM_VERSION.sub(/\.(\D+\w*)/, '-\1') # 1.1.1.SNAPSHOT -> 1.1.1-SNAPSHOT
 
 desc "Print the (Maven) class-path"
@@ -169,7 +169,7 @@ task :debug do
   Rake::Task['jar'].invoke
 end
 
-file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") => 
+file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") =>
   "src/main/ruby/jruby/rack/version.rb" do |t|
   mkdir_p File.dirname(t.name)
   cp t.prerequisites.first, t.name
@@ -239,7 +239,8 @@ task :release => [:release_checks, :clean, :gem] do
   sh "git tag #{GEM_VERSION}"
   sh "mvn deploy -DupdateReleaseInfo=true"
   sh "gem push target/jruby-rack-#{GEM_VERSION}.gem"
-  sh "git push --tags #{ENV['GIT_REMOTE'] || 'origin'} master"
+  git_branch = `git branch | sed -n '/\* /s///p'`.chomp
+  sh "git push --tags #{ENV['GIT_REMOTE'] || 'origin'} #{git_branch}"
   puts "released JRuby-Rack #{GEM_VERSION} update next SNAPSHOT version using `rake update_version`"
 end
 
@@ -258,11 +259,11 @@ task :update_version do
   end
   if version != GEM_VERSION
     gem_version = Gem::Version.create(version) # validates VERSION string
-    
+
     lines = File.readlines(VERSION_FILE) # update JRuby::Rack::VERSION
     lines.each {|l| l.sub!(/VERSION =.*$/, %{VERSION = '#{version}'})}
     File.open(VERSION_FILE, "wb") { |f| f.puts *lines }
-    
+
     pom_version = if gem_version.prerelease?
       segs = gem_version.segments
       "#{segs[0...-1].join('.')}-#{segs[-1]}"
