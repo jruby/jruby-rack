@@ -9,6 +9,8 @@ package org.jruby.rack;
 
 import java.io.IOException;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
@@ -31,14 +33,14 @@ import static org.jruby.rack.DefaultRackConfig.isIgnoreRUBYOPT;
  * Default application factory creates a new application instance on each
  * {@link #getApplication()} invocation. It does not manage applications it
  * creates (except for the error application that is assumed to be shared).
- * 
+ *
  * @see SharedRackApplicationFactory
  * @see PoolingRackApplicationFactory
- * 
+ *
  * @author nicksieger
  */
 public class DefaultRackApplicationFactory implements RackApplicationFactory {
-    
+
     private String rackupScript, rackupLocation;
     private ServletRackContext rackContext;
     private RubyInstanceConfig runtimeConfig;
@@ -55,11 +57,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
         return factory;
     }
-    
+
     public RackContext getRackContext() {
         return rackContext;
     }
-    
+
     public String getRackupScript() {
         return rackupScript;
     }
@@ -68,12 +70,12 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         this.rackupScript = rackupScript;
         this.rackupLocation = null;
     }
-    
+
     /**
      * Initialize this factory using the given context.
      * <br/>
      * NOTE: exception handling is left to the outer factory.
-     * @param rackContext 
+     * @param rackContext
      */
     public void init(final RackContext rackContext) {
         // NOTE: this factory is not supposed to be directly exposed
@@ -136,14 +138,14 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return errorApplication;
     }
 
-    /** 
+    /**
      * Set the (default) error application to be used.
      * @param errorApplication
      */
     public synchronized void setErrorApplication(RackApplication errorApplication) {
         this.errorApplication = errorApplication;
     }
-    
+
     public void destroy() {
         if (errorApplication != null) {
             synchronized(this) {
@@ -182,7 +184,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                     errorApp = errorAppPath = null;
                 }
             }
-            
+
         }
         if (errorApp == null) {
             errorApp = "require 'jruby/rack/error_app' \n" +
@@ -216,7 +218,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     /**
-     * @see #createRackServletWrapper(Ruby, String, String) 
+     * @see #createRackServletWrapper(Ruby, String, String)
      * @param runtime
      * @param rackup
      * @return (Ruby) built Rack Servlet handler
@@ -239,7 +241,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             ")", filename
         );
     }
-    
+
     static interface ApplicationObjectFactory {
         IRubyObject create(Ruby runtime) ;
     }
@@ -248,17 +250,32 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         setupJRubyManagement();
         return initRuntimeConfig(new RubyInstanceConfig());
     }
-    
+
     protected RubyInstanceConfig initRuntimeConfig(final RubyInstanceConfig config) {
         final RackConfig rackConfig = rackContext.getConfig();
-        
+
         config.setLoader(Thread.currentThread().getContextClassLoader());
-        
-        // Don't affect the container and sibling web apps when ENV changes are 
-        // made inside the Ruby app ... 
+
+        // Don't affect the container and sibling web apps when ENV changes are
+        // made inside the Ruby app ...
         // There are quite a such things made in a typical Bundler based app.
-        config.setUpdateNativeENVEnabled(false);
-        
+        try { // config.setUpdateNativeENVEnabled(false) using reflection :
+            final Method setUpdateNativeENVEnabled =
+                config.getClass().getMethod("setUpdateNativeENVEnabled", Boolean.TYPE);
+            setUpdateNativeENVEnabled.invoke(config, false);
+        }
+        catch (NoSuchMethodException e) { // ignore method has been added in JRuby 1.6.7
+            rackContext.log(RackLogger.DEBUG, "envronment changes made inside one app " +
+            "might affect another, consider updating JRuby if this is an issue");
+        }
+        catch (IllegalAccessException e) {
+            rackContext.log(RackLogger.WARN, "failed to disable updating native environment", e);
+            // throw new RackException(e);
+        }
+        catch (InvocationTargetException e) {
+            throw new RackException(e.getTargetException());
+        }
+
         final Map<String, String> newEnv = rackConfig.getRuntimeEnvironment();
         if ( newEnv != null ) {
             if ( ! newEnv.containsKey("PATH") ) {
@@ -281,10 +298,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             }
             config.setEnvironment(newEnv);
         }
-        
+
         // Process arguments, namely any that might be in RUBYOPT
         config.processArguments(rackConfig.getRuntimeArguments());
-        
+
         if ( rackConfig.getCompatVersion() != null ) {
             config.setCompatVersion(rackConfig.getCompatVersion());
         }
@@ -306,25 +323,25 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 config.setJRubyHome(home);
             }
         }
-        catch (Exception e) { 
+        catch (Exception e) {
             rackContext.log(RackLogger.DEBUG, "won't set-up jruby.home from jar", e);
         }
 
         return config;
     }
-    
+
     public Ruby newRuntime() throws RaiseException {
         final Ruby runtime = Ruby.newInstance(runtimeConfig);
         initRuntime(runtime);
         return runtime;
     }
-    
+
     /**
      * Initializes the runtime (exports the context, boots the Rack handler).
-     * 
+     *
      * NOTE: (package) visible due specs
-     * 
-     * @param runtime 
+     *
+     * @param runtime
      */
     void initRuntime(final Ruby runtime) {
         // set $servlet_context :
@@ -333,7 +350,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         );
         // load our (servlet) Rack handler :
         runtime.evalScriptlet("require 'rack/handler/servlet'");
-        
+
         // NOTE: this is experimental stuff and might change in the future :
         String env = rackContext.getConfig().getProperty("jruby.rack.handler.env");
         // currently supported "env" values are 'default' and 'servlet'
@@ -347,7 +364,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         if ( response != null ) { // JRuby::Rack::JettyResponse -> 'jruby/rack/jetty_response'
             runtime.evalScriptlet("Rack::Handler::Servlet.response = '" + response + "'");
         }
-        
+
         // configure (Ruby) bits and pieces :
         String dechunk = rackContext.getConfig().getProperty("jruby.rack.response.dechunk");
         Boolean dechunkFlag = (Boolean) DefaultRackConfig.toStrictBoolean(dechunk, null);
@@ -362,11 +379,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     /**
      * Checks and sets the required Rack version (if specified as a magic comment).
-     * 
+     *
      * e.g. # rack.version: ~>1.3.6
-     * 
+     *
      * NOTE: (package) visible due specs
-     * 
+     *
      * @param runtime
      * @return the rack version requirement
      */
@@ -378,42 +395,42 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         catch (Exception e) {
             rackContext.log(RackLogger.DEBUG, "could not read 'rack.version' magic comment from rackup", e);
         }
-        
+
         if ( rackVersion == null ) {
             // NOTE: try matching a `require 'bundler/setup'` line ... maybe not ?!
         }
         if ( rackVersion != null ) {
             runtime.evalScriptlet("require 'rubygems'");
-            
+
             if ( rackVersion.equalsIgnoreCase("bundler") ) {
                 runtime.evalScriptlet("require 'bundler/setup'");
             }
             else {
-                rackContext.log(RackLogger.DEBUG, "detected 'rack.version' magic comment, " + 
+                rackContext.log(RackLogger.DEBUG, "detected 'rack.version' magic comment, " +
                         "will use `gem 'rack', '"+ rackVersion +"'`");
                 runtime.evalScriptlet("gem 'rack', '"+ rackVersion +"' if defined? gem");
             }
         }
         return rackVersion;
     }
-    
+
     private RackApplication createApplication(final ApplicationObjectFactory appFactory) {
         return new RackApplicationImpl(appFactory);
     }
-    
+
     /**
      * The application implementation this factory is producing.
      */
     private class RackApplicationImpl extends DefaultRackApplication {
-        
+
         private final Ruby runtime;
         final ApplicationObjectFactory appFactory;
-        
+
         RackApplicationImpl(ApplicationObjectFactory appFactory) {
             this.runtime = newRuntime();
             this.appFactory = appFactory;
         }
-        
+
         @Override
         public void init() {
             try {
@@ -424,14 +441,14 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 throw e;
             }
         }
-        
+
         @Override
         public void destroy() {
             runtime.tearDown(false);
         }
-        
+
     }
-    
+
     private RackApplication createErrorApplication(final ApplicationObjectFactory appFactory) {
         final Ruby runtime = newRuntime();
         return new DefaultErrorApplication() {
@@ -445,7 +462,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             }
         };
     }
-    
+
     private void captureMessage(final RaiseException re) {
         try {
             IRubyObject rubyException = re.getException();
@@ -517,7 +534,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
         return this.rackupScript = rackup;
     }
-    
+
     private void configureDefaults() {
         // configure (default) jruby.rack.request.size.[...] parameters :
         final RackConfig config = rackContext.getConfig();
@@ -526,16 +543,16 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         Integer maxSize = config.getMaximumMemoryBufferSize();
         if (maxSize == null) maxSize = RewindableInputStream.MAX_BUFFER_SIZE;
         if (iniSize.intValue() > maxSize.intValue()) iniSize = maxSize;
-        
+
         RewindableInputStream.setDefaultInitialBufferSize(iniSize);
         RewindableInputStream.setDefaultMaximumBufferSize(maxSize);
     }
-    
+
     private static void setupJRubyManagement() {
         final String jrubyMxEnabled = "jruby.management.enabled";
         if ( ! "false".equalsIgnoreCase( System.getProperty(jrubyMxEnabled) ) ) {
             System.setProperty(jrubyMxEnabled, "true");
         }
     }
-    
+
 }
