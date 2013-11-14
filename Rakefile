@@ -164,11 +164,6 @@ task :jar => target_jar
 
 task :default => :jar
 
-task :debug do
-  ENV['DEBUG'] = 'true'
-  Rake::Task['jar'].invoke
-end
-
 file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") =>
   "src/main/ruby/jruby/rack/version.rb" do |t|
   mkdir_p File.dirname(t.name)
@@ -186,21 +181,21 @@ task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do |t|
   require 'date'
   Dir.chdir("target/gem") do
     rm_f 'jruby-rack.gemspec'
-    gemspec = Gem::Specification.new do |s|
-      s.name = %q{jruby-rack}
-      s.version = GEM_VERSION
-      s.authors = ['Nick Sieger']
-      s.date = Date.today.to_s
-      s.description = %{JRuby-Rack is a combined Java and Ruby library that adapts the Java Servlet API to Rack. For JRuby only.}
-      s.summary = %q{Rack adapter for JRuby and Servlet Containers}
-      s.email = ['nick@nicksieger.com']
-      s.files = FileList["./**/*"].exclude("*.gem").map{|f| f.sub(/^\.\//, '')}
-      s.homepage = %q{http://jruby.org}
-      s.has_rdoc = false
-      s.rubyforge_project = %q{jruby-extras}
+    gemspec = Gem::Specification.new do |gem|
+      gem.name = %q{jruby-rack}
+      gem.version = GEM_VERSION
+      gem.authors = ['Nick Sieger']
+      gem.date = Date.today.to_s
+      gem.license = 'MIT'
+      gem.description = %{JRuby-Rack is a combined Java and Ruby library that adapts the Java Servlet API to Rack. For JRuby only.}
+      gem.summary = %q{Rack adapter for JRuby and Servlet Containers}
+      gem.email = ['nick@nicksieger.com']
+      gem.files = FileList["./**/*"].exclude("*.gem").map{ |f| f.sub(/^\.\//, '') }
+      gem.homepage = %q{http://jruby.org}
+      gem.has_rdoc = false
     end
     defined?(Gem::Builder) ? Gem::Builder.new(gemspec).build : Gem::Package.build(gemspec)
-    File.open('jruby-rack.gemspec', 'w') {|f| f << gemspec.to_ruby }
+    File.open('jruby-rack.gemspec', 'w') { |f| f << gemspec.to_ruby }
     mv FileList['*.gem'], '..'
   end
 end
