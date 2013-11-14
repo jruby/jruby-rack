@@ -118,13 +118,13 @@ task :test => :spec
 POM_FILE = 'pom.xml'
 VERSION_FILE = 'src/main/ruby/jruby/rack/version.rb'
 
-GEM_VERSION = 
+GEM_VERSION =
   if File.read(VERSION_FILE).match(/VERSION =.*?['"](.+)['"].*?$/m)
     $1
   else
     raise "VERSION = ... not matched in #{VERSION_FILE}"
   end
-  
+
 JAR_VERSION = GEM_VERSION.sub(/\.(\D+\w*)/, '-\1') # 1.1.1.SNAPSHOT -> 1.1.1-SNAPSHOT
 
 desc "Print the (Maven) class-path"
@@ -160,7 +160,7 @@ task :jar => target_jar
 
 task :default => :jar
 
-file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") => 
+file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") =>
   "src/main/ruby/jruby/rack/version.rb" do |t|
   mkdir_p File.dirname(t.name)
   cp t.prerequisites.first, t.name
@@ -177,21 +177,21 @@ task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do |t|
   require 'date'
   Dir.chdir("target/gem") do
     rm_f 'jruby-rack.gemspec'
-    gemspec = Gem::Specification.new do |s|
-      s.name = %q{jruby-rack}
-      s.version = GEM_VERSION
-      s.authors = ['Nick Sieger']
-      s.date = Date.today.to_s
-      s.description = %{JRuby-Rack is a combined Java and Ruby library that adapts the Java Servlet API to Rack. For JRuby only.}
-      s.summary = %q{Rack adapter for JRuby and Servlet Containers}
-      s.email = ['nick@nicksieger.com']
-      s.files = FileList["./**/*"].exclude("*.gem").map{|f| f.sub(/^\.\//, '')}
-      s.homepage = %q{http://jruby.org}
-      s.has_rdoc = false
-      s.rubyforge_project = %q{jruby-extras}
+    gemspec = Gem::Specification.new do |gem|
+      gem.name = %q{jruby-rack}
+      gem.version = GEM_VERSION
+      gem.authors = ['Nick Sieger']
+      gem.date = Date.today.to_s
+      gem.license = 'MIT'
+      gem.description = %{JRuby-Rack is a combined Java and Ruby library that adapts the Java Servlet API to Rack. For JRuby only.}
+      gem.summary = %q{Rack adapter for JRuby and Servlet Containers}
+      gem.email = ['nick@nicksieger.com']
+      gem.files = FileList["./**/*"].exclude("*.gem").map{ |f| f.sub(/^\.\//, '') }
+      gem.homepage = %q{http://jruby.org}
+      gem.has_rdoc = false
     end
     defined?(Gem::Builder) ? Gem::Builder.new(gemspec).build : Gem::Package.build(gemspec)
-    File.open('jruby-rack.gemspec', 'w') {|f| f << gemspec.to_ruby }
+    File.open('jruby-rack.gemspec', 'w') { |f| f << gemspec.to_ruby }
     mv FileList['*.gem'], '..'
   end
 end
@@ -250,11 +250,11 @@ task :update_version do
   end
   if version != GEM_VERSION
     gem_version = Gem::Version.create(version) # validates VERSION string
-    
+
     lines = File.readlines(VERSION_FILE) # update JRuby::Rack::VERSION
     lines.each {|l| l.sub!(/VERSION =.*$/, %{VERSION = '#{version}'})}
     File.open(VERSION_FILE, "wb") { |f| f.puts *lines }
-    
+
     pom_version = if gem_version.prerelease?
       segs = gem_version.segments
       "#{segs[0...-1].join('.')}-#{segs[-1]}"
