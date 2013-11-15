@@ -13,6 +13,7 @@ describe ResponseCapture do
     servlet_response = MockHttpServletResponse.new
 
     response_capture = ResponseCapture.new(servlet_response)
+    response_capture.isHandled.should == false
     response_capture.isOutputAccessed.should == false
     
     response_capture.getOutputStream
