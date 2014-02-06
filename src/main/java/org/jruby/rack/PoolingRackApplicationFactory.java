@@ -406,8 +406,12 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
 
     @Override
     public Collection<RackApplication> getManagedApplications() {
+        int initSize = initialSize != null ? initialSize.intValue() : -1;
         synchronized (applicationPool) {
-            if ( applicationPool.isEmpty() ) return Collections.emptySet();
+            if ( applicationPool.isEmpty() ) {
+                if ( initSize > 0 ) return null;
+                return Collections.emptySet();
+            }
             Collection<RackApplication> snapshot =
                     new ArrayList<RackApplication>(applicationPool);
             return Collections.unmodifiableCollection(snapshot);
