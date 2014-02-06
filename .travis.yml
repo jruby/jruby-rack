@@ -1,14 +1,15 @@
+branches:
+  only:
+    - master
+    - 1.1-stable
+    - maintenance-1.1.13
 rvm:
   # NOTE: do not use jruby-19mode otherwise some specs might fail
   # @see ruby/rack/application_spec.rb for an explanation on this
   #- jruby-18mode
   #- jruby-19mode
   - jruby
-  - jruby-head
-branches:
-  only:
-    - master
-    - maintenance-1.1.13
+  #- jruby-head
 gemfile:
   - Gemfile
   - gemfiles/rails23.gemfile
@@ -16,5 +17,8 @@ gemfile:
   - gemfiles/rails31.gemfile
   - gemfiles/rails32.gemfile
 env:
-  - JRUBY_OPTS="--1.8 --server -Xcext.enabled=false -Xcompile.invokedynamic=false"
-  - JRUBY_OPTS="--1.9 --server -Xcext.enabled=false -Xcompile.invokedynamic=false"
+  - JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+  - JRUBY_OPTS="--1.9 $JRUBY_OPTS"
+#before_script: export JRUBY_OPTS="--server -Xcompile.invokedynamic=false"
+before_install:
+  - ((echo $BUNDLE_GEMFILE | grep rails23) && jruby --1.9 -S gem update --system 1.8.29) || true
