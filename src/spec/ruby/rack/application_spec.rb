@@ -336,7 +336,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       end
 
       it "loads specified version of rack", :lib => :stub do
-        gem_install_rack_unless_installed '1.3.6'
+        gem_install_rack_unless_installed '1.3.10'
         set_config 'jruby.runtime.env', 'false'
 
         script = "" +
@@ -351,7 +351,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         @runtime.evalScriptlet "require 'rack'"
 
         should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
-        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.6'
+        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.10'
       end
 
       it "loads bundler with rack", :lib => :stub do
