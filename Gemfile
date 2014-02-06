@@ -1,13 +1,15 @@
 source "https://rubygems.org"
 
-if rack_version = ENV['RACK_VERSION']
-  gem 'rack', rack_version
-else
-  gem 'rack', '~> 1.4.5'
+group :development do
+  if rack_version = ENV['RACK_VERSION']
+    gem 'rack', rack_version
+  else
+    gem 'rack', '~> 1.4.5'
+  end
 end
 
-gem "appraisal"
+gem 'appraisal', :require => nil
 
-gem 'rake', :group => :test
-gem 'rspec', '~> 2.11', :group => :test
-gem 'jruby-openssl', :group => :test
+gem 'rake', :group => :test, :require => nil
+gem 'rspec', '~> 2.13.0', :group => :test
+gem 'jruby-openssl', :group => :test if JRUBY_VERSION < '1.7.0'
