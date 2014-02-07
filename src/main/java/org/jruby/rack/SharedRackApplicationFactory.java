@@ -67,7 +67,7 @@ public class SharedRackApplicationFactory extends RackApplicationFactoryDecorato
 
     @Override
     public Collection<RackApplication> getManagedApplications() {
-        if ( application == null ) return null;
+        if ( application == null ) return Collections.emptySet();
         return Collections.singleton( application );
     }
 

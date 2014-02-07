@@ -935,6 +935,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @pooling_factory.getApplicationPool.size.should < 6
     sleep(0.45) # 6 x 0.15 == 0.9 but we're booting in paralel
     @pooling_factory.getApplicationPool.size.should >= 6
+
+    expect( @pooling_factory.getManagedApplications ).to_not be_empty
+    expect( @pooling_factory.getManagedApplications.size ).to eql 6
   end
 
   it "throws from init when application initialization in thread failed" do
@@ -964,6 +967,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
       @pooling_factory.init(@rack_context)
     }).to raise_error org.jruby.rack.RackInitializationException
     expect( raise_error_logged ).to eql 1 # logs same init exception once
+
+    # NOTE: seems it's not such a good idea to return empty on init error
+    # expect( @pooling_factory.getManagedApplications ).to be_empty
   end
 
 end
@@ -1005,6 +1011,10 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     @factory.should_receive(:init).with(@rack_context)
     @factory.should_receive(:getApplication).and_return app = mock("application")
     @shared_factory.init(@rack_context)
+
+    expect( @shared_factory.getManagedApplications ).to_not be_empty
+    expect( @shared_factory.getManagedApplications.size ).to eql 1
+    expect( @shared_factory.getManagedApplications.to_a[0] ).to be app
   end
 
   it "throws an exception if the shared application cannot be initialized " do
@@ -1027,6 +1037,8 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     else
       fail "expected to rescue RackInitializationException"
     end
+
+    expect( @shared_factory.getManagedApplications ).to be_empty
   end
 
   it "throws initialization exception on each getApplication call if init failed" do
