@@ -49,7 +49,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
         return status != null ? status : 200;
     }
 
-    protected boolean isStatusSet() {
+    public boolean isStatusSet() {
         return status != null;
     }
 
@@ -106,6 +106,48 @@ public class ResponseCapture extends HttpServletResponseWrapper {
         if ( handleStatus(302, false) ) {
             super.sendRedirect(path);
         }
+    }
+
+    private boolean headerSet;
+
+    public boolean isHeaderSet() {
+        return headerSet;
+    }
+
+    @Override
+    public void addDateHeader(String name, long date) {
+        super.addDateHeader(name, date);
+        headerSet = true;
+    }
+
+    @Override
+    public void addHeader(String name, String value) {
+        super.addHeader(name, value);
+        headerSet = true;
+    }
+
+    @Override
+    public void addIntHeader(String name, int value) {
+        super.addIntHeader(name, value);
+        headerSet = true;
+    }
+
+    @Override
+    public void setHeader(String name, String value) {
+        super.setHeader(name, value);
+        headerSet = true;
+    }
+
+    @Override
+    public void setDateHeader(String name, long date) {
+        super.setDateHeader(name, date);
+        headerSet = true;
+    }
+
+    @Override
+    public void setIntHeader(String name, int value) {
+        super.setIntHeader(name, value);
+        headerSet = true;
     }
 
     @Override
@@ -170,8 +212,10 @@ public class ResponseCapture extends HttpServletResponseWrapper {
      * @see #handleStatus(int, boolean)
      */
     public boolean isHandled() {
-        if ( ! isStatusSet() ) return false;
-        return ! notHandledStatuses.contains( getStatus() );
+        // setting a header should consider the response to be handled
+        if ( ! isStatusSet() ) return isHeaderSet();
+        if ( notHandledStatuses.contains( getStatus() ) ) return false;
+        return true;
     }
 
     public Collection<Integer> getNotHandledStatuses() {

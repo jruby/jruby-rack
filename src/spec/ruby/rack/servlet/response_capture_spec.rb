@@ -31,4 +31,19 @@ describe org.jruby.rack.servlet.ResponseCapture do
     expect( response_capture.isHandled ).to be true
   end
 
+  it "is considered handled when header is added" do
+    # NOTE: this is what TC's DefaultServlet does on doOptions() :
+    response_capture.addHeader "Allow", "GET, POST, OPTIONS"
+
+    expect( response_capture.isHandled ).to be true
+    expect( response_capture.getStatus ).to eql 200
+  end
+
+  it "is considered handled when a header is set" do
+    response_capture.setIntHeader "Timeout", 42
+    
+    expect( response_capture.isHandled ).to be true
+    expect( response_capture.getStatus ).to eql 200
+  end
+
 end
