@@ -5,5 +5,5 @@ source "https://rubygems.org"
 gem "appraisal", :require=>nil
 gem "rake", :group=>:test, :require=>nil
 gem "rspec", "~> 2.13.0", :group=>:test
-gem "rails", "~> 2.3.15"
+gem "rails", "~> 2.3.18"
 

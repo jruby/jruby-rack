@@ -38,6 +38,6 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal
-  rails (~> 2.3.15)
+  rails (~> 2.3.18)
   rake
   rspec (~> 2.13.0)
