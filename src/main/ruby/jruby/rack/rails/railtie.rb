@@ -10,7 +10,7 @@ require 'pathname'
 
 module JRuby::Rack
   class Railtie < ::Rails::Railtie
-    
+
     # settings Rails.public_path in an initializer seems "too" late @see #99
     config.before_configuration do |app|
       paths, public = app.config.paths, Pathname.new(JRuby::Rack.public_path)
@@ -36,11 +36,14 @@ module JRuby::Rack
     initializer "set_servlet_logger", :before => :initialize_logger do |app|
       app.config.logger ||= begin
         logger = JRuby::Rack.logger
-        logger.level = logger.class.const_get(app.config.log_level.to_s.upcase)
+        log_level = app.config.log_level || :info
+        logger.level = logger.class.const_get(log_level.to_s.upcase)
+        log_formatter = app.config.log_formatter
+        logger.formatter = log_formatter if log_formatter && logger.respond_to?(:formatter=)
         if defined?(ActiveSupport::TaggedLogging)
           if ActiveSupport::TaggedLogging.is_a?(Class) # Rails 3.2
             logger = ActiveSupport::TaggedLogging.new(logger)
-          else # Rails 4.0 
+          else # Rails 4.0
             # extends the logger as well as it's logger.formatter instance :
             # NOTE: good idea to keep or should we use a clone as Rails.logger ?
             #dup_logger = logger.dup
