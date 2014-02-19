@@ -35,10 +35,10 @@ module JRuby::Rack
 
     initializer "set_servlet_logger", :before => :initialize_logger do |app|
       app.config.logger ||= begin
-        logger = JRuby::Rack.logger
-        log_level = app.config.log_level || :info
+        config = app.config; logger = JRuby::Rack.logger
+        log_level = config.log_level || :info
         logger.level = logger.class.const_get(log_level.to_s.upcase)
-        log_formatter = app.config.log_formatter
+        log_formatter = config.log_formatter if config.respond_to?(:log_formatter) # >= 4.0
         logger.formatter = log_formatter if log_formatter && logger.respond_to?(:formatter=)
         if defined?(ActiveSupport::TaggedLogging)
           if ActiveSupport::TaggedLogging.is_a?(Class) # Rails 3.2
