@@ -58,7 +58,7 @@ describe JRuby::Rack::RailsBooter do
   it "gets rails environment from rack environmnent" do
     ENV.delete('RAILS_ENV')
     ENV['RACK_ENV'] = 'development'
-    @rack_context.stub!(:getInitParameter)
+    @rack_context.stub(:getInitParameter)
     booter.boot!
     booter.rails_env.should == 'development'
   end
@@ -133,10 +133,10 @@ describe JRuby::Rack::RailsBooter do
     booter.setup_sessions
     booter.instance_variable_set :@load_environment, true
 
-    ::Rack::Adapter::Rails.should_receive(:new).and_return app = mock("rails adapter")
+    ::Rack::Adapter::Rails.should_receive(:new).and_return app = double("rails adapter")
     app.should_receive(:call)
 
-    env = { "java.servlet_request" => mock("servlet request") }
+    env = { "java.servlet_request" => double("servlet request") }
     booter.to_app.call(env)
     env['rails.session_options'].should have_key(:java_servlet_request)
     env['rails.session_options'][:java_servlet_request].should == env["java.servlet_request"]
@@ -216,7 +216,7 @@ describe JRuby::Rack::RailsBooter do
     it "should set the application configuration's public path" do
       paths = {}
       %w( public public/javascripts public/stylesheets ).each { |p| paths[p] = [p] }
-      app = mock("app"); app.stub_chain(:config, :paths).and_return(paths)
+      app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
       public_path = Pathname.new(booter.public_path)
 
       Rails::Railtie.config.__before_configuration.size.should == 1
@@ -236,8 +236,8 @@ describe JRuby::Rack::RailsBooter do
     describe "logger" do
 
       before do
-        @app = mock "app"
-        @app.stub(:config).and_return @config = mock("config")
+        @app = double "app"
+        @app.stub(:config).and_return @config = double("config")
         @config.instance_eval do
           def logger; @logger; end
           def logger=(logger); @logger = logger; end
@@ -307,14 +307,14 @@ describe JRuby::Rack::RailsBooter do
     end
 
     it "should return the Rails.application instance" do
-      app = mock "app"
+      app = double "app"
       Rails.application = app
       booter.to_app.should == app
     end
 
     it "should set config.action_controller.relative_url_root based on ENV['RAILS_RELATIVE_URL_ROOT']" do
       ENV['RAILS_RELATIVE_URL_ROOT'] = '/blah'
-      app = mock "app"
+      app = double "app"
       app.stub_chain(:config, :action_controller, :relative_url_root)
       app.config.action_controller.should_receive(:relative_url_root=).with("/blah")
       before_config = Rails::Railtie.__initializer.detect { |i| i.first =~ /url/ }
@@ -345,7 +345,7 @@ describe JRuby::Rack::RailsBooter do
     #
     it "should not set config.action_controller.relative_url_root if the controller doesn't respond to that method" do
       ENV['RAILS_RELATIVE_URL_ROOT'] = '/blah'
-      app = mock "app"
+      app = double "app"
       app.stub_chain(:config, :action_controller, :respond_to?)
       # obviously this only tests whatever rails version is loaded
       # I'm unsure of the best way right now
@@ -367,11 +367,11 @@ end
 describe JRuby::Rack, "Rails controller extensions" do
   before :each do
     @controller = ActionController::Base.new
-    @controller.stub!(:request).and_return(request = mock("request"))
-    @controller.stub!(:response).and_return(response = mock("response"))
-    request.stub!(:env).and_return({"java.servlet_request" => (@servlet_request = mock("servlet request"))})
+    @controller.stub(:request).and_return(request = double("request"))
+    @controller.stub(:response).and_return(response = double("response"))
+    request.stub(:env).and_return({"java.servlet_request" => (@servlet_request = double("servlet request"))})
     @headers = {}
-    response.stub!(:headers).and_return @headers
+    response.stub(:headers).and_return @headers
   end
 
   it "should add a #servlet_request method to ActionController::Base" do
@@ -380,7 +380,7 @@ describe JRuby::Rack, "Rails controller extensions" do
   end
 
   it "should add a #forward_to method for forwarding to another servlet" do
-    @servlet_response = mock "servlet response"
+    @servlet_response = double "servlet response"
     @controller.request.should_receive(:forward_to).with("/forward.jsp")
 
     @controller.forward_to "/forward.jsp"

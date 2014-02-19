@@ -11,7 +11,7 @@ java_import "org.jruby.rack.servlet.RequestCapture"
 
 describe RequestCapture do
   before do
-    @servlet_context = mock("servlet_context")
+    @servlet_context = double("servlet_context")
   end
 
   # See: https://github.com/jruby/jruby-rack/issues/44
@@ -24,7 +24,7 @@ describe RequestCapture do
     request_capture = RequestCapture.new(servlet_request)
     request_capture.get_parameter('foo').should == 'bar'
   end
-  
+
   it "reports if input has been accessed" do
     servlet_request = MockHttpServletRequest.new(@servlet_context)
     servlet_request.parameters = {}
@@ -32,10 +32,10 @@ describe RequestCapture do
 
     request_capture = RequestCapture.new(servlet_request)
     request_capture.isInputAccessed.should == false
-    
+
     request_capture.getInputStream
     request_capture.isInputAccessed.should == true
-    
+
     request_capture = RequestCapture.new(servlet_request)
     request_capture.getReader
     request_capture.isInputAccessed.should == true

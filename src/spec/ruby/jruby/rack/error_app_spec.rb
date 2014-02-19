@@ -9,11 +9,11 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'jruby/rack/errors'
 
 describe JRuby::Rack::ErrorApp do
-  
+
   before :each do
-    @servlet_request = mock "servlet request"
+    @servlet_request = double "servlet request"
     @env = {'java.servlet_request' => @servlet_request}
-    @file_server = mock "file server"
+    @file_server = double "file server"
     @error_app = JRuby::Rack::ErrorApp.new @file_server
   end
 
@@ -24,14 +24,14 @@ describe JRuby::Rack::ErrorApp do
 
   it "should determine the response status code based on the exception in the servlet attribute" do
     init_exception
-    @file_server.stub!(:call).and_return [404, {}, []]
+    @file_server.stub(:call).and_return [404, {}, []]
     @error_app.call(@env).should == [500, {}, []]
     @env["rack.showstatus.detail"].should == "something went wrong"
   end
 
   it "should return 503 if there is a nested InterruptedException" do
     init_exception java.lang.InterruptedException.new
-    @file_server.stub!(:call).and_return [404, {}, []]
+    @file_server.stub(:call).and_return [404, {}, []]
     @error_app.call(@env).should == [503, {}, []]
   end
 

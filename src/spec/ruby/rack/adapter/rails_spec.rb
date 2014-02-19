@@ -11,9 +11,9 @@ require 'rack/adapter/rails_cgi'
 
 if defined? ActionController::Base.session_options # :rails23
   # avoid ArgumentError with real 2.3 (default) middleware-stack :
-  # A key is required to write a cookie containing the session data. 
+  # A key is required to write a cookie containing the session data.
   # Use config.action_controller.session = ... in config/environment.rb
-  ActionController::Base.session_options.update({ 
+  ActionController::Base.session_options.update({
     :key => "_testapp_session", :secret => "some secret phrase" * 42
   })
 else # :stub
@@ -24,11 +24,11 @@ end
 
 describe Rack::Adapter::Rails do
   before :each do
-    ActionController::Base.stub!(:page_cache_extension).and_return ".html"
+    ActionController::Base.stub(:page_cache_extension).and_return ".html"
     @rails = Rack::Adapter::Rails.new
     class << @rails; public :instance_variable_set; end
-    @file_server = mock "file server"
-    @file_server.stub!(:root).and_return "/tmp/root/public"
+    @file_server = double "file server"
+    @file_server.stub(:root).and_return "/tmp/root/public"
     @rails.instance_variable_set "@file_server", @file_server
     @env = {}
   end
@@ -71,9 +71,9 @@ end
 
 describe Rack::Adapter::RailsCgi::CGIWrapper, "#header" do
   before :each do
-    @request, @response = mock("request"), mock("response")
-    @request.stub!(:env).and_return({"REQUEST_METHOD" => "GET"})
-    @request.stub!(:body).and_return ""
+    @request, @response = double("request"), double("response")
+    @request.stub(:env).and_return({"REQUEST_METHOD" => "GET"})
+    @request.stub(:body).and_return ""
     @wrapper = Rack::Adapter::RailsCgi::CGIWrapper.new(@request, @response)
   end
 

@@ -45,7 +45,7 @@ describe JRuby::Rack::Queues::MessagePublisher do
   end
 
   it "should allow omitting the message argument and specifying a block" do
-    message = mock "message"
+    message = double "message"
     JRuby::Rack::Queues::Registry.should_receive(:publish_message).with("FooQ").ordered.and_yield message
     JRuby::Rack::Queues::Registry.should_receive(:publish_message).with("BarQ").ordered.and_yield message
     obj = Object.new

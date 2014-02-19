@@ -11,5 +11,5 @@ end
 gem 'appraisal', :require => nil
 
 gem 'rake', :group => :test, :require => nil
-gem 'rspec', '~> 2.13.0', :group => :test
+gem 'rspec', '~> 2.14.1', :group => :test
 gem 'jruby-openssl', :group => :test if JRUBY_VERSION < '1.7.0'

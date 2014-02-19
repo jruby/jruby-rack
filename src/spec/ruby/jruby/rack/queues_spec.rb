@@ -11,28 +11,28 @@ require 'active_record'
 require 'jruby/rack/queues'
 
 describe JRuby::Rack::Queues do
-  
+
   before :each do
     JRuby::Rack.context = @servlet_context
-    @queue_manager = mock "queue manager"
-    @servlet_context.stub!(:getAttribute).and_return @queue_manager
+    @queue_manager = double "queue manager"
+    @servlet_context.stub(:getAttribute).and_return @queue_manager
     @registry = JRuby::Rack::Queues::QueueRegistry.new
   end
 
   after(:all) { JRuby::Rack.context = nil }
-  
+
   def mock_connection
-    conn_factory = mock "connection factory"
+    conn_factory = double "connection factory"
     @queue_manager.should_receive(:getConnectionFactory).and_return conn_factory
-    conn = mock "connection"
+    conn = double "connection"
     conn_factory.should_receive(:createConnection).ordered.and_return conn
     conn
   end
 
   def mock_message(text)
-    message = mock "message"
-    message.stub!(:getBooleanProperty).and_return false
-    message.stub!(:getText).and_return text
+    message = double "message"
+    message.stub(:getBooleanProperty).and_return false
+    message.stub(:getText).and_return text
     message
   end
 
@@ -48,10 +48,10 @@ describe JRuby::Rack::Queues do
 
   it "#publish_message should create a session, producer and message" do
     conn = mock_connection
-    queue = mock "queue"
-    session = mock "session"
-    producer = mock "producer"
-    message = mock "message"
+    queue = double "queue"
+    session = double "session"
+    producer = double "producer"
+    message = double "message"
     @queue_manager.should_receive(:lookup).with("FooQ").and_return queue
     conn.should_receive(:createSession).and_return session
     conn.should_receive(:close)
@@ -65,10 +65,10 @@ describe JRuby::Rack::Queues do
 
   it "#publish_message should accept a block that allows construction of the message" do
     conn = mock_connection
-    queue = mock "queue"
-    session = mock "session"
-    producer = mock "producer"
-    message = mock "message"
+    queue = double "queue"
+    session = double "session"
+    producer = double "producer"
+    message = double "message"
     @queue_manager.should_receive(:lookup).with("FooQ").and_return queue
     conn.should_receive(:createSession).and_return session
     conn.should_receive(:close)
@@ -82,10 +82,10 @@ describe JRuby::Rack::Queues do
 
   it "#publish_message should create a text message when handed a string message argument" do
     conn = mock_connection
-    queue = mock "queue"
-    session = mock "session"
-    producer = mock "producer"
-    message = mock "message"
+    queue = double "queue"
+    session = double "session"
+    producer = double "producer"
+    message = double "message"
     @queue_manager.should_receive(:lookup).with("FooQ").and_return queue
     conn.should_receive(:createSession).and_return session
     conn.should_receive(:close)
@@ -97,7 +97,7 @@ describe JRuby::Rack::Queues do
   end
 
   it "#register_listener should ensure the queue manager is listening and store the listener" do
-    listener = mock "listener"
+    listener = double "listener"
     @queue_manager.should_receive(:listen).with "FooQ"
     @registry.register_listener "FooQ", listener
     listener.should_receive(:call).with("hi")
@@ -105,7 +105,7 @@ describe JRuby::Rack::Queues do
   end
 
   it "#unregister_listener should remove the listener and close the queue" do
-    listener = mock "listener"
+    listener = double "listener"
     @queue_manager.should_receive(:listen).with "FooQ"
     @registry.register_listener "FooQ", listener
     @queue_manager.should_receive(:close).with "FooQ"
@@ -118,9 +118,9 @@ describe JRuby::Rack::Queues do
   end
 
   it "#register_listener should allow multiple listeners per queue" do
-    listener1 = mock "listener 1"
-    listener2 = mock "listener 2"
-    @queue_manager.stub!(:listen)
+    listener1 = double "listener 1"
+    listener2 = double "listener 2"
+    @queue_manager.stub(:listen)
     @registry.register_listener "FooQ", listener1
     @registry.register_listener "FooQ", listener2
     listener1.should_receive(:call).with("hi")
@@ -129,8 +129,8 @@ describe JRuby::Rack::Queues do
   end
 
   it "#register_listener should only allow a given listener to be registered once per queue" do
-    listener = mock "listener"
-    @queue_manager.stub!(:listen)
+    listener = double "listener"
+    @queue_manager.stub(:listen)
     @registry.register_listener "FooQ", listener
     @registry.register_listener "FooQ", listener
     listener.should_receive(:call).with("hi").once
@@ -139,9 +139,9 @@ describe JRuby::Rack::Queues do
 
 
   it "#unregister_listener should only remove the given listener and not close the queue" do
-    listener1 = mock "listener 1"
-    listener2 = mock "listener 2"
-    @queue_manager.stub!(:listen)
+    listener1 = double "listener 1"
+    listener2 = double "listener 2"
+    @queue_manager.stub(:listen)
     @queue_manager.should_not_receive(:close)
     @registry.register_listener "FooQ", listener1
     @registry.register_listener "FooQ", listener2
@@ -151,9 +151,9 @@ describe JRuby::Rack::Queues do
   end
 
   it "should deliver the message to all listeners, but raise the first of any exceptions raised" do
-    listener1 = mock "listener 1"
-    listener2 = mock "listener 2"
-    @queue_manager.stub!(:listen)
+    listener1 = double "listener 1"
+    listener2 = double "listener 2"
+    @queue_manager.stub(:listen)
     @registry.register_listener "FooQ", listener1
     @registry.register_listener "FooQ", listener2
     listener1.should_receive(:call).with("hi").and_raise "error 1"
@@ -165,8 +165,8 @@ end
 describe JRuby::Rack::Queues::MessageDispatcher do
   before :each do
     $servlet_context = @servlet_context
-    @message = mock "JMS message"
-    @listener = mock "listener"
+    @message = double "JMS message"
+    @listener = double "listener"
   end
 
   it "should dispatch to an object that responds to #on_jms_message and provide the JMS message" do
@@ -192,26 +192,26 @@ describe JRuby::Rack::Queues::MessageDispatcher do
   end
 
   it "should grab text out of the message if it responds to #getText" do
-    @message.stub!(:getBooleanProperty).and_return false
+    @message.stub(:getBooleanProperty).and_return false
     @message.should_receive(:getText).and_return "hello"
     @listener.should_receive(:call).with("hello")
     JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
   end
 
   it "should pass the message through otherwise" do
-    @message.stub!(:getBooleanProperty).and_return false
+    @message.stub(:getBooleanProperty).and_return false
     @listener.should_receive(:call).with(@message)
     JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
   end
 
   it "should dispatch to a listener that responds to #call" do
-    @message.stub!(:getBooleanProperty).and_return false
+    @message.stub(:getBooleanProperty).and_return false
     @listener.should_receive(:call).with(@message)
     JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
   end
 
   it "should dispatch to a listener that responds to #on_message" do
-    @message.stub!(:getBooleanProperty).and_return false
+    @message.stub(:getBooleanProperty).and_return false
     @listener.should_receive(:on_message).with(@message)
     JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
   end
@@ -224,13 +224,13 @@ describe JRuby::Rack::Queues::MessageDispatcher do
   end
 
   it "should instantiate a class and dispatch to it" do
-    @message.stub!(:getBooleanProperty).and_return false
+    @message.stub(:getBooleanProperty).and_return false
     JRuby::Rack::Queues::MessageDispatcher.new(Listener).dispatch(@message)
     Listener.message.should == @message
   end
 
   it "should log and re-raise any exceptions that are raised during dispatch" do
-    @message.stub!(:getBooleanProperty).and_return false
+    @message.stub(:getBooleanProperty).and_return false
     @listener.should_receive(:on_message).and_raise "something went wrong"
     @servlet_context.should_receive(:log).with(/something went wrong/)
     lambda do
@@ -239,7 +239,7 @@ describe JRuby::Rack::Queues::MessageDispatcher do
   end
 
   it "should raise an exception if it was unable to dispatch to anything" do
-    @message.stub!(:getBooleanProperty).and_return false
+    @message.stub(:getBooleanProperty).and_return false
     lambda do
       JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
     end.should raise_error
