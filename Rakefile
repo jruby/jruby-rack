@@ -239,8 +239,9 @@ task :release => [:release_checks, :clean, :gem] do
   puts "released JRuby-Rack #{GEM_VERSION} update next SNAPSHOT version using `rake update_version`"
 end
 
+desc "Update version to next (1.2.3 -> 1.2.4.SNAPSHOT) or passed VERSION"
 task :update_version do
-  version = ENV["VERSION"] || ''
+  version = ENV['VERSION'] || ''
   if version.empty? # next version
     gem_version = Gem::Version.create(GEM_VERSION)
     if gem_version.segments.last.is_a?(String)
@@ -251,6 +252,8 @@ task :update_version do
       version = version + ['SNAPSHOT']
     end
     version = version.join('.')
+  else
+    version.sub!('-', '.') # normalize "maven" style VERSION
   end
   if version != GEM_VERSION
     gem_version = Gem::Version.create(version) # validates VERSION string
