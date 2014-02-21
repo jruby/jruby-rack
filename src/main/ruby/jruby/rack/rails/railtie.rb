@@ -69,9 +69,7 @@ module JRuby::Rack
       # @see https://github.com/jruby/jruby-rack/issues/42
       # loading it after the environment boots is too late as it might be set in a user
       # config/initializer: MyApp::Application.config.session_store :java_servlet_store
-      ActionDispatch::Session.module_eval do
-        autoload :JavaServletStore, "action_dispatch/session/java_servlet_store"
-      end
+      ActionDispatch::Session.autoload :JavaServletStore, "action_dispatch/session/java_servlet_store"
     end
 
   end
