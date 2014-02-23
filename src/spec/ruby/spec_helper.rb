@@ -171,7 +171,7 @@ RSpec.configure do |config|
     ! lib.include?(CURRENT_LIB)
   }
 
-  config.backtrace_clean_patterns = [
+  config.backtrace_exclusion_patterns = [
     /bin\//,
     #/gems/,
     /spec\/spec_helper\.rb/,

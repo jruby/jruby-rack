@@ -142,6 +142,7 @@ describe "integration" do
       before :all do
         initialize_rails nil, base_path
       end
+      after(:all)  { restore_rails }
 
       it "loaded rack ~> 1.2" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -187,6 +188,7 @@ describe "integration" do
       before :all do
         initialize_rails 'production', base_path
       end
+      after(:all)  { restore_rails }
 
       it "loaded META-INF/init.rb" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -228,9 +230,8 @@ describe "integration" do
 
     context "initialized" do
 
-      before :all do
-        initialize_rails 'production', base_path
-      end
+      before(:all) { initialize_rails 'production', base_path }
+      after(:all)  { restore_rails }
 
       it "loaded rack ~> 1.4" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -284,9 +285,8 @@ describe "integration" do
 
     context "initialized" do
 
-      before :all do
-        initialize_rails 'production', base_path
-      end
+      before(:all) { initialize_rails 'production', base_path }
+      after(:all)  { restore_rails }
 
       it "loaded rack ~> 1.5" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -332,9 +332,8 @@ describe "integration" do
 
     context "initialized" do
 
-      before :all do
-        initialize_rails nil, base_path
-      end
+      before(:all) { initialize_rails 'production', base_path }
+      after(:all)  { restore_rails }
 
       it "loaded rack ~> 1.1" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -381,22 +380,32 @@ describe "integration" do
     should_eval_as_eql_to script, "1\nsecond"
   end
 
+  ENV_COPY = ENV.dup
+
   def initialize_rails(env = nil, servlet_context = @servlet_context)
     if ! servlet_context || servlet_context.is_a?(String)
       base = servlet_context.is_a?(String) ? servlet_context : nil
       servlet_context = new_servlet_context(base)
     end
     listener = org.jruby.rack.rails.RailsServletContextListener.new
+    # Travis-CI might have RAILS_ENV=test set, which is not desired for us :
+    #if ENV['RAILS_ENV'] || ENV['RACK_ENV']
+    #ENV['RAILS_ENV'] = env; ENV.delete('RACK_ENV')
+    #end
+    the_env = "GEM_HOME=#{ENV['GEM_HOME']},GEM_PATH=#{ENV['GEM_PATH']}"
+    the_env << "\nRAILS_ENV=#{env}" if env
+    servlet_context.addInitParameter("jruby.runtime.env", the_env)
+
     yield(servlet_context, listener) if block_given?
     listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
     @rack_context = servlet_context.getAttribute("rack.context")
     @rack_factory = servlet_context.getAttribute("rack.factory")
-    # Travis-CI might have RAILS_ENV=test set, which is not desired for us :
-    #if ENV['RAILS_ENV'] || ENV['RACK_ENV']
-    servlet_context.addInitParameter("jruby.runtime.env", '')
-    #end
-    servlet_context.addInitParameter("rails.env", env.to_s) if env
     @servlet_context ||= servlet_context
+  end
+
+  def restore_rails
+    #ENV['RACK_ENV'] = ENV_COPY['RACK_ENV'] if ENV.key?('RACK_ENV')
+    #ENV['RAILS_ENV'] = ENV_COPY['RAILS_ENV'] if ENV.key?('RAILS_ENV')
   end
 
   def new_servlet_context(base_path = nil)
