@@ -1,6 +1,6 @@
 language: ruby
-#bundler_args: --without development
-script: bundle exec rake spec
+bundler_args: --without development
+script: rake spec
 branches:
   only:
     - master
