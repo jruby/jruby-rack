@@ -14,10 +14,10 @@ module JRuby::Rack
   class Booter
 
     @@boot_hooks = []
-    
+
     # Allows the define a on (load) hook to be executed during the boot.
     # These hooks are expected to execute when the application is fully loaded.
-    # Thus e.g. in Rails they might be delayed until the actual Rails boot 
+    # Thus e.g. in Rails they might be delayed until the actual Rails boot
     # process is finishing up.
     def self.on_boot(options = {}, &block)
       if @@boot_hooks.nil? # run immediately
@@ -27,14 +27,14 @@ module JRuby::Rack
         @@boot_hooks << [ block, options ]
       end
     end
-    
-    # Manually execute the given (load) hook. 
+
+    # Manually execute the given (load) hook.
     # Called for all hooks during {#run_boot_hooks!}.
     # @see #on_boot
     def self.run_boot_hook(base, options, block)
       options[:yield] ? block.call(base) : base.instance_eval(&block)
     end
-    
+
     # Runs all registered load hooks (and clear them out than).
     # It's safe to call this multiple times - hooks will only execute once.
     # @see #on_boot
@@ -46,24 +46,24 @@ module JRuby::Rack
         run_boot_hook(hook_base, options, hook)
       end
     end
-    
+
     attr_reader :rack_context, :rack_env
-    
+
     def initialize(rack_context = nil)
       @rack_context = rack_context || JRuby::Rack.context || raise("rack context not available")
       @rack_env = ENV['RACK_ENV'] || @rack_context.getInitParameter('rack.env') || 'production'
     end
 
     # @return [Class] the (default) layout class to use
-    # @see #layout_class 
+    # @see #layout_class
     def self.default_layout_class; WebInfLayout; end
     # @deprecated use the class method
     def default_layout_class; self.class.default_layout_class; end
-    
+
     # @return [Class] the layout class to use
     # @see #layout
     def layout_class
-      @layout_class ||= begin 
+      @layout_class ||= begin
         klass = @rack_context.getInitParameter 'jruby.rack.layout_class'
         klass.nil? ? self.class.default_layout_class : Helpers.resolve_constant(klass, JRuby::Rack)
       end
@@ -104,10 +104,11 @@ module JRuby::Rack
       export_global_settings
       change_working_directory
       load_settings_from_init_rb
+      set_relative_url_root
       run_boot_hooks
       self
     end
-    
+
     protected
 
     # @note called during {#boot!}
@@ -116,14 +117,14 @@ module JRuby::Rack
       JRuby::Rack.app_path = layout.app_path
       JRuby::Rack.public_path = layout.public_path
     end
-    
+
     # Changes the working directory (`Dir.chdir`) is necessary.
     # @note called during {#boot!}
     def change_working_directory
       app_path = layout.app_path
       Dir.chdir(app_path) if app_path && File.directory?(app_path)
     end
-    
+
     # Adjust the load path (mostly due some J2EE servers slightly misbehaving).
     # @note called during {#boot!}
     def adjust_load_path
@@ -146,22 +147,22 @@ module JRuby::Rack
         # NOTE: most servers end up with 'classpath:/...' entries :
         #  JRuby.home: "classpath:/META-INF/jruby.home"
         #  $LOAD_PATH (JRuby 1.6.8 --1.9):
-        # 
+        #
         #   "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.9"
         #   "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
         #   "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
         #   "classpath:/META-INF/jruby.home/lib/ruby/1.9"
-        # 
+        #
         #  $LOAD_PATH (JRuby 1.7.0):
         #
         #   classpath:/META-INF/jruby.home/lib/ruby/site_ruby (missing dir)
         #   classpath:/META-INF/jruby.home/lib/ruby/shared
         #   classpath:/META-INF/jruby.home/lib/ruby/1.9
-        # 
+        #
         # seems to be the case for JBoss/Tomcat/WebLogic - it's best to
         # emulate the same setup for containers such as WebSphere where the
         # JRuby bootstrap fails to detect a correct home and points to /tmp
-        # 
+        #
         # since JRuby 1.6.7 LoadService has better support for 'classpath:'
         # prefixed entries https://github.com/jruby/jruby-rack/issues/89
         #
@@ -188,7 +189,7 @@ module JRuby::Rack
       %w(META WEB).each do |where|
         url = @rack_context.getResource("/#{where}-INF/init.rb")
         next unless url
-        code = 
+        code =
           begin
             stream = url.openStream
             stream.to_io.read
@@ -201,10 +202,26 @@ module JRuby::Rack
         eval code, TOPLEVEL_BINDING, path_to_file(url)
       end
     end
-    
+
     # @deprecated no longer used, replaced with {#run_boot_hooks}
     def load_extensions
       run_boot_hooks
+    end
+
+    def relative_url_root(init_param = 'rack.relative_url_append')
+      relative_url_root = @rack_context.getContextPath || ''
+      if relative_url_append = @rack_context.getInitParameter(init_param)
+        relative_url_root = File.join(relative_url_root, relative_url_append)
+      end
+      relative_url_root.empty? || relative_url_root == '/' ? nil : relative_url_root
+    end
+
+    def set_relative_url_root
+      if rack_relative_url_root = relative_url_root('rack.relative_url_append')
+        if env_var = @rack_context.getInitParameter('rack.relative_url_root_variable')
+          ENV[env_var] = rack_relative_url_root
+        end
+      end
     end
 
     # Runs the "global" registered boot hooks by default.
@@ -213,13 +230,13 @@ module JRuby::Rack
     def run_boot_hooks
       self.class.run_boot_hooks!
     end
-    
+
     private
-    
+
     def silence_warnings(&block)
       Helpers.silence_warnings(&block)
     end
-    
+
     def path_to_file(url)
       begin
         url.toURI.toString
@@ -227,6 +244,6 @@ module JRuby::Rack
         url.toString
       end
     end
-    
+
   end
 end
