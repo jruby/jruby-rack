@@ -11,9 +11,6 @@ GEM
     activeresource (2.3.18)
       activesupport (= 2.3.18)
     activesupport (2.3.18)
-    appraisal (0.5.2)
-      bundler
-      rake
     diff-lcs (1.2.5)
     rack (1.1.3)
     rails (2.3.18)
@@ -37,7 +34,6 @@ PLATFORMS
   java
 
 DEPENDENCIES
-  appraisal
   rails (~> 2.3.18)
   rake
   rspec (~> 2.14.1)

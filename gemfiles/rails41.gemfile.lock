@@ -48,9 +48,6 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    appraisal (0.5.2)
-      bundler
-      rake
     arel (5.0.0)
     atomic (1.1.14-java)
     builder (3.2.2)
@@ -101,7 +98,6 @@ PLATFORMS
   java
 
 DEPENDENCIES
-  appraisal
   rails!
   rake
   rspec (~> 2.14.1)

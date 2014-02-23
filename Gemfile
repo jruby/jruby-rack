@@ -8,7 +8,9 @@ group :default do
   end
 end
 
-gem 'appraisal', :require => nil, :group => :development
+group :development do
+  gem 'appraisal', :require => nil
+end
 
 gem 'rake', :group => :test, :require => nil
 gem 'rspec', '~> 2.14.1', :group => :test
