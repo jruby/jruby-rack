@@ -14,7 +14,7 @@ rescue LoadError => e
   puts "Please install Bundler and run `bundle install` to ensure you have all dependencies"
   raise e
 end
-require 'appraisal'
+begin; require 'appraisal'; rescue LoadError; end
 
 desc "Remove target directory"
 task :clean do
