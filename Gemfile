@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-group :development do
+group :default do
   if rack_version = ENV['RACK_VERSION']
     gem 'rack', rack_version
   else
@@ -8,7 +8,7 @@ group :development do
   end
 end
 
-gem 'appraisal', :require => nil
+gem 'appraisal', :require => nil, :group => :development
 
 gem 'rake', :group => :test, :require => nil
 gem 'rspec', '~> 2.14.1', :group => :test
