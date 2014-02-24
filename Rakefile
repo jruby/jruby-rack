@@ -194,7 +194,9 @@ task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do |t|
       gem.homepage = %q{http://jruby.org}
       gem.has_rdoc = false
     end
-    defined?(Gem::Builder) ? Gem::Builder.new(gemspec).build : Gem::Package.build(gemspec)
+    defined?(Gem::Builder) ? Gem::Builder.new(gemspec).build : begin
+      require 'rubygems/package'; Gem::Package.build(gemspec)
+    end
     File.open('jruby-rack.gemspec', 'w') { |f| f << gemspec.to_ruby }
     mv FileList['*.gem'], '..'
   end
