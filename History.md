@@ -1,5 +1,10 @@
-## 1.1.14 (xx/xx/xx)
+## 1.1.14 (24/02/14)
 
+- re-invent the ErrorApp without Rack::File and with support for 503(.html)
+- when jruby.rack.error.app is set - make sure it's actually used (fixes #166)
+- review Railtie for setting relative_url_root - do not override if already set
+- support setting a "relative url root" even with plain rack applications for
+  now needs to be explicitly configured with rack.relative_url_root_variable
 - honor the set `config.log_formatter` when setting up logger in Rails
 - when a header is added response should be considered handled (#153)
 - support for returning managed applications from rack factory decorators
