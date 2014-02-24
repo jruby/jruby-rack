@@ -19,7 +19,7 @@ import org.jruby.rack.servlet.ServletRackContext;
 public class DefaultRackDispatcher extends AbstractRackDispatcher {
 
     private Integer errorApplicationFailureStatusCode = 500;
-    
+
     public DefaultRackDispatcher(RackContext context) {
         super(context);
     }
@@ -31,7 +31,7 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
     public void setErrorApplicationFailureStatusCode(Integer code) {
         this.errorApplicationFailureStatusCode = code;
     }
-    
+
     @Override
     protected RackApplication getApplication() throws RackException {
         return getRackFactory().getApplication();
@@ -39,27 +39,27 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
 
     @Override
     protected void afterException(
-            final RackEnvironment request, 
+            final RackEnvironment request,
             final Exception e,
-            final RackResponseEnvironment response) 
+            final RackResponseEnvironment response)
         throws IOException, RackException {
-        
+
         RackApplication errorHandler = new ErrorApplicationHandler(getErrorApplication(), e);
         try {
             errorHandler.call(request).respond(response);
         }
-        catch (final RuntimeException ex) {
+        catch (final RuntimeException re) {
             // allow the error app to re-throw Ruby/JRuby-Rack exceptions :
-            if (ex instanceof RackException) throw (RackException) ex;
+            if (re instanceof RackException) throw (RackException) re;
             //if (e instanceof RaiseException) throw (RaiseException) e;
             // TODO seems redundant maybe we should let the container decide ?!
-            context.log(RackLogger.ERROR, "error app failed to handle exception: "+ e, ex);
+            context.log(RackLogger.ERROR, "error app failed to handle exception: " + e, re);
             Integer errorCode = getErrorApplicationFailureStatusCode();
             if ( errorCode != null && errorCode.intValue() > 0 ) {
                 response.sendError(errorCode);
             }
             else {
-                throw ex;
+                throw re;
             }
         }
     }
@@ -68,7 +68,7 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
     protected void afterProcess(RackApplication app) {
         getRackFactory().finishedWithApplication(app);
     }
-    
+
     @Override
     public void destroy() {
         getRackFactory().destroy();
@@ -80,9 +80,9 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
         }
         throw new IllegalStateException("not a servlet rack context");
     }
-    
+
     private RackApplication getErrorApplication() {
         return getRackFactory().getErrorApplication();
     }
-    
+
 }
