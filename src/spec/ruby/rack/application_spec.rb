@@ -123,7 +123,9 @@ end
 
 describe org.jruby.rack.DefaultRackApplicationFactory do
 
-  java_import org.jruby.rack.DefaultRackApplicationFactory
+  before(:all) { require 'jruby/rack' }
+
+  DefaultRackApplicationFactory = org.jruby.rack.DefaultRackApplicationFactory
 
   before :each do
     @app_factory = DefaultRackApplicationFactory.new

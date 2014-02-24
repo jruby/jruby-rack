@@ -423,7 +423,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
      */
     private class RackApplicationImpl extends DefaultRackApplication {
 
-        private final Ruby runtime;
+        protected final Ruby runtime;
         final ApplicationObjectFactory appFactory;
 
         RackApplicationImpl(ApplicationObjectFactory appFactory) {
@@ -450,17 +450,21 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     }
 
     private RackApplication createErrorApplication(final ApplicationObjectFactory appFactory) {
-        final Ruby runtime = newRuntime();
-        return new DefaultErrorApplication() {
-            @Override
-            public void init() {
-                setApplication(appFactory.create(runtime));
-            }
-            @Override
-            public void destroy() {
-                runtime.tearDown(false);
-            }
-        };
+        // final Ruby runtime = newRuntime();
+        return new ErrorApplicationImpl(appFactory);
+    }
+
+    private class ErrorApplicationImpl extends RackApplicationImpl implements ErrorApplication {
+
+        ErrorApplicationImpl(ApplicationObjectFactory appFactory) {
+            super(appFactory);
+        }
+
+        @Override
+        public void init() {
+            setApplication(appFactory.create(runtime));
+        }
+
     }
 
     private void captureMessage(final RaiseException re) {
