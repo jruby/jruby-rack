@@ -131,7 +131,7 @@ module JRuby::Rack
       require 'jruby'
       # http://kenai.com/jira/browse/JRUBY_RACK-8 If some containers do
       # not allow proper detection of jruby.home, fall back to this
-      tmpdir = java.lang.System.getProperty('java.io.tmpdir')
+      tmpdir = ENV_JAVA['java.io.tmpdir']
       if JRuby.runtime.instance_config.jruby_home == tmpdir
         ruby_paths = # mirroring org.jruby.runtime.load.LoadService#init
           if JRUBY_VERSION >= '1.7.0'
@@ -238,11 +238,9 @@ module JRuby::Rack
     end
 
     def path_to_file(url)
-      begin
-        url.toURI.toString
-      rescue java.net.URISyntaxException
-        url.toString
-      end
+      url.toURI.toString
+    rescue Java::JavaNet::URISyntaxException
+      url.toString
     end
 
   end
