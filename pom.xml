@@ -13,12 +13,17 @@
   <name>JRuby-Rack</name>
   <url>http://github.com/jruby/jruby-rack/</url>
   <description>
-    A servlet bridge to Ruby-based Rack applications that allow them
+    A servlet bridge for (Ruby-based) Rack applications that allow them
     to run in Java Application servers using JRuby.
   </description>
 
   <properties>
     <jruby.version>1.6.8</jruby.version>
+    <vendor.gems.path>vendor/gems</vendor.gems.path>
+    <bundler.version>1.5.3</bundler.version>
+    <bundler.local>false</bundler.local> <!-- true by default -->
+    <saumya.mojo.version>1.0.0-rc4</saumya.mojo.version>
+    <!--default: <gem.home>target/rubygems</gem.home>-->
   </properties>
 
   <issueManagement>
@@ -172,49 +177,86 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-help-plugin</artifactId>
-        <version>2.1.1</version>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.16</version>
       </plugin>
       <plugin>
-        <groupId>org.jruby.plugins</groupId>
-        <artifactId>jruby-rake-plugin</artifactId>
-        <version>${jruby.version}</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-help-plugin</artifactId>
+        <version>2.2</version>
+      </plugin>
+
+      <plugin>
+          <groupId>de.saumya.mojo</groupId>
+          <artifactId>gem-maven-plugin</artifactId>
+          <version>${saumya.mojo.version}</version>
+          <executions>
+            <execution>
+              <!-- NOTE: due JRuby 1.6.8 -->
+              <id>gem-install-jruby-openssl</id>
+              <phase>test</phase>
+              <goals><goal>install</goal></goals>
+              <configuration>
+                <includeOpenSSL>false</includeOpenSSL>
+                <args>--local ${vendor.gems.path}/bouncy-castle-java-1.5.0147.gem ${vendor.gems.path}/jruby-openssl-0.9.4.gem</args>
+              </configuration>
+            </execution>
+            <execution>
+              <id>gem-install-bundler</id>
+              <phase>test</phase>
+              <goals><goal>install</goal></goals>
+              <configuration>
+                <includeOpenSSL>false</includeOpenSSL>
+                <args>bundler -v ${bundler.version}</args>
+              </configuration>
+            </execution>
+          </executions>
+      </plugin>
+      <plugin>
+        <groupId>de.saumya.mojo</groupId>
+        <artifactId>bundler-maven-plugin</artifactId>
+        <version>${saumya.mojo.version}</version>
         <executions>
-          <execution>
-            <id>gem-install-bundler</id>
-            <phase>test</phase>
-            <goals><goal>install-gems</goal></goals>
-            <configuration>
-              <gems>bundler</gems>
-            </configuration>
-          </execution>
           <execution>
             <id>bundle-install</id>
             <phase>test</phase>
-            <goals><goal>jruby</goal></goals>
+            <goals><goal>install</goal></goals>
             <configuration>
-              <args>-S bundle install</args>
+              <!--<local>false</local>-->
+              <bundlerVersion>${bundler.version}</bundlerVersion>
             </configuration>
           </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>de.saumya.mojo</groupId>
+        <artifactId>rake-maven-plugin</artifactId>
+        <version>${saumya.mojo.version}</version>
+        <executions>
           <execution>
             <id>rake-spec</id>
             <phase>test</phase>
             <goals><goal>rake</goal></goals>
             <configuration>
-              <args>speconly SKIP_SPECS=${maven.test.skip}</args>
+              <args>speconly SKIP_SPECS=${maven.test.skip} FULL_BIN_PATH=true</args>
             </configuration>
           </execution>
           <execution>
+            <!-- additional (ruby) generated resources -->
             <id>rake-resources</id>
             <phase>prepare-package</phase>
             <!-- bind "late" so we do not run during compile/test-compile -->
             <goals><goal>rake</goal></goals>
             <configuration>
-              <!-- additional (ruby) generated resources -->
               <args>resources VERSION=${project.version}</args>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jruby</groupId>
+        <artifactId>jruby-rake-plugin</artifactId>
+        <version>${jruby.version}</version>
       </plugin>
     </plugins>
     <extensions>

@@ -105,13 +105,14 @@ namespace :resources do
 end
 
 task :speconly => ['target/classpath.rb', :resources, :test_resources] do
-  if ENV['SKIP_SPECS'] && ENV['SKIP_SPECS'] == "true"
+  if ENV['SKIP_SPECS'].to_s == 'true'
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
     opts = ENV['SPEC_OPTS'] ? ENV['SPEC_OPTS'] : %q{ --format documentation --color }
     spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
     opts = opts.split(' ').push *FileList[spec].to_a
-    ruby "-Isrc/spec/ruby", "-rbundler/setup", "-S", "rspec", *opts
+    exec = 'rspec'; exec = Gem.bin_path('rspec', exec) if ENV['FULL_BIN_PATH']
+    ruby "-Isrc/spec/ruby", "-rbundler/setup", "-S", exec, *opts
   end
 end
 
