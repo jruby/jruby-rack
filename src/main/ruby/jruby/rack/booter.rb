@@ -122,6 +122,10 @@ module JRuby::Rack
     def change_working_directory
       app_path = layout.app_path
       Dir.chdir(app_path) if app_path && File.directory?(app_path)
+    rescue
+      # webphere has an error when deployed as packed warfile
+
+      # just try to launch in the directory where we are
     end
     
     # Adjust the load path (mostly due some J2EE servers slightly misbehaving).
