@@ -26,8 +26,8 @@ import org.jruby.util.SafePropertyAccessor;
 
 /**
  * A base implementation of that retrieves settings from system properties.
- * 
- * @see System#getProperty(String) 
+ *
+ * @see System#getProperty(String)
  * @see RackConfig
  */
 @SuppressWarnings("deprecation")
@@ -73,21 +73,21 @@ public class DefaultRackConfig implements RackConfig {
     public void setQuiet(boolean quiet) {
         this.quiet = quiet;
     }
-    
+
     public CompatVersion getCompatVersion() {
         final String version = getProperty("jruby.compat.version");
         if ( version != null ) {
-            // we handle 1.8, RUBY1_9, --2.0m 1_9 etc :
-            final Pattern pattern = Pattern.compile("([12])[._]([890])");
+            // we handle 1.8, RUBY1_9, --2.0 1_9 2.1.0.dev etc :
+            final Pattern pattern = Pattern.compile("([123])[._]([8901234567])");
             final Matcher matcher = pattern.matcher(version);
             if ( matcher.find() ) {
-                final String name = "RUBY" + 
+                final String name = "RUBY" +
                     matcher.group(1) + '_' + matcher.group(2);
                 try {
                     return Enum.valueOf(CompatVersion.class, name);
                 }
                 catch (IllegalArgumentException e) {
-                    getLogger().log(RackLogger.WARN, 
+                    getLogger().log(RackLogger.WARN,
                         "could not resolve compat version from '"+ version +"' will use default", e);
                 }
             }
@@ -128,7 +128,7 @@ public class DefaultRackConfig implements RackConfig {
         Boolean serial = getBooleanProperty("jruby.runtime.init.serial");
         if (serial == null) { // backwards compatibility with 1.0.x :
             serial = getBooleanProperty("jruby.init.serial");
-            
+
             if (serial == null) { // if initializer threads set to <= 0
                 Integer threads = getNumInitializerThreads();
                 if ( threads != null && threads < 0 ) {
@@ -141,7 +141,7 @@ public class DefaultRackConfig implements RackConfig {
         }
         return serial.booleanValue();
     }
-    
+
     public RackLogger getLogger() {
         if (logger == null) {
             String loggerClass = getLoggerClassName();
@@ -181,11 +181,11 @@ public class DefaultRackConfig implements RackConfig {
             return null;
         }
     }
-    
+
     protected RackLogger defaultLogger() {
         return new StandardOutLogger(getOut());
     }
-    
+
     public boolean isFilterAddsHtml() {
         return getBooleanProperty("jruby.rack.filter.adds.html", true);
     }
@@ -233,7 +233,7 @@ public class DefaultRackConfig implements RackConfig {
         }
         return max;
     }
-    
+
     public Map<String, String> getRuntimeEnvironment() {
         String env = getProperty("jruby.runtime.env");
         if ( env == null ) env = getProperty("jruby.runtime.environment");
@@ -263,15 +263,15 @@ public class DefaultRackConfig implements RackConfig {
         if ( rubyopt == null ) return ! config.isIgnoreEnvironment();
         return rubyopt != null && ! rubyopt.booleanValue();
     }
-    
+
     public boolean isIgnoreEnvironment() {
         return getBooleanProperty("jruby.rack.ignore.env", false);
     }
-    
+
     public boolean isThrowInitException() {
         return isThrowInitException(this);
     }
-    
+
     static boolean isThrowInitException(RackConfig config) {
         Boolean error = config.getBooleanProperty("jruby.rack.error");
         if ( error != null && ! error.booleanValue() ) {
@@ -283,7 +283,7 @@ public class DefaultRackConfig implements RackConfig {
         }
         return false;
     }
-    
+
     public String getProperty(String key) {
         return getProperty(key, null);
     }
@@ -295,7 +295,7 @@ public class DefaultRackConfig implements RackConfig {
     public Boolean getBooleanProperty(String key) {
         return getBooleanProperty(key, null);
     }
-    
+
     public Boolean getBooleanProperty(String key, Boolean defaultValue) {
         return toBoolean(getProperty(key), defaultValue);
     }
@@ -303,11 +303,11 @@ public class DefaultRackConfig implements RackConfig {
     public Number getNumberProperty(String key) {
         return getNumberProperty(key, null);
     }
-    
+
     public Number getNumberProperty(String key, Number defaultValue) {
         return toNumber(getProperty(key), defaultValue);
     }
-    
+
     private Integer getRuntimesRangeValue(String end, String gsValue) {
         Integer v = getPositiveInteger("jruby." + end + ".runtimes");
         if (v == null) {
@@ -325,12 +325,12 @@ public class DefaultRackConfig implements RackConfig {
         } catch (Exception e) { /* ignored */ }
         return null;
     }
-    
+
     public static Boolean toBoolean(String value, Boolean defaultValue) {
         if (value == null) return defaultValue;
         try {
             return Boolean.valueOf(value);
-        } 
+        }
         catch (Exception e) { /* ignored */ }
         return defaultValue;
     }
@@ -340,7 +340,7 @@ public class DefaultRackConfig implements RackConfig {
         if ( "false".equalsIgnoreCase(value) ) return Boolean.FALSE;
         return defaultValue;
     }
-    
+
     public static Number toNumber(String value, Number defaultValue) {
         if (value == null) return defaultValue;
         try {
@@ -363,7 +363,7 @@ public class DefaultRackConfig implements RackConfig {
         catch (Exception e) { /* ignored */ }
         return defaultValue;
     }
-    
+
     private Map<String, String> toStringMap(final String env) {
         if ( env == null ) return null;
         /*
@@ -398,7 +398,7 @@ public class DefaultRackConfig implements RackConfig {
         }
         return map;
     }
-    
+
     private static Map<String,String> getLoggerTypes() {
         final Map<String,String> loggerTypes = new HashMap<String, String>();
         loggerTypes.put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
@@ -409,5 +409,5 @@ public class DefaultRackConfig implements RackConfig {
         loggerTypes.put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");
         return loggerTypes;
     }
-    
+
 }

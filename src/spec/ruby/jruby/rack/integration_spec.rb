@@ -416,11 +416,8 @@ describe "integration" do
   end
 
   def set_compat_version(servlet_context = @servlet_context)
-    if JRuby.runtime.is1_9
-      servlet_context.addInitParameter("jruby.compat.version", '1.9')
-    else
-      servlet_context.addInitParameter("jruby.compat.version", '1.8')
-    end
+    compat_version = JRuby.runtime.getInstanceConfig.getCompatVersion # RUBY1_9
+    servlet_context.addInitParameter("jruby.compat.version", compat_version.to_s)
   end
 
   private
