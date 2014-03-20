@@ -7,6 +7,8 @@ describe org.jruby.rack.servlet.ResponseCapture do
     org.jruby.rack.servlet.ResponseCapture.new(servlet_response)
   end
 
+  let(:servlet_request) { MockHttpServletRequest.new(@servlet_context) }
+
   it "reports if output (stream) has been accessed" do
     expect( response_capture.isOutputAccessed ).to be false
 
@@ -24,6 +26,10 @@ describe org.jruby.rack.servlet.ResponseCapture do
 
     response_capture.setStatus(404)
     expect( response_capture.isHandled ).to be false
+
+    servlet_request.method = 'OPTIONS'
+
+    expect( response_capture.isHandled(servlet_request) ).to be false
   end
 
   it "is considered handled when 200 status is set" do
@@ -31,19 +37,50 @@ describe org.jruby.rack.servlet.ResponseCapture do
     expect( response_capture.isHandled ).to be true
   end
 
-  it "is considered handled when header is added" do
+  it "is not considered handled when only Allow header is added with OPTIONS" do
+    servlet_request.method = 'OPTIONS'
+
+    expect( response_capture.isHandled(servlet_request) ).to be false
+
     # NOTE: this is what TC's DefaultServlet does on doOptions() :
     response_capture.addHeader "Allow", "GET, POST, OPTIONS"
 
-    expect( response_capture.isHandled ).to be true
+    expect( response_capture.isHandled(servlet_request) ).to be false
+  end
+
+  it "is considered handled when more than Allow header is added with OPTIONS" do
+    pending "need Servlet API 3.0" unless servlet_30?
+
+    servlet_request.method = 'OPTIONS'
+
+    response_capture.setIntHeader "Answer", 42
+    response_capture.setHeader "Allow", "GET, POST"
+
+    expect( response_capture.isHandled(servlet_request) ).to be true
+  end
+
+  it "is considered handled when header is added" do
+    pending "need Servlet API 3.0" unless servlet_30?
+
+    servlet_request.method = 'OPTIONS'
+
+    response_capture.addHeader "Hello", "World"
+
+    expect( response_capture.isHandled(servlet_request) ).to be true
     expect( response_capture.getStatus ).to eql 200
   end
 
   it "is considered handled when a header is set" do
     response_capture.setIntHeader "Timeout", 42
-    
+
     expect( response_capture.isHandled ).to be true
     expect( response_capture.getStatus ).to eql 200
+  end
+
+  private
+
+  def servlet_30?
+    Java::JavaClass.for_name('javax.servlet.AsyncContext') rescue nil
   end
 
 end

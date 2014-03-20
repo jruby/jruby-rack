@@ -11,10 +11,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
@@ -204,6 +207,11 @@ public class ResponseCapture extends HttpServletResponseWrapper {
         return getStatus() >= 400;
     }
 
+    // NOTE: should probably deprecate this one
+    public boolean isHandled() {
+        return isHandled(null);
+    }
+
     /**
      * Response is considered to be handled if a status has been set
      * and it is (by default) not a HTTP NOT FOUND (404) status.
@@ -211,9 +219,27 @@ public class ResponseCapture extends HttpServletResponseWrapper {
      * @return true if this response should be considered as handled
      * @see #handleStatus(int, boolean)
      */
-    public boolean isHandled() {
+    public boolean isHandled(final HttpServletRequest request) {
         // setting a header should consider the response to be handled
-        if ( ! isStatusSet() ) return isHeaderSet();
+        if ( ! isStatusSet() ) {
+            if ( ! isHeaderSet() ) return false;
+
+            // consider HTTP OPTIONS with "Allow" header unhandled :
+            if ( request != null && "OPTIONS".equals( request.getMethod() ) ) {
+                final Collection<String> headerNames = getHeaderNamesInternal();
+                if ( headerNames == null || headerNames.isEmpty() ) {
+                    // not to happen but there's all kind of beasts out there
+                    return false;
+                }
+                for ( final String headerName : headerNames ) {
+                    if ( ! "Allow".equals(headerName) ) {
+                        return true; // not just Allow header - consider handled
+                    }
+                }
+                return false; // OPTIONS with only Allow header set - unhandled
+            }
+            return true;
+        }
         if ( notHandledStatuses.contains( getStatus() ) ) return false;
         return true;
     }
@@ -234,6 +260,18 @@ public class ResponseCapture extends HttpServletResponseWrapper {
      */
     public boolean isOutputAccessed() {
         return output != null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Collection<String> getHeaderNamesInternal() {
+        // NOTE: getHeaderNames available since 3.0 JRuby-Rack 1.1 still support 2.5
+        try {
+            final Method getHeaderNames = HttpServletResponse.class.getMethod("getHeaderNames");
+            return (Collection<String>) getHeaderNames.invoke(this);
+        }
+        catch (NoSuchMethodException e) { return null; }
+        catch (IllegalAccessException e) { return null; }
+        catch (InvocationTargetException e) { return null; }
     }
 
 }
