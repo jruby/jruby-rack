@@ -11,42 +11,42 @@ module Rack
   module Handler
     class Servlet
       # Provides a (default) Servlet to Rack environment conversion.
-      # Rack builtin requirements, CGI variables and HTTP headers are to be 
+      # Rack builtin requirements, CGI variables and HTTP headers are to be
       # filled from the Servlet API.
-      # Parameter parsing is left to be done by Rack::Request itself (e.g. by 
-      # consuming the request body in case of a POST), thus this expects the 
+      # Parameter parsing is left to be done by Rack::Request itself (e.g. by
+      # consuming the request body in case of a POST), thus this expects the
       # ServletRequest input stream to be not read (e.g. for POSTs).
       class DefaultEnv < Hash # The environment must be an instance of Hash !
-        
-        BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme 
+
+        BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme
           rack.multithread rack.multiprocess rack.run_once
           java.servlet_request java.servlet_response java.servlet_context
           jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release).
           map!(&:freeze)
 
-        VARIABLES = %w(CONTENT_TYPE CONTENT_LENGTH PATH_INFO QUERY_STRING 
+        VARIABLES = %w(CONTENT_TYPE CONTENT_LENGTH PATH_INFO QUERY_STRING
           REMOTE_ADDR REMOTE_HOST REMOTE_USER REQUEST_METHOD REQUEST_URI
           SCRIPT_NAME SERVER_NAME SERVER_PORT SERVER_SOFTWARE).
           map!(&:freeze)
-        
+
         # Factory method for creating the Hash.
-        # Besides initializing a new env instance this method by default 
+        # Besides initializing a new env instance this method by default
         # eagerly populates (and returns) the env Hash.
-        # 
+        #
         # Subclasses might decide to change this behavior by overriding
         # this method (NOTE: that #initialize returns a lazy instance).
-        # 
+        #
         # However keep in mind that some Rack middleware or extension might
         # dislike a lazy env since it does not reflect env.keys "correctly".
         def self.create(servlet_env)
           raise ArgumentError, "nil servlet_env" if servlet_env.nil?
           self.new(servlet_env).populate
         end
-        
+
         # Initialize this (Rack) environment from the servlet environment.
-        # 
-        # The returned instance is lazy as much as possible (the env hash 
-        # returned from #to_hash will be filled on demand), one can use 
+        #
+        # The returned instance is lazy as much as possible (the env hash
+        # returned from #to_hash will be filled on demand), one can use
         # #populate to fill in the env keys eagerly.
         def initialize(servlet_env = nil)
           super()
@@ -58,7 +58,7 @@ module Rack
             load_attributes
           end
         end
-        
+
         def populate
           unless @populated
             populate! if @servlet_env
@@ -66,14 +66,14 @@ module Rack
           end
           self
         end
-        
+
         def populate!
           load_builtins
           load_variables
           load_headers
           self
         end
-        
+
         def to_hash(bare = nil)
           if bare
             {}.update(populate)
@@ -81,12 +81,12 @@ module Rack
             self
           end
         end
-        
+
         def [](key)
           val = super
           val.nil? ? load_env_key(self, key) : val
         end
-        
+
         def key?(key)
           super || load_env_key(self, key) != nil
         end
@@ -96,12 +96,12 @@ module Rack
 
         def keys; populate; super; end
         def values; populate; super; end
-        
+
         def each(&block); populate; super;end
         def each_key(&block); populate; super; end
         def each_value(&block); populate; super; end
         def each_pair(&block); populate; super; end
-        
+
         protected
 
         def load_attributes
@@ -129,14 +129,14 @@ module Rack
             load_variable(@env, v) unless @env.key?(v)
           end
         end
-        
+
         @@content_header_names = /^Content-(Type|Length)$/i
-        
+
         def load_headers
           # NOTE: getHeaderNames and getHeaders might return null !
           # if the container does not allow access to header information
-          return unless @servlet_env.getHeaderNames
-          for name in @servlet_env.getHeaderNames
+          return unless header_names = @servlet_env.getHeaderNames
+          for name in header_names
             next if name =~ @@content_header_names
             key = "HTTP_#{name.upcase.gsub(/-/, '_')}".freeze
             @env[key] = @servlet_env.getHeader(name) unless @env.key?(key)
@@ -163,7 +163,7 @@ module Rack
             env[key] = header # null if it does not have a header of that name
           end
         end
-        
+
         def load_variable(env, key)
           return nil if @servlet_env.nil?
           case key
@@ -212,7 +212,7 @@ module Rack
             nil
           end
         end
-        
+
         private
 
         def rack_context
@@ -228,30 +228,30 @@ module Rack
         def servlet_request
           @servlet_env.respond_to?(:request) ? @servlet_env.request : @servlet_env
         end
-        
+
         def servlet_response
           @servlet_env.respond_to?(:response) ? @servlet_env.response : @servlet_env
         end
-        
+
         def servlet_context
           if @servlet_env.respond_to?(:servlet_context) # @since Servlet 3.0
             @servlet_env.servlet_context # ServletRequest#getServletContext()
           else
-            if @servlet_env.respond_to?(:context) && 
+            if @servlet_env.respond_to?(:context) &&
                 @servlet_env.context.is_a?(javax.servlet.ServletContext)
               @servlet_env.context
             else
-              JRuby::Rack.context || 
+              JRuby::Rack.context ||
                 ( servlet_request ? servlet_request.servlet_context : nil )
             end
           end
         end
-        
+
         TRANSIENT_KEYS = [ 'rack.input', 'rack.errors',
           'java.servlet_request', 'java.servlet_response',
           'java.servlet_context', 'jruby.rack.context'
         ]
-        
+
         def marshal_dump
           hash = to_hash(true)
           for key in TRANSIENT_KEYS
@@ -259,7 +259,7 @@ module Rack
           end
           hash
         end
-        
+
         def marshal_load(hash)
           for key, value in hash
             self[key] = value
@@ -267,7 +267,7 @@ module Rack
           @populated = true
           @env = self
         end
-        
+
       end
     end
   end
