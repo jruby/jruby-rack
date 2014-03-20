@@ -154,7 +154,7 @@ describe org.jruby.rack.RackFilter do
     filter = Class.new(org.jruby.rack.RackFilter) do
       def wrapResponse(response)
         Class.new(org.jruby.rack.servlet.ResponseCapture) do
-          def isHandled; getStatus < 400; end
+          def isHandled(arg); getStatus < 400; end
         end.new(response)
       end
     end.new(dispatcher, @rack_context)
@@ -163,7 +163,7 @@ describe org.jruby.rack.RackFilter do
       resp.sendError(401)
       resp.flushBuffer
     end
-    @response.should_not_eceive(:flushBuffer)
+    @response.should_not_receive(:flushBuffer)
     @response.should_receive(:reset)
     dispatcher.should_receive(:process)
     filter.doFilter(@request, @response, chain)
