@@ -77,12 +77,12 @@ module JRuby::Rack
     end
     attr_writer :layout
 
-    %w( app_path gem_path public_path ).each do |path|
-      # def app_path; layout.app_path; end
-      # def app_path=(path); layout.app_path = path; end
-      class_eval "def #{path}; layout.#{path}; end"
-      class_eval "def #{path}=(path); layout.#{path} = path; end"
-    end
+    def app_path; layout.app_path end
+    def app_path=(path); layout.app_path = path end
+    def gem_path; layout.gem_path end
+    def gem_path=(path); layout.gem_path = path end
+    def public_path; layout.public_path end
+    def public_path=(path); layout.public_path = path end
 
     # @deprecated use {JRuby::Rack#logger} instead
     # @return [Logger]
@@ -91,16 +91,8 @@ module JRuby::Rack
     # Boot-up this booter, preparing the environment for the application.
     def boot!
       adjust_load_path
+      adjust_gem_path
       ENV['RACK_ENV'] = rack_env
-      gem_path = layout.gem_path
-      if env_gem_path = ENV['GEM_PATH']
-        if gem_path.nil? || gem_path.empty?
-          gem_path = env_gem_path # keep ENV['GEM_PATH'] as is
-        elsif env_gem_path != gem_path
-          gem_path = "#{gem_path}#{File::PATH_SEPARATOR}#{env_gem_path}"
-        end
-      end
-      ENV['GEM_PATH'] = gem_path
       export_global_settings
       change_working_directory
       load_settings_from_init_rb
@@ -110,6 +102,36 @@ module JRuby::Rack
     end
 
     protected
+
+    def adjust_gem_path
+      case gem_path?
+      when false then return false
+      when true  then
+        if env_gem_path = ENV['GEM_PATH']
+          if gem_path.nil? || gem_path.empty?
+            return # keep ENV['GEM_PATH'] as is
+          elsif env_gem_path != gem_path
+            separator = File::PATH_SEPARATOR
+            unless env_gem_path.split(separator).include?(gem_path)
+              ENV['GEM_PATH'] = "#{gem_path}#{separator}#{env_gem_path}"
+            end
+          end
+        else
+          ENV['GEM_PATH'] = gem_path
+        end
+      else # default
+        begin
+          require 'rubygems'
+        rescue LoadError
+        else
+          Gem.path.unshift(gem_path) unless Gem.path.include?(gem_path)
+        end
+      end
+    end
+
+    def gem_path? # TODO
+      @rack_context.getInitParameter('jruby.rack.env.gem_path') || nil
+    end
 
     # @note called during {#boot!}
     def export_global_settings
@@ -232,6 +254,9 @@ module JRuby::Rack
     def run_boot_hooks
       self.class.run_boot_hooks!
     end
+
+    def real_path(path); layout.real_path(path) end
+    def expand_path(path); layout.expand_path(path) end
 
     private
 

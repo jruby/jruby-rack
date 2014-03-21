@@ -17,9 +17,11 @@ describe JRuby::Rack::Booter do
   after(:all) { JRuby::Rack.context = nil }
 
   @@rack_env = ENV['RACK_ENV']
+  @@gem_path = Gem.path.dup
 
   after do
     @@rack_env.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = @@rack_env
+    Gem.path.replace(@@gem_path)
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
@@ -50,22 +52,23 @@ describe JRuby::Rack::Booter do
 
   it "should determine the gem path from the gem.path init parameter" do
     @rack_context.should_receive(:getInitParameter).with("gem.path").and_return "/blah"
-    @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
+    @rack_context.should_receive(:getRealPath).with("/blah").and_return "./blah"
     booter.boot!
-    booter.gem_path.should == "."
+    booter.gem_path.should == "./blah"
   end
 
   it "should also be able to determine the gem path from the gem.home init parameter" do
     @rack_context.should_receive(:getInitParameter).with("gem.home").and_return "/blah"
-    @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
+    @rack_context.should_receive(:getRealPath).with("/blah").and_return "/home/kares/blah"
     booter.boot!
-    booter.gem_path.should == "."
+    booter.gem_path.should == "/home/kares/blah"
   end
 
   it "defaults gem path to '/WEB-INF/gems'" do
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "."
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "file:/home/kares/WEB-INF"
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "file:/home/kares/WEB-INF/gems"
     booter.boot!
-    booter.gem_path.should == "./gems"
+    booter.gem_path.should == "file:/home/kares/WEB-INF/gems"
   end
 
   it "gets rack environment from rack.env" do
@@ -82,29 +85,55 @@ describe JRuby::Rack::Booter do
     booter.rack_env.should == 'production'
   end
 
-  it "prepends gem_path to ENV['GEM_PATH']" do
-    ENV['GEM_PATH'] = '/other/gems'
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
+  it "prepends gem_path to Gem.path" do
+    Gem.path.replace [ '/opt/gems' ]
+    booter.gem_path = "wsjar:file:/opt/deploy/sample.war!/WEB-INF/gems"
     booter.boot!
-    ENV['GEM_PATH'].should == "/blah/gems#{File::PATH_SEPARATOR}/other/gems"
+
+    expect( Gem.path ).to eql [ 'wsjar:file:/opt/deploy/sample.war!/WEB-INF/gems', '/opt/gems' ]
   end
 
-  it "keeps ENV['GEM_PATH'] when gem_path is nil" do
-    ENV['GEM_PATH'] = '/some/other/gems'
-    booter.layout = layout = double('layout')
-    layout.stub(:app_path).and_return '.'
-    layout.stub(:public_path).and_return nil
-    layout.should_receive(:gem_path).and_return nil
+  it "prepends gem_path to Gem.path if not already present" do
+    Gem.path.replace [ "file:/home/gems", "/usr/local/gems" ]
+    booter.gem_path = '/usr/local/gems'
     booter.boot!
-    ENV['GEM_PATH'].should == "/some/other/gems"
+
+    expect( Gem.path ).to eql [ "file:/home/gems", "/usr/local/gems" ]
   end
 
-  it "sets ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
-    ENV['GEM_PATH'] = nil
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
-    booter.boot!
-    ENV['GEM_PATH'].should == "/blah/gems"
-  end
+#  it "prepends gem_path to ENV['GEM_PATH']" do
+#    ENV['GEM_PATH'] = '/opt/gems'
+#    @rack_context.should_receive(:getRealPath).
+#      with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
+#    booter.boot!
+#
+#    ENV['GEM_PATH'].should == "/opt/deploy/sample.war!/WEB-INF/gems#{File::PATH_SEPARATOR}/opt/gems"
+#  end
+
+#  it "prepends gem_path to ENV['GEM_PATH'] if not already present" do
+#    ENV['GEM_PATH'] = "/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
+#    booter.gem_path = '/usr/local/gems'
+#    booter.boot!
+#
+#    ENV['GEM_PATH'].should == "/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
+#  end
+
+#  it "keeps ENV['GEM_PATH'] when gem_path is nil" do
+#    ENV['GEM_PATH'] = '/usr/local/gems'
+#    booter.layout = layout = double('layout')
+#    layout.stub(:app_path).and_return '.'
+#    layout.stub(:public_path).and_return nil
+#    layout.should_receive(:gem_path).and_return nil
+#    booter.boot!
+#    ENV['GEM_PATH'].should == "/usr/local/gems"
+#  end
+
+#  it "sets ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
+#    ENV['GEM_PATH'] = nil
+#    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
+#    booter.boot!
+#    ENV['GEM_PATH'].should == "/blah/gems"
+#  end
 
   it "creates a logger that writes messages to the servlet context" do
     booter.boot!
