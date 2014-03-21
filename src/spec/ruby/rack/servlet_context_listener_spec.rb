@@ -9,9 +9,6 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
 describe org.jruby.rack.RackServletContextListener do
 
-  RackServletContextListener = org.jruby.rack.RackServletContextListener
-  RackApplicationFactory = org.jruby.rack.RackApplicationFactory
-
   before(:each) do
     @servlet_context.stub(:getInitParameter).and_return nil
     @factory = double "application factory"

@@ -14,9 +14,7 @@ describe Rack::Handler::Servlet do
   let(:app) { double "application" }
   let(:servlet) { Rack::Handler::Servlet.new(app) }
 
-  let(:servlet_context) do
-    @servlet_context
-  end
+  let(:servlet_context) { @servlet_context ||= mock_servlet_context }
 
   let(:servlet_request) do
     org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
@@ -804,8 +802,12 @@ describe Rack::Handler::Servlet do
     end
 
     it "raises an error when it failed to load the application" do
-      lambda { Rack::Handler::Servlet.new(nil) }.should raise_error(RuntimeError)
-      lambda { Rack::Handler::Servlet.new(nil) }.should_not raise_error(NoMethodError)
+      expect { Rack::Handler::Servlet.new(nil) }.to raise_error(RuntimeError)
+      begin
+        Rack::Handler::Servlet.new(nil)
+      rescue => e
+        expect( e ).to_not be_a(NoMethodError)
+      end
     end
 
   end

@@ -16,18 +16,33 @@ rescue LoadError => e
 end unless defined?(Maven.set_classpath)
 Maven.set_classpath
 
+# Java imports :
+java_import 'javax.servlet.ServletContext'
+java_import 'javax.servlet.ServletConfig'
+java_import 'javax.servlet.http.HttpServletRequest'
+java_import 'javax.servlet.http.HttpServletResponse'
+
+java_import 'org.jruby.rack.mock.MockServletConfig'
+java_import 'org.jruby.rack.mock.MockServletContext'
+java_import 'org.jruby.rack.mock.MockHttpServletRequest'
+java_import 'org.jruby.rack.mock.MockHttpServletResponse'
+
+java_import 'org.jruby.rack.RackContext'
+java_import 'org.jruby.rack.RackConfig'
+java_import 'org.jruby.rack.RackApplicationFactory'
+java_import 'org.jruby.rack.DefaultRackApplicationFactory'
+java_import 'org.jruby.rack.RackServletContextListener'
+java_import 'org.jruby.rack.servlet.ServletRackContext'
+java_import 'org.jruby.rack.servlet.RequestCapture'
+java_import 'org.jruby.rack.servlet.ResponseCapture'
+java_import 'org.jruby.rack.servlet.RewindableInputStream'
+
 module SharedHelpers
 
-  java_import 'org.jruby.rack.RackContext'
-  java_import 'org.jruby.rack.RackConfig'
-  java_import 'org.jruby.rack.servlet.ServletRackContext'
-  java_import 'javax.servlet.ServletContext'
-  java_import 'javax.servlet.ServletConfig'
-
   def mock_servlet_context
+    @servlet_context = ServletContext.impl {}
     @rack_config ||= RackConfig.impl {}
     @rack_context ||= ServletRackContext.impl {}
-    @servlet_context ||= ServletContext.impl {}
     [@rack_context, @servlet_context].each do |context|
       context.stub(:log)
       context.stub(:getInitParameter).and_return nil
@@ -39,7 +54,10 @@ module SharedHelpers
     @servlet_config ||= ServletConfig.impl {}
     @servlet_config.stub(:getServletName).and_return "A Servlet"
     @servlet_config.stub(:getServletContext).and_return @servlet_context
+    @servlet_context
   end
+
+  def servlet_context; mock_servlet_context end
 
   def silence_warnings(&block)
     JRuby::Rack::Helpers.silence_warnings(&block)
@@ -60,13 +78,20 @@ module SharedHelpers
     end
   end
 
-  def set_rack_input(servlet_env)
-    require 'jruby'
+  def set_rack_input(servlet_env); require 'jruby'
     input_class = org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
     input = input_class.new(servlet_env.getInputStream)
     servlet_env.set_io input # servlet_env.instance_variable_set :@_io, input
     input
   end
+
+  @@servlet_30 = nil
+
+  def servlet_30?
+    return @@servlet_30 unless @@servlet_30.nil?
+    @@servlet_30 = !! ( Java::JavaClass.for_name('javax.servlet.AsyncContext') rescue nil )
+  end
+  private :servlet_30?
 
   @@raise_logger = nil
 
@@ -118,6 +143,43 @@ module SharedHelpers
     should_eval_as_not_nil(code, runtime)
   end
 
+end
+
+# "stub" streams :
+
+class StubInputStream < java.io.InputStream
+  def initialize(val = "")
+    super()
+    @is = java.io.ByteArrayInputStream.new(val.to_s.to_java_bytes)
+  end
+  def read
+    @is.read
+  end
+end
+
+class StubOutputStream < java.io.OutputStream
+  def initialize
+    super()
+    @os = java.io.ByteArrayOutputStream.new
+  end
+
+  def write(b)
+    @os.write(b)
+  end
+
+  def to_s
+    String.from_java_bytes @os.to_byte_array
+  end
+end
+
+class StubServletInputStream < javax.servlet.ServletInputStream
+  def initialize(val = "")
+    @delegate = StubInputStream.new(val)
+  end
+
+  def method_missing(meth, *args)
+    @delegate.send(meth, *args)
+  end
 end
 
 # NOTE: avoid chunked-patch (loaded by default from a hook at
@@ -178,44 +240,4 @@ RSpec.configure do |config|
     /lib\/rspec\/(core|expectations|matchers|mocks)/
   ]
 
-end
-
-java_import org.jruby.rack.mock.MockServletConfig
-java_import org.jruby.rack.mock.MockServletContext
-java_import org.jruby.rack.mock.MockHttpServletRequest
-java_import org.jruby.rack.mock.MockHttpServletResponse
-
-class StubInputStream < java.io.InputStream
-  def initialize(val = "")
-    super()
-    @is = java.io.ByteArrayInputStream.new(val.to_s.to_java_bytes)
-  end
-  def read
-    @is.read
-  end
-end
-
-class StubOutputStream < java.io.OutputStream
-  def initialize
-    super()
-    @os = java.io.ByteArrayOutputStream.new
-  end
-
-  def write(b)
-    @os.write(b)
-  end
-
-  def to_s
-    String.from_java_bytes @os.to_byte_array
-  end
-end
-
-class StubServletInputStream < javax.servlet.ServletInputStream
-  def initialize(val = "")
-    @delegate = StubInputStream.new(val)
-  end
-
-  def method_missing(meth, *args)
-    @delegate.send(meth, *args)
-  end
 end
