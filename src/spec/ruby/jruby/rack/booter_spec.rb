@@ -155,6 +155,24 @@ describe JRuby::Rack::Booter do
     end
   end
 
+  it "does not raise when changing working directory fails" do
+    # NOTE: on IBM WebSphere (8.5 Liberty Profile) `Dir.chdir` fails e.g. :
+    #  (Errno::ENOENT) /opt/apps/wlp/usr/servers/defaultServer/dropins/bug-demo.war!/WEB-INF
+    #    at org.jruby.RubyDir.chdir(org/jruby/RubyDir.java:352)
+    #    at RUBY.change_working_directory(classpath:/jruby/rack/booter.rb:125)
+    #    at RUBY.boot!(classpath:/jruby/rack/booter.rb:105)
+    #    at RUBY.(root)(classpath:/jruby/rack/boot/rack.rb:10)
+    app_dir = File.absolute_path Dir.pwd
+    app_dir = "#{app_dir}/sample.war!/WEB-INF"
+    File.stub(:directory?).with(app_dir).and_return true
+    booter.stub(:layout).and_return layout = double('layout')
+    layout.stub(:app_path).and_return app_dir
+    layout.stub(:gem_path)
+    layout.stub(:public_path)
+
+    booter.boot! # expect to_not raise_error
+  end
+
   require 'jruby'
 
   if JRUBY_VERSION >= '1.7.0'

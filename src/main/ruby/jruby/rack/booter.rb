@@ -122,7 +122,9 @@ module JRuby::Rack
     # @note called during {#boot!}
     def change_working_directory
       app_path = layout.app_path
-      Dir.chdir(app_path) if app_path && File.directory?(app_path)
+      if app_path && File.directory?(app_path)
+        Dir.chdir(app_path) rescue nil # Errno::ENOENT
+      end
     end
 
     # Adjust the load path (mostly due some J2EE servers slightly misbehaving).
