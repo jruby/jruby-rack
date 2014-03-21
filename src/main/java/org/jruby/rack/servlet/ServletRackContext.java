@@ -21,4 +21,6 @@ public interface ServletRackContext extends RackContext, ServletContext {
 
   RackApplicationFactory getRackFactory();
 
+  // ServletContext getRealContext(); // TODO support this in 1.2
+
 }

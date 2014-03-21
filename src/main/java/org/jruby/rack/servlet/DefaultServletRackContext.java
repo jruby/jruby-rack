@@ -67,6 +67,10 @@ public class DefaultServletRackContext implements ServletRackContext {
         return (RackApplicationFactory) context.getAttribute(RackApplicationFactory.FACTORY);
     }
 
+    public ServletContext getContext() {
+        return context;
+    }
+
     public ServletContext getContext(String path) {
         return context.getContext(path);
     }
@@ -175,6 +179,17 @@ public class DefaultServletRackContext implements ServletRackContext {
 
     public void log(String level, String message, Throwable e) {
         logger.log(level, message, e);
+    }
+
+    // Helpers
+
+    ServletContext getRealContext() { return getContext(); }
+
+    public static ServletContext getRealContext(final ServletContext context) {
+        if ( context instanceof DefaultServletRackContext ) {
+            return ((DefaultServletRackContext) context).getRealContext();
+        }
+        return context;
     }
 
 }
