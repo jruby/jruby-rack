@@ -247,13 +247,13 @@ describe "ActionController::Session::JavaServletStore" do
       with(true).and_return new_session = double_http_session
 
     @app.should_receive(:call).and_return do |env|
-      env['rack.session']["foo"] = 'bar'
+      env['rack.session']['foo'] = 'bar'
     end
     @session_store.call(@env)
   end
 
   it "should do nothing on session reset if no session is established" do
-    @request.should_receive(:getSession).with(false).any_number_of_times.and_return nil
+    @request.should_receive(:getSession).with(false).and_return nil
     @app.should_receive(:call).and_return do |env|
       env['rack.session.options'].delete(:id)
       env['rack.session'] = new_session_hash(env) # not loaded?
