@@ -26,13 +26,13 @@ module JRuby::Rack
       super
       ENV['RAILS_ROOT'] = app_path
       ENV['RAILS_ENV'] = rails_env
-
-      if File.exist?(File.join(app_path, "config", "application.rb"))
-        require 'jruby/rack/rails/environment3'
-        extend Rails3Environment
-      else
+      
+      if rails2?
         require 'jruby/rack/rails/environment2'
         extend Rails2Environment
+      else
+        require 'jruby/rack/rails/environment3'
+        extend Rails3Environment
       end
 
       set_public_root
@@ -69,24 +69,32 @@ module JRuby::Rack
       # no-op hooks run when 'jruby/rack/rails/extensions' gets loaded
     end
 
-    public
-
-    # @see #RailsRackApplicationFactory
-    def self.load_environment # :nodoc
-      rails_booter.load_environment
-    end
-
-    # @see #RailsRackApplicationFactory
-    def self.to_app # :nodoc
-      rails_booter.to_app
-    end
-
     private
 
-    def self.rails_booter # :nodoc
-      raise "no booter set" unless booter = JRuby::Rack.booter
-      raise "not a rails booter" unless booter.is_a?(JRuby::Rack::RailsBooter)
-      booter
+    def rails2?
+      # a File.exist? File.join(app_path, 'config/application.rb')
+      ! real_path File.join(layout.app_uri, 'config/application.rb')
+    end
+
+    class << self
+
+      # @see #RailsRackApplicationFactory
+      # @private
+      def self.load_environment; rails_booter.load_environment end
+
+      # @see #RailsRackApplicationFactory
+      # @private
+      def to_app; rails_booter.to_app end
+
+      private
+
+      # @private
+      def rails_booter
+        raise "no booter set" unless booter = JRuby::Rack.booter
+        raise "not a rails booter" unless booter.is_a?(JRuby::Rack::RailsBooter)
+        booter
+      end
+
     end
 
   end

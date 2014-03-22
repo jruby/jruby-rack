@@ -35,10 +35,10 @@ describe JRuby::Rack::RailsBooter do
     @@rack_env.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = @@rack_env
   end
 
-  it "should default RAILS_ROOT to /WEB-INF" do
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
+  it "should default rails path to /WEB-INF" do
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/usr/apps/WEB-INF"
     booter.boot!
-    booter.app_path.should == "./WEB-INF"
+    booter.app_path.should == "/usr/apps/WEB-INF"
   end
 
   it "leaves ENV['RAILS_ENV'] as is if it was already set" do
@@ -101,98 +101,100 @@ describe JRuby::Rack::RailsBooter do
     booter.logger.instance_variable_get(:@logdev).write "hello"
   end
 
-  it "should setup java servlet-based sessions if the session store is the default",
-    :lib => [ :stub ] do
-
-    booter.boot!
-    booter.should_receive(:rack_based_sessions?).and_return false
-
-    booter.session_options[:database_manager] = ::CGI::Session::PStore
-    booter.setup_sessions
-    booter.session_options[:database_manager].should == ::CGI::Session::JavaServletStore
-  end
-
-  it "should turn off Ruby CGI cookies if the java servlet store is used",
-    :lib => [ :stub ] do
-
-    booter.boot!
-    booter.should_receive(:rack_based_sessions?).and_return false
-
-    booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
-    booter.setup_sessions
-    booter.session_options[:no_cookies].should == true
-  end
-
-  it "should provide the servlet request in the session options if the java servlet store is used",
-    :lib => [ :stub ] do
-
-    booter.boot!
-    booter.should_receive(:rack_based_sessions?).twice.and_return false
-
-    booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
-    booter.setup_sessions
-    booter.instance_variable_set :@load_environment, true
-
-    ::Rack::Adapter::Rails.should_receive(:new).and_return app = double("rails adapter")
-    app.should_receive(:call)
-
-    env = { "java.servlet_request" => double("servlet request") }
-    booter.to_app.call(env)
-    env['rails.session_options'].should have_key(:java_servlet_request)
-    env['rails.session_options'][:java_servlet_request].should == env["java.servlet_request"]
-  end
-
-  it "should set the PUBLIC_ROOT constant to the location of the public root",
-    :lib => [ :rails23, :stub ] do
-
-    begin
-      booter.app_path = File.expand_path("../../../rails", __FILE__)
-      booter.boot!
-      PUBLIC_ROOT.should == booter.public_path
-    ensure
-      Object.send :remove_const, :PUBLIC_ROOT
-    end
-  end
-
   describe "Rails 2 environment", :lib => :stub do
 
-    before :each do
-      $servlet_context = @servlet_context
-      @rack_context.should_receive(:getContextPath).and_return "/foo"
+    before do
+      booter.stub(:rails2?).and_return true
+    end
+
+    it "sets up java servlet-based sessions if the session store is the default" do
+
+      booter.boot!
+      booter.should_receive(:rack_based_sessions?).and_return false
+
+      booter.session_options[:database_manager] = ::CGI::Session::PStore
+      booter.setup_sessions
+      booter.session_options[:database_manager].should == ::CGI::Session::JavaServletStore
+    end
+
+    it "turns off Ruby CGI cookies if the java servlet store is used" do
+
+      booter.boot!
+      booter.should_receive(:rack_based_sessions?).and_return false
+
+      booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
+      booter.setup_sessions
+      booter.session_options[:no_cookies].should == true
+    end
+
+    it "provides the servlet request in the session options if the java servlet store is used" do
+
+      booter.boot!
+      booter.should_receive(:rack_based_sessions?).twice.and_return false
+
+      booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
+      booter.setup_sessions
+      booter.instance_variable_set :@load_environment, true
+
+      ::Rack::Adapter::Rails.should_receive(:new).and_return app = double("rails adapter")
+      app.should_receive(:call)
+
+      env = { "java.servlet_request" => double("servlet request") }
+      booter.to_app.call(env)
+      env['rails.session_options'].should have_key(:java_servlet_request)
+      env['rails.session_options'][:java_servlet_request].should == env["java.servlet_request"]
+    end
+
+    it "should set the PUBLIC_ROOT constant to the location of the public root",
+      :lib => [ :rails23, :stub ] do
+
       booter.app_path = File.expand_path("../../../rails", __FILE__)
       booter.boot!
-      silence_warnings { booter.load_environment }
+      expect( PUBLIC_ROOT ).to eql booter.public_path
     end
 
-    after(:each) { Object.send :remove_const, :PUBLIC_ROOT }
-
-    after :all do
-      $servlet_context = nil
+    after(:each) do
+      Object.send :remove_const, :PUBLIC_ROOT if Object.const_defined? :PUBLIC_ROOT
     end
 
-    it "should default the page cache directory to the public root" do
-      ActionController::Base.page_cache_directory.should == booter.public_path
+    context 'booted' do
+
+      before :each do
+        $servlet_context = @servlet_context
+        @rack_context.should_receive(:getContextPath).and_return "/foo"
+        booter.app_path = File.expand_path("../../../rails", __FILE__)
+        booter.boot!
+        silence_warnings { booter.load_environment }
+      end
+
+      after(:all) { $servlet_context = nil }
+
+      it "should default the page cache directory to the public root" do
+        ActionController::Base.page_cache_directory.should == booter.public_path
+      end
+
+      it "should default the session store to the java servlet session store" do
+        ActionController::Base.session_store.should == CGI::Session::JavaServletStore
+      end
+
+      it "should set the ActionView ASSETS_DIR constant to the public root" do
+        ActionView::Helpers::AssetTagHelper::ASSETS_DIR.should == booter.public_path
+      end
+
+      it "should set the ActionView JAVASCRIPTS_DIR constant to the public root/javascripts" do
+        ActionView::Helpers::AssetTagHelper::JAVASCRIPTS_DIR.should == booter.public_path + "/javascripts"
+      end
+
+      it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
+        ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == booter.public_path + "/stylesheets"
+      end
+
+      it "should set the ActionController.relative_url_root to the servlet context path" do
+        ActionController::Base.relative_url_root.should == "/foo"
+      end
+
     end
 
-    it "should default the session store to the java servlet session store" do
-      ActionController::Base.session_store.should == CGI::Session::JavaServletStore
-    end
-
-    it "should set the ActionView ASSETS_DIR constant to the public root" do
-      ActionView::Helpers::AssetTagHelper::ASSETS_DIR.should == booter.public_path
-    end
-
-    it "should set the ActionView JAVASCRIPTS_DIR constant to the public root/javascripts" do
-      ActionView::Helpers::AssetTagHelper::JAVASCRIPTS_DIR.should == booter.public_path + "/javascripts"
-    end
-
-    it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
-      ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == booter.public_path + "/stylesheets"
-    end
-
-    it "should set the ActionController.relative_url_root to the servlet context path" do
-      ActionController::Base.relative_url_root.should == "/foo"
-    end
   end
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
