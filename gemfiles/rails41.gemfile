@@ -4,5 +4,5 @@ source "https://rubygems.org"
 
 gem "rake", :group=>:test, :require=>nil
 gem "rspec", "~> 2.14.1", :group=>:test
-gem "rails", :github=>"rails/rails", :branch=>"master"
+gem "rails", :github=>"rails/rails", :branch=>"4-1-stable"
 

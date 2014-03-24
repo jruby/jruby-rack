@@ -19,6 +19,11 @@ appraise "rails40" do
 end
 
 appraise "rails41" do
+  gem 'rails', :github => 'rails/rails', :branch => '4-1-stable'
+end
+
+=begin
+appraise "railsNG" do
   gem 'rails', :github => 'rails/rails', :branch => 'master'
   #gem 'journey', :github => 'rails/journey'
   #gem 'activerecord-deprecated_finders', :require => nil,
@@ -29,3 +34,4 @@ appraise "rails41" do
 #  gem 'activerecord-jdbc-adapter', :github => 'jruby/activerecord-jdbc-adapter'
 #  gem 'activerecord-jdbcsqlite3-adapter', :github => 'jruby/activerecord-jdbc-adapter'
 end
+=end
