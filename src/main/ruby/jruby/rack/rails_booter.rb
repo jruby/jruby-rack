@@ -26,7 +26,7 @@ module JRuby::Rack
       super
       ENV['RAILS_ROOT'] = app_path
       ENV['RAILS_ENV'] = rails_env
-      
+
       if rails2?
         require 'jruby/rack/rails/environment2'
         extend Rails2Environment
@@ -80,7 +80,7 @@ module JRuby::Rack
 
       # @see #RailsRackApplicationFactory
       # @private
-      def self.load_environment; rails_booter.load_environment end
+      def load_environment; rails_booter.load_environment end
 
       # @see #RailsRackApplicationFactory
       # @private
