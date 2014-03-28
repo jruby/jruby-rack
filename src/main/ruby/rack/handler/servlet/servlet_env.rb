@@ -46,7 +46,7 @@ module Rack
         # Load parameters into the (Rack) env from the Servlet API.
         # using javax.servlet.http.HttpServletRequest#getParameterMap
         def load_parameters
-          method = @servlet_env.method || 'GET'
+          method = @servlet_env.getMethod || 'GET'
           get_only = ( method == 'GET' || method == 'HEAD' )
           # we only need to really do this for POSTs but we'll handle all
           query_hash, form_hash = {}, {}
@@ -56,7 +56,7 @@ module Rack
           # - multi values are kept even when they do not end with '[]'
           # - if there's a query param and the same param name is in the (POST)
           #   body, both are kept and present as a multi-value
-          @servlet_env.parameter_map.each do |key, val| # String, String[]
+          @servlet_env.getParameterMap.each do |key, val| # String, String[]
             if get_only || ( q_vals = query_values(key) )
               if q_vals.length != val.length
                 # some are GET params some POST params
@@ -109,7 +109,7 @@ module Rack
         # using javax.servlet.http.HttpServletRequest#getCookies
         def load_cookies
           cookie_hash = {}
-          (@servlet_env.cookies || []).each do |cookie| # getCookies
+          (@servlet_env.getCookies || []).each do |cookie|
             name = cookie.name
             if cookie_hash[name]
               # NOTE: Rack compatible only accepting a single value
@@ -126,7 +126,7 @@ module Rack
         private
 
         def query_string
-          @query_string ||= @servlet_env.query_string.to_s # getQueryString
+          @query_string ||= @servlet_env.getQueryString.to_s
         end
 
         def query_values(key)
@@ -137,7 +137,7 @@ module Rack
         end
 
         def parse_query_string
-          Java::JavaxServletHttp::HttpUtils.parse_query_string(query_string)
+          Java::JavaxServletHttp::HttpUtils.parseQueryString(query_string)
         end
 
       end
