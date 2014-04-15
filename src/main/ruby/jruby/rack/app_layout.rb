@@ -76,6 +76,7 @@ module JRuby
       end
 
       def expand_path(path)
+        return nil if path.nil?
         if path.start_with?(app_uri) # gem_path = '/WEB-INF/gems'
           path = path.dup; path[0, app_uri.size] = app_path; path # '[app_path]/gems'
           path
@@ -90,7 +91,7 @@ module JRuby
 
     RailsWebInfLayout = WebInfLayout
 
-    # #deprecated will be removed (with Merb support)
+    # @deprecated will be removed (with Merb support)
     class MerbWebInfLayout < WebInfLayout
 
       def app_uri
@@ -120,7 +121,7 @@ module JRuby
       end
 
       def real_path(path)
-        expand_path(super)
+        path.nil? ? nil : expand_path(super)
       end
 
       def expand_path(path)

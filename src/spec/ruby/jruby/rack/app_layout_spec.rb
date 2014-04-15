@@ -65,6 +65,26 @@ describe JRuby::Rack::WebInfLayout do
     expect( layout.gem_path ).to eq "/var/local/app/gem"
   end
 
+  it "expands path app_uri relatively" do
+    layout.instance_variable_set :@app_uri, "/WEB-INF/"
+    layout.instance_variable_set :@app_path, "/home/deploy/current/WEB-INF/"
+
+    expect( layout.expand_path("app/gem") ).to eq "/home/deploy/current/WEB-INF/app/gem"
+  end
+
+  it "expands paths starting with app path" do
+    layout.instance_variable_set :@app_uri, "/WEB-INF"
+    layout.instance_variable_set :@app_path, "/home/deploy/current/WEB-INF"
+
+    expect( layout.expand_path("/WEB-INF/app/gem") ).to eq "/home/deploy/current/WEB-INF/app/gem"
+  end
+
+  it "expands nil path as nil" do
+    layout.instance_variable_set :@app_uri, "/WEB-INF/"
+
+    expect( layout.expand_path(nil) ).to eq nil
+  end
+
 end
 
 shared_examples "FileSystemLayout" do
@@ -112,6 +132,14 @@ shared_examples "FileSystemLayout" do
   it "expands public path relative to application root (unless absolute)" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/home/public/root"
     expect( layout.public_path ).to eq "/home/public/root"
+  end
+
+  it "expands nil path as nil" do
+    expect( layout.expand_path(nil) ).to eq nil
+  end
+
+  it "handles nil real path as nil" do
+    expect( layout.real_path(nil) ).to eq nil
   end
 
 end
