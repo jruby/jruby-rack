@@ -18,10 +18,12 @@ describe JRuby::Rack::Booter do
 
   @@rack_env = ENV['RACK_ENV']
   @@gem_path = Gem.path.dup
+  @@env_gem_path = ENV['GEM_PATH']
 
   after do
     @@rack_env.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = @@rack_env
     Gem.path.replace(@@gem_path)
+    @@env_gem_path.nil? ? ENV.delete('GEM_PATH') : ENV['GEM_PATH'] = @@env_gem_path
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
@@ -101,22 +103,43 @@ describe JRuby::Rack::Booter do
     expect( Gem.path ).to eql [ "file:/home/gems", "/usr/local/gems" ]
   end
 
-#  it "prepends gem_path to ENV['GEM_PATH']" do
-#    ENV['GEM_PATH'] = '/opt/gems'
-#    @rack_context.should_receive(:getRealPath).
-#      with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
-#    booter.boot!
-#
-#    ENV['GEM_PATH'].should == "/opt/deploy/sample.war!/WEB-INF/gems#{File::PATH_SEPARATOR}/opt/gems"
-#  end
+  it "does not change Gem.path if gem_path empty" do
+    Gem.path.replace [ '/opt/gems' ]
+    booter.gem_path = ""
+    booter.boot!
 
-#  it "prepends gem_path to ENV['GEM_PATH'] if not already present" do
-#    ENV['GEM_PATH'] = "/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
-#    booter.gem_path = '/usr/local/gems'
-#    booter.boot!
-#
-#    ENV['GEM_PATH'].should == "/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
-#  end
+    expect( Gem.path ).to eql [ '/opt/gems' ]
+  end
+
+  it "prepends gem_path to ENV['GEM_PATH'] if jruby.rack.gem_path set to env" do
+    @rack_context.should_receive(:getInitParameter).with("jruby.rack.gem_path").and_return "env"
+    ENV['GEM_PATH'] = '/opt/gems'
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
+
+    booter.boot!
+
+    ENV['GEM_PATH'].should == "/opt/deploy/sample.war!/WEB-INF/gems#{File::PATH_SEPARATOR}/opt/gems"
+  end
+
+  it "does not prepend gem_path to ENV['GEM_PATH'] if jruby.rack.gem_path set not set" do
+    ENV['GEM_PATH'] = '/opt/gems'
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
+
+    booter.boot!
+
+    ENV['GEM_PATH'].should == "/opt/gems"
+  end
+
+  it "prepends gem_path to ENV['GEM_PATH'] if not already present" do
+    @rack_context.should_receive(:getInitParameter).with("jruby.rack.gem_path").and_return "env"
+    ENV['GEM_PATH'] = "/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
+    booter.gem_path = '/usr/local/gems'
+    booter.boot!
+
+    ENV['GEM_PATH'].should == "/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
+  end
 
 #  it "keeps ENV['GEM_PATH'] when gem_path is nil" do
 #    ENV['GEM_PATH'] = '/usr/local/gems'
@@ -128,12 +151,16 @@ describe JRuby::Rack::Booter do
 #    ENV['GEM_PATH'].should == "/usr/local/gems"
 #  end
 
-#  it "sets ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
-#    ENV['GEM_PATH'] = nil
-#    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
-#    booter.boot!
-#    ENV['GEM_PATH'].should == "/blah/gems"
-#  end
+  it "sets ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
+    @rack_context.should_receive(:getInitParameter).with("jruby.rack.gem_path").and_return 'true'
+    ENV.delete('GEM_PATH')
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
+    @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/blah/gems"
+
+    booter.boot!
+
+    ENV['GEM_PATH'].should == "/blah/gems"
+  end
 
   it "creates a logger that writes messages to the servlet context" do
     booter.boot!
