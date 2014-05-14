@@ -4,12 +4,9 @@ GEM
     appraisal (0.5.2)
       bundler
       rake
-    bouncy-castle-java (1.5.0147)
     diff-lcs (1.2.5)
-    jruby-openssl (0.9.4)
-      bouncy-castle-java (>= 1.5.0147)
     rack (1.4.5)
-    rake (10.1.1)
+    rake (10.3.1)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
@@ -24,7 +21,6 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal
-  jruby-openssl
   rack (~> 1.4.5)
-  rake
+  rake (~> 10.3.1)
   rspec (~> 2.14.1)

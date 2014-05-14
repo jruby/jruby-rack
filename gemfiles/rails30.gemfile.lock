@@ -61,7 +61,7 @@ GEM
       rake (>= 0.8.7)
       rdoc (~> 3.4)
       thor (~> 0.14.4)
-    rake (10.1.1)
+    rake (10.3.1)
     rdoc (3.12.2)
       json (~> 1.4)
     rspec (2.14.1)
@@ -83,5 +83,5 @@ PLATFORMS
 
 DEPENDENCIES
   rails (~> 3.0.20)
-  rake
+  rake (~> 10.3.1)
   rspec (~> 2.14.1)
