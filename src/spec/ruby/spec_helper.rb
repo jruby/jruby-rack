@@ -8,13 +8,12 @@
 require 'rspec'
 
 require 'java'
-begin
-  require File.expand_path('target/classpath.rb', File.dirname(__FILE__) + '/../../..')
-rescue LoadError => e
-  puts "classpath.rb script missing try running `rake clean compile` first"
-  raise e
-end unless defined?(Maven.set_classpath)
-Maven.set_classpath
+target = File.expand_path('target', "#{File.dirname(__FILE__)}/../../..")
+jars = File.exist?(lib = "#{target}/lib") && ( Dir.entries(lib) - [ '.', '..' ] )
+raise "missing .jar dependencies please run `rake test_jars'" if ! jars || jars.empty?
+$CLASSPATH << File.expand_path('classes', target)
+$CLASSPATH << File.expand_path('test-classes', target)
+jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
 
 # Java imports :
 java_import 'javax.servlet.ServletContext'
