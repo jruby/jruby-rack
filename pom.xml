@@ -22,7 +22,7 @@
     <vendor.gems.path>vendor/gems</vendor.gems.path>
     <bundler.version>1.5.3</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
-    <saumya.mojo.version>1.0.0-rc4</saumya.mojo.version>
+    <saumya.mojo.version>1.0.1</saumya.mojo.version>
     <!--default: <gem.home>target/rubygems</gem.home>-->
   </properties>
 
@@ -197,6 +197,7 @@
               <phase>test</phase>
               <goals><goal>install</goal></goals>
               <configuration>
+                <jruby.version>${jruby.version}</jruby.version>
                 <includeOpenSSL>false</includeOpenSSL>
                 <args>--local ${vendor.gems.path}/bouncy-castle-java-1.5.0147.gem ${vendor.gems.path}/jruby-openssl-0.9.4.gem</args>
               </configuration>
@@ -206,6 +207,7 @@
               <phase>test</phase>
               <goals><goal>install</goal></goals>
               <configuration>
+                <jruby.version>${jruby.version}</jruby.version>
                 <includeOpenSSL>false</includeOpenSSL>
                 <args>bundler -v ${bundler.version}</args>
               </configuration>
@@ -222,6 +224,7 @@
             <phase>test</phase>
             <goals><goal>install</goal></goals>
             <configuration>
+              <jruby.version>${jruby.version}</jruby.version>
               <!--<local>false</local>-->
               <bundlerVersion>${bundler.version}</bundlerVersion>
             </configuration>
@@ -238,6 +241,7 @@
             <phase>test</phase>
             <goals><goal>rake</goal></goals>
             <configuration>
+              <jruby.version>${jruby.version}</jruby.version>
               <args>speconly SKIP_SPECS=${maven.test.skip} FULL_BIN_PATH=true</args>
             </configuration>
           </execution>
@@ -248,16 +252,18 @@
             <!-- bind "late" so we do not run during compile/test-compile -->
             <goals><goal>rake</goal></goals>
             <configuration>
+              <jruby.version>${jruby.version}</jruby.version>
               <args>resources VERSION=${project.version}</args>
             </configuration>
           </execution>
         </executions>
       </plugin>
+      <!--
       <plugin>
         <groupId>org.jruby</groupId>
         <artifactId>jruby-rake-plugin</artifactId>
         <version>${jruby.version}</version>
-      </plugin>
+      </plugin>-->
     </plugins>
     <extensions>
       <extension>
