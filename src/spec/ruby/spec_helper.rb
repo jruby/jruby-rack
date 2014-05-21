@@ -15,6 +15,8 @@ $CLASSPATH << File.expand_path('classes', target)
 $CLASSPATH << File.expand_path('test-classes', target)
 jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
 
+puts "using JRuby #{JRUBY_VERSION} (#{RUBY_VERSION})"
+
 # Java imports :
 java_import 'javax.servlet.ServletContext'
 java_import 'javax.servlet.ServletConfig'
