@@ -6,6 +6,29 @@ RAILS_GEM_VERSION = '2.3.18' unless defined? RAILS_GEM_VERSION
 # Bootstrap the Rails environment, frameworks, and default configuration
 require File.join(File.dirname(__FILE__), 'boot')
 
+# Monkey-Patch for RubyGems < 2.0 (will ignore vendor gems)
+unless defined? Gem.source_index
+  module Gem
+
+    def self.source_index
+      sources
+    end
+
+    def self.cache
+      sources
+    end
+
+    SourceIndex = Specification
+
+    class SourceList # only needed for vendor gems
+      include Enumerable
+      def search( *args ); []; end
+      def each( &block ); end
+    end
+
+  end
+end
+
 Rails::Initializer.run do |config|
   # Settings in config/environments/* take precedence over those specified here.
   # Application configuration should go into files in config/initializers
