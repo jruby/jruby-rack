@@ -72,8 +72,8 @@ module JRuby::Rack
     private
 
     def rails2?
-      # a File.exist? File.join(app_path, 'config/application.rb')
-      ! real_path File.join(layout.app_uri, 'config/application.rb')
+      app_path = real_path File.join(layout.app_uri, 'config/application.rb')
+      app_path && File.exist?(app_path) ? false : true
     end
 
     class << self
