@@ -1,13 +1,6 @@
-#--
-# Copyright (c) 2010-2012 Engine Yard, Inc.
-# Copyright (c) 2007-2009 Sun Microsystems, Inc.
-# This source code is available under the MIT license.
-# See the file LICENSE.txt for details.
-#++
-
-require 'rspec'
 
 require 'java'
+
 target = File.expand_path('target', "#{File.dirname(__FILE__)}/../../..")
 jars = File.exist?(lib = "#{target}/lib") && ( Dir.entries(lib) - [ '.', '..' ] )
 raise "missing .jar dependencies please run `rake test_jars'" if ! jars || jars.empty?
@@ -17,7 +10,6 @@ jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
 
 puts "using JRuby #{JRUBY_VERSION} (#{RUBY_VERSION})"
 
-# Java imports :
 java_import 'javax.servlet.ServletContext'
 java_import 'javax.servlet.ServletConfig'
 java_import 'javax.servlet.http.HttpServletRequest'
@@ -37,6 +29,8 @@ java_import 'org.jruby.rack.servlet.ServletRackContext'
 java_import 'org.jruby.rack.servlet.RequestCapture'
 java_import 'org.jruby.rack.servlet.ResponseCapture'
 java_import 'org.jruby.rack.servlet.RewindableInputStream'
+
+require 'rspec'
 
 module SharedHelpers
 

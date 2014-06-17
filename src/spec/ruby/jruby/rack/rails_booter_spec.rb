@@ -148,7 +148,7 @@ describe JRuby::Rack::RailsBooter do
     it "should set the PUBLIC_ROOT constant to the location of the public root",
       :lib => [ :rails23, :stub ] do
 
-      booter.app_path = File.expand_path("../../../rails", __FILE__)
+      booter.app_path = File.expand_path("../../../rails23", __FILE__)
       booter.boot!
       expect( PUBLIC_ROOT ).to eql booter.public_path
     end
@@ -162,7 +162,7 @@ describe JRuby::Rack::RailsBooter do
       before :each do
         $servlet_context = @servlet_context
         @rack_context.should_receive(:getContextPath).and_return "/foo"
-        booter.app_path = File.expand_path("../../../rails", __FILE__)
+        booter.app_path = File.expand_path("../../../rails23", __FILE__)
         booter.boot!
         silence_warnings { booter.load_environment }
       end
@@ -202,7 +202,7 @@ describe JRuby::Rack::RailsBooter do
 
     before :each do
       $servlet_context = @servlet_context
-      booter.app_path = File.expand_path("../../../rails3", __FILE__)
+      booter.app_path = File.expand_path("../../../rails3x", __FILE__)
       booter.boot!
       silence_warnings { booter.load_environment }
     end
@@ -217,7 +217,9 @@ describe JRuby::Rack::RailsBooter do
 
     it "should set the application configuration's public path" do
       paths = {}
-      %w( public public/javascripts public/stylesheets ).each { |p| paths[p] = [p] }
+      for p in %w( public public/javascripts public/stylesheets )
+        paths[p] = [p]
+      end
       app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
       public_path = Pathname.new(booter.public_path)
 
@@ -331,7 +333,7 @@ describe JRuby::Rack::RailsBooter do
 
     before :each do
       $servlet_context = @servlet_context
-      booter.app_path = File.expand_path("../../../rails3", __FILE__)
+      booter.app_path = File.expand_path("../../../rails3x", __FILE__)
       booter.boot!
       booter.load_environment
     end
