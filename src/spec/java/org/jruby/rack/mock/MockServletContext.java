@@ -39,6 +39,8 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
+import static org.jruby.rack.RackLogger.*;
+
 /**
  * Mock implementation of the {@link javax.servlet.ServletContext} interface.
  *
@@ -72,7 +74,7 @@ public class MockServletContext implements ServletContext {
 	private static final String TEMP_DIR_SYSTEM_PROPERTY = "java.io.tmpdir";
 
     private static final String TEMP_DIR_CONTEXT_ATTRIBUTE = "javax.servlet.context.tempdir";
-    
+
 	private final ResourceLoader resourceLoader;
 
 	private final String resourceBasePath;
@@ -171,9 +173,9 @@ public class MockServletContext implements ServletContext {
         public void log(String level, String message, Throwable e) {
             // NOOP
         }
-        
+
     }
-    
+
 	public void setContextPath(String contextPath) {
 		this.contextPath = (contextPath != null ? contextPath : "");
 	}
@@ -250,7 +252,7 @@ public class MockServletContext implements ServletContext {
 			return resourcePaths;
 		}
 		catch (IOException ex) {
-			logger.log("WARN: Couldn't get resource paths for " + resource, ex);
+			logger.log(WARN, "Couldn't get resource paths for " + resource, ex);
 			return null;
 		}
 	}
@@ -267,7 +269,7 @@ public class MockServletContext implements ServletContext {
 			throw ex;
 		}
 		catch (IOException ex) {
-			logger.log("WARN: Couldn't get URL for " + resource, ex);
+			logger.log(WARN, "Couldn't get URL for " + resource, ex);
 			return null;
 		}
 	}
@@ -281,7 +283,7 @@ public class MockServletContext implements ServletContext {
 			return resource.getInputStream();
 		}
 		catch (IOException ex) {
-			logger.log("WARN: Couldn't open InputStream for " + resource, ex);
+			logger.log(WARN, "Couldn't open InputStream for " + resource, ex);
 			return null;
 		}
 	}
@@ -328,14 +330,14 @@ public class MockServletContext implements ServletContext {
     public void setLogger(RackLogger logger) {
         this.logger = logger == null ? new NullLogger() : logger;
     }
-    
+
 	public String getRealPath(String path) {
 		Resource resource = this.resourceLoader.getResource(getResourceLocation(path));
 		try {
 			return resource.getFile().getAbsolutePath();
 		}
 		catch (IOException ex) {
-			logger.log("WARN: Couldn't determine real path of resource " + resource, ex);
+			logger.log(WARN, "Couldn't determine real path of resource " + resource, ex);
 			return null;
 		}
 	}
@@ -345,14 +347,14 @@ public class MockServletContext implements ServletContext {
 	}
 
 	public String getInitParameter(String name) {
-        if (name == null) { 
+        if (name == null) {
             throw new IllegalArgumentException("parameter name must not be null");
         }
 		return this.initParameters.get(name);
 	}
 
 	public void addInitParameter(String name, String value) {
-        if (name == null) { 
+        if (name == null) {
             throw new IllegalArgumentException("parameter name must not be null");
         }
 		this.initParameters.put(name, value);
@@ -363,7 +365,7 @@ public class MockServletContext implements ServletContext {
 	}
 
 	public Object getAttribute(String name) {
-        if (name == null) { 
+        if (name == null) {
             throw new IllegalArgumentException("attribute name must not be null");
         }
 		return this.attributes.get(name);
@@ -374,7 +376,7 @@ public class MockServletContext implements ServletContext {
 	}
 
 	public void setAttribute(String name, Object value) {
-        if (name == null) { 
+        if (name == null) {
             throw new IllegalArgumentException("attribute name must not be null");
         }
 		if (value != null) {
@@ -386,7 +388,7 @@ public class MockServletContext implements ServletContext {
 	}
 
 	public void removeAttribute(String name) {
-        if (name == null) { 
+        if (name == null) {
             throw new IllegalArgumentException("attribute name must not be null");
         }
 		this.attributes.remove(name);
@@ -410,7 +412,7 @@ public class MockServletContext implements ServletContext {
 		public static String getMimeType(String filePath) {
 			return FileTypeMap.getDefaultFileTypeMap().getContentType(filePath);
 		}
-        
+
 	}
 
 
