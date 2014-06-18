@@ -5,9 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
-require 'action_controller'
-require 'active_record'
+require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 require 'jruby/rack/queues'
 
 describe JRuby::Rack::Queues do

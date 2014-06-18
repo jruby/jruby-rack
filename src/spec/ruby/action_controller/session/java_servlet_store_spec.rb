@@ -1,28 +1,22 @@
-#--
-# Copyright (c) 2010-2012 Engine Yard, Inc.
-# Copyright (c) 2007-2009 Sun Microsystems, Inc.
-# This source code is available under the MIT license.
-# See the file LICENSE.txt for details.
-#++
-
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
-
-require 'active_support'
-require 'action_controller'
-begin # help Rails 3.0 up
-  require 'action_dispatch/middleware/session/abstract_store'
-rescue LoadError
-end
-begin # a Rails 2.3 require
-  require 'action_controller/session/abstract_store'
-rescue LoadError
-end
-
-require 'jruby/rack/session_store'
+require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 
 describe "ActionController::Session::JavaServletStore" do
 
   before :all do
+
+    require 'active_support'
+    require 'action_controller'
+    begin # help Rails 3.0 up
+      require 'action_dispatch/middleware/session/abstract_store'
+    rescue LoadError
+    end
+    begin # a Rails 2.3 require
+      require 'action_controller/session/abstract_store'
+    rescue LoadError
+    end
+
+    require 'jruby/rack/session_store'
+
     require 'action_controller/session/java_servlet_store'
   end
 
@@ -322,4 +316,4 @@ describe "ActionController::Session::JavaServletStore" do
     ::JRuby::Rack::Session::SessionHash.new(store, env)
   end
 
-end
+end if defined? Rails

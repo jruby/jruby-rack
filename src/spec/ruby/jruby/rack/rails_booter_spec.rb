@@ -5,15 +5,21 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
+require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 require 'jruby/rack/rails_booter'
-require 'jruby/rack/rails/extensions'
-
-require 'active_support'
-require 'cgi/session/java_servlet_store'
-class ::CGI::Session::PStore; end
 
 describe JRuby::Rack::RailsBooter do
+
+  before :all do
+
+    require 'jruby/rack/rails/extensions'
+
+    require 'active_support'
+
+    require 'cgi/session/java_servlet_store'
+    class ::CGI::Session::PStore; end
+
+  end
 
   let(:booter) do
     JRuby::Rack::RailsBooter.new JRuby::Rack.context = @rack_context
@@ -101,7 +107,7 @@ describe JRuby::Rack::RailsBooter do
     booter.logger.instance_variable_get(:@logdev).write "hello"
   end
 
-  describe "Rails 2 environment", :lib => :stub do
+  describe "Rails 2.3", :lib => :stub do
 
     before do
       booter.stub(:rails2?).and_return true
@@ -198,7 +204,7 @@ describe JRuby::Rack::RailsBooter do
   end
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
-  describe "Rails 3 environment", :lib => :stub do
+  describe "Rails 3.x", :lib => :stub do
 
     before :each do
       $servlet_context = @servlet_context
@@ -304,9 +310,9 @@ describe JRuby::Rack::RailsBooter do
 
       private
 
-        def log_initializer
-          Rails::Railtie.__initializer.detect { |i| i[0] =~ /log/ }
-        end
+      def log_initializer
+        Rails::Railtie.__initializer.detect { |i| i[0] =~ /log/ }
+      end
 
     end
 
@@ -329,7 +335,7 @@ describe JRuby::Rack::RailsBooter do
   end
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
-  describe "Rails 3.1 environment", :lib => [ :stub ] do
+  describe "Rails 3.1", :lib => [ :stub ] do
 
     before :each do
       $servlet_context = @servlet_context
@@ -366,9 +372,14 @@ describe JRuby::Rack::RailsBooter do
     end
   end
 
-end
+end if defined? Rails
 
 describe JRuby::Rack, "Rails controller extensions" do
+
+  before :all do
+    require 'action_controller'
+  end
+
   before :each do
     @controller = ActionController::Base.new
     @controller.stub(:request).and_return(request = double("request"))
@@ -389,4 +400,5 @@ describe JRuby::Rack, "Rails controller extensions" do
 
     @controller.forward_to "/forward.jsp"
   end
-end
+
+end if defined? Rails
