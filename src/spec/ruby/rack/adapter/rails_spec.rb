@@ -5,24 +5,36 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
+require File.expand_path('../../spec_helper', File.dirname(__FILE__))
+
+require 'action_controller' if defined? Rails
+
+#if defined? ActionController::Base.session_options # :rails23
+#  # avoid ArgumentError with real 2.3 (default) middleware-stack :
+#  # A key is required to write a cookie containing the session data.
+#  # Use config.action_controller.session = ... in config/environment.rb
+#  ActionController::Base.session_options.update({
+#    :key => "_testapp_session", :secret => "some secret phrase" * 42
+#  })
+#else # :stub
+#  module ActionController
+#    class Base; end
+#  end
+#end
+
 require 'rack/adapter/rails'
-require 'rack/adapter/rails_cgi'
 
-if defined? ActionController::Base.session_options # :rails23
-  # avoid ArgumentError with real 2.3 (default) middleware-stack :
-  # A key is required to write a cookie containing the session data.
-  # Use config.action_controller.session = ... in config/environment.rb
-  ActionController::Base.session_options.update({
-    :key => "_testapp_session", :secret => "some secret phrase" * 42
-  })
-else # :stub
-  module ActionController
-    class Base; end
+describe 'Rack::Adapter::Rails' do
+
+  before :all do
+    # avoid ArgumentError with real 2.3 (default) middleware-stack :
+    # A key is required to write a cookie containing the session data.
+    # Use config.action_controller.session = ... in config/environment.rb
+    ActionController::Base.session_options.update({
+      :key => "_testapp_session", :secret => "some secret phrase" * 42
+    })
   end
-end
 
-describe Rack::Adapter::Rails do
   before :each do
     ActionController::Base.stub(:page_cache_extension).and_return ".html"
     @rails = Rack::Adapter::Rails.new
@@ -67,9 +79,13 @@ describe Rack::Adapter::Rails do
     @env["jruby.rack.dynamic.requests.only"] = true
     @rails.call(@env).should == [200, {}, ""]
   end
-end
 
-describe Rack::Adapter::RailsCgi::CGIWrapper, "#header" do
+end if defined? ActionController::Base.session_options # :rails23
+
+require 'rack/adapter/rails_cgi'
+
+describe 'Rack::Adapter::RailsCgi::CGIWrapper', "#header" do
+
   before :each do
     @request, @response = double("request"), double("response")
     @request.stub(:env).and_return({"REQUEST_METHOD" => "GET"})
@@ -126,4 +142,5 @@ describe Rack::Adapter::RailsCgi::CGIWrapper, "#header" do
     @response.should_receive(:[]=).with('bza', 'hey')
     @wrapper.header(options)
   end
+
 end
