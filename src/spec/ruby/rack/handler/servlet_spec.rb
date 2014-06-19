@@ -1,11 +1,5 @@
-#--
-# Copyright (c) 2010-2012 Engine Yard, Inc.
-# Copyright (c) 2007-2009 Sun Microsystems, Inc.
-# This source code is available under the MIT license.
-# See the file LICENSE.txt for details.
-#++
+require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'rack/handler/servlet'
 require 'stringio'
 
@@ -339,6 +333,34 @@ describe Rack::Handler::Servlet do
     it "exposes the rack context" do
       env = servlet.create_env @servlet_env
       expect( env['jruby.rack.context'] ).to be @rack_context
+    end
+
+    it "retrieves hidden attribute" do
+      servlet_request_class = Class.new(org.jruby.rack.mock.MockHttpServletRequest) do
+
+        def getAttributeNames
+          names = super.to_a.reject { |name| name.start_with?('org.apache') }
+          return java.util.Collections.enumeration(names)
+        end
+
+      end
+      servlet_request = servlet_request_class.new(servlet_context)
+      servlet_request.setAttribute('current_page', 'index.html'.to_java)
+      servlet_request.setAttribute('org.answer.internal', 4200.to_java)
+      servlet_request.setAttribute('org.apache.internal', true.to_java)
+      
+      servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(
+        servlet_request, servlet_response, @rack_context
+      )
+
+      env = servlet.create_env servlet_env
+
+      expect( env.keys ).to include 'current_page'
+      expect( env.keys ).to include 'org.answer.internal'
+      expect( env.keys ).to_not include 'org.apache.internal'
+
+      expect( env['org.answer.internal'] ).to be 4200
+      expect( env['org.apache.internal'] ).to be true
     end
 
   end

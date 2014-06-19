@@ -167,25 +167,32 @@ module Rack
         def load_variable(env, key)
           return nil if @servlet_env.nil?
           case key
-          when 'CONTENT_TYPE'
-            content_type = @servlet_env.getContentType
-            env[key] = content_type if content_type
-          when 'CONTENT_LENGTH'
-            content_length = @servlet_env.getContentLength
-            env[key] = content_length.to_s if content_length >= 0
-          when 'PATH_INFO'       then env[key] = @servlet_env.getPathInfo
-          when 'QUERY_STRING'    then env[key] = @servlet_env.getQueryString || ''
-          when 'REMOTE_ADDR'     then env[key] = @servlet_env.getRemoteAddr || ''
-          when 'REMOTE_HOST'     then env[key] = @servlet_env.getRemoteHost || ''
-          when 'REMOTE_USER'     then env[key] = @servlet_env.getRemoteUser || ''
-          when 'REQUEST_METHOD'  then env[key] = @servlet_env.getMethod || 'GET'
-          when 'REQUEST_URI'     then env[key] = @servlet_env.getRequestURI
-          when 'SCRIPT_NAME'     then env[key] = @servlet_env.getScriptName
-          when 'SERVER_NAME'     then env[key] = @servlet_env.getServerName || ''
-          when 'SERVER_PORT'     then env[key] = @servlet_env.getServerPort.to_s
-          when 'SERVER_SOFTWARE' then env[key] = rack_context.getServerInfo
-          else
-            nil
+            when 'CONTENT_TYPE'
+              content_type = @servlet_env.getContentType
+              env[key] = content_type if content_type
+            when 'CONTENT_LENGTH'
+              content_length = @servlet_env.getContentLength
+              env[key] = content_length.to_s if content_length >= 0
+            when 'PATH_INFO'       then env[key] = @servlet_env.getPathInfo
+            when 'QUERY_STRING'    then env[key] = @servlet_env.getQueryString || ''
+            when 'REMOTE_ADDR'     then env[key] = @servlet_env.getRemoteAddr || ''
+            when 'REMOTE_HOST'     then env[key] = @servlet_env.getRemoteHost || ''
+            when 'REMOTE_USER'     then env[key] = @servlet_env.getRemoteUser || ''
+            when 'REQUEST_METHOD'  then env[key] = @servlet_env.getMethod || 'GET'
+            when 'REQUEST_URI'     then env[key] = @servlet_env.getRequestURI
+            when 'SCRIPT_NAME'     then env[key] = @servlet_env.getScriptName
+            when 'SERVER_NAME'     then env[key] = @servlet_env.getServerName || ''
+            when 'SERVER_PORT'     then env[key] = @servlet_env.getServerPort.to_s
+            when 'SERVER_SOFTWARE' then env[key] = rack_context.getServerInfo
+            else
+              # NOTE: even though we allowed for overrides and loaded all attributes
+              # up front (looping thru getAttributeNames) container "hidden" attribs
+              # might still get resolved e.g. 'org.apache.tomcat.sendfile.support'
+              if hidden_attr = @servlet_env.getAttribute(key)
+                env[key] = hidden_attr
+              else
+                nil
+              end
           end
         end
 
