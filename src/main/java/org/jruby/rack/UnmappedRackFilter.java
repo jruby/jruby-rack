@@ -51,9 +51,7 @@ public class UnmappedRackFilter extends AbstractFilter {
     private RackContext context;
     private RackDispatcher dispatcher;
 
-    /** Default constructor for servlet container */
-    public UnmappedRackFilter() {
-    }
+    public UnmappedRackFilter() { /** constructor used by container */ }
 
     /** Dependency-injected constructor for testing */
     public UnmappedRackFilter(RackDispatcher dispatcher, RackContext context) {
