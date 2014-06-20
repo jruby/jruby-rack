@@ -21,8 +21,14 @@ describe org.jruby.rack.servlet.ResponseCapture do
     expect( response_capture.isOutputAccessed ).to be true
   end
 
+  it "is considered handled by default" do
+    # NOTE: weird but this is what some containers need to e.g. serve
+    # static content with RackFilter correctly (e.g. Jetty)
+    expect( response_capture.isHandled ).to be true
+  end
+
   it "is not considered handled by default or when 404 set" do
-    expect( response_capture.isHandled ).to be false
+    #expect( response_capture.isHandled ).to be false
 
     response_capture.setStatus(404)
     expect( response_capture.isHandled ).to be false
@@ -37,10 +43,19 @@ describe org.jruby.rack.servlet.ResponseCapture do
     expect( response_capture.isHandled ).to be true
   end
 
+  it "once considered handled stays handled" do
+    response_capture.setStatus(200)
+    expect( response_capture.isHandled ).to be true
+    # NOTE: quite important since container might have accessed and written to
+    # the real output-stream already ... status change should not happen though
+    response_capture.setStatus(404)
+    expect( response_capture.isHandled ).to be true
+  end
+
   it "is not considered handled when only Allow header is added with OPTIONS" do
     servlet_request.method = 'OPTIONS'
 
-    expect( response_capture.isHandled(servlet_request) ).to be false
+    #expect( response_capture.isHandled(servlet_request) ).to be false
 
     # NOTE: this is what TC's DefaultServlet does on doOptions() :
     response_capture.addHeader "Allow", "GET, POST, OPTIONS"

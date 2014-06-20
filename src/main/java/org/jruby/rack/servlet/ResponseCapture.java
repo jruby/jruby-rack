@@ -8,7 +8,6 @@
 package org.jruby.rack.servlet;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -65,11 +64,11 @@ public class ResponseCapture extends HttpServletResponseWrapper {
      *
      * @param status the new HTTP status
      * @param error whether the status comes from a {@code sendError}
-     * @see #isHandled()
+     * @see #isHandled(HttpServletRequest)
      */
     protected boolean handleStatus(int status, boolean error) {
         this.status = status;
-        return isHandled();
+        return isHandled(null);
     }
 
     @Override
@@ -157,11 +156,9 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     public ServletOutputStream getOutputStream() throws IOException {
         if ( output == null ) output = STREAM;
 
-        if ( isHandled() ) {
-            return super.getOutputStream();
-        }
-        else {
-            // backwards compatibility with isError() then :
+        if ( isHandled(null) ) return super.getOutputStream();
+        else { // TODO get rid of this in 1.2.0
+            // backwards compatibility with isError() :
             return new ServletOutputStream() {
                 @Override
                 public void write(int b) throws IOException {
@@ -175,42 +172,36 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     public PrintWriter getWriter() throws IOException {
         if ( output == null ) output = WRITER;
 
-        if ( isHandled() ) {
-            // we protect against API limitations as we depend on #getWriter
-            // being functional even if getOutputStream has been called ...
-            if ( output != WRITER ) {
-                String enc = getCharacterEncoding();
-                if ( enc == null ) enc = "UTF-8";
-                return new PrintWriter(new OutputStreamWriter(getOutputStream(), enc));
-            }
-            else {
-                return super.getWriter();
-            }
+        // we protect against API limitations as we depend on #getWriter
+        // being functional even if getOutputStream has been called ...
+        if ( output != WRITER ) {
+            String enc = getCharacterEncoding();
+            if ( enc == null ) enc = "UTF-8";
+            return new PrintWriter(new OutputStreamWriter(getOutputStream(), enc));
         }
         else {
-            // backwards compatibility with isError() then :
-            return new PrintWriter(new OutputStream() {
-                @Override
-                public void write(int b) throws IOException {
-                    // swallow output, because we're going to discard it
-                }
-            });
+            return super.getWriter();
         }
     }
 
     @Override
     public void flushBuffer() throws IOException {
-        if ( isHandled() ) super.flushBuffer();
+        if ( isHandled(null) ) super.flushBuffer();
     }
 
     public boolean isError() {
         return getStatus() >= 400;
     }
 
-    // NOTE: should probably deprecate this one
+    /**
+     * @deprecated no longer to be used from outside
+     * @see #isHandled(HttpServletRequest)
+     */
     public boolean isHandled() {
         return isHandled(null);
     }
+
+    private boolean handled; // once handled - stays handled
 
     /**
      * Response is considered to be handled if a status has been set
@@ -220,28 +211,36 @@ public class ResponseCapture extends HttpServletResponseWrapper {
      * @see #handleStatus(int, boolean)
      */
     public boolean isHandled(final HttpServletRequest request) {
+        if ( handled ) return true; // ... once handled always handled !
+
         // setting a header should consider the response to be handled
         if ( ! isStatusSet() ) {
-            if ( ! isHeaderSet() ) return false;
+            if ( ! isHeaderSet() ) {
+                // true by default seems very weird but this is best to cover
+                // "more" containers right out of the box ...
+                // e.g. Jetty https://github.com/jruby/jruby-rack/issues/175
+                return handled = true; // return false;
+            }
 
             // consider HTTP OPTIONS with "Allow" header unhandled :
             if ( request != null && "OPTIONS".equals( request.getMethod() ) ) {
-                final Collection<String> headerNames = getHeaderNamesInternal();
+                final Collection<String> headerNames = getHeaderNamesOrNull();
                 if ( headerNames == null || headerNames.isEmpty() ) {
                     // not to happen but there's all kind of beasts out there
                     return false;
                 }
                 for ( final String headerName : headerNames ) {
                     if ( ! "Allow".equals(headerName) ) {
-                        return true; // not just Allow header - consider handled
+                        return handled = true; // not just Allow header - consider handled
                     }
                 }
                 return false; // OPTIONS with only Allow header set - unhandled
             }
-            return true;
+            return handled = true;
         }
+
         if ( notHandledStatuses.contains( getStatus() ) ) return false;
-        return true;
+        return handled = true;
     }
 
     public Collection<Integer> getNotHandledStatuses() {
@@ -263,8 +262,8 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     }
 
     @SuppressWarnings("unchecked")
-    private Collection<String> getHeaderNamesInternal() {
-        // NOTE: getHeaderNames available since 3.0 JRuby-Rack 1.1 still support 2.5
+    private Collection<String> getHeaderNamesOrNull() {
+        // NOTE: getHeaderNames since Servlet API 3.0 JRuby-Rack 1.1 still supports 2.5
         try {
             final Method getHeaderNames = HttpServletResponse.class.getMethod("getHeaderNames");
             return (Collection<String>) getHeaderNames.invoke(this);
