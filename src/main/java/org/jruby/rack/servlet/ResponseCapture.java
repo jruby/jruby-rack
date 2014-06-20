@@ -28,11 +28,12 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     private static final String STREAM = "stream";
     private static final String WRITER = "writer";
 
-    private static Collection<Integer> defaultNotHandledStatuses = Collections.singleton(404);
+    private static final Collection<Integer> defaultNotHandledStatuses = Collections.singleton(404);
 
     private Integer status;
     private Object output;
 
+    private boolean handledByDefault;
     private Collection<Integer> notHandledStatuses = defaultNotHandledStatuses;
 
     /**
@@ -219,7 +220,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
                 // true by default seems very weird but this is best to cover
                 // "more" containers right out of the box ...
                 // e.g. Jetty https://github.com/jruby/jruby-rack/issues/175
-                return handled = true; // return false;
+                return handled = isHandledByDefault();
             }
 
             // consider HTTP OPTIONS with "Allow" header unhandled :
@@ -251,6 +252,14 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     public void setNotHandledStatuses(final Collection<Integer> notHandledStatuses) {
         this.notHandledStatuses =
             notHandledStatuses == null ? Collections.EMPTY_SET : notHandledStatuses;
+    }
+
+    boolean isHandledByDefault() {
+        return handledByDefault;
+    }
+
+    public void setHandledByDefault(boolean handledByDefault) {
+        this.handledByDefault = handledByDefault;
     }
 
     /**

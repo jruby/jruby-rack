@@ -4,7 +4,9 @@ describe org.jruby.rack.servlet.ResponseCapture do
 
   let(:servlet_response) { MockHttpServletResponse.new }
   let(:response_capture) do
-    org.jruby.rack.servlet.ResponseCapture.new(servlet_response)
+    response = org.jruby.rack.servlet.ResponseCapture.new(servlet_response)
+    response.handled_by_default = true
+    response
   end
 
   let(:servlet_request) { MockHttpServletRequest.new(@servlet_context) }

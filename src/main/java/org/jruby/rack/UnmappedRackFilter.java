@@ -43,6 +43,8 @@ public class UnmappedRackFilter extends AbstractFilter {
     // NOTE: it's true by default for backwards compatibility
     private Object resetUnhandledResponse = Boolean.TRUE;
 
+    private boolean responseHandledByDefault = true;
+
     private Collection<Integer> responseNotHandledStatuses =
         // 403 due containers not supporting PUT/DELETE correctly (Tomcat 6)
         // 405 returned by Jetty 7/8 on PUT/DELETE requests by default
@@ -70,7 +72,7 @@ public class UnmappedRackFilter extends AbstractFilter {
         String value = config.getInitParameter("resetUnhandledResponse");
         if ( value != null ) setResetUnhandledResponseValue(value);
 
-        // ResponseCapture.defaultNotHandledStatuses e.g. "403,404,500"
+        // ResponseCapture.notHandledStatuses e.g. "403,404,500"
         value = config.getInitParameter("responseNotHandledStatuses");
         if ( value != null ) {
             final Set<Integer> statuses = new HashSet<Integer>();
@@ -81,6 +83,11 @@ public class UnmappedRackFilter extends AbstractFilter {
                 }
             }
             responseNotHandledStatuses = statuses;
+        }
+        // ResponseCapture.handledByDefault true/false (true by default)
+        value = config.getInitParameter("responseHandledByDefault");
+        if ( value != null ) {
+            responseHandledByDefault = Boolean.parseBoolean(value);
         }
     }
 
@@ -148,6 +155,7 @@ public class UnmappedRackFilter extends AbstractFilter {
     protected ResponseCapture wrapResponse(ServletResponse response) {
         final ResponseCapture capture = super.wrapResponse(response);
         capture.setNotHandledStatuses( getResponseNotHandledStatuses() );
+        capture.setHandledByDefault( isResponseHandledByDefault() );
         return capture;
     }
 
@@ -186,6 +194,14 @@ public class UnmappedRackFilter extends AbstractFilter {
     public void setDefaultNotHandledStatuses(final Collection<Integer> responseNotHandledStatuses) {
         this.responseNotHandledStatuses =
             responseNotHandledStatuses == null ? Collections.EMPTY_SET : responseNotHandledStatuses;
+    }
+
+    public boolean isResponseHandledByDefault() {
+        return responseHandledByDefault;
+    }
+
+    public void setResponseHandledByDefault(boolean responseHandledByDefault) {
+        this.responseHandledByDefault = responseHandledByDefault;
     }
 
 }
