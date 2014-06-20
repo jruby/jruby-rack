@@ -87,7 +87,8 @@ describe JRuby::Rack::Booter do
     booter.rack_env.should == 'production'
   end
 
-  it "prepends gem_path to Gem.path" do
+  it "prepends gem_path to Gem.path (when configured to not mangle with ENV)" do
+    @rack_context.should_receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'false'
     Gem.path.replace [ '/opt/gems' ]
     booter.gem_path = "wsjar:file:/opt/deploy/sample.war!/WEB-INF/gems"
     booter.boot!
@@ -111,8 +112,8 @@ describe JRuby::Rack::Booter do
     expect( Gem.path ).to eql [ '/opt/gems' ]
   end
 
-  it "prepends gem_path to ENV['GEM_PATH'] if jruby.rack.gem_path set to env" do
-    @rack_context.should_receive(:getInitParameter).with("jruby.rack.gem_path").and_return "env"
+  it "prepends gem_path to ENV['GEM_PATH'] if jruby.rack.gem_path set to true" do
+    @rack_context.should_receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'true'
     ENV['GEM_PATH'] = '/opt/gems'
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
@@ -123,6 +124,7 @@ describe JRuby::Rack::Booter do
   end
 
   it "does not prepend gem_path to ENV['GEM_PATH'] if jruby.rack.gem_path set not set" do
+    @rack_context.should_receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return ''
     ENV['GEM_PATH'] = '/opt/gems'
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
@@ -133,7 +135,6 @@ describe JRuby::Rack::Booter do
   end
 
   it "prepends gem_path to ENV['GEM_PATH'] if not already present" do
-    @rack_context.should_receive(:getInitParameter).with("jruby.rack.gem_path").and_return "env"
     ENV['GEM_PATH'] = "/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
     booter.gem_path = '/usr/local/gems'
     booter.boot!
@@ -152,7 +153,7 @@ describe JRuby::Rack::Booter do
 #  end
 
   it "sets ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
-    @rack_context.should_receive(:getInitParameter).with("jruby.rack.gem_path").and_return 'true'
+    @rack_context.should_receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'true'
     ENV.delete('GEM_PATH')
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/blah/gems"

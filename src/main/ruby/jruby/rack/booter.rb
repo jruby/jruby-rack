@@ -105,27 +105,21 @@ module JRuby::Rack
 
     def adjust_gem_path
       gem_path = self.gem_path
-      case gem_path?
-      when false then # org.jruby.rack.RackLogger::DEBUG
-        if gem_path && ! gem_path.empty? &&
-          ( ! defined?(Gem.path) || ! Gem.path.include?(gem_path) )
-          @rack_context.log("Gem.path won't be updated although seems configured: #{gem_path}")
-        end
-        return false
+      case set_gem_path = env_gem_path
       when true then
-        if env_gem_path = ENV['GEM_PATH']
+        if env_path = ENV['GEM_PATH']
           if gem_path.nil? || gem_path.empty?
             return # keep ENV['GEM_PATH'] as is
-          elsif env_gem_path != gem_path
+          elsif env_path != gem_path
             separator = File::PATH_SEPARATOR
-            unless env_gem_path.split(separator).include?(gem_path)
-              ENV['GEM_PATH'] = "#{gem_path}#{separator}#{env_gem_path}"
+            unless env_path.split(separator).include?(gem_path)
+              ENV['GEM_PATH'] = "#{gem_path}#{separator}#{env_path}"
             end
           end
         else
           ENV['GEM_PATH'] = gem_path
         end
-      else # nil (default)
+      when false then
         begin
           require 'rubygems' unless defined? Gem.path
         rescue LoadError
@@ -133,20 +127,33 @@ module JRuby::Rack
           return if gem_path.nil? || gem_path.empty?
           Gem.path.unshift(gem_path) unless Gem.path.include?(gem_path)
         end
+        return false
+      when nil then # org.jruby.rack.RackLogger::DEBUG
+        if gem_path && ! gem_path.empty? &&
+          ( ! defined?(Gem.path) || ! Gem.path.include?(gem_path) )
+          @rack_context.log("Gem.path won't be updated although seems configured: #{gem_path}")
+        end
+        return nil
+      else # 'jruby.rack.env.gem_path' "forced" to an explicit value
+        ENV['GEM_PATH'] = set_gem_path
       end
     end
 
     # @return whether to update Gem.path and/or the environment GEM_PATH
-    # - true/'env' forces ENV['GEM_PATH'] to be updated
-    # - false disabled Gem.path mangling for good (leaves all as is)
+    # - true (default) forces ENV['GEM_PATH'] to be updated due compatibility
+    #   Bundler 1.6 fails to revolve gems correctly when Gem.path is updated
+    #   instead of the ENV['GEM_PATH'] environment variable
+    # - false disables ENV['GEM_PATH'] mangling for good (updates Gem.path)
+    #
     # - if not specified Gem.path will be updated based on setting
-    def gem_path?
-      return @_gem_path if defined? @_gem_path
-      gem_path = @rack_context.getInitParameter('jruby.rack.gem_path')
-      return @_gem_path = nil if gem_path.nil?
-      return @_gem_path = false if gem_path.empty? || gem_path == 'false'
-      @_gem_path = true # true / 'env'
+    def env_gem_path
+      gem_path = @rack_context.getInitParameter('jruby.rack.env.gem_path')
+      return true if gem_path.nil? || gem_path.to_s == 'true'
+      return false if gem_path.to_s == 'false'
+      return nil if gem_path.empty? # set to an empty disables mangling
+      gem_path
     end
+    private :env_gem_path
 
     # @note called during {#boot!}
     def export_global_settings
