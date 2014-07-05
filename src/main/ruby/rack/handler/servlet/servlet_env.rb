@@ -38,26 +38,35 @@ module Rack
           end
         end
 
+        # @private
         QUERY_STRING = "rack.request.query_string".freeze
+        # @private
         QUERY_HASH = "rack.request.query_hash".freeze
+        # @private
         FORM_INPUT = "rack.request.form_input".freeze
+        # @private
         FORM_HASH = "rack.request.form_hash".freeze
+
+        # @private
+        POST_PARAM_METHODS = [ 'POST', 'PUT', 'DELETE' ].freeze
 
         # Load parameters into the (Rack) env from the Servlet API.
         # using javax.servlet.http.HttpServletRequest#getParameterMap
         def load_parameters
-          method = @servlet_env.getMethod || 'GET'
-          get_only = ( method == 'GET' || method == 'HEAD' )
+          get_only = ! POST_PARAM_METHODS.include?( @servlet_env.getMethod )
           # we only need to really do this for POSTs but we'll handle all
           query_hash, form_hash = {}, {}
           # NOTE: HttpServletRequest#getParameterMap behaves differently than
-          # Rack is preserves all parameters (at least on Tomcat 6/7) - nothing
-          # gets "lost" like with Rack, most notable differences :
+          # Rack - preserves all parameters (at least on Tomcat 6/7) - nothing
+          # gets "lost" (like with Rack), most notable differences :
           # - multi values are kept even when they do not end with '[]'
           # - if there's a query param and the same param name is in the (POST)
           #   body, both are kept and present as a multi-value
           @servlet_env.getParameterMap.each do |key, val| # String, String[]
-            if get_only || ( q_vals = query_values(key) )
+            val = [''] if val.nil? # e.g. buggy Jetty 6
+            val = [''] if val.length == 1 && val[0].nil?
+            
+            if ( q_vals = query_values(key) ) || get_only
               if q_vals.length != val.length
                 # some are GET params some POST params
                 post_vals, get_vals = val.to_a, []

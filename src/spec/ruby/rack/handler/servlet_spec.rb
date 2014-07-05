@@ -348,7 +348,7 @@ describe Rack::Handler::Servlet do
       servlet_request.setAttribute('current_page', 'index.html'.to_java)
       servlet_request.setAttribute('org.answer.internal', 4200.to_java)
       servlet_request.setAttribute('org.apache.internal', true.to_java)
-      
+
       servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(
         servlet_request, servlet_response, @rack_context
       )
@@ -926,6 +926,53 @@ describe Rack::Handler::Servlet do
       rack_request.path_info.should == '/path'
       rack_request.script_name.should == '/home' # context path
       rack_request.content_length.should == content.size.to_s
+    end
+
+    it "handles null values in parameter-map (Jetty)" do
+      org.jruby.rack.mock.MockHttpServletRequest.class_eval do
+        field_reader :parameters
+      end
+      # reproducing https://github.com/jruby/jruby-rack/issues/154
+      #
+      # Request Path: /home/path?foo=bad&foo=bar&bar=huu&age=33
+      # POST Parameters :
+      #  name[]: Ferko Suska
+      #  name[]: Jozko Hruska
+      #  age: 42
+      content = 'name[]=ferko&name[]=jozko&age=42'
+
+      servlet_request.setContent content.to_java_bytes
+      servlet_request.addHeader('CONTENT-TYPE', 'application/x-www-form-urlencoded')
+      servlet_request.setMethod 'PUT'
+      servlet_request.setContextPath '/'
+      servlet_request.setPathInfo '/path'
+      servlet_request.setRequestURI '/home/path'
+      servlet_request.setQueryString 'foo=bar&foo=huu&bar=&age='
+      # NOTE: assume input stream read but getParameter methods work correctly :
+      # this is essentially the same as some filter/servlet reading before we do
+      read_input_stream servlet_request.getInputStream
+      # Query params :
+      servlet_request.addParameter('foo', 'bar')
+      servlet_request.addParameter('foo', 'huu')
+      servlet_request.parameters.put('bar', nil) # "emulate" buggy servlet container
+      servlet_request.parameters.put('age', [ nil ].to_java(:string)) # buggy container
+      # POST params :
+      servlet_request.addParameter('name[]', 'ferko')
+      servlet_request.addParameter('name[]', 'jozko')
+
+      set_rack_input(servlet_env)
+
+      env = servlet.create_env(servlet_env)
+      rack_request = Rack::Request.new(env)
+
+      rack_request.GET.should == { 'foo'=>'huu', 'bar'=>'', 'age'=>'' }
+      rack_request.POST.should == { "name"=>["ferko", "jozko"] }
+      rack_request.params.should == {
+        "foo"=>"huu", "bar"=>"", "age"=>"", "name"=>["ferko", "jozko"],
+      }
+
+      rack_request.query_string.should == 'foo=bar&foo=huu&bar=&age='
+      rack_request.request_method.should == 'PUT'
     end
 
     it "sets cookies from servlet requests" do
