@@ -1,3 +1,21 @@
+## 1.1.15 (24/07/14)
+
+- deal with potential getParameterMap "bugs" - null values e.g. on Jetty 6 (#154)
+- support filter init-param to configure whether response is handled "by default"
+- no header or status set (on response capture) - should report as handled
+  works with Tomcat as before and serves static content with Jetty (#175)
+- make sure internal servlet attributes are retrieved on `env[]` (#173)
+- using our "servlet-specific" path methods in booter - we're avoiding
+  `File.exist?` and expanding path specifically for the application layout
+  this helps for a better boot in non-expanded .war scenarios
+- improve app layout dir resolution - e.g. FS public path should resolve relative
+- a work-around for WAS (8.5) failing on `Dir.chdir` while booting (#170)
+- consider response unhandled when OPTIONS with "Allow" header set (#153)
+- improved handling for jruby.compat.version (should work with jruby-head)
+- start using de.saumya.mojo jruby plugins for mvn (relates to #108 as well)
+  this allows us to work without a GEM_HOME/GEM_PATH (local ruby install)
+- use ruby-style methods for the servlet api (in our servlet_env handler)
+
 ## 1.1.14 (24/02/14)
 
 - re-invent the ErrorApp without Rack::File and with support for 503(.html)
