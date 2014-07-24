@@ -219,7 +219,11 @@ describe JRuby::Rack::Booter do
     #    at RUBY.change_working_directory(classpath:/jruby/rack/booter.rb:125)
     #    at RUBY.boot!(classpath:/jruby/rack/booter.rb:105)
     #    at RUBY.(root)(classpath:/jruby/rack/boot/rack.rb:10)
-    app_dir = File.absolute_path Dir.pwd
+    if RUBY_VERSION > '1.9'
+      app_dir = File.absolute_path Dir.pwd
+    else
+      app_dir = File.expand_path Dir.pwd
+    end
     app_dir = "#{app_dir}/sample.war!/WEB-INF"
     File.stub(:directory?).with(app_dir).and_return true
     booter.stub(:layout).and_return layout = double('layout')
