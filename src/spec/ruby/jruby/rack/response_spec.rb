@@ -10,11 +10,11 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'jruby/rack/response'
 
 describe JRuby::Rack::Response do
-  
+
   before :each do
-    @status, @headers, @body = mock("status"), mock("headers"), mock("body")
-    @headers.stub!(:[]).and_return nil
-    @servlet_response = mock "servlet response"
+    @status, @headers, @body = double("status"), double("headers"), double("body")
+    @headers.stub(:[]).and_return nil
+    @servlet_response = double "servlet response"
     @response = JRuby::Rack::Response.new([@status, @headers, @body])
   end
 
@@ -114,15 +114,15 @@ describe JRuby::Rack::Response do
     @response.write_headers(@servlet_response)
     @response.send(:chunked?).should be true
   end
-  
+
   describe "#write_body" do
-    
+
     let(:stream) do
       StubOutputStream.new.tap do |stream|
-        @servlet_response.stub!(:getOutputStream).and_return stream
+        @servlet_response.stub(:getOutputStream).and_return stream
       end
     end
-    
+
     it "writes the body to the stream and flushes when the response is chunked" do
       @headers = { "Transfer-Encoding" => "chunked" }
       @response = JRuby::Rack::Response.new([@status, @headers, @body])
@@ -136,11 +136,11 @@ describe JRuby::Rack::Response do
       @response.write_body(@servlet_response)
     end
 
-    it "dechunks the body when a chunked response is detected", 
+    it "dechunks the body when a chunked response is detected",
       :lib => [ :rails23, :rails31, :rails32, :rails40 ] do
       require 'rack/chunked'
-      
-      headers = { 
+
+      headers = {
         "Cache-Control" => 'no-cache',
         "Transfer-Encoding" => 'chunked'
       }
@@ -153,7 +153,7 @@ describe JRuby::Rack::Response do
         "", # should be skipped
         "\r\nthe very\r\n last\r\n\r\n chunk"
       ]
-      
+
       with_dechunk do
         if defined? Rack::Chunked::Body # Rails 3.x
           body = Rack::Chunked::Body.new body
@@ -162,8 +162,8 @@ describe JRuby::Rack::Response do
           chunked = Rack::Chunked.new nil # nil application
           response = JRuby::Rack::Response.new chunked.chunk(200, headers, body)
         end
-        @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")
-        @servlet_response.stub!(:addHeader)
+        @servlet_response.stub(:getOutputStream).and_return stream = double("stream")
+        @servlet_response.stub(:addHeader)
         response.write_headers(@servlet_response)
 
         times = 0
@@ -186,15 +186,15 @@ describe JRuby::Rack::Response do
         response.write_body(@servlet_response)
       end
     end
-    
+
     it "does not dechunk body when dechunkins is turned off",
       :lib => [ :rails31, :rails32, :rails40 ] do
       dechunk = JRuby::Rack::Response.dechunk?
       begin
         JRuby::Rack::Response.dechunk = false
-        
+
         require 'rack/chunked'
-        headers = { 
+        headers = {
           "Cache-Control" => 'no-cache',
           "Transfer-Encoding" => 'chunked'
         }
@@ -205,8 +205,8 @@ describe JRuby::Rack::Response do
         ]
         body = Rack::Chunked::Body.new body
         response = JRuby::Rack::Response.new([ 200, headers, body ])
-        @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")
-        @servlet_response.stub!(:addHeader)
+        @servlet_response.stub(:getOutputStream).and_return stream = double("stream")
+        @servlet_response.stub(:addHeader)
         response.write_headers(@servlet_response)
 
         times = 0
@@ -222,14 +222,14 @@ describe JRuby::Rack::Response do
         end
         stream.should_receive(:flush).exactly(3).times
         response.write_body(@servlet_response)
-        
+
       ensure
         JRuby::Rack::Response.dechunk = dechunk
       end
     end
-    
+
     it "handles dechunking gracefully when body is not chunked" do
-      headers = { 
+      headers = {
         "Transfer-Encoding" => 'chunked'
       }
       body = [
@@ -240,8 +240,8 @@ describe JRuby::Rack::Response do
         "21\r\n a chunk with an invalid length \r\n" # size == 32 (0x20)
       ]
       response = JRuby::Rack::Response.new([ 200, headers, body ])
-      @servlet_response.stub!(:getOutputStream).and_return stream = mock("stream")
-      @servlet_response.stub!(:addHeader)
+      @servlet_response.stub(:getOutputStream).and_return stream = double("stream")
+      @servlet_response.stub(:addHeader)
       response.write_headers(@servlet_response)
 
       times = 0
@@ -251,7 +251,7 @@ describe JRuby::Rack::Response do
         when 1 then str.should == "1"
         when 2 then str.should == "a multi\nline chunk \n42"
         when 3 then str.should == "\r\nthe very\r\n last\r\n\r\n chunk"
-        when 4 then 
+        when 4 then
           str = str.force_encoding('UTF-8') if str.respond_to?(:force_encoding)
           str.should == "7\r\nty píčo\r\n"
         when 5 then str.should == "21\r\n a chunk with an invalid length \r\n"
@@ -260,13 +260,13 @@ describe JRuby::Rack::Response do
         end
       end
       stream.should_receive(:flush).exactly(5).times
-      
+
       response.write_body(@servlet_response)
     end
-    
+
     it "flushed the body when no Content-Length set" do
       @response = JRuby::Rack::Response.new([ 200, {}, @body ])
-      @servlet_response.stub!(:addHeader)
+      @servlet_response.stub(:addHeader)
       @body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
       @response.write_headers(@servlet_response)
       stream.should_receive(:write).once.ordered
@@ -279,15 +279,15 @@ describe JRuby::Rack::Response do
     it "does not flush the body when Content-Length set" do
       @headers = { "Content-Length" => 10 }
       @response = JRuby::Rack::Response.new([ 200, @headers, @body ])
-      @servlet_response.stub!(:addHeader)
-      @servlet_response.stub!(:setContentLength)
+      @servlet_response.stub(:addHeader)
+      @servlet_response.stub(:setContentLength)
       @body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
       @response.write_headers(@servlet_response)
       stream.should_receive(:write).twice
       stream.should_receive(:flush).never
       @response.write_body(@servlet_response)
     end
-    
+
     it "writes the body to the servlet response" do
       @body.should_receive(:each).
         and_yield("hello").
@@ -318,16 +318,16 @@ describe JRuby::Rack::Response do
     end
 
     it "does not yield the stream if the object responds to both #call and #each" do
-      @body.stub!(:call)
+      @body.stub(:call)
       @body.should_receive(:each).and_yield("hi")
       stream.should_receive(:write)
 
       @response.write_body(@servlet_response)
     end
 
-    it "writes the stream using a channel if the object responds to #to_channel " + 
+    it "writes the stream using a channel if the object responds to #to_channel " +
        "(and closes the channel)" do
-      channel = mock "channel"
+      channel = double "channel"
       @body.should_receive(:to_channel).and_return channel
       read_done = false
       channel.should_receive(:read).exactly(2).times.and_return do |buf|
@@ -344,12 +344,12 @@ describe JRuby::Rack::Response do
 
       @response.write_body(@servlet_response)
     end
-    
-    it "streams a file using a channel if wrapped in body_parts", 
+
+    it "streams a file using a channel if wrapped in body_parts",
       :lib => [ :rails30, :rails31, :rails32 ] do
-      body = wrap_file_body path = 
+      body = wrap_file_body path =
         File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
-      
+
       stream = self.stream
       response = JRuby::Rack::Response.new [ 200, body.headers, body ]
       response.should_receive(:transfer_channel).with do |ch, s|
@@ -363,7 +363,7 @@ describe JRuby::Rack::Response do
 
     it "closes original body during write_body", :lib => [ :rails30, :rails31, :rails32 ] do
       body = wrap_file_body File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
-      
+
       stream = self.stream
       response = JRuby::Rack::Response.new [ 200, body.headers, body ]
       response.should_receive(:transfer_channel).with do |ch, s|
@@ -374,15 +374,15 @@ describe JRuby::Rack::Response do
       body.should_receive(:close)
       response.write_body(@servlet_response)
     end
-    
+
     def wrap_file_body(path) # Rails style when doing #send_file
       require 'action_dispatch/http/response'
-      
+
       file = File.open(path, 'rb')
-      headers = { 
-        "Content-Disposition" => "attachment; filename=\"image.jpg\"", 
-        "Content-Transfer-Encoding" => "binary", 
-        "Content-Type" => "image/jpeg" 
+      headers = {
+        "Content-Disposition" => "attachment; filename=\"image.jpg\"",
+        "Content-Transfer-Encoding" => "binary",
+        "Content-Type" => "image/jpeg"
       }
       # we're emulating the body how rails returns it (for a file response)
       body = ActionDispatch::Response.new(200, headers, file)
@@ -391,12 +391,12 @@ describe JRuby::Rack::Response do
       # with 3.2 there's even more wrapping with ActionDispatch::BodyProxy
       body
     end
-    
+
     it "uses #transfer_to to copy the stream if available" do
-      channel = mock "channel"
+      channel = double "channel"
       @body.should_receive(:to_channel).and_return channel
       chunk_size = JRuby::Rack::Response.channel_chunk_size
-      channel.stub!(:size).and_return(chunk_size + 10); channel.stub!(:close)
+      channel.stub(:size).and_return(chunk_size + 10); channel.stub(:close)
       channel.should_receive(:transfer_to).ordered.with(0, chunk_size, anything).and_return(chunk_size)
       channel.should_receive(:transfer_to).ordered.with(chunk_size, chunk_size, anything).and_return(10)
       stream.should be_kind_of(java.io.OutputStream)
@@ -414,7 +414,7 @@ describe JRuby::Rack::Response do
 
     it "sends a file when file (body) response detected" do
       path = File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
-      
+
       response = JRuby::Rack::Response.new [ 200, {}, FileBody.new(path) ]
       response.should_receive(:send_file).with do |path, response|
         expect( path ).to eql path
@@ -422,10 +422,10 @@ describe JRuby::Rack::Response do
       end
       response.write_body(@servlet_response)
     end
-    
+
     # Similar to {ActionController::DataStreaming::FileBody}
     class FileBody #:nodoc:
-      
+
       attr_reader :to_path
 
       def initialize(path)
@@ -440,11 +440,11 @@ describe JRuby::Rack::Response do
           end
         end
       end
-      
+
     end
-    
+
     private
-    
+
     def with_dechunk(dechunk = true)
       begin
         prev_dechunk = JRuby::Rack::Response.dechunk?
@@ -454,7 +454,7 @@ describe JRuby::Rack::Response do
         JRuby::Rack::Response.dechunk = prev_dechunk
       end
     end
-    
+
   end
-  
+
 end

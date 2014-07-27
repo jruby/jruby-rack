@@ -14,23 +14,23 @@ class ExceptionThrower
 end
 
 describe org.jruby.rack.RackTag do
-  
-  before :each do
-    @result = mock("Rack Result")
-    @result.stub!(:getBody).and_return("Hello World!")
 
-    @application = mock("application")
-    @application.stub!(:call).and_return @result
+  before :each do
+    @result = double("Rack Result")
+    @result.stub(:getBody).and_return("Hello World!")
+
+    @application = double("application")
+    @application.stub(:call).and_return @result
 
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
-    @rack_factory.stub!(:getApplication).and_return @application
-    @rack_factory.stub!(:finishedWithApplication)
+    @rack_factory.stub(:getApplication).and_return @application
+    @rack_factory.stub(:finishedWithApplication)
 
-    @servlet_context.stub!(:getAttribute).with('rack.factory').and_return @rack_factory
-    @servlet_context.stub!(:getAttribute).with('rack.context').and_return @rack_context
-    @servlet_request = mock("Servlet Request")
-    @servlet_request.stub!(:getContextPath).and_return ""
-    @servlet_response = mock("Servlet Response")
+    @servlet_context.stub(:getAttribute).with('rack.factory').and_return @rack_factory
+    @servlet_context.stub(:getAttribute).with('rack.context').and_return @rack_context
+    @servlet_request = double("Servlet Request")
+    @servlet_request.stub(:getContextPath).and_return ""
+    @servlet_response = double("Servlet Response")
 
     @writable = org.jruby.rack.fake.FakeJspWriter.new
     @page_context = org.jruby.rack.fake.FakePageContext.new(@servlet_context, @servlet_request, @servlet_response, @writable)

@@ -9,7 +9,7 @@ require 'jruby/rack/rails_booter'
 
 # Rails 2.x (JRuby-Rack >= 1.1.0 only supports 2.3) specific booter behavior.
 module JRuby::Rack::RailsBooter::Rails2Environment
-  
+
   # @return [::Rack::Adapter::Rails] a Rack compatible Rails application wrapper
   def to_app
     # backward "compatibility" calling #to_app without a #load_environment
@@ -22,7 +22,7 @@ module JRuby::Rack::RailsBooter::Rails2Environment
   # Loads the Rails 2.x environment.
   def load_environment
     require 'jruby/rack/rails/boot_hook'
-    load File.join(app_path, 'config', 'environment.rb')
+    load expand_path('config/environment.rb') # load File.join(app_path, 'config', 'environment.rb')
     require 'dispatcher'
     setup_sessions
     setup_logger
@@ -35,9 +35,9 @@ module JRuby::Rack::RailsBooter::Rails2Environment
   def set_public_root
     silence_warnings { Object.const_set(:PUBLIC_ROOT, public_path) }
   end
-  
+
   public
-  
+
   # This hook method is called back from within the mechanism installed
   # by rails_boot above. We're setting appropriate defaults for the
   # servlet environment here that can still be overridden (if desired) in
@@ -77,7 +77,7 @@ module JRuby::Rack::RailsBooter::Rails2Environment
       ActionController::Base.relative_url_root = ENV['RAILS_RELATIVE_URL_ROOT']
     end
   end
-  
+
   def rack_based_sessions?
     defined?(ActionController::Session::AbstractStore)
   end
@@ -100,7 +100,7 @@ module JRuby::Rack::RailsBooter::Rails2Environment
       if defined?(ActiveSupport::BufferedLogger) && # we only support Rails 2.3
           logger.is_a?(ActiveSupport::BufferedLogger)
         # since there's no way to detect whether this is a custom config.logger
-        # declaration or the (default) Rails configured logger we assume all 
+        # declaration or the (default) Rails configured logger we assume all
         # ActiveSupport::BufferedLogger instances to be the default and patch :
         old_dev = logger.send :instance_variable_get, "@log"
         old_dev.close rescue nil
@@ -122,9 +122,9 @@ module JRuby::Rack::RailsBooter::Rails2Environment
   def pstore_sessions?
     session_options[:database_manager] == (defined?(::CGI::Session::PStore) && ::CGI::Session::PStore)
   end
-  
+
   class RailsRequestSetup # :nodoc only used for (non-rack based) CGI sessions
-    
+
     def initialize(app, session_options)
       @app, @session_options = app, session_options
     end
@@ -135,7 +135,7 @@ module JRuby::Rack::RailsBooter::Rails2Environment
       env['rails.session_options'] = options
       @app.call(env)
     end
-    
+
   end
 
 end

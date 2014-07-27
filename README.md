@@ -13,7 +13,7 @@ major version of ours (likely 1.2.x) will be compatible with JRuby 1.7+ only.
 
 ## Getting Started
 
-The most-common way to use JRuby-Rack is to get [Warbler][1].
+The most-common way to use JRuby-Rack with a Java server is to get [Warbler][1].
 Warbler depends on the latest version of JRuby-Rack and ensures it gets placed
 in your WAR file when it gets built.
 
@@ -322,11 +322,8 @@ package and push the .jar every time a commit changes a source file).
 
 ## Support
 
-Please use [github][4] to file bugs, patches and pull requests.
+Please use [github][4] to file bugs, patches and/or pull requests.
 More information at the [wiki][5] or ask us at the #jruby IRC channel.
-
-If you need more in-depth help (e.g. migrating/resolving application specific
-JRuby/JRuby-Rack issues) feel free to contact [kares](https://github.com/kares).
 
 [0]: https://secure.travis-ci.org/jruby/jruby-rack.png?branch=master
 [1]: http://caldersphere.rubyforge.org/warbler

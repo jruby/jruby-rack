@@ -13,7 +13,7 @@ import org.jruby.rack.jms.DefaultQueueManager
 
 describe QueueContextListener do
   before :each do
-    @qmf = mock "queue manager factory"
+    @qmf = double "queue manager factory"
     @qm = QueueManager.impl {}
     @listener_event = javax.servlet.ServletContextEvent.new @servlet_context
     @listener = QueueContextListener.new @qmf
@@ -43,8 +43,8 @@ end
 
 describe DefaultQueueManager do
   before :each do
-    @connection_factory = mock "jms connection factory"
-    @context = mock "jndi context"
+    @connection_factory = double "jms connection factory"
+    @context = double "jndi context"
     @queue_manager = DefaultQueueManager.new(@connection_factory, @context)
     @queue_manager.init(@rack_context)
   end
@@ -52,13 +52,13 @@ describe DefaultQueueManager do
   it "should set up a connection with a message listener" do
     app_factory = Java::OrgJRubyRack::RackApplicationFactory.impl {}
     @rack_context.should_receive(:getRackFactory).and_return app_factory
-    conn = mock "connection"
+    conn = double "connection"
     @connection_factory.should_receive(:createConnection).and_return conn
-    session = mock "session"
+    session = double "session"
     conn.should_receive(:createSession).and_return session
     dest = javax.jms.Destination.impl {}
     @context.should_receive(:lookup).with("myqueue").and_return dest
-    consumer = mock "consumer"
+    consumer = double "consumer"
     session.should_receive(:createConsumer).and_return consumer
     consumer.should_receive(:setMessageListener)
     conn.should_receive(:start)
@@ -67,16 +67,16 @@ describe DefaultQueueManager do
 
   it "should shutdown a connection when closed" do
     app_factory = Java::OrgJRubyRack::RackApplicationFactory.impl {}
-    @rack_context.stub!(:getRackFactory).and_return app_factory
-    conn = mock "connection"
-    @connection_factory.stub!(:createConnection).and_return conn
-    session = mock "session"
-    conn.stub!(:createSession).and_return session
+    @rack_context.stub(:getRackFactory).and_return app_factory
+    conn = double "connection"
+    @connection_factory.stub(:createConnection).and_return conn
+    session = double "session"
+    conn.stub(:createSession).and_return session
     dest = javax.jms.Destination.impl {}
-    @context.stub!(:lookup).with("myqueue").and_return dest
-    consumer = mock "consumer"
-    session.stub!(:createConsumer).and_return consumer
-    consumer.stub!(:setMessageListener)
+    @context.stub(:lookup).with("myqueue").and_return dest
+    consumer = double "consumer"
+    session.stub(:createConsumer).and_return consumer
+    consumer.stub(:setMessageListener)
     conn.should_receive(:start)
     @queue_manager.listen("myqueue")
 

@@ -5,9 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../../..')
-require 'action_controller'
-require 'active_record'
+require File.expand_path('../../../spec_helper', File.dirname(__FILE__))
 require 'jruby/rack/queues'
 
 describe JRuby::Rack::Queues::MessagePublisher do
@@ -45,7 +43,7 @@ describe JRuby::Rack::Queues::MessagePublisher do
   end
 
   it "should allow omitting the message argument and specifying a block" do
-    message = mock "message"
+    message = double "message"
     JRuby::Rack::Queues::Registry.should_receive(:publish_message).with("FooQ").ordered.and_yield message
     JRuby::Rack::Queues::Registry.should_receive(:publish_message).with("BarQ").ordered.and_yield message
     obj = Object.new
