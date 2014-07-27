@@ -7,47 +7,45 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 
-java_import 'org.jruby.rack.servlet.RewindableInputStream'
-
-describe RewindableInputStream do
+describe org.jruby.rack.servlet.RewindableInputStream do
 
   it "should read data one by one" do
     input = []; 49.times { |i| input << i }
     stream = rewindable_input_stream(input.to_java(:byte), 6, 24)
-    
+
     49.times do |i|
       stream.read.should == i
     end
     3.times { stream.read.should == -1 }
-    
+
     stream.rewind
-    
+
     49.times do |i|
       stream.read.should == i
     end
-    2.times { stream.read.should == -1 }    
+    2.times { stream.read.should == -1 }
   end
-  
+
   it "should read data than rewind and read again (in memory)" do
     @stream = it_should_read_127_bytes(32, 256)
-    
+
     @stream.rewind
-    
+
     it_should_read_127_bytes
   end
 
   it "should read data than rewind and read again (temp file)" do
     @stream = it_should_read_127_bytes(16, 64)
-    
+
     @stream.rewind
-    
+
     it_should_read_127_bytes
   end
-  
+
   def it_should_read_127_bytes(init_size = nil, max_size = nil)
     input = []; 127.times { |i| input << i }
     stream = @stream || rewindable_input_stream(input.to_java(:byte), init_size, max_size)
-    
+
     data = new_byte_array(7)
     stream.read(data, 0, 7).should == 7 # read 7 bytes
     7.times do |i|
@@ -68,20 +66,20 @@ describe RewindableInputStream do
       data[i].should == i + 20 + 7
     end
     100.times { |i| data[i + 100].should == 0 }
-    
+
     stream
   end
-  
+
   it "should read incomplete data rewind and read until end" do
     input = []; 100.times { |i| input << i }
     stream = rewindable_input_stream(input.to_java(:byte), 10, 50)
-    
+
     data = new_byte_array(110)
     stream.read(data, 0, 5).should == 5
     5.times do |i|
       data[i].should == i
     end
-    
+
     stream.rewind
     stream.read(data, 5, 88).should == 88
     88.times do |i|
@@ -101,53 +99,53 @@ describe RewindableInputStream do
     100.times do |i|
       data[i].should == i
     end
-    
+
     stream.read.should == -1
   end
-  
+
   it "should rewind unread data" do
     input = []; 100.times { |i| input << i }
     stream = rewindable_input_stream(input.to_java(:byte), 10, 50)
     stream.rewind
-    
+
     data = new_byte_array(120)
     stream.read(data, 10, 110).should == 100
     100.times do |i|
       data[i + 10].should == i
-    end    
+    end
   end
-  
+
   it "should mark and reset" do
     input = []; 100.times { |i| input << i }
     stream = rewindable_input_stream(input.to_java(:byte), 5, 20)
-    
+
     15.times { stream.read }
     stream.markSupported.should == true
     stream.mark(50)
-    
+
     35.times { |i| stream.read.should == 15 + i }
-    
+
     stream.reset
-    
+
     50.times { |i| stream.read.should == 15 + i }
     35.times { |i| stream.read.should == 65 + i }
-    
+
     stream.read.should == -1
   end
-  
+
   it "should read an image" do
     image = File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
     file = java.io.RandomAccessFile.new(image, "r")
     file.read bytes = new_byte_array(file.length)
-    
+
     stream = rewindable_input_stream(bytes)
-    
+
     index = 0
     while stream.read != -1
       index += 1
     end
     index.should == file.length
-    
+
     stream.rewind
 
     file.seek(0); index = 0
@@ -157,29 +155,29 @@ describe RewindableInputStream do
     end
     index.should == file.length
   end
-  
+
   it "should delete the tmp file on close" do
     class RewindableInputStream
       field_reader :bufferFilePath
     end
-    
+
     input = '1234567890 42'
     stream = rewindable_input_stream(input, 10, 12)
     13.times { stream.read }
-    
+
     stream.bufferFilePath.should_not be nil
     File.exist?(stream.bufferFilePath).should be true
-    
+
     stream.close
     File.exist?(stream.bufferFilePath).should be false
   end
-  
+
   after :all do
     tmpdir = java.lang.System.getProperty("java.io.tmpdir")
     prefix = RewindableInputStream::TMP_FILE_PREFIX
     FileUtils.rm_r Dir.glob(File.join(tmpdir, "#{prefix}*"))
   end
-  
+
   private
 
     def rewindable_input_stream(input, buffer_size = nil, max_buffer_size = nil)
@@ -188,14 +186,14 @@ describe RewindableInputStream do
       max_buffer_size ||= RewindableInputStream::MAX_BUFFER_SIZE
       RewindableInputStream.new(input, buffer_size, max_buffer_size)
     end
-  
+
     def to_input_stream(content = @content)
       bytes = content.respond_to?(:to_java_bytes) ? content.to_java_bytes : content
       java.io.ByteArrayInputStream.new(bytes)
     end
-    
+
     def new_byte_array(length)
       java.lang.reflect.Array.newInstance(java.lang.Byte::TYPE, length)
     end
-    
+
 end

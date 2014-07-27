@@ -1,3 +1,4 @@
+
 # This is a fake Rails config/boot file to be used during testing.
 
 RAILS_ROOT = "#{ENV['RAILS_ROOT']}"

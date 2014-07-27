@@ -9,7 +9,7 @@ require 'jruby/rack/error_app'
 
 module JRuby
   module Rack
-    # #deprecated backwards compatibility
+    # @deprecated backwards compatibility
     Errors = ErrorApp
   end
 end

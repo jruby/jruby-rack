@@ -8,36 +8,36 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
 describe org.jruby.rack.RackFilter do
-  
-  let(:dispatcher) { mock "dispatcher" }
+
+  let(:dispatcher) { double "dispatcher" }
   let(:filter) { org.jruby.rack.RackFilter.new dispatcher, @rack_context }
-  let(:chain) { mock "filter chain" }
+  let(:chain) { double "filter chain" }
 
   def stub_request(path_info)
     @request = javax.servlet.http.HttpServletRequest.impl {}
-    @request.stub!(:setAttribute)
+    @request.stub(:setAttribute)
     if block_given?
       yield @request, path_info
     else
-      @request.stub!(:getPathInfo).and_return nil
-      @request.stub!(:getServletPath).and_return "/some/uri#{path_info}"
+      @request.stub(:getPathInfo).and_return nil
+      @request.stub(:getServletPath).and_return "/some/uri#{path_info}"
     end
-    @request.stub!(:getRequestURI).and_return "/some/uri#{path_info}"
+    @request.stub(:getRequestURI).and_return "/some/uri#{path_info}"
   end
 
   before :each do
     stub_request("/index")
     @response = javax.servlet.http.HttpServletResponse.impl {}
-    @rack_context.stub!(:getResource).and_return nil
-    @rack_config.stub!(:getProperty) do |key, default|
+    @rack_context.stub(:getResource).and_return nil
+    @rack_config.stub(:getProperty) do |key, default|
       ( key || raise("missing key") ) && default
     end
-    @rack_config.stub!(:getBooleanProperty) do |key, default|
+    @rack_config.stub(:getBooleanProperty) do |key, default|
       ( key || raise("missing key") ) && default
     end
     filter.setAddsHtmlToPathInfo(true)
   end
-  
+
   it "should dispatch the filter chain and finish if the chain resulted in a successful response" do
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
       resp.setStatus(200)
@@ -85,7 +85,7 @@ describe org.jruby.rack.RackFilter do
     dispatcher.should_receive(:process).ordered
     filter.doFilter(@request, @response, chain)
   end
-  
+
   it "dispatches to the rack dispatcher out of configured non handled statuses" do
     filter = Class.new(org.jruby.rack.RackFilter) do
       def wrapResponse(response)
@@ -94,7 +94,7 @@ describe org.jruby.rack.RackFilter do
         capture
       end
     end.new(dispatcher, @rack_context)
-    
+
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
       resp.sendError(442)
     end
@@ -102,7 +102,7 @@ describe org.jruby.rack.RackFilter do
     dispatcher.should_receive(:process).ordered
     filter.doFilter(@request, @response, chain)
   end
-  
+
   it "allows downstream entities to flush the buffer in the case of a successful response" do
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
       resp.setStatus(200)
@@ -137,7 +137,7 @@ describe org.jruby.rack.RackFilter do
     filter.setResetUnhandledResponseBuffer(true)
     filter.doFilter(@request, @response, chain)
   end
-  
+
   it "allows an error response from the filter chain (and flushes the buffer)" do
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
       resp.sendError(401)
@@ -154,25 +154,25 @@ describe org.jruby.rack.RackFilter do
     filter = Class.new(org.jruby.rack.RackFilter) do
       def wrapResponse(response)
         Class.new(org.jruby.rack.servlet.ResponseCapture) do
-          def isHandled; getStatus < 400; end
+          def isHandled(arg); getStatus < 400; end
         end.new(response)
       end
     end.new(dispatcher, @rack_context)
-    
+
     chain.should_receive(:doFilter).ordered.and_return do |_, resp|
       resp.sendError(401)
       resp.flushBuffer
     end
-    @response.should_not_eceive(:flushBuffer)
+    @response.should_not_receive(:flushBuffer)
     @response.should_receive(:reset)
     dispatcher.should_receive(:process)
     filter.doFilter(@request, @response, chain)
   end
-  
+
   it "should only add to path info if it already was non-null" do
     stub_request("/index") do |request,path_info|
-      request.stub!(:getPathInfo).and_return path_info
-      request.stub!(:getServletPath).and_return "/some/uri"
+      request.stub(:getPathInfo).and_return path_info
+      request.stub(:getServletPath).and_return "/some/uri"
     end
     chain.should_receive(:doFilter).ordered.and_return do |req,resp|
       req.getPathInfo.should == "/index.html"
@@ -198,11 +198,11 @@ describe org.jruby.rack.RackFilter do
   end
 
   context "adds .html to path info" do
-    
+
     before do
       filter.setAddsHtmlToPathInfo(true)
     end
-    
+
     it "should dispatch /some/uri/index.html unchanged" do
       stub_request("/index.html")
       chain.should_receive(:doFilter).ordered.and_return do |req,resp|
@@ -225,8 +225,8 @@ describe org.jruby.rack.RackFilter do
 
     it "should dispatch the request unwrapped if servlet path already contains the welcome filename" do
       stub_request("/") do |request, path_info|
-        request.stub!(:getPathInfo).and_return nil
-        request.stub!(:getServletPath).and_return "/some/uri/index.html"
+        request.stub(:getPathInfo).and_return nil
+        request.stub(:getServletPath).and_return "/some/uri/index.html"
       end
       chain.should_receive(:doFilter).ordered.and_return do |req,resp|
         req.getPathInfo.should == nil
@@ -247,7 +247,7 @@ describe org.jruby.rack.RackFilter do
       @response.should_receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
-    
+
     it "should process dispatching when chain throws a FileNotFoundException (WAS 8.0 behavior)" do
       stub_request("/foo")
       chain.should_receive(:doFilter).ordered.and_return do
@@ -256,11 +256,11 @@ describe org.jruby.rack.RackFilter do
       dispatcher.should_receive(:process)
       filter.doFilter(@request, @response, chain)
     end
-    
+
   end
-  
+
   context "down not add .html to path info" do
-    
+
     before do
       filter.setAddsHtmlToPathInfo(false)
     end
@@ -275,9 +275,9 @@ describe org.jruby.rack.RackFilter do
       filter.doFilter(@request, @response, chain)
     end
   end
-  
+
   context "verifies .html resources" do
-    
+
     before do
       filter.setAddsHtmlToPathInfo(true)
       filter.setVerifiesHtmlResource(true)
@@ -324,13 +324,13 @@ describe org.jruby.rack.RackFilter do
       filter.doFilter(@request, @response, chain)
     end
   end
-  
+
   it "configures not handled statuses on init" do
     servlet_context = javax.servlet.ServletContext.impl do |name, *args|
       case name.to_sym
       when :getAttribute
         if args[0] == "rack.context"
-          @rack_context 
+          @rack_context
         end
       else
         nil
@@ -360,14 +360,14 @@ describe org.jruby.rack.RackFilter do
     response_capture.setStatus(505)
     response_capture.isHandled.should be true
   end
-  
+
   it "should destroy dispatcher on destroy" do
     dispatcher.should_receive(:destroy)
     filter.destroy
   end
-  
+
   it "should have default constructor (for servlet container)" do
     lambda { org.jruby.rack.RackFilter.new }.should_not raise_error
   end
-  
+
 end

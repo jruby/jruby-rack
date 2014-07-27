@@ -9,11 +9,11 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 require 'jruby/rack'
 
 describe JRuby::Rack::Capture do
-  
+
   before :each do
     JRuby::Rack.context = nil
     $servlet_context = @servlet_context
-    @servlet_context.stub!(:init_parameter_names).and_return []
+    @servlet_context.stub(:init_parameter_names).and_return []
   end
 
   it "captures environment information" do
@@ -33,5 +33,5 @@ describe JRuby::Rack::Capture do
       expect( e.output.string ).to match /ZeroDivisionError/
     end
   end
-  
+
 end

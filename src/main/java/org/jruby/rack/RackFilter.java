@@ -21,22 +21,22 @@ import org.jruby.rack.servlet.ResponseCapture;
 import org.jruby.rack.servlet.ServletRackContext;
 
 /**
- * A filter that does dispatch to the Ruby side and might alter the incoming 
+ * A filter that does dispatch to the Ruby side and might alter the incoming
  * request URI while attempting to map to an available static resource.
- * 
+ *
  * Related to serving static .html resources, supports configuration options:
- * 
+ *
  * * {@link #isAddsHtmlToPathInfo()}, true by default - controls whether static
- *   resource resolution will be attempted, request methods {@code getPathInfo()} 
+ *   resource resolution will be attempted, request methods {@code getPathInfo()}
  *   and {@code getRequestURI()} will be modified to reflect a .html path
- * 
+ *
  * * {@link #isVerifiesHtmlResource()} off by default - attempts to resolve the
  *   resource using {@code context.getResource(path)} before changing the path
- * 
+ *
  * @see UnmappedRackFilter
  */
 public class RackFilter extends UnmappedRackFilter {
-    
+
     private boolean addsHtmlToPathInfo = true;
     private boolean verifiesHtmlResource = false;
 
@@ -49,19 +49,19 @@ public class RackFilter extends UnmappedRackFilter {
         super(dispatcher, context);
         initializeFromConfig();
     }
-    
+
     @Override
     public void init(FilterConfig config) throws ServletException {
         super.init(config);
         initializeFromConfig(); // configure init parameters the "old" way
-        
+
         // filter init params are preffered and override context params :
         String value = config.getInitParameter("addsHtmlToPathInfo");
         if ( value != null ) setAddsHtmlToPathInfo(Boolean.parseBoolean(value));
         value = config.getInitParameter("verifiesHtmlResource");
         if ( value != null ) setVerifiesHtmlResource(Boolean.parseBoolean(value));
     }
-    
+
     private void initializeFromConfig() {
         final RackConfig rackConfig = getContext().getConfig(); // backward compatibility :
         addsHtmlToPathInfo = rackConfig.getBooleanProperty("jruby.rack.filter.adds.html", true);
@@ -70,25 +70,26 @@ public class RackFilter extends UnmappedRackFilter {
 
     @Override
     protected void doFilterInternal(
-            final RequestCapture requestCapture, 
+            final RequestCapture requestCapture,
             final ResponseCapture responseCapture,
-            final FilterChain chain, 
+            final FilterChain chain,
             final RackEnvironment env) throws IOException, ServletException {
         ServletRequest pathChangedRequest = addHtmlToPathAndVerifyResource(requestCapture, env);
         chain.doFilter(pathChangedRequest, responseCapture);
     }
-    
+
     private ServletRequest addHtmlToPathAndVerifyResource(ServletRequest request, RackEnvironment env) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        
+
         if ( ! isAddsHtmlToPathInfo() ) return httpRequest;
 
         final String path = env.getPathInfo();
 
-        if ( path.lastIndexOf('.') <= path.lastIndexOf('/') ) {
-            
+        final int lastDelim = path.lastIndexOf('/');
+        if ( path.lastIndexOf('.') <= lastDelim ) {
+
             final StringBuilder htmlSuffix = new StringBuilder(10);
-            if (path.endsWith("/")) {
+            if ( lastDelim == path.length() - 1 ) { // ends-with '/'
                 htmlSuffix.append("index");
             }
             htmlSuffix.append(".html");
@@ -137,17 +138,18 @@ public class RackFilter extends UnmappedRackFilter {
         return httpRequest;
     }
 
-    private boolean resourceExists(final String path) {
+    protected boolean resourceExists(final String path) {
         ServletRackContext servletContext = (ServletRackContext) getContext();
         try {
             return servletContext.getResource(path) != null;
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             return false;
         }
     }
- 
+
     // getters - setters :
-    
+
     public boolean isAddsHtmlToPathInfo() {
         return addsHtmlToPathInfo;
     }
@@ -163,5 +165,5 @@ public class RackFilter extends UnmappedRackFilter {
     public void setVerifiesHtmlResource(boolean verifiesHtmlResource) {
         this.verifiesHtmlResource = verifiesHtmlResource;
     }
-    
+
 }

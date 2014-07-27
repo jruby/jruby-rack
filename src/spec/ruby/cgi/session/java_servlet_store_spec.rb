@@ -11,8 +11,8 @@ require 'openssl'
 
 describe CGI::Session::JavaServletStore do
   before :each do
-    @session = mock "servlet session"
-    @request = mock "servlet request"
+    @session = double "servlet session"
+    @request = double "servlet request"
     @options = {"java_servlet_request" => @request}
   end
 

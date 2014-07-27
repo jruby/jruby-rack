@@ -27,11 +27,11 @@ import org.jruby.Ruby;
 
 /**
  * Handler that delegates to an error application with the given error.
- * 
+ *
  * @author kares
  */
 public class ErrorApplicationHandler implements ErrorApplication {
-   
+
     private Exception error;
     private final RackApplication errorApplication;
 
@@ -50,7 +50,7 @@ public class ErrorApplicationHandler implements ErrorApplication {
     public RackApplication getErrorApplication() {
         return errorApplication;
     }
-    
+
     public Exception getError() {
         return error;
     }
@@ -58,18 +58,18 @@ public class ErrorApplicationHandler implements ErrorApplication {
     public void setError(Exception error) {
         this.error = error;
     }
-    
+
     public RackResponse call(final RackEnvironment env) {
         env.setAttribute(RackEnvironment.EXCEPTION, getError());
         return getErrorApplication().call(env);
     }
-    
+
     public void init() { getErrorApplication().init(); }
-    
+
     public void destroy() { getErrorApplication().destroy(); }
-    
-    public Ruby getRuntime() { 
+
+    public Ruby getRuntime() {
         return getErrorApplication().getRuntime();
     }
-    
+
 }
