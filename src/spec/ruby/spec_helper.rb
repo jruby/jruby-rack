@@ -1,45 +1,58 @@
-#--
-# Copyright (c) 2010-2012 Engine Yard, Inc.
-# Copyright (c) 2007-2009 Sun Microsystems, Inc.
-# This source code is available under the MIT license.
-# See the file LICENSE.txt for details.
-#++
+
+require 'java'
+
+target = File.expand_path('target', "#{File.dirname(__FILE__)}/../../..")
+jars = File.exist?(lib = "#{target}/lib") && ( Dir.entries(lib) - [ '.', '..' ] )
+raise "missing .jar dependencies please run `rake test_jars'" if ! jars || jars.empty?
+$CLASSPATH << File.expand_path('classes', target)
+$CLASSPATH << File.expand_path('test-classes', target)
+jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
+
+puts "using JRuby #{JRUBY_VERSION} (#{RUBY_VERSION})"
+
+java_import 'javax.servlet.ServletContext'
+java_import 'javax.servlet.ServletConfig'
+java_import 'javax.servlet.http.HttpServletRequest'
+java_import 'javax.servlet.http.HttpServletResponse'
+
+java_import 'org.jruby.rack.mock.MockServletConfig'
+java_import 'org.jruby.rack.mock.MockServletContext'
+java_import 'org.jruby.rack.mock.MockHttpServletRequest'
+java_import 'org.jruby.rack.mock.MockHttpServletResponse'
+
+java_import 'org.jruby.rack.RackContext'
+java_import 'org.jruby.rack.RackConfig'
+java_import 'org.jruby.rack.RackApplicationFactory'
+java_import 'org.jruby.rack.DefaultRackApplicationFactory'
+java_import 'org.jruby.rack.RackServletContextListener'
+java_import 'org.jruby.rack.servlet.ServletRackContext'
+java_import 'org.jruby.rack.servlet.RequestCapture'
+java_import 'org.jruby.rack.servlet.ResponseCapture'
+java_import 'org.jruby.rack.servlet.RewindableInputStream'
 
 require 'rspec'
 
-require 'java'
-begin
-  require File.expand_path('target/classpath.rb', File.dirname(__FILE__) + '/../../..')
-rescue LoadError => e
-  puts "classpath.rb script missing try running `rake clean compile` first"
-  raise e
-end unless defined?(Maven.set_classpath)
-Maven.set_classpath
-
 module SharedHelpers
 
-  java_import 'org.jruby.rack.RackContext'
-  java_import 'org.jruby.rack.RackConfig'
-  java_import 'org.jruby.rack.servlet.ServletRackContext'
-  java_import 'javax.servlet.ServletContext'
-  java_import 'javax.servlet.ServletConfig'
-
   def mock_servlet_context
+    @servlet_context = ServletContext.impl {}
     @rack_config ||= RackConfig.impl {}
     @rack_context ||= ServletRackContext.impl {}
-    @servlet_context ||= ServletContext.impl {}
     [@rack_context, @servlet_context].each do |context|
-      context.stub!(:log)
-      context.stub!(:getInitParameter).and_return nil
-      context.stub!(:getRealPath).and_return "/"
-      context.stub!(:getResource).and_return nil
-      context.stub!(:getContextPath).and_return "/"
+      context.stub(:log)
+      context.stub(:getInitParameter).and_return nil
+      context.stub(:getRealPath).and_return "/"
+      context.stub(:getResource).and_return nil
+      context.stub(:getContextPath).and_return "/"
     end
-    @rack_context.stub!(:getConfig).and_return @rack_config
+    @rack_context.stub(:getConfig).and_return @rack_config
     @servlet_config ||= ServletConfig.impl {}
-    @servlet_config.stub!(:getServletName).and_return "A Servlet"
-    @servlet_config.stub!(:getServletContext).and_return @servlet_context
+    @servlet_config.stub(:getServletName).and_return "A Servlet"
+    @servlet_config.stub(:getServletContext).and_return @servlet_context
+    @servlet_context
   end
+
+  def servlet_context; mock_servlet_context end
 
   def silence_warnings(&block)
     JRuby::Rack::Helpers.silence_warnings(&block)
@@ -60,13 +73,20 @@ module SharedHelpers
     end
   end
 
-  def set_rack_input(servlet_env)
-    require 'jruby'
+  def set_rack_input(servlet_env); require 'jruby'
     input_class = org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
     input = input_class.new(servlet_env.getInputStream)
     servlet_env.set_io input # servlet_env.instance_variable_set :@_io, input
     input
   end
+
+  @@servlet_30 = nil
+
+  def servlet_30?
+    return @@servlet_30 unless @@servlet_30.nil?
+    @@servlet_30 = !! ( Java::JavaClass.for_name('javax.servlet.AsyncContext') rescue nil )
+  end
+  private :servlet_30?
 
   @@raise_logger = nil
 
@@ -91,7 +111,7 @@ module SharedHelpers
       runtime, options = options, {}
     end
     message = options[:message] || "expected eval #{code.inspect} to be == $expected but was $actual"
-    be_flag = options.has_key?(:should) ? options[:should] : be(true)
+    be_flag = options.has_key?(:should) ? options[:should] : be_true
 
     expected = expected.inspect.to_java
     actual = runtime.evalScriptlet(code).inspect.to_java
@@ -99,7 +119,7 @@ module SharedHelpers
   end
 
   def should_eval_as_not_eql_to(code, expected, options = {})
-    should_eval_as_eql_to(code, expected, options.merge(:should => be(false),
+    should_eval_as_eql_to(code, expected, options.merge(:should => be_false,
         :message => options[:message] || "expected eval #{code.inspect} to be != $expected but was not")
     )
   end
@@ -110,7 +130,7 @@ module SharedHelpers
   end
 
   def should_eval_as_not_nil(code, runtime = @runtime)
-    should_eval_as_eql_to code, nil, :should => be(false), :runtime => runtime,
+    should_eval_as_eql_to code, nil, :should => be_false, :runtime => runtime,
       :message => "expected eval #{code.inspect} to not be nil but was"
   end
 
@@ -118,6 +138,43 @@ module SharedHelpers
     should_eval_as_not_nil(code, runtime)
   end
 
+end
+
+# "stub" streams :
+
+class StubInputStream < java.io.InputStream
+  def initialize(val = "")
+    super()
+    @is = java.io.ByteArrayInputStream.new(val.to_s.to_java_bytes)
+  end
+  def read
+    @is.read
+  end
+end
+
+class StubOutputStream < java.io.OutputStream
+  def initialize
+    super()
+    @os = java.io.ByteArrayOutputStream.new
+  end
+
+  def write(b)
+    @os.write(b)
+  end
+
+  def to_s
+    String.from_java_bytes @os.to_byte_array
+  end
+end
+
+class StubServletInputStream < javax.servlet.ServletInputStream
+  def initialize(val = "")
+    @delegate = StubInputStream.new(val)
+  end
+
+  def method_missing(meth, *args)
+    @delegate.send(meth, *args)
+  end
 end
 
 # NOTE: avoid chunked-patch (loaded by default from a hook at
@@ -171,51 +228,11 @@ RSpec.configure do |config|
     ! lib.include?(CURRENT_LIB)
   }
 
-  config.backtrace_clean_patterns = [
+  config.backtrace_exclusion_patterns = [
     /bin\//,
     #/gems/,
     /spec\/spec_helper\.rb/,
     /lib\/rspec\/(core|expectations|matchers|mocks)/
   ]
 
-end
-
-java_import org.jruby.rack.mock.MockServletConfig
-java_import org.jruby.rack.mock.MockServletContext
-java_import org.jruby.rack.mock.MockHttpServletRequest
-java_import org.jruby.rack.mock.MockHttpServletResponse
-
-class StubInputStream < java.io.InputStream
-  def initialize(val = "")
-    super()
-    @is = java.io.ByteArrayInputStream.new(val.to_s.to_java_bytes)
-  end
-  def read
-    @is.read
-  end
-end
-
-class StubOutputStream < java.io.OutputStream
-  def initialize
-    super()
-    @os = java.io.ByteArrayOutputStream.new
-  end
-
-  def write(b)
-    @os.write(b)
-  end
-
-  def to_s
-    String.from_java_bytes @os.to_byte_array
-  end
-end
-
-class StubServletInputStream < javax.servlet.ServletInputStream
-  def initialize(val = "")
-    @delegate = StubInputStream.new(val)
-  end
-
-  def method_missing(meth, *args)
-    @delegate.send(meth, *args)
-  end
 end
