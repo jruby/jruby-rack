@@ -219,9 +219,10 @@ describe JRuby::Rack::RailsFileSystemLayout do
   it_behaves_like "FileSystemLayout"
 
   it "sets app uri from a rails.root context param" do
-    @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "../rails"
-    expect( layout.app_uri ).to eq '../rails'
-    expect( layout.app_path ).to eq File.expand_path("../rails", Dir.pwd)
+    base = File.join File.dirname(__FILE__), '../../rails3x'
+    @rack_context.should_receive(:getInitParameter).with("rails.root").and_return base
+    expect( layout.app_uri ).to eq base
+    expect( layout.app_path ).to eq File.expand_path(base)
   end
 
 end if defined? JRuby::Rack::RailsFileSystemLayout
