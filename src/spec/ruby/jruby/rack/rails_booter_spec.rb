@@ -10,16 +10,20 @@ require 'jruby/rack/rails_booter'
 
 describe JRuby::Rack::RailsBooter do
 
-  before :all do
+  context 'Rails' do
 
-    require 'jruby/rack/rails/extensions'
+    before :all do
 
-    require 'active_support'
+      require 'jruby/rack/rails/extensions'
 
-    require 'cgi/session/java_servlet_store'
-    class ::CGI::Session::PStore; end
+      require 'active_support'
 
-  end
+      require 'cgi/session/java_servlet_store'
+      class ::CGI::Session::PStore; end
+
+    end
+
+  end if defined? Rails
 
   let(:booter) do
     JRuby::Rack::RailsBooter.new JRuby::Rack.context = @rack_context
@@ -105,6 +109,20 @@ describe JRuby::Rack::RailsBooter do
     booter.boot!
     @rack_context.should_receive(:log).with(/hello/)
     booter.logger.instance_variable_get(:@logdev).write "hello"
+  end
+
+  it "detects 2.3" do
+    root = File.expand_path('../../../rails23', __FILE__)
+    @rack_context.should_receive(:getInitParameter).with("rails.root").and_return root
+    booter.layout_class = JRuby::Rack::FileSystemLayout
+    expect( booter.send(:rails2?) ).to be true
+  end
+
+  it "detects 3.x" do
+    root = File.expand_path('../../../rails3x', __FILE__)
+    @rack_context.should_receive(:getInitParameter).with("rails.root").and_return root
+    booter.layout_class = JRuby::Rack::FileSystemLayout
+    expect( booter.send(:rails2? ) ).to be false
   end
 
   describe "Rails 2.3", :lib => :stub do
@@ -201,7 +219,7 @@ describe JRuby::Rack::RailsBooter do
 
     end
 
-  end
+  end if defined? Rails
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
   describe "Rails 3.x", :lib => :stub do
@@ -332,7 +350,8 @@ describe JRuby::Rack::RailsBooter do
       before_config[1].should == [{:after => "action_controller.set_configs"}]
       before_config.last.call(app)
     end
-  end
+
+  end if defined? Rails
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
   describe "Rails 3.1", :lib => [ :stub ] do
@@ -370,9 +389,10 @@ describe JRuby::Rack::RailsBooter do
       init[1].should == [{:after => "action_controller.set_configs"}]
       init.last.call(app)
     end
-  end
 
-end if defined? Rails
+  end if defined? Rails
+
+end
 
 describe JRuby::Rack, "Rails controller extensions" do
 

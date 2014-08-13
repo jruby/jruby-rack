@@ -120,10 +120,15 @@ module JRuby
           @rack_context.getInitParameter('public.root') || 'public'
       end
 
+      # @override
+      # @note we avoid `context.getRealPath` completely and use (JRuby's) File API
       def real_path(path)
-        path.nil? ? nil : expand_path(super)
+        return nil if path.nil?
+        path = File.expand_path(path, app_uri)
+        File.exist?(path) ? path : nil
       end
 
+      # @override
       def expand_path(path)
         path.nil? ? nil : File.expand_path(path, app_uri)
       end

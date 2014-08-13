@@ -89,7 +89,19 @@ end
 
 shared_examples "FileSystemLayout" do
 
+  @@__work_dir__ = Dir.pwd
+
+  before do
+    require 'tmpdir'
+    Dir.chdir Dir.mktmpdir
+  end
+
+  after do
+    Dir.chdir @@__work_dir__
+  end
+
   it "sets app and public uri defaults based on a typical (Rails/Rack) app" do
+    FileUtils.mkdir('./public')
     expect( layout.app_uri ).to eq '.'
     expect( layout.public_uri ).to eq 'public'
 
@@ -97,21 +109,33 @@ shared_examples "FileSystemLayout" do
     expect( layout.public_path ).to eq "#{Dir.pwd}/public"
   end
 
+  it "public path is nil if does not exists" do
+    FileUtils.rmdir('./public') if File.exist?('./public')
+    expect( layout.app_uri ).to eq '.'
+    expect( layout.public_uri ).to eq 'public'
+
+    expect( layout.app_path ).to eq Dir.pwd
+    expect( layout.public_path ).to be nil
+  end
+
   it "sets public uri using context param" do
-    @rack_context.should_receive(:getRealPath).with("static").and_return File.expand_path("static")
+    FileUtils.mkdir('static')
+    #@rack_context.should_receive(:getRealPath).with("static").and_return File.expand_path("static")
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "static"
     expect( layout.public_uri ).to eq 'static'
     expect( layout.public_path ).to eq "#{Dir.pwd}/static"
   end
 
   it "sets gem path based on gem.path context init param" do
+    FileUtils.mkdir_p 'gem/path'
     @rack_context.should_receive(:getInitParameter).with("gem.path").and_return "gem/path/"
     expect( layout.gem_uri ).to eq "gem/path/"
     expect( layout.gem_path ).to eq File.expand_path("gem/path")
   end
 
   it "sets gem path based on gem.home context init param" do
-    @rack_context.should_receive(:getRealPath).with("gem/home").and_return File.expand_path("gem/home")
+    FileUtils.mkdir_p 'gem/home'
+    #@rack_context.should_receive(:getRealPath).with("gem/home").and_return File.expand_path("gem/home")
     @rack_context.should_receive(:getInitParameter).with("gem.home").and_return "gem/home"
     expect( layout.gem_uri ).to eq "gem/home"
     expect( layout.gem_path ).to eq File.expand_path("gem/home")
@@ -125,13 +149,28 @@ shared_examples "FileSystemLayout" do
   end
 
   it "expands public path relative to application root" do
-    layout.instance_variable_set :@app_uri, '/opt/deploys/main'
-    expect( layout.public_path ).to eq "/opt/deploys/main/public"
+    FileUtils.mkdir_p 'app/public'
+    layout.instance_variable_set :@app_uri, File.join(Dir.pwd, '/app')
+    expect( layout.public_path ).to eq File.join(Dir.pwd, '/app/public')
   end
 
   it "expands public path relative to application root (unless absolute)" do
-    @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/home/public/root"
-    expect( layout.public_path ).to eq "/home/public/root"
+    FileUtils.mkdir_p File.join(tmp = Dir.tmpdir, 'www/public')
+    @rack_context.should_receive(:getInitParameter).with("public.root").and_return "#{tmp}/www/public"
+    expect( layout.public_path ).to eq File.expand_path('www/public', tmp)
+  end
+
+  it "expands application relative real path" do
+    FileUtils.mkdir_p 'deploys/main'
+    FileUtils.mkdir 'deploys/main/config'; FileUtils.touch 'deploys/main/config/boot.rb'
+    layout.instance_variable_set :@app_uri, File.join(FileUtils.pwd, 'deploys/main')
+    expect( layout.real_path('config/boot.rb') ).to eq File.expand_path("deploys/main/config/boot.rb")
+  end
+
+  it "handles application relative absolute path" do
+    FileUtils.mkdir_p 'deploys/main/config'; FileUtils.touch 'deploys/main/config/boot.rb'
+    layout.instance_variable_set :@app_uri, "#{Dir.pwd}/deploys/main"
+    expect( layout.real_path("#{Dir.pwd}/deploys/main/config/boot.rb") ).to eq "#{Dir.pwd}/deploys/main/config/boot.rb"
   end
 
   it "expands nil path as nil" do
@@ -154,9 +193,10 @@ describe JRuby::Rack::FileSystemLayout do
   it_behaves_like "FileSystemLayout"
 
   it "sets app uri from an app.root context param" do
-    @rack_context.should_receive(:getInitParameter).with("app.root").and_return "/home/app/current"
-    expect( layout.app_uri ).to eq '/home/app/current'
-    expect( layout.app_path ).to eq '/home/app/current'
+    FileUtils.mkdir_p 'app/current'
+    @rack_context.should_receive(:getInitParameter).with("app.root").and_return "#{Dir.pwd}/app/current"
+    expect( layout.app_uri ).to eq File.expand_path('app/current')
+    expect( layout.app_path ).to eq "#{Dir.pwd}/app/current"
   end
 
   describe "deprecated-constant" do

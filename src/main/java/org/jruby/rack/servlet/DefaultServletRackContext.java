@@ -37,17 +37,17 @@ public class DefaultServletRackContext implements ServletRackContext {
         this.logger  = config.getLogger();
     }
 
-    public String getInitParameter(String key) {
+    public String getInitParameter(final String key) {
         return config.getProperty(key);
     }
 
-    public String getRealPath(String path) {
+    public String getRealPath(final String path) {
         String realPath = context.getRealPath(path);
         if (realPath == null) { // some servers don't like getRealPath, e.g. w/o exploded war
             try {
-                URL url = context.getResource(path);
+                final URL url = context.getResource(path);
                 if (url != null) {
-                    String urlPath = url.getPath();
+                    final String urlPath = url.getPath();
                     // still might end up as an URL with path "file:/home"
                     if (urlPath.startsWith("file:")) {
                         // handles "file:/home" and "file:///home" as well
