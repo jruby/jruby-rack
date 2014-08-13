@@ -10,17 +10,6 @@ require 'jruby/rack/rails_booter'
 
 describe JRuby::Rack::RailsBooter do
 
-  context 'Rails' do
-
-    before :all do
-      require 'jruby/rack/rails/extensions'
-      require 'active_support'
-      require 'cgi/session/java_servlet_store'
-      class ::CGI::Session::PStore; end
-    end
-
-  end if defined? Rails
-
   let(:booter) do
     JRuby::Rack::RailsBooter.new JRuby::Rack.context = @rack_context
   end
