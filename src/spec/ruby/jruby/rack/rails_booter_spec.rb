@@ -13,14 +13,10 @@ describe JRuby::Rack::RailsBooter do
   context 'Rails' do
 
     before :all do
-
       require 'jruby/rack/rails/extensions'
-
       require 'active_support'
-
       require 'cgi/session/java_servlet_store'
       class ::CGI::Session::PStore; end
-
     end
 
   end if defined? Rails
@@ -396,29 +392,35 @@ end
 
 describe JRuby::Rack, "Rails controller extensions" do
 
-  before :all do
-    require 'action_controller'
+  before(:all) { require 'jruby/rack/rails/extensions' }
+
+  let(:controller) do
+    controller = ActionController::Base.new
+    controller.stub(:request).and_return request
+    controller.stub(:response).and_return response
+    controller
   end
 
+  let(:request) { double("request") }
+  let(:response) { double("response") }
+
+  let(:servlet_request) { org.jruby.rack.mock.MockHttpServletRequest.new }
+  let(:servlet_response) { org.jruby.rack.mock.MockHttpServletResponse.new }
+
   before :each do
-    @controller = ActionController::Base.new
-    @controller.stub(:request).and_return(request = double("request"))
-    @controller.stub(:response).and_return(response = double("response"))
-    request.stub(:env).and_return({"java.servlet_request" => (@servlet_request = double("servlet request"))})
-    @headers = {}
-    response.stub(:headers).and_return @headers
+    request.stub(:env).and_return 'java.servlet_request' => servlet_request
+    response.stub(:headers).and_return @headers = {}
   end
 
   it "should add a #servlet_request method to ActionController::Base" do
-    @controller.should respond_to(:servlet_request)
-    @controller.servlet_request.should == @servlet_request
+    controller.should respond_to(:servlet_request)
+    controller.servlet_request.should == servlet_request
   end
 
   it "should add a #forward_to method for forwarding to another servlet" do
-    @servlet_response = double "servlet response"
-    @controller.request.should_receive(:forward_to).with("/forward.jsp")
-
-    @controller.forward_to "/forward.jsp"
+    #@servlet_response = double "servlet response"
+    controller.request.should_receive(:forward_to).with("/forward.jsp")
+    controller.forward_to '/forward.jsp'
   end
 
 end if defined? Rails
