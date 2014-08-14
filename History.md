@@ -1,4 +1,10 @@
-## 1.1.15 (24/07/14)
+## 1.1.16 (14/08/14)
+
+- deal with `real_path` (file-system) layout regression introduced in 1.1.15
+
+Changes from 1.1.15 apply since the previous release got yanked due a regression.
+
+## 1.1.15 (ya/nk/ed)
 
 - deal with potential getParameterMap "bugs" - null values e.g. on Jetty 6 (#154)
 - support filter init-param to configure whether response is handled "by default"
