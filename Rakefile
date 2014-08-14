@@ -14,7 +14,7 @@ rescue LoadError => e
   puts "Please install Bundler and run `bundle install` to ensure you have all dependencies"
   raise e
 end
-require 'appraisal'
+begin; require 'appraisal'; rescue LoadError; end
 
 desc "Remove target directory"
 task :clean do
@@ -32,21 +32,19 @@ end
 
 directory 'target/classes'
 
-file 'target/classpath.rb' do
-  sh 'mvn org.jruby.plugins:jruby-rake-plugin:classpath -Djruby.classpath.scope=test'
-end
-GENERATED << 'target/classpath.rb'
-
 desc "Compile classes"
-task :compile => [:'target/classes'] do |t|
-  sh 'mvn compile'
-end
+task(:compile => 'target/classes') { sh 'mvn compile' }
 
 directory 'target/test-classes'
 
 desc "Compile test classes"
-task :test_compile => ['target/test-classes'] do |t|
-  sh 'mvn test-compile'
+task(:test_compile => 'target/test-classes') { sh 'mvn test-compile' }
+
+desc "Copy .jar dependencies for (local) testing"
+task(:test_jars) { sh 'mvn test-compile -P jars' }
+
+task(:test_prepare => ['target/classes', 'target/test-classes']) do
+  sh 'mvn compile test-compile -P jars'
 end
 
 desc "Unpack the rack gem"
@@ -100,19 +98,20 @@ namespace :resources do
   task :test => :test_resources
 end
 
-task :speconly => ['target/classpath.rb', :resources, :test_resources] do
-  if ENV['SKIP_SPECS'] && ENV['SKIP_SPECS'] == "true"
+task :speconly => [ :resources, :test_resources ] do
+  if ENV['SKIP_SPECS'].to_s == 'true'
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
     opts = ENV['SPEC_OPTS'] ? ENV['SPEC_OPTS'] : %q{ --format documentation --color }
     spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
     opts = opts.split(' ').push *FileList[spec].to_a
-    ruby "-Isrc/spec/ruby", "-rbundler/setup", "-S", "rspec", *opts
+    exec = 'rspec'; exec = Gem.bin_path('rspec', exec) if ENV['FULL_BIN_PATH']
+    ruby "-Isrc/spec/ruby", "-rbundler/setup", "-S", exec, *opts
   end
 end
 
 desc "Run specs"
-task :spec => [:compile, :test_compile, :speconly]
+task :spec => [:test_prepare, :speconly]
 task :test => :spec
 
 POM_FILE = 'pom.xml'
@@ -126,14 +125,6 @@ GEM_VERSION =
   end
 
 JAR_VERSION = GEM_VERSION.sub(/\.(\D+\w*)/, '-\1') # 1.1.1.SNAPSHOT -> 1.1.1-SNAPSHOT
-
-desc "Print the (Maven) class-path"
-task :classpath => 'target/classpath.rb' do
-  require './target/classpath'
-  classpath = Maven.classpath
-  classpath = classpath.reject { |p| p =~ /target\/(test-)?classes$/ }
-  puts *classpath
-end
 
 file (target_jruby_rack = 'target/gem/lib/jruby-rack.rb') do |t|
   mkdir_p File.dirname(t.name)
@@ -151,8 +142,10 @@ require 'jruby/rack/version' # @deprecated to be removed in 1.2
 end
 GENERATED << target_jruby_rack
 
-file (target_jar = "target/jruby-rack-#{JAR_VERSION}.jar") => [:compile, :resources] do |t|
-  sh "jar cf #{t.name} -C target/classes ." # TODO `mvn package` instead ?
+file (target_jar = "target/jruby-rack-#{JAR_VERSION}.jar") do |file|
+  Rake::Task['compile'].invoke
+  Rake::Task['resources'].invoke
+  sh "jar cf #{file.name} -C target/classes ."
 end
 
 desc "Create the jruby-rack-#{JAR_VERSION}.jar"
@@ -160,17 +153,15 @@ task :jar => target_jar
 
 task :default => :jar
 
-file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") =>
-  "src/main/ruby/jruby/rack/version.rb" do |t|
-  mkdir_p File.dirname(t.name)
-  cp t.prerequisites.first, t.name
+file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") do |file|
+  mkdir_p File.dirname(file.name); cp VERSION_FILE, file.name
 end
 
 desc "Build the jruby-rack-#{GEM_VERSION}.gem"
-task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do |t|
-  Rake::Task['spec'].invoke
-  cp FileList["History.txt", "LICENSE.txt", "README.md"], "target/gem"
-  cp t.prerequisites.first, "target/gem/lib"
+task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do
+  Rake::Task['spec'].invoke unless ENV['SKIP_SPEC'] == 'true'
+  cp FileList["History.md", "LICENSE.txt", "README.md"], "target/gem"
+  cp target_jar, "target/gem/lib"
   if (jars = FileList["target/gem/lib/*.jar"].to_a).size > 1
     abort "Too many jars! #{jars.map{|j| File.basename(j)}.inspect}\nRun a clean build `rake clean` first"
   end
@@ -190,7 +181,9 @@ task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do |t|
       gem.homepage = %q{http://jruby.org}
       gem.has_rdoc = false
     end
-    defined?(Gem::Builder) ? Gem::Builder.new(gemspec).build : Gem::Package.build(gemspec)
+    defined?(Gem::Builder) ? Gem::Builder.new(gemspec).build : begin
+      require 'rubygems/package'; Gem::Package.build(gemspec)
+    end
     File.open('jruby-rack.gemspec', 'w') { |f| f << gemspec.to_ruby }
     mv FileList['*.gem'], '..'
   end
@@ -231,12 +224,14 @@ task :release => [:release_checks, :clean] do
   sh "mvn deploy -DupdateReleaseInfo=true"
   sh "rake gem SKIP_SPECS=true" # already run specs with mvn
   sh "gem push target/jruby-rack-#{GEM_VERSION}.gem"
-  sh "git push --tags #{ENV['GIT_REMOTE'] || 'origin'} `git rev-parse --abbrev-ref HEAD`" # master
+  git_branch = `git branch | sed -n '/\* /s///p'`.chomp
+  sh "git push --tags #{ENV['GIT_REMOTE'] || 'origin'} #{git_branch}"
   puts "released JRuby-Rack #{GEM_VERSION} update next SNAPSHOT version using `rake update_version`"
 end
 
+desc "Update version to next (1.2.3 -> 1.2.4.SNAPSHOT) or passed VERSION"
 task :update_version do
-  version = ENV["VERSION"] || ''
+  version = ENV['VERSION'] || ''
   if version.empty? # next version
     gem_version = Gem::Version.create(GEM_VERSION)
     if gem_version.segments.last.is_a?(String)
@@ -247,6 +242,8 @@ task :update_version do
       version = version + ['SNAPSHOT']
     end
     version = version.join('.')
+  else
+    version.sub!('-', '.') # normalize "maven" style VERSION
   end
   if version != GEM_VERSION
     gem_version = Gem::Version.create(version) # validates VERSION string

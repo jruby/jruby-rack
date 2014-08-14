@@ -1,33 +1,25 @@
-#--
-# Copyright (c) 2010-2012 Engine Yard, Inc.
-# Copyright (c) 2007-2009 Sun Microsystems, Inc.
-# This source code is available under the MIT license.
-# See the file LICENSE.txt for details.
-#++
+require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'rack/handler/servlet'
 require 'stringio'
 
 describe Rack::Handler::Servlet do
-  
-  let(:app) { mock "application" }
+
+  let(:app) { double "application" }
   let(:servlet) { Rack::Handler::Servlet.new(app) }
-  
-  let(:servlet_context) do
-    @servlet_context
-  end
-  
+
+  let(:servlet_context) { @servlet_context ||= mock_servlet_context }
+
   let(:servlet_request) do
     org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
   end
-  
+
   let(:servlet_response) do
     org.jruby.rack.mock.MockHttpServletResponse.new
   end
-  
+
   shared_examples "env" do
-    
+
     before do
       @servlet_request ||= servlet_request
       @servlet_response ||= servlet_response
@@ -35,7 +27,7 @@ describe Rack::Handler::Servlet do
         @servlet_request, @servlet_response, @rack_context
       )
     end
-    
+
     it "creates a hash with the Rack variables in it" do
       hash = servlet.create_env(@servlet_env)
       hash['rack.version'].should == Rack::VERSION
@@ -54,19 +46,19 @@ describe Rack::Handler::Servlet do
     end
 
     it "is able to override cgi variables with request attributes of the same name" do
-      { "REQUEST_METHOD" => "POST", 
+      { "REQUEST_METHOD" => "POST",
         "SCRIPT_NAME" => "/override",
-        "PATH_INFO" => "/override", 
+        "PATH_INFO" => "/override",
         "REQUEST_URI" => "/override",
-        "QUERY_STRING" => "override", 
+        "QUERY_STRING" => "override",
         "SERVER_NAME" => "override",
-        "SERVER_PORT" => 8080, 
-        "SERVER_SOFTWARE" => "servy", 
+        "SERVER_PORT" => 8080,
+        "SERVER_SOFTWARE" => "servy",
         "REMOTE_HOST" => "override",
-        "REMOTE_ADDR" => "192.168.0.1", 
-        "REMOTE_USER" => "override" 
+        "REMOTE_ADDR" => "192.168.0.1",
+        "REMOTE_USER" => "override"
       }.each { |name, value| @servlet_request.setAttribute(name, value) }
-      @rack_context.stub!(:getServerInfo).and_return 'Trinidad RULEZZ!'
+      @rack_context.stub(:getServerInfo).and_return 'Trinidad RULEZZ!'
 
       env = servlet.create_env @servlet_env
       env["REQUEST_METHOD"].should == "POST"
@@ -83,14 +75,14 @@ describe Rack::Handler::Servlet do
     end
 
     it "is able to override headers with request attributes named HTTP_*" do
-      { "HTTP_HOST" => "override", 
+      { "HTTP_HOST" => "override",
         "HTTP_ACCEPT" => "application/*",
-        "HTTP_ACCEPT_ENCODING" => "bzip2", 
+        "HTTP_ACCEPT_ENCODING" => "bzip2",
         "CONTENT_TYPE" => "application/override",
-        "CONTENT_LENGTH" => 20 
+        "CONTENT_LENGTH" => 20
       }.each { |name, value| @servlet_request.setAttribute(name, value) }
-      { "Host" => "localhost", 
-        "Accept" => "text/*", 
+      { "Host" => "localhost",
+        "Accept" => "text/*",
         "Accept-Encoding" => "gzip"
       }.each { |name, value| @servlet_request.addHeader(name, value) }
       @servlet_request.setContentType('text/plain')
@@ -120,7 +112,7 @@ describe Rack::Handler::Servlet do
       @servlet_request.setContextPath('/foo')
       @servlet_request.setContent(''.to_java_bytes)
       set_rack_input @servlet_env
-      
+
       env = servlet.create_env @servlet_env
 
       (input = env['rack.input']).should_not be nil
@@ -192,8 +184,8 @@ describe Rack::Handler::Servlet do
       @servlet_request.setRemoteHost('localhost')
       @servlet_request.setRemoteUser('admin')
 
-      { "Host" => "localhost", 
-        "Accept" => "text/*", 
+      { "Host" => "localhost",
+        "Accept" => "text/*",
         "Accept-Encoding" => "gzip"}.each do |name, value|
         @servlet_request.addHeader(name, value)
       end
@@ -220,7 +212,7 @@ describe Rack::Handler::Servlet do
       @servlet_request.setServerName(nil) # default 'localhost'
       @servlet_request.setRemoteHost(nil) # default 'localhost'
       @servlet_request.setRemoteAddr(nil) # default '127.0.0.1'
-      
+
       env = servlet.create_env @servlet_env
       env["REQUEST_METHOD"].should == "GET"
       env["SCRIPT_NAME"].should == ""
@@ -251,7 +243,7 @@ describe Rack::Handler::Servlet do
       env["SCRIPT_NAME"].should == ""
     end
 
-    it "ignores servlet path when it is not part of the request URI" do    
+    it "ignores servlet path when it is not part of the request URI" do
       # This craziness is what happens in the default Tomcat 7 install
       @servlet_request.setContextPath('/context')
       @servlet_request.setServletPath('/index.jsp')
@@ -285,10 +277,10 @@ describe Rack::Handler::Servlet do
     end
 
     it "puts the other headers in the hash upcased and underscored and prefixed with HTTP_" do
-      { "Host" => "localhost", 
-        "Accept" => "text/*", 
+      { "Host" => "localhost",
+        "Accept" => "text/*",
         "Accept-Encoding" => "gzip",
-        "Content-Length" => "0" 
+        "Content-Length" => "0"
       }.each { |name, value| @servlet_request.addHeader(name, value) }
 
       env = servlet.create_env @servlet_env
@@ -302,10 +294,10 @@ describe Rack::Handler::Servlet do
     end
 
     it "handles header names that have more than one dash in them" do
-      { "X-Forwarded-Proto" => "https", 
+      { "X-Forwarded-Proto" => "https",
         "If-None-Match" => "abcdef",
-        "If-Modified-Since" => "today", 
-        "X-Some-Really-Long-Header" => "yeap" 
+        "If-Modified-Since" => "today",
+        "X-Some-Really-Long-Header" => "yeap"
       }.each { |name, value| @servlet_request.addHeader(name, value) }
 
       env = servlet.create_env @servlet_env
@@ -342,11 +334,39 @@ describe Rack::Handler::Servlet do
       env = servlet.create_env @servlet_env
       expect( env['jruby.rack.context'] ).to be @rack_context
     end
-    
+
+    it "retrieves hidden attribute" do
+      servlet_request_class = Class.new(org.jruby.rack.mock.MockHttpServletRequest) do
+
+        def getAttributeNames
+          names = super.to_a.reject { |name| name.start_with?('org.apache') }
+          return java.util.Collections.enumeration(names)
+        end
+
+      end
+      servlet_request = servlet_request_class.new(servlet_context)
+      servlet_request.setAttribute('current_page', 'index.html'.to_java)
+      servlet_request.setAttribute('org.answer.internal', 4200.to_java)
+      servlet_request.setAttribute('org.apache.internal', true.to_java)
+
+      servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(
+        servlet_request, servlet_response, @rack_context
+      )
+
+      env = servlet.create_env servlet_env
+
+      expect( env.keys ).to include 'current_page'
+      expect( env.keys ).to include 'org.answer.internal'
+      expect( env.keys ).to_not include 'org.apache.internal'
+
+      expect( env['org.answer.internal'] ).to be 4200
+      expect( env['org.apache.internal'] ).to be true
+    end
+
   end
-  
+
   shared_examples "(eager)rack-env" do
-    
+
     before do
       @servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new(@servlet_context)
       @servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
@@ -364,7 +384,7 @@ describe Rack::Handler::Servlet do
       @servlet_request.setQueryString('hello=there')
       @servlet_request.setServerName('serverhost')
       @servlet_request.setServerPort(80)
-      @rack_context.stub!(:getServerInfo).and_return 'Trinidad'
+      @rack_context.stub(:getServerInfo).and_return 'Trinidad'
       @servlet_request.setRemoteAddr('127.0.0.1')
       @servlet_request.setRemoteHost('localhost')
       @servlet_request.setRemoteUser('admin')
@@ -379,15 +399,15 @@ describe Rack::Handler::Servlet do
       set_rack_input(@servlet_env)
       @servlet_env
     end
-    
+
     it "is a Hash" do
       env = servlet.create_env filled_servlet_env
       expect( env ).to be_a Hash
     end
-    
+
     it "is not lazy by default" do
       env = servlet.create_env filled_servlet_env
-      
+
       env.keys.should include('REQUEST_METHOD')
       env.keys.should include('SCRIPT_NAME')
       env.keys.should include('PATH_INFO')
@@ -401,7 +421,7 @@ describe Rack::Handler::Servlet do
       Rack::Handler::Servlet::DefaultEnv::BUILTINS.each do |key|
         env.keys.should include(key)
       end
-      
+
       env.keys.should include('rack.version')
       env.keys.should include('rack.input')
       env.keys.should include('rack.errors')
@@ -414,13 +434,13 @@ describe Rack::Handler::Servlet do
       Rack::Handler::Servlet::DefaultEnv::VARIABLES.each do |key|
         env.keys.should include(key)
       end
-      
+
       env.keys.should include('HTTP_X_FORWARDED_PROTO')
       env.keys.should include('HTTP_IF_NONE_MATCH')
       env.keys.should include('HTTP_IF_MODIFIED_SINCE')
       env.keys.should include('HTTP_X_SOME_REALLY_LONG_HEADER')
     end
-    
+
     it "works correctly when frozen" do
       env = servlet.create_env filled_servlet_env
       env.freeze
@@ -448,7 +468,7 @@ describe Rack::Handler::Servlet do
       end
       expect( lambda { env['rack.whatever'] } ).to_not raise_error
       env['rack.whatever'].should be nil
-      
+
       expect( lambda {
         env['HTTP_X_FORWARDED_PROTO']
         env['HTTP_IF_NONE_MATCH']
@@ -459,20 +479,20 @@ describe Rack::Handler::Servlet do
       env['HTTP_IF_NONE_MATCH'].should_not be nil
       env['HTTP_IF_MODIFIED_SINCE'].should_not be nil
       env['HTTP_X_SOME_REALLY_LONG_HEADER'].should_not be nil
-      
+
       expect( lambda {
         env['HTTP_X_SOME_NON_EXISTENT_HEADER']
       }).to_not raise_error
       env['HTTP_X_SOME_NON_EXISTENT_HEADER'].should be nil
     end
-    
+
     it "works when dupped and frozen as a request" do
       env = servlet.create_env filled_servlet_env
       request = Rack::Request.new(env.dup.freeze)
-      
+
       lambda { request.request_method }.should_not raise_error
       request.request_method.should == 'GET'
-      
+
       lambda { request.script_name }.should_not raise_error
       request.script_name.should == '/main'
 
@@ -500,7 +520,7 @@ describe Rack::Handler::Servlet do
 
       lambda { request.port }.should_not raise_error
       request.port.should == 80
-      
+
       lambda { request.host_with_port }.should_not raise_error
       request.host_with_port.should == 'serverhost:80'
 
@@ -509,7 +529,7 @@ describe Rack::Handler::Servlet do
 
       lambda { request.user_agent }.should_not raise_error
       request.user_agent.should == nil
-      
+
       if defined?(request.base_url)
         lambda { request.base_url }.should_not raise_error
         if Rack.release >= '1.3' # Rails >= 3.1.x
@@ -526,26 +546,26 @@ describe Rack::Handler::Servlet do
         request.url.should == 'http://serverhost/main/app1/path/info?hello=there'
       end
     end
-    
+
     describe 'dumped-and-loaded' do
-      
+
       before { @context = JRuby::Rack.context; JRuby::Rack.context = nil }
       after { JRuby::Rack.context = @context }
-      
+
       it "is a DefaultEnv" do
         env = servlet.create_env filled_servlet_env
         dump = Marshal.dump( env.to_hash ); env = Marshal.load(dump)
         expect( env ).to be_a Rack::Handler::Servlet::DefaultEnv
       end
-      
+
       it "works (almost) as before" do
         env = servlet.create_env filled_servlet_env
         dump = Marshal.dump( env.to_hash )
         it_works env = Marshal.load(dump)
-        
+
         expect( env['rack.input'] ).to be nil
         expect( env['rack.errors'] ).to be nil
-        
+
         expect( env['java.servlet_context'] ).to be nil
         expect( env['java.servlet_request'] ).to be nil
         expect( env['java.servlet_response'] ).to be nil
@@ -554,25 +574,25 @@ describe Rack::Handler::Servlet do
       it "initialized than dumped" do
         env = servlet.create_env filled_servlet_env
         it_works env
-        
+
         expect( env['rack.input'] ).to_not be nil
         expect( env['rack.errors'] ).to_not be nil
-        
+
         expect( env['java.servlet_context'] ).to_not be nil
         expect( env['java.servlet_request'] ).to_not be nil
         expect( env['java.servlet_response'] ).to_not be nil
-        
+
         dump = Marshal.dump( env.to_hash )
         it_works env = Marshal.load(dump)
-        
+
         expect( env['rack.input'] ).to be nil
         expect( env['rack.errors'] ).to be nil
-        
+
         expect( env['java.servlet_context'] ).to be nil
         expect( env['java.servlet_request'] ).to be nil
         expect( env['java.servlet_response'] ).to be nil
       end
-      
+
       def it_works(env)
         expect( env['REQUEST_METHOD'] ).to eql 'GET'
         expect( env['SCRIPT_NAME'] ).to eql '/main'
@@ -599,13 +619,13 @@ describe Rack::Handler::Servlet do
         expect( env['HTTP_X_SOME_REALLY_LONG_HEADER'] ).to_not be nil
         expect( env['HTTP_X_SOME_NON_EXISTENT_HEADER'] ).to be nil
       end
-      
+
     end
-    
+
   end
-  
+
   shared_examples "hash-instance" do
-    
+
     before do
       @servlet_request ||= servlet_request
       @servlet_response ||= servlet_response
@@ -613,7 +633,7 @@ describe Rack::Handler::Servlet do
         @servlet_request, @servlet_response, @rack_context
       )
     end
-    
+
     it "creates a new Hash" do
       hash = new_hash
       expect( hash ).to be_a Hash
@@ -623,7 +643,7 @@ describe Rack::Handler::Servlet do
       hash = new_hash
       expect( hash ).to be_empty
     end
-    
+
     it "allows filling a new Hash" do
       hash = new_hash
       hash['some'] = 'SOME'
@@ -644,43 +664,43 @@ describe Rack::Handler::Servlet do
         end
       end
     end
-    
+
     it "sets all keys from the env Hash" do
       env = servlet.create_env(@servlet_env)
       hash = env.class.new
       env.keys.each { |k| hash[k] = env[k] if env.has_key?(k) }
       expect( hash.size ).to eql env.size
     end
-    
+
     private
-    
+
     def new_hash
       hash = servlet.create_env(@servlet_env)
       hash.class.new
     end
-    
+
   end
-  
+
   describe '(default) env' do
-    
+
     it_behaves_like "env"
-    
+
     it_behaves_like "(eager)rack-env"
-    
+
     it_behaves_like "hash-instance"
-    
+
   end
 
   describe 'lazy env' do
-    
+
     before do
       def servlet.create_env(servlet_env)
         create_lazy_env(servlet_env)
       end
     end
-    
+
     it_behaves_like "env"
-    
+
     let(:filled_servlet_env) do
       servlet_request.setMethod('GET')
       servlet_request.setContextPath('/main')
@@ -690,7 +710,7 @@ describe Rack::Handler::Servlet do
       servlet_request.setQueryString('hello=there')
       servlet_request.setServerName('serverhost')
       servlet_request.setServerPort(80)
-      @rack_context.stub!(:getServerInfo).and_return 'Trinidad'
+      @rack_context.stub(:getServerInfo).and_return 'Trinidad'
       servlet_request.setRemoteAddr('127.0.0.1')
       servlet_request.setRemoteHost('localhost')
       servlet_request.setRemoteUser('admin')
@@ -702,17 +722,17 @@ describe Rack::Handler::Servlet do
         "Referer" => "http://www.example.com",
         "X-Some-Really-Long-Header" => "42"
       }.each { |name, value| servlet_request.addHeader(name, value) }
-      
+
       servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(
         servlet_request, servlet_response, @rack_context
       )
       set_rack_input(servlet_env)
       servlet_env
     end
-    
+
     it "populates on keys" do
       env = servlet.create_env filled_servlet_env
-      
+
       env.keys.should include('REQUEST_METHOD')
       env.keys.should include('SCRIPT_NAME')
       env.keys.should include('PATH_INFO')
@@ -726,7 +746,7 @@ describe Rack::Handler::Servlet do
       Rack::Handler::Servlet::DefaultEnv::BUILTINS.each do |key|
         env.keys.should include(key)
       end
-      
+
       env.keys.should include('rack.version')
       env.keys.should include('rack.input')
       env.keys.should include('rack.errors')
@@ -739,17 +759,17 @@ describe Rack::Handler::Servlet do
       Rack::Handler::Servlet::DefaultEnv::VARIABLES.each do |key|
         env.keys.should include(key)
       end
-      
+
       env.keys.should include('HTTP_X_FORWARDED_PROTO')
       env.keys.should include('HTTP_IF_NONE_MATCH')
       env.keys.should include('HTTP_IF_MODIFIED_SINCE')
       env.keys.should include('HTTP_X_SOME_REALLY_LONG_HEADER')
     end
-    
+
   end
-  
+
   context "servlet" do
-    
+
     before do
       @servlet_context = org.jruby.rack.mock.MockServletContext.new
       @servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new(@servlet_context)
@@ -761,15 +781,15 @@ describe Rack::Handler::Servlet do
 
     it "returns the servlet context when queried with java.servlet_context" do
       env = servlet.create_env @servlet_env
-      
+
       env['java.servlet_context'].should_not be nil
       env['java.servlet_context'].should == @rack_context
     end
-    
+
     it "returns the servlet context when queried with java.servlet_context 3.0" do
       # HACK to emulate Servlet API 3.0 MockHttpServletRequest has getServletContext :
       env = Rack::Handler::Servlet::DefaultEnv.new(@servlet_request).to_hash
-      
+
       env['java.servlet_context'].should_not be nil
       env['java.servlet_context'].should == @servlet_context
       begin
@@ -778,25 +798,25 @@ describe Rack::Handler::Servlet do
         (env['java.servlet_context'] == @servlet_context).should == true
       end
     end
-    
+
     it "returns the servlet request when queried with java.servlet_request" do
       env = servlet.create_env @servlet_env
       expect( env['java.servlet_request'] ).to be @servlet_request
     end
-    
+
     it "returns the servlet response when queried with java.servlet_response" do
       env = servlet.create_env @servlet_env
       expect( env['java.servlet_response'] ).to be @servlet_response
     end
-    
+
   end
-  
+
   describe "call" do
 
     it "delegates to the inner application after constructing the env hash" do
       servlet.should_receive(:create_env).and_return({})
 
-      servlet_env = mock("servlet request")
+      servlet_env = double("servlet request")
       app.should_receive(:call)
 
       response = servlet.call(servlet_env)
@@ -804,57 +824,61 @@ describe Rack::Handler::Servlet do
     end
 
     it "raises an error when it failed to load the application" do
-      lambda { Rack::Handler::Servlet.new(nil) }.should raise_error(RuntimeError)
-      lambda { Rack::Handler::Servlet.new(nil) }.should_not raise_error(NoMethodError)
+      expect { Rack::Handler::Servlet.new(nil) }.to raise_error(RuntimeError)
+      begin
+        Rack::Handler::Servlet.new(nil)
+      rescue => e
+        expect( e ).to_not be_a(NoMethodError)
+      end
     end
-    
+
   end
-  
+
   describe 'response' do
 
     before do
       Rack::Handler::Servlet.response = 'Rack::Handler::CustomResponse'
     end
-    
+
     after do
       Rack::Handler::Servlet.response = nil
     end
-    
+
     it "uses custom response class" do
       servlet.should_receive(:create_env).and_return({})
       app.should_receive(:call)
-      
-      servlet_env = mock("servlet request")
+
+      servlet_env = double("servlet request")
       expect( servlet.call(servlet_env) ).to be_a Rack::Handler::CustomResponse
     end
-    
+
   end
-  
+
   describe 'servlet-env' do
 
     before do
       Rack::Handler::Servlet.env = :servlet
     end
-    
+
     after do
       Rack::Handler::Servlet.env = nil
     end
-    
+
     it_behaves_like "env"
- 
+
     it_behaves_like "(eager)rack-env"
-    
+
     it_behaves_like "hash-instance"
-    
+
     let(:servlet_request) { org.jruby.rack.mock.MockHttpServletRequest.new }
     let(:servlet_response) { org.jruby.rack.mock.MockHttpServletResponse.new }
     let(:servlet_env) do
       org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, @rack_context)
     end
-    
+
     it "has correct params when request input has been read" do
       # reproducing https://github.com/jruby/jruby-rack/issues/110
-      # 
+      #
       # Request Path: /home/path?foo=bad&foo=bar&bar=huu&age=33
       # POST Parameters :
       #  name[]: Ferko Suska
@@ -882,7 +906,7 @@ describe Rack::Handler::Servlet do
       servlet_request.addParameter('name[]', 'Jozko Hruska')
       servlet_request.addParameter('age', '30')
       servlet_request.addParameter('formula', 'a + b == 42%!')
-      
+
       set_rack_input(servlet_env)
 
       env = servlet.create_env(servlet_env)
@@ -891,7 +915,7 @@ describe Rack::Handler::Servlet do
       rack_request.GET.should == { 'foo'=>'bar', 'bar'=>'huu', 'age'=>'33' }
       rack_request.POST.should == { "name"=>["Ferko Suska", "Jozko Hruska"], "age"=>"30", "formula"=>"a + b == 42%!" }
       rack_request.params.should == {
-        "foo"=>"bar", "bar"=>"huu", "age"=>"30", 
+        "foo"=>"bar", "bar"=>"huu", "age"=>"30",
         "name"=>["Ferko Suska", "Jozko Hruska"], "formula"=>"a + b == 42%!"
       }
 
@@ -904,6 +928,53 @@ describe Rack::Handler::Servlet do
       rack_request.content_length.should == content.size.to_s
     end
 
+    it "handles null values in parameter-map (Jetty)" do
+      org.jruby.rack.mock.MockHttpServletRequest.class_eval do
+        field_reader :parameters
+      end
+      # reproducing https://github.com/jruby/jruby-rack/issues/154
+      #
+      # Request Path: /home/path?foo=bad&foo=bar&bar=huu&age=33
+      # POST Parameters :
+      #  name[]: Ferko Suska
+      #  name[]: Jozko Hruska
+      #  age: 42
+      content = 'name[]=ferko&name[]=jozko&age=42'
+
+      servlet_request.setContent content.to_java_bytes
+      servlet_request.addHeader('CONTENT-TYPE', 'application/x-www-form-urlencoded')
+      servlet_request.setMethod 'PUT'
+      servlet_request.setContextPath '/'
+      servlet_request.setPathInfo '/path'
+      servlet_request.setRequestURI '/home/path'
+      servlet_request.setQueryString 'foo=bar&foo=huu&bar=&age='
+      # NOTE: assume input stream read but getParameter methods work correctly :
+      # this is essentially the same as some filter/servlet reading before we do
+      read_input_stream servlet_request.getInputStream
+      # Query params :
+      servlet_request.addParameter('foo', 'bar')
+      servlet_request.addParameter('foo', 'huu')
+      servlet_request.parameters.put('bar', nil) # "emulate" buggy servlet container
+      servlet_request.parameters.put('age', [ nil ].to_java(:string)) # buggy container
+      # POST params :
+      servlet_request.addParameter('name[]', 'ferko')
+      servlet_request.addParameter('name[]', 'jozko')
+
+      set_rack_input(servlet_env)
+
+      env = servlet.create_env(servlet_env)
+      rack_request = Rack::Request.new(env)
+
+      rack_request.GET.should == { 'foo'=>'huu', 'bar'=>'', 'age'=>'' }
+      rack_request.POST.should == { "name"=>["ferko", "jozko"] }
+      rack_request.params.should == {
+        "foo"=>"huu", "bar"=>"", "age"=>"", "name"=>["ferko", "jozko"],
+      }
+
+      rack_request.query_string.should == 'foo=bar&foo=huu&bar=&age='
+      rack_request.request_method.should == 'PUT'
+    end
+
     it "sets cookies from servlet requests" do
       cookies = []
       cookies << javax.servlet.http.Cookie.new('foo', 'bar')
@@ -913,19 +984,19 @@ describe Rack::Handler::Servlet do
       rack_request = Rack::Request.new(env)
       rack_request.cookies.should == { 'foo' => 'bar', 'bar' => '142' }
     end
-    
+
     it "sets cookies from servlet requests (when empty)" do
       servlet_request.getCookies.should be nil
       env = servlet.create_env(servlet_env)
       rack_request = Rack::Request.new(env)
       rack_request.cookies.should == {}
-      
+
       servlet_request.setCookies [].to_java :'javax.servlet.http.Cookie'
       env = servlet.create_env(servlet_env)
       rack_request = Rack::Request.new(env)
       rack_request.cookies.should == {}
     end
-    
+
     it "sets a single cookie from servlet requests" do
       cookies = []
       cookies << javax.servlet.http.Cookie.new('foo', 'bar')
@@ -935,14 +1006,14 @@ describe Rack::Handler::Servlet do
       rack_request = Rack::Request.new(env)
       rack_request.cookies.should == { 'foo' => 'bar' }
     end
-    
+
     private
 
     def read_input_stream(input)
       while input.read != -1
       end
     end
-    
+
   end
-  
+
 end

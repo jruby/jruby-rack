@@ -142,6 +142,7 @@ describe "integration" do
       before :all do
         initialize_rails nil, base_path
       end
+      after(:all)  { restore_rails }
 
       it "loaded rack ~> 1.2" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -187,6 +188,7 @@ describe "integration" do
       before :all do
         initialize_rails 'production', base_path
       end
+      after(:all)  { restore_rails }
 
       it "loaded META-INF/init.rb" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -228,9 +230,8 @@ describe "integration" do
 
     context "initialized" do
 
-      before :all do
-        initialize_rails 'production', base_path
-      end
+      before(:all) { initialize_rails 'production', base_path }
+      after(:all)  { restore_rails }
 
       it "loaded rack ~> 1.4" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -284,9 +285,8 @@ describe "integration" do
 
     context "initialized" do
 
-      before :all do
-        initialize_rails 'production', base_path
-      end
+      before(:all) { initialize_rails 'production', base_path }
+      after(:all)  { restore_rails }
 
       it "loaded rack ~> 1.5" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -307,13 +307,11 @@ describe "integration" do
 
       it "sets up public_path (as for a war)" do
         @runtime = @rack_factory.getApplication.getRuntime
-        should_eval_as_eql_to "Rails.public_path.to_s", "#{STUB_DIR}/rails40"
-        should_eval_as_eql_to %q{
-          class AssetPathTest; include ActionView::Helpers::AssetUrlHelper end;
-          asset_helper = AssetPathTest.new;
-          image_path = asset_helper.image_path('image.jpg');
-          image_path[0, 17]
-        }, '/images/image.jpg'
+        should_eval_as_eql_to "Rails.public_path.to_s", "#{STUB_DIR}/rails40" # Pathname
+        # due config.assets.digest = true and since we're asset pre-compiled :
+        #should_eval_as_eql_to %q{
+        #  ActionController::Base.helpers.image_path('image.jpg')[0, 14];
+        #}, '/assets/image-'
       end
 
     end
@@ -334,9 +332,8 @@ describe "integration" do
 
     context "initialized" do
 
-      before :all do
-        initialize_rails nil, base_path
-      end
+      before(:all) { initialize_rails 'production', base_path }
+      after(:all)  { restore_rails }
 
       it "loaded rack ~> 1.1" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -383,22 +380,32 @@ describe "integration" do
     should_eval_as_eql_to script, "1\nsecond"
   end
 
+  ENV_COPY = ENV.dup
+
   def initialize_rails(env = nil, servlet_context = @servlet_context)
     if ! servlet_context || servlet_context.is_a?(String)
       base = servlet_context.is_a?(String) ? servlet_context : nil
       servlet_context = new_servlet_context(base)
     end
     listener = org.jruby.rack.rails.RailsServletContextListener.new
+    # Travis-CI might have RAILS_ENV=test set, which is not desired for us :
+    #if ENV['RAILS_ENV'] || ENV['RACK_ENV']
+    #ENV['RAILS_ENV'] = env; ENV.delete('RACK_ENV')
+    #end
+    the_env = "GEM_HOME=#{ENV['GEM_HOME']},GEM_PATH=#{ENV['GEM_PATH']}"
+    the_env << "\nRAILS_ENV=#{env}" if env
+    servlet_context.addInitParameter("jruby.runtime.env", the_env)
+
     yield(servlet_context, listener) if block_given?
     listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
     @rack_context = servlet_context.getAttribute("rack.context")
     @rack_factory = servlet_context.getAttribute("rack.factory")
-    # Travis-CI might have RAILS_ENV=test set, which is not desired for us :
-    #if ENV['RAILS_ENV'] || ENV['RACK_ENV']
-    servlet_context.addInitParameter("jruby.runtime.env", '')
-    #end
-    servlet_context.addInitParameter("rails.env", env.to_s) if env
     @servlet_context ||= servlet_context
+  end
+
+  def restore_rails
+    #ENV['RACK_ENV'] = ENV_COPY['RACK_ENV'] if ENV.key?('RACK_ENV')
+    #ENV['RAILS_ENV'] = ENV_COPY['RAILS_ENV'] if ENV.key?('RAILS_ENV')
   end
 
   def new_servlet_context(base_path = nil)
@@ -409,11 +416,8 @@ describe "integration" do
   end
 
   def set_compat_version(servlet_context = @servlet_context)
-    if JRuby.runtime.is1_9
-      servlet_context.addInitParameter("jruby.compat.version", '1.9')
-    else
-      servlet_context.addInitParameter("jruby.compat.version", '1.8')
-    end
+    compat_version = JRuby.runtime.getInstanceConfig.getCompatVersion # RUBY1_9
+    servlet_context.addInitParameter("jruby.compat.version", compat_version.to_s)
   end
 
   private

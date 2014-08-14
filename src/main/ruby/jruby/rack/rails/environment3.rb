@@ -17,20 +17,20 @@ module JRuby::Rack::RailsBooter::Rails3Environment
     load_environment
     ::Rails.application
   end
-  
+
   # Loads the Rails environment (*config/environment.rb*).
   def load_environment
-    require File.join(app_path, 'config', 'boot')
+    require expand_path('config/boot.rb')
     require 'jruby/rack/rails/railtie'
-    require File.join(app_path, 'config', 'environment')
+    require expand_path('config/environment.rb')
     require 'jruby/rack/rails/extensions3'
   end
 
   protected
-  
+
   # The public root is set in {JRuby::Rack::Railtie}.
   def set_public_root
     # no-op here
   end
-  
+
 end

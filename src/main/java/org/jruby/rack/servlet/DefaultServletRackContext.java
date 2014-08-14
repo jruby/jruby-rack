@@ -27,7 +27,7 @@ import java.util.Set;
  */
 @SuppressWarnings("rawtypes")
 public class DefaultServletRackContext implements ServletRackContext {
-    
+
     private final RackConfig config;
     private final ServletContext context;
     private final RackLogger logger;
@@ -38,17 +38,17 @@ public class DefaultServletRackContext implements ServletRackContext {
         this.logger  = config.getLogger();
     }
 
-    public String getInitParameter(String key) {
+    public String getInitParameter(final String key) {
         return config.getProperty(key);
     }
-    
-    public String getRealPath(String path) {
+
+    public String getRealPath(final String path) {
         String realPath = context.getRealPath(path);
         if (realPath == null) { // some servers don't like getRealPath, e.g. w/o exploded war
             try {
-                URL url = context.getResource(path);
+                final URL url = context.getResource(path);
                 if (url != null) {
-                    String urlPath = url.getPath();
+                    final String urlPath = url.getPath();
                     // still might end up as an URL with path "file:/home"
                     if (urlPath.startsWith("file:")) {
                         // handles "file:/home" and "file:///home" as well
@@ -66,6 +66,10 @@ public class DefaultServletRackContext implements ServletRackContext {
 
     public RackApplicationFactory getRackFactory() {
         return (RackApplicationFactory) context.getAttribute(RackApplicationFactory.FACTORY);
+    }
+
+    public ServletContext getContext() {
+        return context;
     }
 
     public ServletContext getContext(String path) {
@@ -161,7 +165,7 @@ public class DefaultServletRackContext implements ServletRackContext {
     }
 
     // RackLogger
-    
+
     public void log(String message) {
         logger.log(message);
     }
@@ -169,7 +173,7 @@ public class DefaultServletRackContext implements ServletRackContext {
     public void log(String message, Throwable e) {
         logger.log(message, e);
     }
-    
+
     public void log(String level, String message) {
         logger.log(level, message);
     }
@@ -177,5 +181,16 @@ public class DefaultServletRackContext implements ServletRackContext {
     public void log(String level, String message, Throwable e) {
         logger.log(level, message, e);
     }
-    
+
+    // Helpers
+
+    ServletContext getRealContext() { return getContext(); }
+
+    public static ServletContext getRealContext(final ServletContext context) {
+        if ( context instanceof DefaultServletRackContext ) {
+            return ((DefaultServletRackContext) context).getRealContext();
+        }
+        return context;
+    }
+
 }

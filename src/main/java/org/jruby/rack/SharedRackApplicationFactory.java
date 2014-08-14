@@ -7,23 +7,26 @@
 
 package org.jruby.rack;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * Shared application factory that only creates a single application instance.
- * This factory implementation is the most effective on performance and esp. 
+ * This factory implementation is the most effective on performance and esp.
  * memory consumption but the underlying Ruby code in the application is assumed
- * to be thread-safe. If you're using a Rails application make sure it is 
+ * to be thread-safe. If you're using a Rails application make sure it is
  * configured as <code>config.threadsafe!</code>.
- * 
+ *
  * @author nicksieger
  */
 public class SharedRackApplicationFactory extends RackApplicationFactoryDecorator {
-    
+
     private RackApplication application;
 
     public SharedRackApplicationFactory(RackApplicationFactory delegate) {
         super(delegate);
     }
-    
+
     @Override
     protected void doInit() throws Exception {
         super.doInit(); // delegate.init(rackContext);
@@ -38,13 +41,13 @@ public class SharedRackApplicationFactory extends RackApplicationFactoryDecorato
 
     /**
      * We do not create any new applications since we're sharing.
-     * @see #getApplication() 
+     * @see #getApplication()
      * @return an application
      */
     public RackApplication newApplication() {
         return getApplication();
     }
-    
+
     public void finishedWithApplication(RackApplication app) {
         /* NOOP we keep the shared application until #destroy() */
     }
@@ -61,5 +64,11 @@ public class SharedRackApplicationFactory extends RackApplicationFactoryDecorato
         }
         super.destroy(); // delegate.destroy();
     }
-    
+
+    @Override
+    public Collection<RackApplication> getManagedApplications() {
+        if ( application == null ) return Collections.emptySet();
+        return Collections.singleton( application );
+    }
+
 }

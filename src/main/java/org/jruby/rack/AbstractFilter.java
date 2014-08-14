@@ -24,12 +24,12 @@ import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 
 /**
  * A base (servlet) filter implementation.
- * 
+ *
  * @see UnmappedRackFilter
  * @see RackFilter
  */
 public abstract class AbstractFilter implements Filter {
-    
+
     /**
      * @return the rack context for the application
      */
@@ -39,25 +39,25 @@ public abstract class AbstractFilter implements Filter {
      * @return the rack dispatcher for the application
      */
     protected abstract RackDispatcher getDispatcher();
-    
+
     /**
-     * @see Filter#doFilter(ServletRequest, ServletResponse, FilterChain) 
+     * @see Filter#doFilter(ServletRequest, ServletResponse, FilterChain)
      * @param request
      * @param response
      * @param chain
      * @throws IOException
-     * @throws ServletException 
+     * @throws ServletException
      */
     public final void doFilter(
             ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
-        
+
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        
+
         RequestCapture requestCapture = wrapRequest(httpRequest);
         ResponseCapture responseCapture = wrapResponse(httpResponse);
-        
+
         RackEnvironment env = new ServletRackEnvironment(httpRequest, httpResponse, getContext());
         // NOTE: should be moved bellow, just before getDispatcher().process(...)
         RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment(httpResponse);
@@ -70,27 +70,27 @@ public abstract class AbstractFilter implements Filter {
 
     /**
      * Destroys the {@link #getDispatcher()} by default.
-     * @see Filter#destroy() 
+     * @see Filter#destroy()
      */
     @Override
     public void destroy() {
         getDispatcher().destroy();
     }
-    
+
     /**
      * Some filters may want to by-pass the rack application.  By default, all
      * requests are given to the {@link RackDispatcher}, but you can extend
      * this method and return false if you want to signal that you don't want
      * the {@link RackDispatcher} to see the request.
-    
+
      * @return true if the dispatcher should handle the request, false if it
      * shouldn't.
      * @throws IOException
      * @throws ServletException
      */
     protected boolean isDoDispatch(
-            RequestCapture request, ResponseCapture response, 
-            FilterChain chain, RackEnvironment env) 
+            RequestCapture request, ResponseCapture response,
+            FilterChain chain, RackEnvironment env)
             throws IOException, ServletException {
         return true;
     }
@@ -100,13 +100,13 @@ public abstract class AbstractFilter implements Filter {
      */
     @Deprecated
     protected boolean isDoDispatch(
-            RequestCapture request, ResponseCapture response, 
-            FilterChain chain, RackEnvironment env, 
-            RackResponseEnvironment responseEnv) 
+            RequestCapture request, ResponseCapture response,
+            FilterChain chain, RackEnvironment env,
+            RackResponseEnvironment responseEnv)
             throws IOException, ServletException {
         return isDoDispatch(request, response, chain, env);
     }
-    
+
     /**
      * Extension point if you'll need to customize {@link RequestCapture}
      * @param request
@@ -124,5 +124,5 @@ public abstract class AbstractFilter implements Filter {
     protected ResponseCapture wrapResponse(ServletResponse response) {
         return new ResponseCapture((HttpServletResponse) response);
     }
-    
+
 }
