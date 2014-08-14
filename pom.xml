@@ -20,9 +20,9 @@
   <properties>
     <jruby.version>1.6.8</jruby.version>
     <vendor.gems.path>vendor/gems</vendor.gems.path>
-    <bundler.version>1.6.2</bundler.version>
+    <bundler.version>1.6.5</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
-    <saumya.mojo.version>1.0.1</saumya.mojo.version>
+    <saumya.mojo.version>1.0.4</saumya.mojo.version>
     <!--default: <gem.home>target/rubygems</gem.home>-->
   </properties>
 
