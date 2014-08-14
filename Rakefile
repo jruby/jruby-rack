@@ -146,8 +146,10 @@ require 'jruby/rack/version' # @deprecated to be removed in 1.2
 end
 GENERATED << target_jruby_rack
 
-file (target_jar = "target/jruby-rack-#{JAR_VERSION}.jar") => [:compile, :resources] do |t|
-  sh "jar cf #{t.name} -C target/classes ." # TODO `mvn package` instead ?
+file (target_jar = "target/jruby-rack-#{JAR_VERSION}.jar") do |file|
+  Rake::Task['compile'].invoke
+  Rake::Task['resources'].invoke
+  sh "jar cf #{file.name} -C target/classes ."
 end
 
 desc "Create the jruby-rack-#{JAR_VERSION}.jar"
@@ -155,17 +157,15 @@ task :jar => target_jar
 
 task :default => :jar
 
-file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") =>
-  "src/main/ruby/jruby/rack/version.rb" do |t|
-  mkdir_p File.dirname(t.name)
-  cp t.prerequisites.first, t.name
+file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") do |file|
+  mkdir_p File.dirname(file.name); cp VERSION_FILE, file.name
 end
 
 desc "Build the jruby-rack-#{GEM_VERSION}.gem"
-task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do |t|
+task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do
   Rake::Task['spec'].invoke unless ENV['SKIP_SPEC'] == 'true'
   cp FileList["History.md", "LICENSE.txt", "README.md"], "target/gem"
-  cp t.prerequisites.first, "target/gem/lib"
+  cp target_jar, "target/gem/lib"
   if (jars = FileList["target/gem/lib/*.jar"].to_a).size > 1
     abort "Too many jars! #{jars.map{|j| File.basename(j)}.inspect}\nRun a clean build `rake clean` first"
   end
