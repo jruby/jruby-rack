@@ -18,7 +18,7 @@
   </description>
 
   <properties>
-    <jruby.version>1.6.8</jruby.version>
+    <jruby.version>1.7.4</jruby.version>
     <vendor.gems.path>vendor/gems</vendor.gems.path>
     <bundler.version>1.6.5</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
@@ -92,7 +92,7 @@
   <dependencies>
     <dependency>
       <groupId>org.jruby</groupId>
-      <artifactId>jruby-complete</artifactId>
+      <artifactId>jruby-core</artifactId>
       <version>${jruby.version}</version>
     </dependency>
     <dependency>
