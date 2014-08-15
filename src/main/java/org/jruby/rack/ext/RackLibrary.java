@@ -30,7 +30,7 @@ import org.jruby.runtime.load.BasicLibraryService;
 import org.jruby.runtime.load.Library;
 
 /**
- * Sets up our (J)Ruby parts implemented in Java.
+ * Sets up our (J)Ruby parts implemented in "native" Java.
  *
  * @author kares
  */
@@ -59,8 +59,9 @@ public class RackLibrary implements Library, BasicLibraryService {
         final RubyModule _Rack_Handler = _Rack.defineModuleUnder("Handler");
 
         // Rack::Handler::Servlet
-        //RubyClass servlet = rackHandler.defineClassUnder("Servlet", runtime.getObject(), Servlet.ALLOCATOR);
-        //servlet.defineAnnotatedMethods(Servlet.class);
+        final RubyClass _Servlet = _Rack_Handler.defineClassUnder(
+              "Servlet", _Object, Servlet.ALLOCATOR);
+        _Servlet.defineAnnotatedMethods(Servlet.class);
     }
 
     @Override

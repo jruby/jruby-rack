@@ -11,29 +11,15 @@ require 'jruby/rack/version'
 module Rack
   module Handler
     class Servlet
-      
-      def initialize(rack_app)
-        unless @app = rack_app
-          raise "rack application not found. Make sure the rackup file path is correct."
-        end
-      end
 
-      def call(servlet_env)
-        self.class.response.new(@app.call(create_env(servlet_env)))
-      end
-
-      def create_env(servlet_env)
-        self.class.env.create(servlet_env).to_hash
-      end
-      
-      # #deprecated please use #create_env instead
+      # @deprecated please use #create_env instead
       def create_lazy_env(servlet_env)
         DefaultEnv.new(servlet_env).to_hash
       end
-      
+
       @@env = nil
       def self.env; @@env ||= DefaultEnv; end
-      
+
       def self.env=(klass)
         if klass && ! klass.is_a?(Module)
           # accepting a String or Symbol:
@@ -51,22 +37,22 @@ module Rack
         end
         @@env = klass
       end
-      
+
       autoload :DefaultEnv, "rack/handler/servlet/default_env"
       autoload :ServletEnv, "rack/handler/servlet/servlet_env"
-      
+
       @@response = nil
       def self.response; @@response ||= JRuby::Rack::Response; end
-      
+
       def self.response=(klass)
         if klass && ! klass.is_a?(Module)
           klass = JRuby::Rack::Helpers.resolve_constant(klass, JRuby::Rack)
         end
         @@response = klass
       end
-      
+
     end
-    # #deprecated backwards compatibility
+    # @deprecated backwards compatibility
     LazyEnv = Env = Servlet::DefaultEnv
   end
 end
