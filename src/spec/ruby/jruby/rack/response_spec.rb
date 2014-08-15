@@ -115,7 +115,7 @@ describe JRuby::Rack::Response do
   end
 
   it "calls close on the body if the body responds to close" do
-    body = mock('body')
+    body = double('body')
     body.should_receive(:each).ordered.and_yield "hello"
     body.should_receive(:close).ordered
     response = JRuby::Rack::Response.new [ '200', {}, body ]
@@ -312,7 +312,7 @@ describe JRuby::Rack::Response do
     end
 
     it "calls close on the body if the body responds to close" do
-      body = mock('body')
+      body = double('body')
       body.should_receive(:each).ordered.and_yield("hello").and_yield("there")
       body.should_receive(:close).ordered
       response = JRuby::Rack::Response.new [ 200, {}, body ]
