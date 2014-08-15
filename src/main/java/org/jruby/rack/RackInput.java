@@ -24,9 +24,9 @@
 package org.jruby.rack;
 
 import java.io.IOException;
+
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyModule;
 import org.jruby.runtime.ObjectAllocator;
 
 /**
@@ -40,14 +40,7 @@ public class RackInput extends org.jruby.rack.ext.Input {
     @Deprecated
     public static RubyClass getClass(Ruby runtime, String name, RubyClass parent,
                                      ObjectAllocator allocator, Class<?> annoClass) {
-        RubyModule jruby = runtime.getOrCreateModule("JRuby");
-
-        RubyClass klass = jruby.getClass(name);
-        if (klass == null) {
-            klass = jruby.defineClassUnder(name, parent, allocator);
-            klass.defineAnnotatedMethods(annoClass);
-        }
-        return klass;
+        return runtime.getOrCreateModule("JRuby").getClass(name); // RackInput
     }
 
     public RackInput(Ruby runtime, RubyClass klass) {

@@ -38,26 +38,16 @@ import org.jruby.rack.servlet.RewindableInputStream;
 @SuppressWarnings("serial")
 public class Input extends RubyObject {
 
-    private static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
+    static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klass) {
             return new Input(runtime, klass);
         }
     };
 
-    public static RubyClass getRackInputClass(final Ruby runtime) { // JRuby::Rack::Input
-        RubyModule jruby = runtime.getOrCreateModule("JRuby");
-        RubyModule rack = (RubyModule) jruby.getConstantAt("Rack");
-        if (rack == null) {
-            rack = runtime.defineModuleUnder("Rack", jruby);
-        }
-
-        RubyClass klass = rack.getClass("Input"); // JRuby::Rack getClass('Input')
-        if (klass == null) {
-            final RubyClass parent = runtime.getObject();
-            klass = rack.defineClassUnder("Input", parent, ALLOCATOR);
-            klass.defineAnnotatedMethods(Input.class);
-        }
-        return klass;
+    static RubyClass getClass(final Ruby runtime) {
+        final RubyModule _JRuby_Rack = (RubyModule)
+            runtime.getModule("JRuby").getConstantAt("Rack");
+        return (RubyClass) _JRuby_Rack.getConstantAt("Input");
     }
 
     private boolean rewindable;
@@ -69,7 +59,7 @@ public class Input extends RubyObject {
     }
 
     public Input(Ruby runtime, RackEnvironment env) throws IOException {
-        super(runtime, getRackInputClass(runtime));
+        super(runtime, getClass(runtime));
         this.rewindable = env.getContext().getConfig().isRewindable();
         setInput( env.getInput() );
         this.length = env.getContentLength();
@@ -82,7 +72,7 @@ public class Input extends RubyObject {
             setInput( (InputStream) in );
         }
         this.length = 0;
-        return context.runtime.getNil();
+        return context.nil;
     }
 
     /**

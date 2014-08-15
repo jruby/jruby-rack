@@ -41,11 +41,19 @@ public class RackLibrary implements Library, BasicLibraryService {
         final RubyModule _JRuby_Rack = _JRuby.defineModuleUnder("Rack");
 
         final RubyClass _Object = runtime.getObject();
+
         // JRuby::Rack::Response
         final RubyClass _Response = _JRuby_Rack.defineClassUnder(
               "Response", _Object, Response.ALLOCATOR
         );
         _Response.defineAnnotatedMethods(Response.class);
+
+        // JRuby::Rack::Input
+        final RubyClass _Input = _JRuby_Rack.defineClassUnder(
+              "Input", _Object, Input.ALLOCATOR
+        );
+        _Input.defineAnnotatedMethods(Input.class);
+        _JRuby.setConstant("RackInput", _Input); // @deprecated backwards-compat
 
         final RubyModule _Rack = runtime.getOrCreateModule("Rack");
         final RubyModule _Rack_Handler = _Rack.defineModuleUnder("Handler");

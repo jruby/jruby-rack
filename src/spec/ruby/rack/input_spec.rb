@@ -7,18 +7,14 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
-# Force the class to be loaded on the Ruby side
-require 'jruby'
-org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
-
 module InputSpec
 
   def self.included(base)
     base.extend SpecMethods
   end
-  
+
   module SpecMethods
-    
+
     def it_should_behave_like_rack_input
 
       it "should respond to gets and return a line" do
@@ -42,7 +38,7 @@ module InputSpec
       it "should read its full lenght" do
         input.read(16).should == "hello\r\ngoodbye"
       end
-      
+
       it "should read into a provided buffer" do
         buf = ""
         input.read(nil, buf)
@@ -81,14 +77,14 @@ module InputSpec
       end
 
     end
-    
+
   end
 
   def stream_input(content = @content || "hello\r\ngoodbye")
     bytes = content.respond_to?(:to_java_bytes) ? content.to_java_bytes : content
     java.io.ByteArrayInputStream.new bytes
   end
-  
+
   java_import 'org.jruby.rack.servlet.RewindableInputStream'
 
   def rewindable_input(buffer_size = nil, max_buffer_size = nil)
@@ -96,11 +92,11 @@ module InputSpec
     max_buffer_size ||= RewindableInputStream::MAX_BUFFER_SIZE
     RewindableInputStream.new(stream_input, buffer_size, max_buffer_size)
   end
-  
+
 end
 
 describe JRuby::Rack::Input do
-  
+
   describe "rewindable" do
     include InputSpec
 
@@ -162,7 +158,7 @@ describe JRuby::Rack::Input do
       buf.each_byte { |b| b.should == file.read }
     end
   end
-  
+
   describe "rewindable (with buffer size)" do
     include InputSpec
 
@@ -212,9 +208,9 @@ describe JRuby::Rack::Input do
 
     it_should_behave_like_rack_input
   end
-  
+
   it "is exposed as JRuby::RackInput (backwards compat)" do
     expect( JRuby::RackInput ).to be JRuby::Rack::Input
   end
-  
+
 end
