@@ -26,10 +26,11 @@ module JRuby
         # NOTE: due Rails 3.2 stream-ed rendering http://git.io/ooCOtA#L223
         # Only required if the patch at jruby/rack/chunked.rb is not applied ...
         term = "\r\n"; tail = "0#{term}#{term}".freeze
+        term = Regexp.escape(term)
         # we assume no support here for chunk-extensions e.g.
         # chunk = chunk-size [ chunk-extension ] CRLF chunk-data CRLF
         # no need to be handled - we simply unwrap what Rails chunked :
-        chunk = /^([0-9a-fA-F]+)#{Regexp.escape(term)}(.+)#{Regexp.escape(term)}/mo
+        chunk = /^([0-9a-fA-F]+)#{term}(.+)#{term}/mo
         body.send(body.respond_to?(:each_line) ? :each_line : :each) do |line|
           if line == tail
             # "0\r\n\r\n" NOOP
