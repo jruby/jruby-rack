@@ -336,6 +336,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return runtime;
     }
 
+    protected void loadJRubyRack(final Ruby runtime) {
+        org.jruby.rack.ext.RackLibrary.load(runtime);
+    }
+
     /**
      * Initializes the runtime (exports the context, boots the Rack handler).
      *
@@ -344,6 +348,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
      * @param runtime
      */
     void initRuntime(final Ruby runtime) {
+        loadJRubyRack(runtime);
         // set $servlet_context :
         runtime.getGlobalVariables().set(
             "$servlet_context", JavaUtil.convertJavaToRuby(runtime, rackContext)
