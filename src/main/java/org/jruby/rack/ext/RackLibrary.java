@@ -27,30 +27,43 @@ import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
 import org.jruby.runtime.load.BasicLibraryService;
+import org.jruby.runtime.load.Library;
 
 /**
  * Sets up our (J)Ruby parts implemented in Java.
- * 
+ *
  * @author kares
  */
-public class RackLibrary implements BasicLibraryService {
+public class RackLibrary implements Library, BasicLibraryService {
 
-    public boolean basicLoad(final Ruby runtime) {
-        final RubyModule jruby = runtime.getOrCreateModule("JRuby");
-        final RubyModule jrubyRack = jruby.defineModuleUnder("Rack");
+    public static void load(final Ruby runtime) {
+        final RubyModule _JRuby = runtime.getOrCreateModule("JRuby");
+        final RubyModule _JRuby_Rack = _JRuby.defineModuleUnder("Rack");
 
+        final RubyClass _Object = runtime.getObject();
         // JRuby::Rack::Response
-        RubyClass response = jrubyRack.defineClassUnder("Response", runtime.getObject(), Response.ALLOCATOR);
-        response.defineAnnotatedMethods(Response.class);
+        final RubyClass _Response = _JRuby_Rack.defineClassUnder(
+              "Response", _Object, Response.ALLOCATOR
+        );
+        _Response.defineAnnotatedMethods(Response.class);
 
-        final RubyModule rack = runtime.getOrCreateModule("Rack");
-        final RubyModule rackHandler = rack.defineModuleUnder("Handler");
+        final RubyModule _Rack = runtime.getOrCreateModule("Rack");
+        final RubyModule _Rack_Handler = _Rack.defineModuleUnder("Handler");
 
         // Rack::Handler::Servlet
         //RubyClass servlet = rackHandler.defineClassUnder("Servlet", runtime.getObject(), Servlet.ALLOCATOR);
         //servlet.defineAnnotatedMethods(Servlet.class);
+    }
 
+    @Override
+    public boolean basicLoad(final Ruby runtime) {
+        load(runtime);
         return true;
+    }
+
+    @Override
+    public void load(Ruby runtime, boolean wrap) {
+        load(runtime);
     }
 
 }
