@@ -51,36 +51,31 @@ public class Input extends RubyObject {
         return (RubyClass) _JRuby_Rack.getConstantAt("Input");
     }
 
-    private boolean rewindable;
+    protected boolean rewindable;
     private InputStream input;
-    private int length;
+    protected int length = 0;
 
     public Input(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
 
-    public Input(Ruby runtime, RackEnvironment env) throws IOException {
-        super(runtime, getClass(runtime));
-        this.rewindable = env.getContext().getConfig().isRewindable();
-        setInput( env.getInput() );
-        this.length = env.getContentLength();
-    }
-
     @JRubyMethod(required = 1)
     public IRubyObject initialize(final ThreadContext context, final IRubyObject input) {
-        final Object in = JavaEmbedUtils.rubyToJava(input);
-        if ( in instanceof InputStream ) {
-            setInput( (InputStream) in );
+        final Object arg = JavaEmbedUtils.rubyToJava(input);
+        if ( arg instanceof InputStream ) {
+            setInput( (InputStream) arg );
         }
-        else if ( in instanceof RackEnvironment ) {
+        else if ( arg instanceof RackEnvironment ) {
+            final RackEnvironment env = ((RackEnvironment) arg);
+            this.rewindable = env.getContext().getConfig().isRewindable();
             try {
-                setInput( ((RackEnvironment) in).getInput() );
+                setInput( env.getInput() );
             }
             catch (IOException e) {
                 throw ExceptionUtils.wrapException(context.runtime, e);
             }
+            this.length = env.getContentLength();
         }
-        this.length = 0;
         return context.nil;
     }
 
@@ -199,7 +194,7 @@ public class Input extends RubyObject {
         catch (IOException e) { /* ignore */ }
     }
 
-    private void setInput(InputStream input) {
+    protected void setInput(InputStream input) {
         if ( input != null && rewindable && getRewindMethod(input) == null ) {
             input = new RewindableInputStream(input);
         }

@@ -43,12 +43,19 @@ public class RackInput extends org.jruby.rack.ext.Input {
         return runtime.getOrCreateModule("JRuby").getClass(name); // RackInput
     }
 
+    private static RubyClass getClass(final Ruby runtime) {
+        return (RubyClass) runtime.getModule("JRuby").getConstantAt("RackInput");
+    }
+
     public RackInput(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
 
     public RackInput(Ruby runtime, RackEnvironment env) throws IOException {
-        super(runtime, env);
+        super(runtime, getClass(runtime));
+        this.rewindable = env.getContext().getConfig().isRewindable();
+        setInput( env.getInput() );
+        this.length = env.getContentLength();
     }
 
 }
