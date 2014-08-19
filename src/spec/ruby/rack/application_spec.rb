@@ -59,9 +59,7 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
     let(:rack_env) do
       request_capture = org.jruby.rack.servlet.RequestCapture.new(servlet_request, rack_config)
       response_capture = org.jruby.rack.servlet.ResponseCapture.new(servlet_response)
-      rack_env = org.jruby.rack.servlet.ServletRackEnvironment.new(request_capture, response_capture, rack_context)
-      set_rack_input rack_env
-      rack_env
+      org.jruby.rack.servlet.ServletRackEnvironment.new(request_capture, response_capture, rack_context)
     end
 
     it "should rewind body" do
@@ -73,9 +71,7 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
   context "with servlet setup (no captures)" do
 
     let(:rack_env) do
-      rack_env = org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, rack_context)
-      set_rack_input rack_env
-      rack_env
+      org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, rack_context)
     end
 
     it "should rewind body" do
@@ -85,13 +81,13 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
   end
 
   def it_should_rewind_body
-    content = ''
-    42.times { content << "Answer to the Ultimate Question of Life, the Universe, and Everything ...\n" }
+    content = ( "Answer to the Ultimate Question of Life, the Universe, " <<
+                "and Everything ...\n" ) * 42
     servlet_request.setContent content.to_java_bytes
 
     rack_app = double "application"
     rack_app.should_receive(:call) do |env|
-      body = env.to_io
+      body = JRuby::Rack::Input.new(env)
 
       body.read.should == content
       body.read.should == ""
@@ -100,19 +96,6 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
 
       org.jruby.rack.RackResponse.impl {}
     end
-
-#    rack_app = Object.new
-#    def rack_app.call(env)
-#      body = env.to_io
-#
-#      body.read.should == @content
-#      body.read.should == ""
-#      body.rewind
-#      body.read.should == @content
-#
-#      org.jruby.rack.RackResponse.impl {}
-#    end
-#    rack_app.instance_variable_set :@content, content
 
     application = org.jruby.rack.DefaultRackApplication.new
     application.setApplication(rack_app)

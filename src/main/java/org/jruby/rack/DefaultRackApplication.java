@@ -6,15 +6,10 @@
  */
 package org.jruby.rack;
 
-import java.io.IOException;
-
 import org.jruby.Ruby;
 import org.jruby.RubyObjectAdapter;
-import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.builtin.IRubyObject;
-
-import org.jruby.rack.ext.Input;
 
 /**
  * Default {@link RackApplication} implementation.
@@ -52,33 +47,16 @@ public class DefaultRackApplication implements RackApplication {
      */
     @Override
     public RackResponse call(final RackEnvironment env) {
+        final IRubyObject app = getApplication();
         final Ruby runtime = getRuntime();
-        try {
-            final Input io = new Input(runtime, env);
-            try {
-                final IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
-                if ( env instanceof RackEnvironment.ToIO ) {
-                    ( (RackEnvironment.ToIO) env ).setIO(io);
-                }
-                else { // TODO this is @deprecated and will be removed ...
-                    // NOTE JRuby 1.7.x does not like instance vars for Java :
-                    // warning: instance vars on non-persistent Java type
-                    // Java::OrgJrubyRackServlet::ServletRackEnvironment
-                    // (http://wiki.jruby.org/Persistence)
-                    runtime.evalScriptlet("require 'jruby/rack/environment'");
-                    adapter.setInstanceVariable(servlet_env, "@_io", io);
-                }
-                final IRubyObject response = // app.call(env)
-                    adapter.callMethod(getApplication(), "call", servlet_env);
-                return (RackResponse) response.toJava(RackResponse.class);
-            }
-            finally {
-                io.close();
-            }
-        }
-        catch (IOException e) {
-            throw RaiseException.createNativeRaiseException(runtime, e);
-        }
+        final IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
+        //try { // app.call(env) :
+        final IRubyObject response = app.callMethod(runtime.getCurrentContext(), "call", servlet_env);
+        return (RackResponse) response.toJava(RackResponse.class);
+        //}
+        //catch (RuntimeException e) {
+        //    throw ExceptionUtils.wrapException(runtime, e);
+        //}
     }
 
     @Override

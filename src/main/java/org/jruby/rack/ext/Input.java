@@ -28,6 +28,7 @@ import org.jruby.util.ByteList;
 
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.servlet.RewindableInputStream;
+import org.jruby.rack.util.ExceptionUtils;
 
 /**
  * Native (Java) implementation of a Rack input.
@@ -70,6 +71,14 @@ public class Input extends RubyObject {
         final Object in = JavaEmbedUtils.rubyToJava(input);
         if ( in instanceof InputStream ) {
             setInput( (InputStream) in );
+        }
+        else if ( in instanceof RackEnvironment ) {
+            try {
+                setInput( ((RackEnvironment) in).getInput() );
+            }
+            catch (IOException e) {
+                throw ExceptionUtils.wrapException(context.runtime, e);
+            }
         }
         this.length = 0;
         return context.nil;

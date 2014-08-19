@@ -202,8 +202,10 @@ module Rack
           when 'rack.multithread'     then env[key] = true
           when 'rack.multiprocess'    then env[key] = false
           when 'rack.run_once'        then env[key] = false
-          when 'rack.input'           then env[key] = @servlet_env ? @servlet_env.to_io : nil
-          when 'rack.errors'          then env[key] = JRuby::Rack::ServletLog.new(rack_context) rescue nil
+          when 'rack.input'           then
+            env[key] = @servlet_env ? JRuby::Rack::Input.new(@servlet_env) : nil
+          when 'rack.errors'          then
+            env[key] = JRuby::Rack::ServletLog.new(rack_context) rescue nil
           when 'rack.url_scheme'
             env[key] = scheme = @servlet_env ? @servlet_env.getScheme : nil
             env['HTTPS'] = 'on' if scheme == 'https'

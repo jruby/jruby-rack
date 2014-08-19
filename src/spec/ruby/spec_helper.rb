@@ -21,9 +21,8 @@ java_import 'org.jruby.rack.servlet.RewindableInputStream'
 
 require 'rspec'
 
-require 'jruby'
-ext_class = org.jruby.rack.ext.RackLibrary
-JRuby.runtime.loadExtension ext_class.java_class.name, ext_class.new, false
+require 'jruby'; ext_class = org.jruby.rack.ext.RackLibrary
+JRuby.runtime.loadExtension 'JRuby::Rack', ext_class.new, true
 
 module SharedHelpers
 
@@ -46,7 +45,7 @@ module SharedHelpers
     end
     @rack_context.stub(:getConfig).and_return @rack_config
     @servlet_config ||= ServletConfig.impl {}
-    @servlet_config.stub(:getServletName).and_return "A Servlet"
+    @servlet_config.stub(:getServletName).and_return "a Servlet"
     @servlet_config.stub(:getServletContext).and_return @servlet_context
     @servlet_context
   end
@@ -70,13 +69,6 @@ module SharedHelpers
     else
       e
     end
-  end
-
-  def set_rack_input(servlet_env); require 'jruby'
-    input_class = org.jruby.rack.RackInput.getRackInputClass(JRuby.runtime)
-    input = input_class.new(servlet_env.getInputStream)
-    servlet_env.set_io input # servlet_env.instance_variable_set :@_io, input
-    input
   end
 
   @@servlet_30 = nil
