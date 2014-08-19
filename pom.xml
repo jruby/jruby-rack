@@ -18,11 +18,11 @@
   </description>
 
   <properties>
-    <jruby.version>1.7.4</jruby.version>
+    <jruby.version>1.7.13</jruby.version>
     <vendor.gems.path>vendor/gems</vendor.gems.path>
     <bundler.version>1.6.5</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
-    <saumya.mojo.version>1.0.4</saumya.mojo.version>
+    <saumya.mojo.version>1.0.5</saumya.mojo.version>
     <!--default: <gem.home>target/rubygems</gem.home>-->
   </properties>
 
@@ -167,10 +167,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>3.1</version>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>1.6</source>
+          <target>1.6</target>
           <showDeprecation>true</showDeprecation>
           <showWarnings>true</showWarnings>
         </configuration>
@@ -178,7 +178,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.16</version>
+        <version>2.17</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -191,17 +191,6 @@
           <artifactId>gem-maven-plugin</artifactId>
           <version>${saumya.mojo.version}</version>
           <executions>
-            <execution>
-              <!-- NOTE: due JRuby 1.6.8 -->
-              <id>gem-install-jruby-openssl</id>
-              <phase>test</phase>
-              <goals><goal>install</goal></goals>
-              <configuration>
-                <jruby.version>${jruby.version}</jruby.version>
-                <includeOpenSSL>false</includeOpenSSL>
-                <args>--local ${vendor.gems.path}/bouncy-castle-java-1.5.0147.gem ${vendor.gems.path}/jruby-openssl-0.9.4.gem</args>
-              </configuration>
-            </execution>
             <execution>
               <id>gem-install-bundler</id>
               <phase>test</phase>
