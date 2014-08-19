@@ -5,7 +5,9 @@ require 'stringio'
 
 describe Rack::Handler::Servlet do
 
-  let(:app) { double "application" }
+  class RackApp; def call(env); end; end
+
+  let(:app) { RackApp.new }
   let(:servlet) { Rack::Handler::Servlet.new(app) }
 
   let(:servlet_context) { @servlet_context ||= mock_servlet_context }

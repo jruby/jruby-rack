@@ -60,12 +60,12 @@ public class Servlet extends RubyObject {
     public IRubyObject initialize(final IRubyObject app) {
         if ( app.isNil() ) {
             throw getRuntime().newArgumentError(
-                "Rack app not found, make sure the rackup file path is correct.");
+                "rack app not found, make sure the rackup file path is correct!");
         }
-        if ( ! app.respondsTo("call") ) {
-            throw getRuntime().newArgumentError(
-                "Passed rack app does not respond to #call : " + app.toString());
-        }
+        //if ( ! app.respondsTo("call") ) {
+        //    throw getRuntime().newArgumentError(
+        //        "passed rack app does not respond to #call : " + app.toString());
+        //}
         this.app = app;
         return this;
     }
