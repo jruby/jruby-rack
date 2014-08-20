@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2012 kares.
+ * Copyright (c) 2012-2014 Karol Bucek LTD.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,7 @@ public abstract class RackApplicationFactoryDecorator
     /**
      * @return the (decorated) delegate factory instance
      */
+    @Override
     public RackApplicationFactory getDelegate() {
         return delegate;
     }
@@ -94,6 +95,7 @@ public abstract class RackApplicationFactoryDecorator
      * @param context
      * @throws RackInitializationException
      */
+    @Override
     public void init(final RackContext context) throws RackInitializationException {
         setContext(context);
         try {
@@ -115,6 +117,7 @@ public abstract class RackApplicationFactoryDecorator
     /**
      * @see RackApplicationFactory#destroy()
      */
+    @Override
     public void destroy() {
         getDelegate().destroy();
     }
@@ -128,8 +131,9 @@ public abstract class RackApplicationFactoryDecorator
      * @see #getApplicationImpl()
      * @throws RackException
      */
+    @Override
     public RackApplication getApplication() throws RackException {
-        RuntimeException error = getInitError();
+        final RuntimeException error = getInitError();
         if ( error != null ) {
             log(RackLogger.DEBUG, "due a previous initialization failure application instance can not be returned");
             throw error; // this is better - we shall never return null here ...
@@ -146,6 +150,7 @@ public abstract class RackApplicationFactoryDecorator
     /**
      * @see RackApplicationFactory#getErrorApplication()
      */
+    @Override
     public RackApplication getErrorApplication() {
         return getDelegate().getErrorApplication();
     }
@@ -154,7 +159,7 @@ public abstract class RackApplicationFactoryDecorator
      * @return the config from the {@link #getContext()}
      */
     protected RackConfig getConfig() {
-        return getContextRequired().getConfig();
+        return getContextBang().getConfig();
     }
 
     /**
@@ -163,7 +168,7 @@ public abstract class RackApplicationFactoryDecorator
      * @param message
      */
     protected void log(final String level, final String message) {
-        getContextRequired().log(level, message);
+        getContextBang().log(level, message);
     }
 
     /**
@@ -173,10 +178,10 @@ public abstract class RackApplicationFactoryDecorator
      * @param e
      */
     protected void log(final String level, final String message, Exception e) {
-        getContextRequired().log(level, message, e);
+        getContextBang().log(level, message, e);
     }
 
-    private RackContext getContextRequired() throws IllegalStateException {
+    private RackContext getContextBang() throws IllegalStateException {
         if ( context == null ) {
             throw new IllegalStateException("context not set");
         }

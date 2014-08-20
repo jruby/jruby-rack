@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2013-2014 Karol Bucek LTD.
  * Copyright (c) 2010-2012 Engine Yard, Inc.
  * Copyright (c) 2007-2009 Sun Microsystems, Inc.
  * This source code is available under the MIT license.
@@ -135,6 +136,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
      * Same as {@link #getApplication()} since we're pooling instances.
      * @see RackApplicationFactory#newApplication()
      */
+    @Override
     public RackApplication newApplication()
         throws RackInitializationException, AcquireTimeoutException {
         return getApplication();
@@ -218,6 +220,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
     /**
      * @see RackApplicationFactory#finishedWithApplication(RackApplication)
      */
+    @Override
     public void finishedWithApplication(final RackApplication app) {
         if (app == null) {
             // seems to sometimes happen when an error occurs during boot
@@ -290,7 +293,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
 
         for (int i = 0; i < initThreads; i++) {
             new Thread(new Runnable() {
-
+                @Override
                 public void run() {
                     while (true) {
                         final RackApplication app;
@@ -409,7 +412,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         int initSize = initialSize != null ? initialSize.intValue() : -1;
         synchronized (applicationPool) {
             if ( applicationPool.isEmpty() ) {
-                if ( initSize > 0 ) return null;
+                if ( initSize > 0 ) return null; // ~ init error
                 return Collections.emptySet();
             }
             Collection<RackApplication> snapshot =

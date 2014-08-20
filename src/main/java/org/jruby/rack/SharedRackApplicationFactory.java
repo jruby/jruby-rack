@@ -1,10 +1,10 @@
 /*
+ * Copyright (c) 2013-2014 Karol Bucek LTD.
  * Copyright (c) 2010-2012 Engine Yard, Inc.
  * Copyright (c) 2007-2009 Sun Microsystems, Inc.
  * This source code is available under the MIT license.
  * See the file LICENSE.txt for details.
  */
-
 package org.jruby.rack;
 
 import java.util.Collection;
@@ -44,10 +44,12 @@ public class SharedRackApplicationFactory extends RackApplicationFactoryDecorato
      * @see #getApplication()
      * @return an application
      */
+    @Override
     public RackApplication newApplication() {
         return getApplication();
     }
 
+    @Override
     public void finishedWithApplication(RackApplication app) {
         /* NOOP we keep the shared application until #destroy() */
     }
@@ -67,7 +69,7 @@ public class SharedRackApplicationFactory extends RackApplicationFactoryDecorato
 
     @Override
     public Collection<RackApplication> getManagedApplications() {
-        if ( application == null ) return null;
+        if ( application == null ) return null; // ~ init error
         return Collections.singleton( application );
     }
 

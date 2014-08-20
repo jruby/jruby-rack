@@ -6,27 +6,28 @@
 #++
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
-require 'tempfile'
 
 describe org.jruby.rack.DefaultRackApplication, "call" do
 
+  before(:all) { require 'tempfile' }
+
   before :each do
-    @rack_env = double("rack request env")
-    @rack_env.stub(:getContext).and_return @rack_context
-    @rack_env.stub(:getInput).and_return(StubInputStream.new("hello world!"))
-    @rack_env.stub(:getContentLength).and_return(12)
+    @rack_env = org.jruby.rack.RackEnvironment.impl do |name, *args|
+      case name.to_s
+      when 'getContext' then @rack_context
+      when 'getInput' then StubInputStream.new("hello world!")
+      when 'getContentLength' then 12
+      end
+    end
     @rack_response = org.jruby.rack.RackResponse.impl {}
   end
 
   it "invokes the call method on the ruby object and returns the rack response" do
-    ruby_object = double "application"
-    ruby_object.should_receive(:call).with(@rack_env).and_return do |servlet_env|
-      servlet_env.to_io.read.should == "hello world!"
-      @rack_response
-    end
+    rack_app = double "application"
+    rack_app.should_receive(:call).with(@rack_env).and_return(@rack_response)
 
     application = org.jruby.rack.DefaultRackApplication.new
-    application.setApplication(ruby_object)
+    application.setApplication(rack_app)
     application.call(@rack_env).should == @rack_response
   end
 
@@ -214,7 +215,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       def newRuntime() # use the current runtime instead of creating new
         require 'jruby'
         runtime = JRuby.runtime
-        initRuntime(runtime)
+        JRuby::Rack.silence_warnings { initRuntime(runtime) }
         runtime
       end
     end
@@ -251,10 +252,9 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         rack_app = error_application.getApplication
         #expect( rack_app ).to be_a Rack::Handler::Servlet
         expect( rack_app.class.name ).to eql 'Rack::Handler::Servlet'
-        app = rack_app.instance_variable_get('@app')
-        expect( app ).to be_a Rack::ShowStatus
+        expect( rack_app.app ).to be_a Rack::ShowStatus
         #expect( app.class.name ).to eql 'Rack::ShowStatus'
-        error_app = app.instance_variable_get('@app')
+        error_app = rack_app.app.instance_variable_get('@app')
         expect( error_app ).to be_a JRuby::Rack::ErrorApp
         #expect( error_app.class.name ).to eql 'JRuby::Rack::ErrorApp'
       end
@@ -273,8 +273,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         rack_app = error_application.getApplication
         expect( rack_app ).to be_a Rack::Handler::Servlet
         #expect( rack_app.class.name ).to eql 'Rack::Handler::Servlet'
-        app = rack_app.instance_variable_get('@app')
-        expect( app ).to be_a Proc
+        expect( app = rack_app.get_app ).to be_a Proc
         #expect( app.class.name ).to eql 'Proc'
         expect( app.call ).to eql 'error.app'
       end
@@ -1021,7 +1020,7 @@ describe org.jruby.rack.SharedRackApplicationFactory do
       fail "expected to rescue RackInitializationException"
     end
 
-    expect( @shared_factory.getManagedApplications ).to be_empty
+    expect( @shared_factory.getManagedApplications ).to be nil
   end
 
   it "throws initialization exception on each getApplication call if init failed" do
