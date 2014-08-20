@@ -23,8 +23,10 @@
  */
 package org.jruby.rack.util;
 
+import java.io.IOException;
 import org.jruby.NativeException;
 import org.jruby.Ruby;
+import org.jruby.RubyClass;
 import org.jruby.exceptions.RaiseException;
 
 /**
@@ -36,7 +38,34 @@ public abstract class ExceptionUtils {
     public static RaiseException wrapException(final Ruby runtime, final Exception cause) {
         if ( cause instanceof RaiseException ) return (RaiseException) cause;
         NativeException nativeException = new NativeException(runtime, runtime.getNativeException(), cause);
-        return new RaiseException(cause, nativeException);
+        return new RaiseException(cause, nativeException); // getCause() != null
+    }
+
+    public static RaiseException newRuntimeError(final Ruby runtime, final Throwable cause) {
+        return newRaiseException(runtime, runtime.getRuntimeError(), cause);
+    }
+
+    public static RaiseException newArgumentError(final Ruby runtime, final RuntimeException cause) {
+        return newRaiseException(runtime, runtime.getArgumentError(), cause);
+    }
+
+    public static RaiseException newIOError(final Ruby runtime, final IOException cause) {
+        RaiseException raise = runtime.newIOErrorFromException(cause);
+        raise.initCause(cause);
+        return raise;
+    }
+
+    static RaiseException newRaiseException(final Ruby runtime,
+        final RubyClass errorClass, final String message) {
+        return new RaiseException(runtime, errorClass, message, true);
+    }
+
+    private static RaiseException newRaiseException(final Ruby runtime,
+        final RubyClass errorClass, final Throwable cause) {
+        final String message = cause.getMessage();
+        RaiseException raise = new RaiseException(runtime, errorClass, message, true);
+        raise.initCause(cause);
+        return raise;
     }
 
 }
