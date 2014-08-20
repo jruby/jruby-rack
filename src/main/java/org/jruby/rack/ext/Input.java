@@ -91,10 +91,10 @@ public class Input extends RubyObject {
             final int NEWLINE = 10;
             final byte[] bytes = readUntil(NEWLINE, 0);
             if ( bytes != null ) {
-                return context.runtime.newString(new ByteList(bytes));
+                return context.runtime.newString(new ByteList(bytes, false));
             }
             else {
-                return context.runtime.getNil();
+                return context.nil;
             }
         }
         catch (IOException io) {
@@ -119,18 +119,18 @@ public class Input extends RubyObject {
             long len = args[0].convertToInteger("to_i").getLongValue();
             readLen = (int) Math.min(len, Integer.MAX_VALUE);
         }
-        final RubyString buffer = args.length >= 2 ? args[1].convertToString() : null;
+        final RubyString buffer = args.length > 1 ? args[1].convertToString() : null;
         try {
             final byte[] bytes = readUntil(MATCH_NONE, readLen);
             if ( bytes != null ) {
-                if (buffer != null) {
+                if ( buffer != null ) {
                     buffer.clear();
                     buffer.cat(bytes);
                     return buffer;
                 }
-                return context.runtime.newString(new ByteList(bytes));
+                return context.runtime.newString(new ByteList(bytes, false));
             }
-            return readLen > 0 ? context.runtime.getNil() : RubyString.newEmptyString(context.runtime);
+            return readLen > 0 ? context.nil : RubyString.newEmptyString(context.runtime);
         }
         catch (IOException io) {
             throw context.runtime.newIOErrorFromException(io);
@@ -175,7 +175,7 @@ public class Input extends RubyObject {
             }
             catch (IllegalAccessException e) { /* NOOP */ }
         }
-        return context.runtime.getNil();
+        return context.nil;
     }
 
     /**
