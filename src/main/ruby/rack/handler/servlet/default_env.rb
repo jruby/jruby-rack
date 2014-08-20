@@ -60,7 +60,7 @@ module Rack
         end
 
         def populate
-          unless @populated
+          unless @populated ||= false
             populate! if @servlet_env
             @populated = true
           end
@@ -204,8 +204,8 @@ module Rack
           when 'rack.run_once'        then env[key] = false
           when 'rack.input'           then
             env[key] = @servlet_env ? JRuby::Rack::Input.new(@servlet_env) : nil
-          when 'rack.errors'          then
-            env[key] = JRuby::Rack::ServletLog.new(rack_context) rescue nil
+          when 'rack.errors'          then context = rack_context
+            env[key] = context ? JRuby::Rack::ServletLog.new(context) : nil
           when 'rack.url_scheme'
             env[key] = scheme = @servlet_env ? @servlet_env.getScheme : nil
             env['HTTPS'] = 'on' if scheme == 'https'
@@ -213,7 +213,7 @@ module Rack
           when 'java.servlet_request'  then env[key] = servlet_request
           when 'java.servlet_response' then env[key] = servlet_response
           when 'java.servlet_context' then env[key] = servlet_context
-          when 'jruby.rack.context'   then env[key] = rack_context rescue nil
+          when 'jruby.rack.context'   then env[key] = rack_context
           when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
           when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
           when 'jruby.rack.rack.release'  then env[key] = ::Rack.release
@@ -230,7 +230,7 @@ module Rack
             if @servlet_env.respond_to?(:context)
               @servlet_env.context # RackEnvironment#getContext()
             else
-              JRuby::Rack.context || raise("missing rack context")
+              JRuby::Rack.context || false # raise("missing rack context")
             end
         end
 
