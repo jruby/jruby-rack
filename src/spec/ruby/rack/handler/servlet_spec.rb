@@ -5,9 +5,13 @@ require 'stringio'
 
 describe Rack::Handler::Servlet do
 
-  class RackApp; def call(env); end; end
+  class TestRackApp
+    def call(env); @_env = env; [ 200, {}, '' ] end
+    def _called?; !! @_env end
+    def _env; @_env end
+  end
 
-  let(:app) { RackApp.new }
+  let(:app) { TestRackApp.new }
   let(:servlet) { Rack::Handler::Servlet.new(app) }
 
   let(:servlet_context) { @servlet_context ||= mock_servlet_context }
@@ -318,9 +322,9 @@ describe Rack::Handler::Servlet do
       expect( env['java.servlet_response'] ).to be @servlet_response
     end
 
-    it "exposes the servlet context" do
+    it "exposes the servlet context xxxx" do
       env = servlet.create_env @servlet_env
-      env['java.servlet_context'].should be_a javax.servlet.ServletContext
+      expect( env['java.servlet_context'] ).to be_a javax.servlet.ServletContext
       # Failure/Error: env['java.servlet_context'].should == @servlet_context
       # NoMethodError:
       #  private method `pretty_print' called for #<RSpec::Mocks::ErrorGenerator:0x1e9d469>
@@ -781,20 +785,22 @@ describe Rack::Handler::Servlet do
     it "returns the servlet context when queried with java.servlet_context" do
       env = servlet.create_env @servlet_env
 
-      env['java.servlet_context'].should_not be nil
-      env['java.servlet_context'].should == @rack_context
-    end
+      expect( env['java.servlet_context'] ).to_not be nil
+      if servlet_30?
+        expect( env['java.servlet_context'] ).to be @servlet_context
+      else
+        expect( env['java.servlet_context'] ).to be @rack_context
 
-    it "returns the servlet context when queried with java.servlet_context 3.0" do
-      # HACK to emulate Servlet API 3.0 MockHttpServletRequest has getServletContext :
-      env = Rack::Handler::Servlet::DefaultEnv.new(@servlet_request).to_hash
+        # HACK to emulate Servlet API 3.0 MockHttpServletRequest has getServletContext :
+        env = Rack::Handler::Servlet::DefaultEnv.new(@servlet_request).to_hash
 
-      env['java.servlet_context'].should_not be nil
-      env['java.servlet_context'].should == @servlet_context
-      begin
-        env['java.servlet_context'].should == @servlet_context
-      rescue NoMethodError
-        (env['java.servlet_context'] == @servlet_context).should == true
+        expect( env['java.servlet_context'] ).to_not be nil
+        expect( env['java.servlet_context'] ).to be @servlet_context
+        begin
+          env['java.servlet_context'].should == @servlet_context
+        rescue NoMethodError
+          (env['java.servlet_context'] == @servlet_context).should == true
+        end
       end
     end
 
@@ -814,21 +820,16 @@ describe Rack::Handler::Servlet do
 
     it "delegates to the inner application after constructing the env hash" do
       servlet.should_receive(:create_env).and_return({})
-
       servlet_env = double("servlet request")
-      app.should_receive(:call)
 
       response = servlet.call(servlet_env)
-      response.should respond_to(:respond)
+      expect( response.to_java ).to respond_to(:respond) # RackResponse
+
+      expect( app._called? ).to be true
     end
 
     it "raises an error when it failed to load the application" do
-      expect { Rack::Handler::Servlet.new(nil) }.to raise_error(RuntimeError)
-      begin
-        Rack::Handler::Servlet.new(nil)
-      rescue => e
-        expect( e ).to_not be_a(NoMethodError)
-      end
+      expect { Rack::Handler::Servlet.new(nil) }.to raise_error(ArgumentError)
     end
 
   end
@@ -845,7 +846,7 @@ describe Rack::Handler::Servlet do
 
     it "uses custom response class" do
       servlet.should_receive(:create_env).and_return({})
-      app.should_receive(:call)
+      #app.should_receive(:call).and_return([ 200, {}, '' ])
 
       servlet_env = double("servlet request")
       expect( servlet.call(servlet_env) ).to be_a Rack::Handler::CustomResponse
@@ -869,8 +870,6 @@ describe Rack::Handler::Servlet do
 
     it_behaves_like "hash-instance"
 
-    let(:servlet_request) { org.jruby.rack.mock.MockHttpServletRequest.new }
-    let(:servlet_response) { org.jruby.rack.mock.MockHttpServletResponse.new }
     let(:servlet_env) do
       org.jruby.rack.servlet.ServletRackEnvironment.new(servlet_request, servlet_response, @rack_context)
     end
