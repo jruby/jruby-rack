@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 kares.
+ * Copyright (c) 2013-2014 Karol Bucek LTD.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,7 @@ public class Servlet extends RubyObject {
     public IRubyObject initialize(final IRubyObject app) {
         if ( app.isNil() ) {
             throw getRuntime().newArgumentError(
-                "rack app not found, make sure the rackup file path is correct!");
+                "rack app not found, make sure the rackup file path is correct");
         }
         //if ( ! app.respondsTo("call") ) {
         //    throw getRuntime().newArgumentError(
