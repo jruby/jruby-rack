@@ -1,10 +1,10 @@
 /*
+ * Copyright (c) 2013-2014 Karol Bucek LTD.
  * Copyright (c) 2010-2012 Engine Yard, Inc.
  * Copyright (c) 2007-2009 Sun Microsystems, Inc.
  * This source code is available under the MIT license.
  * See the file LICENSE.txt for details.
  */
-
 package org.jruby.rack.ext;
 
 import java.io.ByteArrayOutputStream;
@@ -51,12 +51,29 @@ public class Input extends RubyObject {
         return (RubyClass) _JRuby_Rack.getConstantAt("Input");
     }
 
-    protected boolean rewindable;
+    private boolean rewindable;
     private InputStream input;
-    protected int length = 0;
+    private int length = 0;
 
-    public Input(Ruby runtime, RubyClass klass) {
+    protected Input(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
+    }
+
+    public Input(Ruby runtime, final RackEnvironment env) {
+        super(runtime, getClass(runtime));
+        initialize(env);
+    }
+
+    public Input(Ruby runtime, final InputStream input, final int length) {
+        this(runtime, input, false, length);
+    }
+
+    public Input(Ruby runtime, final InputStream input, final boolean rewindable,
+        final int length) {
+        super(runtime, getClass(runtime));
+        this.rewindable = rewindable;
+        this.setInput( input );
+        this.length = length;
     }
 
     private void initialize(final RackEnvironment env) {
@@ -73,6 +90,7 @@ public class Input extends RubyObject {
     @JRubyMethod(required = 1)
     public IRubyObject initialize(final ThreadContext context, final IRubyObject input) {
         final Object arg = JavaEmbedUtils.rubyToJava(input);
+        // NOTE: this.rewindable = true; by default ?!
         if ( arg instanceof InputStream ) {
             setInput( (InputStream) arg );
         }
@@ -234,6 +252,28 @@ public class Input extends RubyObject {
         } while ( b != match );
 
         return bs == null ? null : bs.toByteArray();
+    }
+
+    // Java-style Helpers :
+
+    public InputStream getInput() {
+        return input;
+    }
+
+    public boolean isRewindable() {
+        return rewindable;
+    }
+
+    public void setRewindable(boolean rewindable) {
+        this.rewindable = rewindable;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2013 kares.
+ * Copyright 2013 Karol Bucek.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,19 +43,16 @@ public class RackInput extends org.jruby.rack.ext.Input {
         return runtime.getOrCreateModule("JRuby").getClass(name); // RackInput
     }
 
-    private static RubyClass getClass(final Ruby runtime) {
-        return (RubyClass) runtime.getModule("JRuby").getConstantAt("RackInput");
-    }
+    //private static RubyClass getClass(final Ruby runtime) {
+    //    return (RubyClass) runtime.getModule("JRuby").getConstantAt("RackInput");
+    //}
 
     public RackInput(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
 
     public RackInput(Ruby runtime, RackEnvironment env) throws IOException {
-        super(runtime, getClass(runtime));
-        this.rewindable = env.getContext().getConfig().isRewindable();
-        setInput( env.getInput() );
-        this.length = env.getContentLength();
+        super(runtime, env);
     }
 
 }
