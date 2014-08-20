@@ -137,7 +137,7 @@ public class Input extends RubyObject {
             long len = args[0].convertToInteger("to_i").getLongValue();
             readLen = (int) Math.min(len, Integer.MAX_VALUE);
         }
-        final RubyString buffer = args.length > 1 ? args[1].convertToString() : null;
+        final RubyString buffer = args.length > 1 ? args[1].asString() : null;
         try {
             final byte[] bytes = readUntil(MATCH_NONE, readLen);
             if ( bytes != null ) {
