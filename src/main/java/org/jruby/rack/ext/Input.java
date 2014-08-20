@@ -59,6 +59,17 @@ public class Input extends RubyObject {
         super(runtime, klass);
     }
 
+    private void initialize(final RackEnvironment env) {
+        this.rewindable = env.getContext().getConfig().isRewindable();
+        try {
+            setInput( env.getInput() );
+        }
+        catch (IOException e) {
+            throw ExceptionUtils.newIOError(getRuntime(), e);
+        }
+        this.length = env.getContentLength();
+    }
+
     @JRubyMethod(required = 1)
     public IRubyObject initialize(final ThreadContext context, final IRubyObject input) {
         final Object arg = JavaEmbedUtils.rubyToJava(input);
@@ -66,15 +77,7 @@ public class Input extends RubyObject {
             setInput( (InputStream) arg );
         }
         else if ( arg instanceof RackEnvironment ) {
-            final RackEnvironment env = ((RackEnvironment) arg);
-            this.rewindable = env.getContext().getConfig().isRewindable();
-            try {
-                setInput( env.getInput() );
-            }
-            catch (IOException e) {
-                throw ExceptionUtils.wrapException(context.runtime, e);
-            }
-            this.length = env.getContentLength();
+            initialize((RackEnvironment) arg);
         }
         return context.nil;
     }
