@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2011 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -30,44 +31,62 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.activation.FileTypeMap;
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.descriptor.JspConfigDescriptor;
 
-import org.jruby.rack.RackLogger;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
+import org.jruby.rack.RackLogger;
 import static org.jruby.rack.RackLogger.*;
 
 /**
  * Mock implementation of the {@link javax.servlet.ServletContext} interface.
  *
+ * <p>As of Spring 4.0, this set of mocks is designed on a Servlet 3.0 baseline.
+ *
+ * <p>Compatible with Servlet 3.0 but can be configured to expose a specific version
+ * through {@link #setMajorVersion}/{@link #setMinorVersion}; default is 3.0.
+ * Note that Servlet 3.0 support is limited: servlet, filter and listener
+ * registration methods are not supported; neither is JSP configuration.
+ * We generally do not recommend to unit-test your ServletContainerInitializers and
+ * WebApplicationInitializers which is where those registration methods would be used.
+ *
  * <p>Used for testing the Spring web framework; only rarely necessary for testing
  * application controllers. As long as application components don't explicitly
- * access the ServletContext, ClassPathXmlApplicationContext or
- * FileSystemXmlApplicationContext can be used to load the context files for testing,
- * even for DispatcherServlet context definitions.
+ * access the {@code ServletContext}, {@code ClassPathXmlApplicationContext} or
+ * {@code FileSystemXmlApplicationContext} can be used to load the context files
+ * for testing, even for {@code DispatcherServlet} context definitions.
  *
- * <p>For setting up a full WebApplicationContext in a test environment, you can
- * use XmlWebApplicationContext (or GenericWebApplicationContext), passing in an
- * appropriate MockServletContext instance. You might want to configure your
- * MockServletContext with a FileSystemResourceLoader in that case, to make your
- * resource paths interpreted as relative file system locations.
+ * <p>For setting up a full {@code WebApplicationContext} in a test environment,
+ * you can use {@code AnnotationConfigWebApplicationContext},
+ * {@code XmlWebApplicationContext}, or {@code GenericWebApplicationContext},
+ * passing in an appropriate {@code MockServletContext} instance. You might want
+ * to configure your {@code MockServletContext} with a {@code FileSystemResourceLoader}
+ * in that case to ensure that resource paths are interpreted as relative filesystem
+ * locations.
  *
  * <p>A common setup is to point your JVM working directory to the root of your
  * web application directory, in combination with filesystem-based resource loading.
  * This allows to load the context files as used in the web application, with
  * relative paths getting interpreted correctly. Such a setup will work with both
- * FileSystemXmlApplicationContext (which will load straight from the file system)
- * and XmlWebApplicationContext with an underlying MockServletContext (as long as
- * the MockServletContext has been configured with a FileSystemResourceLoader).
+ * {@code FileSystemXmlApplicationContext} (which will load straight from the
+ * filesystem) and {@code XmlWebApplicationContext} with an underlying
+ * {@code MockServletContext} (as long as the {@code MockServletContext} has been
+ * configured with a {@code FileSystemResourceLoader}).
  *
  * @author Rod Johnson
  * @author Juergen Hoeller
- * @author Chris Beams
- * @since 1.0.2
+ * @author Sam Brannen
  */
 public class MockServletContext implements ServletContext {
 
@@ -81,21 +100,26 @@ public class MockServletContext implements ServletContext {
 
 	private String contextPath = "";
 
-	private int majorVersion = 2;
+	private int majorVersion = 3;
+	private int minorVersion = 0;
 
-	private int minorVersion = 5;
-
-	private int effectiveMajorVersion = 2;
-
-	private int effectiveMinorVersion = 5;
+	private int effectiveMajorVersion = 3;
+	private int effectiveMinorVersion = 0;
 
 	private final Map<String, ServletContext> contexts = new HashMap<String, ServletContext>();
-
 	private final Map<String, String> initParameters = new LinkedHashMap<String, String>();
-
 	private final Map<String, Object> attributes = new LinkedHashMap<String, Object>();
 
 	private String servletContextName = "MockServletContext";
+    //private String defaultServletName = "default";
+
+	//final Map<String, RequestDispatcher> namedRequestDispatchers = new HashMap<String, RequestDispatcher>();
+
+	private final Set<String> declaredRoles = new HashSet<String>();
+
+	private Set<SessionTrackingMode> sessionTrackingModes;
+
+	private Object sessionCookieConfig; // SessionCookieConfig
 
     private RackLogger logger = new NullLogger();
 
@@ -420,107 +444,171 @@ public class MockServletContext implements ServletContext {
 	// Methods introduced in Servlet 3.0
 	//---------------------------------------------------------------------
 
-    /*
-	public Dynamic addFilter(String arg0, String arg1) {
-		throw new UnsupportedOperationException();
-	}
-
-	public Dynamic addFilter(String arg0, Filter arg1) {
-		throw new UnsupportedOperationException();
-	}
-
-	public Dynamic addFilter(String arg0, Class<? extends Filter> arg1) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void addListener(Class<? extends EventListener> arg0) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void addListener(String arg0) {
-		throw new UnsupportedOperationException();
-	}
-
-	public <T extends EventListener> void addListener(T arg0) {
-		throw new UnsupportedOperationException();
-	}
-
-	public javax.servlet.ServletRegistration.Dynamic addServlet(String arg0, String arg1) {
-		throw new UnsupportedOperationException();
-	}
-
-	public javax.servlet.ServletRegistration.Dynamic addServlet(String arg0,
-			Servlet arg1) {
-		throw new UnsupportedOperationException();
-	}
-
-	public javax.servlet.ServletRegistration.Dynamic addServlet(String arg0,
-			Class<? extends Servlet> arg1) {
-		throw new UnsupportedOperationException();
-	}
-
-	public <T extends Filter> T createFilter(Class<T> arg0)
-			throws ServletException {
-		throw new UnsupportedOperationException();
-	}
-
-	public <T extends EventListener> T createListener(Class<T> arg0)
-			throws ServletException {
-		throw new UnsupportedOperationException();
-	}
-
-	public <T extends Servlet> T createServlet(Class<T> arg0)
-			throws ServletException {
-		throw new UnsupportedOperationException();
-	}
-
-	public void declareRoles(String... arg0) {
-		throw new UnsupportedOperationException();
-	}
-
+	@Override
 	public ClassLoader getClassLoader() {
-		throw new UnsupportedOperationException();
+		// return ClassUtils.getDefaultClassLoader();
+		ClassLoader cl = null;
+		try {
+			cl = Thread.currentThread().getContextClassLoader();
+		}
+		catch (Exception ex) {
+			// Cannot access thread context ClassLoader - falling back...
+		}
+		if (cl == null) {
+			// No thread context class loader -> use class loader of this class.
+			cl = MockServletContext.class.getClassLoader();
+			if (cl == null) {
+				// getClassLoader() returning null indicates the bootstrap ClassLoader
+				try {
+					cl = ClassLoader.getSystemClassLoader();
+				}
+				catch (Exception ex) {
+					// Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+				}
+			}
+		}
+		return cl;
 	}
 
+	@Override
+	public void declareRoles(String... roleNames) {
+		// Assert.notNull(roleNames, "Role names array must not be null");
+		for (String roleName : roleNames) {
+			// Assert.hasLength(roleName, "Role name must not be empty");
+			this.declaredRoles.add(roleName);
+		}
+	}
+
+	public Set<String> getDeclaredRoles() {
+		return Collections.unmodifiableSet(this.declaredRoles);
+	}
+
+	@Override
+	public boolean setInitParameter(String name, String value) {
+		// Assert.notNull(name, "Parameter name must not be null");
+		if (this.initParameters.containsKey(name)) {
+			return false;
+		}
+		this.initParameters.put(name, value);
+		return true;
+	}
+
+	@Override
+	public void setSessionTrackingModes(Set<SessionTrackingMode> sessionTrackingModes)
+			throws IllegalStateException, IllegalArgumentException {
+		this.sessionTrackingModes = sessionTrackingModes;
+	}
+
+	@Override
 	public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-		throw new UnsupportedOperationException();
+        final Set<SessionTrackingMode> trackingModes = new LinkedHashSet<SessionTrackingMode>(3);
+		trackingModes.add(SessionTrackingMode.COOKIE);
+		trackingModes.add(SessionTrackingMode.URL);
+		trackingModes.add(SessionTrackingMode.SSL);
+		return trackingModes;
 	}
 
+	@Override
 	public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
-		throw new UnsupportedOperationException();
+		return (this.sessionTrackingModes != null ?
+            Collections.unmodifiableSet(this.sessionTrackingModes) : getDefaultSessionTrackingModes());
 	}
 
-	public FilterRegistration getFilterRegistration(String arg0) {
-		throw new UnsupportedOperationException();
+	@Override
+	public SessionCookieConfig getSessionCookieConfig() {
+        if (sessionCookieConfig == null) {
+            sessionCookieConfig = new MockSessionCookieConfig();
+        }
+		return (SessionCookieConfig) sessionCookieConfig;
 	}
 
-	public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
-		throw new UnsupportedOperationException();
-	}
+	//---------------------------------------------------------------------
+	// Unsupported Servlet 3.0 registration methods
+	//---------------------------------------------------------------------
 
+	@Override
 	public JspConfigDescriptor getJspConfigDescriptor() {
 		throw new UnsupportedOperationException();
 	}
 
-	public ServletRegistration getServletRegistration(String arg0) {
+	@Override
+	public ServletRegistration.Dynamic addServlet(String servletName, String className) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ServletRegistration.Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T extends Servlet> T createServlet(Class<T> c) throws ServletException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public ServletRegistration getServletRegistration(String servletName) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public Map<String, ? extends ServletRegistration> getServletRegistrations() {
 		throw new UnsupportedOperationException();
 	}
 
-	public SessionCookieConfig getSessionCookieConfig() {
+	@Override
+	public FilterRegistration.Dynamic addFilter(String filterName, String className) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean setInitParameter(String arg0, String arg1) {
+	@Override
+	public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) {
 		throw new UnsupportedOperationException();
 	}
 
-	public void setSessionTrackingModes(Set<SessionTrackingMode> arg0)
-			throws IllegalStateException, IllegalArgumentException {
+	@Override
+	public FilterRegistration.Dynamic addFilter(String filterName, Class<? extends Filter> filterClass) {
 		throw new UnsupportedOperationException();
-	} */
+	}
+
+	@Override
+	public <T extends Filter> T createFilter(Class<T> c) throws ServletException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public FilterRegistration getFilterRegistration(String filterName) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void addListener(Class<? extends EventListener> listenerClass) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void addListener(String className) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T extends EventListener> void addListener(T t) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public <T extends EventListener> T createListener(Class<T> c) throws ServletException {
+		throw new UnsupportedOperationException();
+	}
 
 }
