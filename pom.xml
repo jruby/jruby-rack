@@ -95,22 +95,23 @@
       <artifactId>jruby-core</artifactId>
       <version>${jruby.version}</version>
     </dependency>
+    <!-- JavaEE 6 APIs -->
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-servlet_2.5_spec</artifactId>
+      <artifactId>geronimo-servlet_3.0_spec</artifactId>
+      <version>1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jsp_2.2_spec</artifactId>
       <version>1.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-jsp_2.1_spec</artifactId>
-      <version>1.0.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-el_1.0_spec</artifactId>
-      <version>1.0.2</version>
+      <artifactId>geronimo-el_2.2_spec</artifactId>
+      <version>1.0.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
