@@ -97,8 +97,8 @@ public class Input extends RubyObject {
                 return context.nil;
             }
         }
-        catch (IOException io) {
-            throw context.runtime.newIOErrorFromException(io);
+        catch (IOException e) {
+            throw ExceptionUtils.newIOError(context.runtime, e);
         }
     }
 
@@ -132,8 +132,8 @@ public class Input extends RubyObject {
             }
             return readLen > 0 ? context.nil : RubyString.newEmptyString(context.runtime);
         }
-        catch (IOException io) {
-            throw context.runtime.newIOErrorFromException(io);
+        catch (IOException e) {
+            throw ExceptionUtils.newIOError(context.runtime, e);
         }
     }
 
@@ -164,14 +164,14 @@ public class Input extends RubyObject {
                 if ( rewind != null ) rewind.invoke(input, (Object[]) null);
             }
             catch (IllegalArgumentException e) {
-                throw context.runtime.newArgumentError(e.getMessage());
+                throw ExceptionUtils.newArgumentError(context.runtime, e);
             }
             catch (InvocationTargetException e) {
                 final Throwable target = e.getCause();
                 if ( target instanceof IOException ) {
-                    throw context.runtime.newIOErrorFromException((IOException) target);
+                    throw ExceptionUtils.newIOError(context.runtime, (IOException) target);
                 }
-                throw context.runtime.newRuntimeError(target.getMessage());
+                throw ExceptionUtils.newRuntimeError(context.runtime, target);
             }
             catch (IllegalAccessException e) { /* NOOP */ }
         }
