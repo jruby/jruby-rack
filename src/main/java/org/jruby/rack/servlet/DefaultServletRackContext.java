@@ -208,19 +208,38 @@ public class DefaultServletRackContext implements ServletRackContext {
 
     // RackLogger
 
+    @Override
+    public boolean isEnabled(Level level) {
+        return logger.isEnabled(level);
+    }
+
+    @Override
     public void log(String message) {
         logger.log(message);
     }
 
+    @Override
     public void log(String message, Throwable e) {
         logger.log(message, e);
     }
 
+    @Override @Deprecated
     public void log(String level, String message) {
         logger.log(level, message);
     }
 
+    @Override @Deprecated
     public void log(String level, String message, Throwable e) {
+        logger.log(level, message, e);
+    }
+
+    @Override
+    public void log(Level level, String message) {
+        logger.log(level, message);
+    }
+
+    @Override
+    public void log(Level level, String message, Throwable e) {
         logger.log(level, message, e);
     }
 

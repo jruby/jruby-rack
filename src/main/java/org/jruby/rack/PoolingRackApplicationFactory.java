@@ -16,6 +16,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.jruby.rack.RackLogger.Level.*;
+
 /**
  * A pooling application factory that creates applications (runtimes) and
  * manages a fixed-size (or upper unlimited-size) application pool.
@@ -121,7 +123,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         setInitialSize( config.getInitialRuntimes() );
         setMaximumSize( config.getMaximumRuntimes() );
 
-        log( RackLogger.INFO, "using "+ // using 4:8 runtime pool
+        log( INFO, "using "+ // using 4:8 runtime pool
                 ( initialSize == null ? "" : initialSize ) + ":" +
                 ( maximumSize == null ? "" : maximumSize ) +
                 " runtime pool with acquire timeout of " +
@@ -178,7 +180,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         // NOTE: for apps that take a long time to boot simply set values
         // initial == maximum to avoid creating an application on demand
         if ( ! permit || ( maximumSize == null || maximumSize > createdApplications.get() ) ) {
-            log(RackLogger.INFO, "pool was empty - getting new application instance");
+            log(INFO, "pool was empty - getting new application instance");
             // we'll try to put it "back" to pool from finishedWithApplication(app)
             return createApplication(true);
         }
@@ -209,7 +211,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
             if ( ! acquired ) {
                 String message = "could not acquire application permit" +
                         " within " + acquireTimeout + " seconds";
-                log(RackLogger.INFO, message + " (try increasing the pool size)");
+                log(INFO, message + " (try increasing the pool size)");
                 throw new AcquireTimeoutException(message);
             }
             return true; // acquired permit
@@ -225,7 +227,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         if (app == null) {
             // seems to sometimes happen when an error occurs during boot
             // and thus on destroy app.destroy(); will fail with a NPE !
-            log(RackLogger.WARN, "ignoring null application");
+            log(WARN, "ignoring null application");
             return;
         }
         synchronized (applicationPool) {
@@ -321,7 +323,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
                 if ( initError == null ||
                    ! initError.getClass().equals(e.getClass()) ||
                    ! initError.getMessage().equals(e.getMessage()) ) {
-                    log(RackLogger.ERROR, "unable to initialize application", e);
+                    log(ERROR, "unable to initialize application", e);
                 }
             }
             // we're put a null to make sure we get notified :
@@ -352,7 +354,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
                 return false;
             }
             applicationPool.add(app);
-            log(RackLogger.INFO, "added application to pool, size now = " + applicationPool.size());
+            log(INFO, "added application to pool, size now = " + applicationPool.size());
             initedApplications.incrementAndGet();
             // in case we're waiting from waitForNextAvailable() :
             applicationPool.notifyAll();

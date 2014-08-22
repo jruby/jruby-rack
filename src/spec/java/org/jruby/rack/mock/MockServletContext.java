@@ -180,23 +180,22 @@ public class MockServletContext implements ServletContext {
 		return this.resourceBasePath + path;
 	}
 
-    private static class NullLogger implements RackLogger {
+    private static class NullLogger extends RackLogger.Base {
 
-        public void log(String message) {
-            // NOOP
-        }
+        @Override
+        public void log(String message) { /* NOOP */ }
 
-        public void log(String message, Throwable ex) {
-            // NOOP
-        }
+        @Override
+        public void log(String message, Throwable ex) { /* NOOP */ }
 
-        public void log(String level, String message) {
-            // NOOP
-        }
+        @Override
+        public boolean isEnabled(Level level) { return false; }
 
-        public void log(String level, String message, Throwable e) {
-            // NOOP
-        }
+        @Override
+        public void log(Level level, String message) { /* NOOP */ }
+
+        @Override
+        public void log(Level level, String message, Throwable ex) { /* NOOP */ }
 
     }
 

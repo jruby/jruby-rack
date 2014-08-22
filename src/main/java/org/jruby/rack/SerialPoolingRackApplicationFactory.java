@@ -9,6 +9,8 @@ package org.jruby.rack;
 
 import java.util.Queue;
 
+import static org.jruby.rack.RackLogger.Level.*;
+
 /**
  * Works like the pooling application factory, with the variation that it will
  * create all application instances (runtimes) serially, using no extra threads.
@@ -16,11 +18,11 @@ import java.util.Queue;
  * @author Ola Bini <ola.bini@gmail.com>
  */
 public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationFactory {
-    
+
     public SerialPoolingRackApplicationFactory(RackApplicationFactory factory) {
         super(factory);
     }
-    
+
     @Override
     protected void launchInitialization(final Queue<RackApplication> apps) {
         while ( ! apps.isEmpty() ) {
@@ -28,17 +30,17 @@ public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationF
             try {
                 app.init();
                 applicationPool.add(app);
-                log(RackLogger.INFO, "added application to pool, size now = " + applicationPool.size());
+                log(INFO, "added application to pool, size now = " + applicationPool.size());
             }
             catch (RackInitializationException e) {
-                log(RackLogger.ERROR, "unable to initialize application", e);
+                log(ERROR, "unable to initialize application", e);
             }
         }
     }
-    
+
     @Override
     protected void waitTillPoolReady() {
         return; // waiting makes no sense here as we're initializing serialy
     }
-    
+
 }

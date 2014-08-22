@@ -29,6 +29,8 @@ import java.util.Set;
 
 import org.jruby.Ruby;
 
+import static org.jruby.rack.RackLogger.Level.*;
+
 /**
  * An abstract base class for decorating factories.
  *
@@ -102,7 +104,6 @@ public abstract class RackApplicationFactoryDecorator
             doInit();
         }
         catch (Exception e) {
-            //log(RackLogger.ERROR, "application initialization failed", e);
             throw initError = RackInitializationException.wrap(e);
         }
     }
@@ -135,7 +136,7 @@ public abstract class RackApplicationFactoryDecorator
     public RackApplication getApplication() throws RackException {
         final RuntimeException error = getInitError();
         if ( error != null ) {
-            log(RackLogger.DEBUG, "due a previous initialization failure application instance can not be returned");
+            log(DEBUG, "due a previous initialization failure application instance can not be returned");
             throw error; // this is better - we shall never return null here ...
         }
         return getApplicationImpl();
@@ -167,6 +168,11 @@ public abstract class RackApplicationFactoryDecorator
      * @param level
      * @param message
      */
+    protected void log(final RackLogger.Level level, final String message) {
+        getContextBang().log(level, message);
+    }
+
+    @Deprecated
     protected void log(final String level, final String message) {
         getContextBang().log(level, message);
     }
@@ -177,15 +183,19 @@ public abstract class RackApplicationFactoryDecorator
      * @param message
      * @param e
      */
+    protected void log(final RackLogger.Level level, final String message, Exception e) {
+        getContextBang().log(level, message, e);
+    }
+
+    @Deprecated
     protected void log(final String level, final String message, Exception e) {
         getContextBang().log(level, message, e);
     }
 
     private RackContext getContextBang() throws IllegalStateException {
-        if ( context == null ) {
-            throw new IllegalStateException("context not set");
-        }
-        return getContext();
+        final RackContext context = getContext();
+        if ( context == null ) throw new IllegalStateException("no context");
+        return context;
     }
 
     public abstract Collection<RackApplication> getManagedApplications() ;

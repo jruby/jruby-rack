@@ -10,6 +10,8 @@ package org.jruby.rack;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.jruby.rack.RackLogger.Level.*;
+
 /**
  * Shared application factory that only creates a single application instance.
  * This factory implementation is the most effective on performance and esp.
@@ -30,7 +32,7 @@ public class SharedRackApplicationFactory extends RackApplicationFactoryDecorato
     @Override
     protected void doInit() throws Exception {
         super.doInit(); // delegate.init(rackContext);
-        log(RackLogger.INFO, "using a shared (threadsafe!) runtime");
+        log(INFO, "using a shared (thread-safe) runtime");
         application = getDelegate().getApplication();
     }
 

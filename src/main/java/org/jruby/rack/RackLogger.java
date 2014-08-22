@@ -1,10 +1,10 @@
 /*
+ * Copyright (c) 2013-2014 Karol Bucek LTD.
  * Copyright (c) 2010-2012 Engine Yard, Inc.
  * Copyright (c) 2007-2009 Sun Microsystems, Inc.
  * This source code is available under the MIT license.
  * See the file LICENSE.txt for details.
  */
-
 package org.jruby.rack;
 
 /**
@@ -12,16 +12,61 @@ package org.jruby.rack;
  * @author nicksieger
  */
 public interface RackLogger {
-    
-    void log(String message);
-    void log(String message, Throwable e);
-    
-    final String DEBUG = "DEBUG";
-    final String INFO = "INFO";
-    final String WARN = "WARN";
-    final String ERROR = "ERROR";
-    
-    void log(String level, String message);
-    void log(String level, String message, Throwable e);
-    
+
+    void log(String message) ;
+    void log(String message, Throwable ex) ;
+
+    //void debug(String message) ;
+    //void debug(String message, Throwable e) ;
+
+    //void info(String message) ;
+    //void info(String message, Throwable e) ;
+
+    //void warn(String message) ;
+    //void warn(String message, Throwable e) ;
+
+    //void error(String message) ;
+    //void error(String message, Throwable e) ;
+
+    enum Level {
+        DEBUG, INFO, WARN, ERROR, FATAL
+    }
+
+    boolean isEnabled(final Level level) ;
+
+    void log(Level level, String message) ;
+    void log(Level level, String message, Throwable ex) ;
+
+    @Deprecated final String DEBUG = Level.DEBUG.name();
+    @Deprecated final String INFO = Level.INFO.name();
+    @Deprecated final String WARN = Level.WARN.name();
+    @Deprecated final String ERROR = Level.ERROR.name();
+
+    void log(String level, String message) ;
+    void log(String level, String message, Throwable ex) ;
+
+    abstract class Base implements RackLogger {
+
+        @Override
+        public void log(String message) {
+            log(Level.INFO, message);
+        }
+
+        @Override
+        public void log(String message, Throwable ex) {
+            log(Level.ERROR, message, ex);
+        }
+
+        @Override
+        public void log(String level, String message) {
+            log(Level.valueOf(level), message);
+        }
+
+        @Override
+        public void log(String level, String message, Throwable ex) {
+            log(Level.valueOf(level), message, ex);
+        }
+
+    }
+
 }

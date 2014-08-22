@@ -12,8 +12,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.jruby.rack.RackLogger;
 
-public class CommonsLoggingLogger implements RackLogger {
-    
+public class CommonsLoggingLogger extends RackLogger.Base {
+
     private Log logger;
 
     public CommonsLoggingLogger(String loggerName) {
@@ -24,48 +24,41 @@ public class CommonsLoggingLogger implements RackLogger {
         logger = LogFactory.getLog(loggerName);
     }
 
-    public void log(String message) {
-        logger.info(message);
+    @Override
+    public boolean isEnabled(Level level) {
+        if ( level == null ) return logger.isInfoEnabled(); // TODO ???!
+        switch ( level ) {
+            case DEBUG: return logger.isDebugEnabled();
+            case INFO:  return logger.isInfoEnabled();
+            case WARN:  return logger.isWarnEnabled();
+            case ERROR: return logger.isErrorEnabled();
+            case FATAL: return logger.isFatalEnabled();
+        }
+        return logger.isTraceEnabled();
     }
 
-    public void log(String message, Throwable ex) {
-        logger.error(message,ex);
-    }
-    
-    public void log(String level, String message) {
-        if (ERROR.equals(level)) {
-            logger.error(message);
-        }
-        else if (WARN.equals(level)) {
-            logger.warn(message);
-        }
-        else if (INFO.equals(level)) {
-            logger.info(message);
-        }
-        else if (DEBUG.equals(level)) {
-            logger.debug(message);
-        }
-        else {
-            logger.info(message);
+    @Override
+    public void log(Level level, String message) {
+        if ( level == null ) { logger.info(message); return; }
+        switch ( level ) {
+            case DEBUG: logger.debug(message);
+            case INFO:  logger.info(message);
+            case WARN:  logger.warn(message);
+            case ERROR: logger.error(message);
+            case FATAL: logger.fatal(message);
         }
     }
 
-    public void log(String level, String message, Throwable e) {
-        if (ERROR.equals(level)) {
-            logger.error(message, e);
-        }
-        else if (WARN.equals(level)) {
-            logger.warn(message, e);
-        }
-        else if (INFO.equals(level)) {
-            logger.info(message, e);
-        }
-        else if (DEBUG.equals(level)) {
-            logger.debug(message, e);
-        }
-        else {
-            logger.error(message, e);
+    @Override
+    public void log(Level level, String message, Throwable ex) {
+        if ( level == null ) { logger.error(message, ex); return; }
+        switch ( level ) {
+            case DEBUG: logger.debug(message, ex);
+            case INFO:  logger.info(message, ex);
+            case WARN:  logger.warn(message, ex);
+            case ERROR: logger.error(message, ex);
+            case FATAL: logger.fatal(message, ex);
         }
     }
-    
+
 }
