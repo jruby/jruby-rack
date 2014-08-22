@@ -16,44 +16,51 @@ import org.jruby.rack.RackLogger;
 
 /**
  * A rack config for an embedded environment.
- * 
+ *
  * @author kares
  */
 public class Config implements RackConfig {
-    
+
     private final DefaultRackConfig delegate;
-    
+
     private RackLogger logger;
     private Map<String, String> rubyENV;
     private CompatVersion compatVersion;
 
     public Config() {
         delegate = new DefaultRackConfig() {
-            
+
             @Override
             public String getProperty(String key, String defaultValue) {
                 String value = Config.this.resolveProperty(key);
                 return value != null ? value : super.getProperty(key, defaultValue);
             }
-            
+
+            @Override
+            public RackLogger defaultLogger() { return null; }
+
         };
     }
-    
+
+    /*
     Config(final RackConfig config) {
         delegate = new DefaultRackConfig() {
-            
+
             @Override
             public String getProperty(String key, String defaultValue) {
                 String value = config.getProperty(key, null);
                 if ( value != null ) return value;
-                
+
                 value = Config.this.resolveProperty(key);
                 return value != null ? value : super.getProperty(key, defaultValue);
             }
-            
+
+            @Override
+            public RackLogger defaultLogger() { return null; }
+
         };
-    }
-    
+    } */
+
     @SuppressWarnings("unchecked")
     void doInitialize(final Ruby runtime) {
         setOut( runtime.getOut() );
@@ -61,14 +68,14 @@ public class Config implements RackConfig {
         rubyENV = runtime.getENV();
         compatVersion = runtime.getInstanceConfig().getCompatVersion();
     }
-    
-    
+
+
     protected String resolveProperty(String key) {
         String value = null;
         if ( rubyENV != null ) value = rubyENV.get(key);
         return value;
-    }    
-    
+    }
+
     public final String getProperty(String key) {
         return delegate.getProperty(key);
     }
@@ -76,7 +83,7 @@ public class Config implements RackConfig {
     public final String getProperty(String key, String defaultValue) {
         return delegate.getProperty(key, defaultValue);
     }
-    
+
     public final Boolean getBooleanProperty(String key) {
         return delegate.getBooleanProperty(key);
     }
@@ -92,11 +99,11 @@ public class Config implements RackConfig {
     public final Number getNumberProperty(String key, Number defaultValue) {
         return delegate.getNumberProperty(key, defaultValue);
     }
-    
+
     public CompatVersion getCompatVersion() {
         return compatVersion;
     }
-    
+
     public RackLogger getLogger() {
         if (logger == null) {
             logger = delegate.getLogger();
@@ -107,23 +114,23 @@ public class Config implements RackConfig {
     public void setLogger(RackLogger logger) {
         this.logger = logger;
     }
-    
+
     public PrintStream getOut() {
         return delegate.getOut();
     }
-    
+
     public void setOut(OutputStream out) {
         delegate.setOut(out);
     }
-    
+
     public PrintStream getErr() {
         return delegate.getErr();
     }
-    
+
     public void setErr(OutputStream err) {
         delegate.setErr(err);
     }
-    
+
     public boolean isRewindable() {
         return delegate.isRewindable();
     }
@@ -135,7 +142,7 @@ public class Config implements RackConfig {
     public Integer getMaximumMemoryBufferSize() {
         return delegate.getMaximumMemoryBufferSize();
     }
-    
+
     public String getRackup() {
         return delegate.getRackup();
     }
@@ -145,7 +152,7 @@ public class Config implements RackConfig {
     }
 
     // runtime pooling in embedded ENVs not implemented :
-    
+
     public Integer getRuntimeTimeoutSeconds() {
         //return delegate.getRuntimeTimeoutSeconds();
         throw new UnsupportedOperationException("getRuntimeTimeoutSeconds()");
@@ -165,7 +172,7 @@ public class Config implements RackConfig {
         //return delegate.getRuntimeArguments();
         throw new UnsupportedOperationException("getRuntimeArguments()");
     }
-    
+
     public Integer getNumInitializerThreads() {
         //return delegate.getNumInitializerThreads();
         throw new UnsupportedOperationException("getNumInitializerThreads()");
@@ -180,13 +187,13 @@ public class Config implements RackConfig {
         //return delegate.isIgnoreEnvironment();
         throw new UnsupportedOperationException("isIgnoreEnvironment()");
     }
-    
+
     public Map<String, String> getRuntimeEnvironment() {
         throw new UnsupportedOperationException("getRuntimeEnvironment()");
     }
-    
+
     // RackFilter aint's used with embed :
-    
+
     public boolean isFilterAddsHtml() {
         throw new UnsupportedOperationException("isFilterAddsHtml()");
     }
@@ -196,7 +203,7 @@ public class Config implements RackConfig {
     }
 
     // JMS configuration not used with embed :
-    
+
     public String getJmsConnectionFactory() {
         throw new UnsupportedOperationException("getJmsConnectionFactory()");
     }
@@ -204,5 +211,5 @@ public class Config implements RackConfig {
     public String getJmsJndiProperties() {
         throw new UnsupportedOperationException("getJmsJndiProperties()");
     }
-    
+
 }
