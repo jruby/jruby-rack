@@ -36,8 +36,9 @@ module SharedHelpers
     @servlet_context = ServletContext.impl {}
     @rack_config ||= RackConfig.impl {}
     @rack_context ||= ServletRackContext.impl {}
-    [@rack_context, @servlet_context].each do |context|
+    [ @rack_context, @servlet_context ].each do |context|
       context.stub(:log)
+      context.stub(:isEnabled).and_return nil
       context.stub(:getInitParameter).and_return nil
       context.stub(:getRealPath).and_return "/"
       context.stub(:getResource).and_return nil
@@ -79,18 +80,8 @@ module SharedHelpers
   end
   private :servlet_30?
 
-  @@raise_logger = nil
-
-  def raise_logger
-    @@raise_logger ||= org.jruby.rack.RackLogger.impl do |name, *args|
-      if name.to_s == 'log' && args[0] =~ /^(ERROR|WARN):/
-        puts args[0]
-        if error = args[1] # org.jruby.exceptions.RaiseException
-          error.printStackTrace if error.is_a?(java.lang.Throwable)
-        end
-        raise args[0]
-      end
-    end
+  def raise_logger(level = 'WARN')
+    org.jruby.rack.logging.RaiseLogger.new(level, JRuby.runtime.out)
   end
 
   ExpectationNotMetError = RSpec::Expectations::ExpectationNotMetError
