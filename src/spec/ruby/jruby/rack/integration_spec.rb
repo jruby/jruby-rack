@@ -22,7 +22,6 @@ describe "integration" do
     before do
       @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rack"
       @servlet_context.logger = raise_logger
-      #@servlet_context.logger = org.jruby.rack.logging.StandardOutLogger.new("")
       # make sure we always boot runtimes in the same mode as specs :
       set_compat_version @servlet_context
     end

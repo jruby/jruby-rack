@@ -11,10 +11,12 @@ require 'jruby/rack/rails_booter'
 describe JRuby::Rack::RailsBooter do
 
   let(:booter) do
+    real_logger = org.jruby.rack.logging.BufferLogger.new
+    JRuby::Rack.logger = JRuby::Rack::Logger.new real_logger
     JRuby::Rack::RailsBooter.new JRuby::Rack.context = @rack_context
   end
 
-  after(:all) { JRuby::Rack.context = nil }
+  after { JRuby::Rack.context = nil; JRuby::Rack.logger = nil }
 
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
@@ -90,10 +92,11 @@ describe JRuby::Rack::RailsBooter do
     booter.public_path.should == "."
   end
 
-  it "should create a log device that writes messages to the servlet context" do
+  it "uses JRuby-Rack's logger by default" do
     booter.boot!
-    @rack_context.should_receive(:log).with(/hello/)
-    booter.logger.instance_variable_get(:@logdev).write "hello"
+    expect( booter.logger ).to_not be nil
+    expect( booter.logger ).to be JRuby::Rack.logger
+    booter.logger.info 'hello-there'
   end
 
   it "detects 2.3" do

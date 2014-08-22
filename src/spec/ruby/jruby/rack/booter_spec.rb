@@ -163,10 +163,12 @@ describe JRuby::Rack::Booter do
     ENV['GEM_PATH'].should == "/blah/gems"
   end
 
-  it "creates a logger that writes messages to the servlet context" do
+  it "creates a logger that writes messages to the servlet context (by default)" do
     booter.boot!
-    @rack_context.should_receive(:log).with(/hello/)
-    booter.logger.info "hello"
+    @rack_context.stub(:isEnabled).and_return true
+    level = org.jruby.rack.RackLogger::Level::DEBUG
+    @rack_context.should_receive(:log).with(level, 'Hello-JRuby!')
+    booter.logger.debug 'Hello-JRuby!'
   end
 
   before { $loaded_init_rb = nil }

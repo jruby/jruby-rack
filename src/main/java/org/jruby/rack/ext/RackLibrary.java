@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2013 kares.
+ * Copyright (c) 2013-2014 Karol Bucek LTD.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@ import org.jruby.runtime.load.Library;
  */
 public class RackLibrary implements Library, BasicLibraryService {
 
+    @SuppressWarnings("deprecation")
     public static void load(final Ruby runtime) {
         final RubyModule _JRuby = runtime.getOrCreateModule("JRuby");
         final RubyModule _JRuby_Rack = _JRuby.defineModuleUnder("Rack");
@@ -54,6 +55,17 @@ public class RackLibrary implements Library, BasicLibraryService {
         );
         _Input.defineAnnotatedMethods(Input.class);
         _JRuby.setConstant("RackInput", _Input); // @deprecated backwards-compat
+
+        // JRuby::Rack::Logger
+        final RubyClass _Logger = _JRuby_Rack.defineClassUnder(
+              "Logger", _Object, Logger.ALLOCATOR
+        );
+        _Logger.defineAnnotatedMethods(Logger.class);
+        // JRuby::Rack::ServletLog
+        final RubyClass _ServletLog = _JRuby_Rack.defineClassUnder(
+              "ServletLog", _Object, Logger.ServletLog.ALLOCATOR
+        );
+        _ServletLog.defineAnnotatedMethods(Logger.ServletLog.class);
 
         final RubyModule _Rack = runtime.getOrCreateModule("Rack");
         final RubyModule _Rack_Handler = _Rack.defineModuleUnder("Handler");

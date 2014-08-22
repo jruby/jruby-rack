@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 kares.
+ * Copyright (c) 2014 Karol Bucek LTD.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,16 @@
 package org.jruby.rack.util;
 
 import java.io.IOException;
+
 import org.jruby.NativeException;
 import org.jruby.Ruby;
+import org.jruby.RubyArray;
 import org.jruby.RubyClass;
+import org.jruby.RubyException;
+import org.jruby.RubyString;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  *
@@ -66,6 +72,48 @@ public abstract class ExceptionUtils {
         RaiseException raise = new RaiseException(runtime, errorClass, message, true);
         raise.initCause(cause);
         return raise;
+    }
+
+    public static CharSequence formatError(final RubyException error) {
+        final StringBuilder out = new StringBuilder(128);
+        appendError(error, out); return out;
+    }
+
+    private static void appendInspect(final RubyException error, final StringBuilder out) {
+        final RubyClass errorClass = error.getMetaClass().getRealClass();
+        if ( error.message != null && ! error.message.isNil() ) {
+            out.append("#<").append( errorClass.getName() ).append(": ");
+            out.append( error.message.asString() ).append('>');
+        }
+        else {
+            out.append( errorClass.getName() );
+        }
+    }
+
+    public static void appendError(final RubyException error, final StringBuilder out) {
+        appendInspect(error, out);
+        appendBacktrace(error, out.append('\n'));
+    }
+
+    public static void appendBacktrace(final RubyException error, final StringBuilder out) {
+        appendBacktrace(error, 0, out);
+    }
+
+    public static void appendBacktrace(final RubyException error, final int skip,
+        final StringBuilder out) {
+        final ThreadContext context = error.getRuntime().getCurrentContext();
+        final IRubyObject backtrace = error.callMethod(context, "backtrace");
+        if ( ! backtrace.isNil() /* && backtrace instanceof RubyArray */ ) {
+            final RubyArray trace = backtrace.convertToArray();
+            out.ensureCapacity(out.length() + 24 * trace.getLength());
+            for ( int i = skip; i < trace.getLength(); i++ ) {
+                IRubyObject stackTraceLine = trace.eltInternal(i);
+                if ( stackTraceLine instanceof RubyString ) {
+                    out.append("\tfrom ").append(stackTraceLine).append('\n');
+                }
+            }
+        }
+        //return out;
     }
 
 }
