@@ -30,16 +30,12 @@ describe org.jruby.rack.servlet.ServletRackConfig do
       logger.should be_a(org.jruby.rack.logging.CommonsLoggingLogger)
     end
 
-    org.jruby.rack.logging.JulLogger.class_eval { field_reader :logger }
-
     it "constructs a jul logger with logger name" do
       @servlet_context.should_receive(:getInitParameter).with("jruby.rack.logging.name").and_return "/myapp"
       @servlet_context.should_receive(:getInitParameter).with("jruby.rack.logging").and_return "JUL"
       logger.should be_a(org.jruby.rack.logging.JulLogger)
       logger.logger.name.should == '/myapp'
     end
-
-    org.jruby.rack.logging.Log4jLogger.class_eval { field_reader :logger }
 
     it "constructs a slf4j logger with default logger name" do
       java.lang.System.setProperty("jruby.rack.logging", "Log4J")

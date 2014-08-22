@@ -16,8 +16,20 @@ public class Slf4jLogger extends RackLogger.Base {
 
     private Logger logger;
 
+    public Slf4jLogger() {
+        setLoggerName("");
+    }
+
     public Slf4jLogger(String loggerName) {
         setLoggerName(loggerName);
+    }
+
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
     }
 
     public void setLoggerName(String loggerName) {

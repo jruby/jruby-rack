@@ -25,6 +25,14 @@ public class Log4jLogger extends RackLogger.Base {
         setLoggerName(loggerName);
     }
 
+    public Logger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+
     public void setLoggerName(String loggerName) {
         logger = Logger.getLogger(loggerName);
     }

@@ -20,6 +20,14 @@ public class CommonsLoggingLogger extends RackLogger.Base {
         setLoggerName(loggerName);
     }
 
+    public Log getLogger() {
+        return logger;
+    }
+
+    public void setLogger(Log logger) {
+        this.logger = logger;
+    }
+
     public void setLoggerName(String loggerName) {
         logger = LogFactory.getLog(loggerName);
     }
