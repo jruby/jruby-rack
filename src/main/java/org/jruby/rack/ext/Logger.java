@@ -81,6 +81,7 @@ public class Logger extends RubyObject { // implements RackLogger
     private int level = NOT_SET;
 
     private RackLogger logger; // the "real" logger
+    //private Boolean loggerFormatting;
     private IRubyObject formatter = null; // optional
     private IRubyObject progname;
 
@@ -212,6 +213,18 @@ public class Logger extends RubyObject { // implements RackLogger
 
     @JRubyMethod(name = "formatter=")
     public IRubyObject set_formatter(final ThreadContext context, final IRubyObject formatter) {
+        if ( logger instanceof RackLogger.Base ) {
+            final RackLogger.Base logger = (RackLogger.Base) this.logger;
+            //if ( loggerFormatting == null ) loggerFormatting = logger.isFormatting();
+            if ( formatter.isNil() ) {
+                //if ( loggerFormatting != null && loggerFormatting.booleanValue() ) {
+                    logger.setFormatting(true);
+                //}
+            }
+            else { // if formatter set disable 'potential' logger formatting
+                logger.setFormatting(false);
+            }
+        }
         return this.formatter = formatter;
     }
 
