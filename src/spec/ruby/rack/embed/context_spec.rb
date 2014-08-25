@@ -1,11 +1,4 @@
-#--
-# Copyright (c) 2010-2012 Engine Yard, Inc.
-# Copyright (c) 2007-2009 Sun Microsystems, Inc.
-# This source code is available under the MIT license.
-# See the file LICENSE.txt for details.
-#++
-
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
+require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 
 describe org.jruby.rack.embed.Context do
   let(:stream) { java.io.ByteArrayOutputStream.new }
@@ -28,7 +21,7 @@ describe org.jruby.rack.embed.Context do
     context.log info, "this is logging at its best"
     captured.should == "INFO: this is logging at its best\n"
   end
-  
+
   it "outputs error log messages to stderr" do
     my_error = begin
       raise java.lang.RuntimeException.new "shizzle sticks"

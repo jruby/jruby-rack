@@ -1,10 +1,10 @@
 /*
+ * Copyright (c) 2013-2014 Karol Bucek LTD.
  * Copyright (c) 2010-2012 Engine Yard, Inc.
  * Copyright (c) 2007-2009 Sun Microsystems, Inc.
  * This source code is available under the MIT license.
  * See the file LICENSE.txt for details.
  */
-
 package org.jruby.rack.embed;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class Dispatcher extends AbstractRackDispatcher {
 
     protected final IRubyObject application;
     private RackApplication rackApplication;
-    
+
     public Dispatcher(RackContext rackContext, IRubyObject application) {
         super(rackContext);
         this.application = application;
@@ -48,7 +48,7 @@ public class Dispatcher extends AbstractRackDispatcher {
         // user code should use JRuby::Rack.context instead of $servlet_context
         runtime.getGlobalVariables().set("$servlet_context", rubyContext);
     }
-    
+
     @Override
     protected RackApplication getApplication() throws RackInitializationException {
         if (rackApplication == null) {
@@ -57,13 +57,13 @@ public class Dispatcher extends AbstractRackDispatcher {
         }
         return rackApplication;
     }
-    
+
     @Override
     public void destroy() {
         if (rackApplication != null) rackApplication.destroy();
         rackApplication = null;
     }
-    
+
     @Override
     protected void afterException(
             RackEnvironment env, Exception re,
@@ -77,5 +77,5 @@ public class Dispatcher extends AbstractRackDispatcher {
     protected void afterProcess(RackApplication app) throws IOException {
         // NOOP
     }
-    
+
 }

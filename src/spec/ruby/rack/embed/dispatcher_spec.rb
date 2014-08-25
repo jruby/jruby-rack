@@ -1,6 +1,4 @@
-
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
-require 'jruby'
+require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 
 describe org.jruby.rack.embed.Dispatcher do
 
