@@ -36,22 +36,25 @@ public class OutputStreamLogger extends RackLogger.Base {
 
     private final PrintStream out;
     private Level level;
+    private boolean formatting = true;
 
-    public OutputStreamLogger(OutputStream out) {
+    public OutputStreamLogger(final OutputStream out) {
         this(new PrintStream(out));
     }
 
-    public OutputStreamLogger(PrintStream out) {
+    public OutputStreamLogger(final PrintStream out) {
         if ( out == null ) {
             throw new IllegalArgumentException("no stream");
         }
         this.out = out;
     }
 
+    @Override
     public Level getLevel() {
         return level;
     }
 
+    @Override
     public void setLevel(Level level) {
         this.level = level;
     }
@@ -69,7 +72,7 @@ public class OutputStreamLogger extends RackLogger.Base {
     @Override
     public void log(Level level, String message) {
         if ( ! isEnabled(level) ) return;
-        out.print(level); out.print(": ");
+        printLevel(this, level, out);
         doLog(message);
     }
 
@@ -81,7 +84,7 @@ public class OutputStreamLogger extends RackLogger.Base {
     @Override
     public void log(Level level, String message, Throwable ex) {
         if ( ! isEnabled(level) ) return;
-        out.print(level); out.print(": ");
+        printLevel(this, level, out);
         doLog(message, ex);
     }
 
@@ -95,6 +98,18 @@ public class OutputStreamLogger extends RackLogger.Base {
     public boolean isEnabled(final Level level) {
         if ( level == null || this.level == null ) return true;
         return this.level.ordinal() <= level.ordinal();
+    }
+
+    @Override
+    public boolean isFormatting() { return this.formatting; }
+
+    @Override
+    public void setFormatting(boolean formatting) { this.formatting = formatting; }
+
+    public static void printLevel(final RackLogger.Base logger, final Level level, final PrintStream out) {
+        if ( logger.isFormatting() ) {
+            out.print(level); out.print(": ");
+        }
     }
 
     public static void printMessage(final PrintStream out, final CharSequence message) {

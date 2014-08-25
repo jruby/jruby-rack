@@ -105,6 +105,8 @@ public class Context implements RackContext, RackLogger {
         return this.level.ordinal() <= level.ordinal();
     }
 
+
+
     private class DefaultLogger extends RackLogger.Base {
 
         @Override
@@ -126,6 +128,9 @@ public class Context implements RackContext, RackLogger {
 
         @Override
         public boolean isEnabled(Level level) { return true; }
+
+        @Override
+        public Level getLevel() { return null; /* unknown */ }
 
     }
 

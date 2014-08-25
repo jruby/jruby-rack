@@ -47,6 +47,14 @@ public interface RackLogger {
 
     abstract class Base implements RackLogger {
 
+        public abstract Level getLevel() ;
+
+        public void setLevel(Level level) { /* noop */ }
+
+        public boolean isFormatting() { return false; }
+
+        public void setFormatting(boolean flag) { /* noop */ }
+
         @Override
         public void log(String message) {
             log(Level.INFO, message);

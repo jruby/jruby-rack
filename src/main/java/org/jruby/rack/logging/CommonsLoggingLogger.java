@@ -69,4 +69,14 @@ public class CommonsLoggingLogger extends RackLogger.Base {
         }
     }
 
+    @Override
+    public Level getLevel() {
+        if ( logger.isDebugEnabled() ) return Level.DEBUG;
+        if ( logger.isInfoEnabled() )  return Level.INFO ;
+        if ( logger.isWarnEnabled() )  return Level.WARN ;
+        if ( logger.isErrorEnabled() ) return Level.ERROR;
+        if ( logger.isFatalEnabled() ) return Level.FATAL;
+        return null;
+    }
+
 }

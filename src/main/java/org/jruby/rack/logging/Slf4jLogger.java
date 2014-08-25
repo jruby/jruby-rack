@@ -73,4 +73,14 @@ public class Slf4jLogger extends RackLogger.Base {
         }
     }
 
+    @Override
+    public Level getLevel() {
+        if ( logger.isDebugEnabled() ) return Level.DEBUG;
+        if ( logger.isInfoEnabled() )  return Level.INFO ;
+        if ( logger.isWarnEnabled() )  return Level.WARN ;
+        if ( logger.isErrorEnabled() ) return Level.ERROR;
+        if ( logger.isErrorEnabled() ) return Level.FATAL;
+        return null;
+    }
+
 }

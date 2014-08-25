@@ -1,11 +1,4 @@
-#--
-# Copyright (c) 2010-2012 Engine Yard, Inc.
-# Copyright (c) 2007-2009 Sun Microsystems, Inc.
-# This source code is available under the MIT license.
-# See the file LICENSE.txt for details.
-#++
-
-require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
+require File.expand_path('../spec_helper', File.dirname(__FILE__))
 
 describe org.jruby.rack.DefaultRackApplication, "call" do
 
@@ -190,7 +183,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     @app_factory.rackup_script.should == nil
 
     @rack_context.should_receive(:log).with do |*args|
-      args.first.should == 'WARN' if args.size > 1
+      expect( args.first.to_s ).to eql 'WARN' if args.size > 1
       args.last.should =~ /no rackup script found/
     end
 
@@ -936,7 +929,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
     raise_error_logged = 0
     @rack_context.stub(:log).with do |level, msg, e|
-      if level == 'ERROR'
+      if level.to_s == 'ERROR'
         expect( msg ).to eql 'unable to initialize application'
         expect( e ).to be_a org.jruby.exceptions.RaiseException
         raise_error_logged += 1

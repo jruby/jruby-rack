@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashMap;
@@ -197,13 +198,16 @@ public class MockServletContext implements ServletContext {
         @Override
         public void log(Level level, String message, Throwable ex) { /* NOOP */ }
 
+        @Override
+        public Level getLevel() { return null; }
+
     }
 
 	public void setContextPath(String contextPath) {
 		this.contextPath = (contextPath != null ? contextPath : "");
 	}
 
-	/* This is a Servlet API 2.5 method. */
+    @Override // Servlet API 2.5
 	public String getContextPath() {
 		return this.contextPath;
 	}
@@ -212,6 +216,7 @@ public class MockServletContext implements ServletContext {
 		this.contexts.put(contextPath, context);
 	}
 
+    @Override
 	public ServletContext getContext(String contextPath) {
 		if (this.contextPath.equals(contextPath)) {
 			return this;
@@ -223,6 +228,7 @@ public class MockServletContext implements ServletContext {
 		this.majorVersion = majorVersion;
 	}
 
+    @Override
 	public int getMajorVersion() {
 		return this.majorVersion;
 	}
@@ -231,6 +237,7 @@ public class MockServletContext implements ServletContext {
 		this.minorVersion = minorVersion;
 	}
 
+    @Override
 	public int getMinorVersion() {
 		return this.minorVersion;
 	}
@@ -239,7 +246,9 @@ public class MockServletContext implements ServletContext {
 		this.effectiveMajorVersion = effectiveMajorVersion;
 	}
 
-	public int getEffectiveMajorVersion() {
+    @Override
+
+    public int getEffectiveMajorVersion() {
 		return this.effectiveMajorVersion;
 	}
 
@@ -247,14 +256,17 @@ public class MockServletContext implements ServletContext {
 		this.effectiveMinorVersion = effectiveMinorVersion;
 	}
 
+    @Override
 	public int getEffectiveMinorVersion() {
 		return this.effectiveMinorVersion;
 	}
 
+    @Override
 	public String getMimeType(String filePath) {
 		return MimeTypeResolver.getMimeType(filePath);
 	}
 
+    @Override
 	public Set<String> getResourcePaths(String path) {
 		String actualPath = (path.endsWith("/") ? path : path + "/");
 		Resource resource = this.resourceLoader.getResource(getResourceLocation(actualPath));
@@ -280,6 +292,7 @@ public class MockServletContext implements ServletContext {
 		}
 	}
 
+    @Override
 	public URL getResource(String path) throws MalformedURLException {
 		Resource resource = this.resourceLoader.getResource(getResourceLocation(path));
 		if (!resource.exists()) {
@@ -297,6 +310,7 @@ public class MockServletContext implements ServletContext {
 		}
 	}
 
+    @Override
 	public InputStream getResourceAsStream(String path) {
 		Resource resource = this.resourceLoader.getResource(getResourceLocation(path));
 		if (!resource.exists()) {
@@ -311,6 +325,7 @@ public class MockServletContext implements ServletContext {
 		}
 	}
 
+    @Override
 	public RequestDispatcher getRequestDispatcher(String path) {
 		if (!path.startsWith("/")) {
 			throw new IllegalArgumentException("RequestDispatcher path at ServletContext level must start with '/'");
@@ -318,30 +333,37 @@ public class MockServletContext implements ServletContext {
 		return new MockRequestDispatcher(path);
 	}
 
+    @Override
 	public RequestDispatcher getNamedDispatcher(String path) {
 		return null;
 	}
 
+    @Override @SuppressWarnings("deprecation")
 	public Servlet getServlet(String name) {
 		return null;
 	}
 
+    @Override
 	public Enumeration<Servlet> getServlets() {
 		return Collections.enumeration(new HashSet<Servlet>());
 	}
 
+    @Override @SuppressWarnings("deprecation")
 	public Enumeration<String> getServletNames() {
 		return Collections.enumeration(new HashSet<String>());
 	}
 
+    @Override
 	public void log(String message) {
 		logger.log(message);
 	}
 
+    @Override @SuppressWarnings("deprecation")
 	public void log(Exception ex, String message) {
 		logger.log(message, ex);
 	}
 
+    @Override
 	public void log(String message, Throwable ex) {
 		logger.log(message, ex);
 	}
@@ -354,6 +376,7 @@ public class MockServletContext implements ServletContext {
         this.logger = logger == null ? new NullLogger() : logger;
     }
 
+    @Override
 	public String getRealPath(String path) {
 		Resource resource = this.resourceLoader.getResource(getResourceLocation(path));
 		try {
@@ -365,10 +388,12 @@ public class MockServletContext implements ServletContext {
 		}
 	}
 
+    @Override
 	public String getServerInfo() {
 		return "MockServletContext";
 	}
 
+    @Override
 	public String getInitParameter(String name) {
         if (name == null) {
             throw new IllegalArgumentException("parameter name must not be null");
@@ -383,10 +408,12 @@ public class MockServletContext implements ServletContext {
 		this.initParameters.put(name, value);
 	}
 
+    @Override
 	public Enumeration<String> getInitParameterNames() {
 		return Collections.enumeration(this.initParameters.keySet());
 	}
 
+    @Override
 	public Object getAttribute(String name) {
         if (name == null) {
             throw new IllegalArgumentException("attribute name must not be null");
@@ -394,10 +421,12 @@ public class MockServletContext implements ServletContext {
 		return this.attributes.get(name);
 	}
 
+    @Override
 	public Enumeration<String> getAttributeNames() {
 		return Collections.enumeration(this.attributes.keySet());
 	}
 
+    @Override
 	public void setAttribute(String name, Object value) {
         if (name == null) {
             throw new IllegalArgumentException("attribute name must not be null");
@@ -410,6 +439,7 @@ public class MockServletContext implements ServletContext {
 		}
 	}
 
+    @Override
 	public void removeAttribute(String name) {
         if (name == null) {
             throw new IllegalArgumentException("attribute name must not be null");
@@ -421,6 +451,7 @@ public class MockServletContext implements ServletContext {
 		this.servletContextName = servletContextName;
 	}
 
+    @Override
 	public String getServletContextName() {
 		return this.servletContextName;
 	}
@@ -500,11 +531,7 @@ public class MockServletContext implements ServletContext {
 
 	@Override
 	public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
-        final Set<SessionTrackingMode> trackingModes = new LinkedHashSet<SessionTrackingMode>(3);
-		trackingModes.add(SessionTrackingMode.COOKIE);
-		trackingModes.add(SessionTrackingMode.URL);
-		trackingModes.add(SessionTrackingMode.SSL);
-		return trackingModes;
+        return EnumSet.of(SessionTrackingMode.COOKIE, SessionTrackingMode.URL, SessionTrackingMode.SSL);
 	}
 
 	@Override

@@ -110,4 +110,7 @@ public class RaiseLogger extends RackLogger.Base {
         }
     }
 
+    @Override
+    public Level getLevel() { return null; }
+
 }

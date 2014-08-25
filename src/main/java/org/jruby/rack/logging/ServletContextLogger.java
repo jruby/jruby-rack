@@ -20,14 +20,6 @@ public class ServletContextLogger extends RackLogger.Base {
         this.context = context;
     }
 
-    //public Level getLevel() {
-    //    return level;
-    //}
-
-    //public void setLevel(Level level) {
-    //    this.level = level;
-    //}
-
     @Override
     public void log(String message) {
         context.log(message);
@@ -53,6 +45,11 @@ public class ServletContextLogger extends RackLogger.Base {
         return true;
         //if ( level == null || this.level == null ) return true;
         //return this.level.ordinal() <= level.ordinal();
+    }
+
+    @Override
+    public Level getLevel() {
+        return null; // unknown
     }
 
 }

@@ -74,4 +74,14 @@ public class Log4jLogger extends RackLogger.Base {
         }
     }
 
+    @Override
+    public Level getLevel() {
+        if ( logger.isEnabledFor(org.apache.log4j.Level.DEBUG) ) return Level.DEBUG;
+        if ( logger.isEnabledFor(org.apache.log4j.Level.INFO) )  return Level.INFO ;
+        if ( logger.isEnabledFor(org.apache.log4j.Level.WARN) )  return Level.WARN ;
+        if ( logger.isEnabledFor(org.apache.log4j.Level.ERROR) ) return Level.ERROR;
+        if ( logger.isEnabledFor(org.apache.log4j.Level.FATAL) ) return Level.FATAL;
+        return null;
+    }
+
 }

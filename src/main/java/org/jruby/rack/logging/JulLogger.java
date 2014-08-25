@@ -86,4 +86,14 @@ public class JulLogger extends RackLogger.Base {
         return defaultLevel;
     }
 
+    @Override
+    public Level getLevel() {
+        if ( logger.isLoggable(java.util.logging.Level.FINE) ) return Level.DEBUG;
+        if ( logger.isLoggable(java.util.logging.Level.INFO) ) return Level.INFO ;
+        if ( logger.isLoggable(java.util.logging.Level.WARNING) ) return Level.WARN ;
+        if ( logger.isLoggable(java.util.logging.Level.SEVERE) ) return Level.ERROR;
+        if ( logger.isLoggable(java.util.logging.Level.SEVERE) ) return Level.FATAL;
+        return null;
+    }
+
 }
