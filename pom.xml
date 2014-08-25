@@ -62,13 +62,16 @@
     <repository>
       <id>codehaus</id>
       <name>Codehaus Repository</name>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
       <url>http://repository.codehaus.org</url>
+    </repository>
+    <repository>
+      <id>tesla</id>
+      <name>tesla</name>
+      <url>http://repository.tesla.io:8081/nexus/content/groups/public</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
     </repository>
   </repositories>
 
