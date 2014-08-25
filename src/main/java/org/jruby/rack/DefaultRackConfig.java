@@ -156,12 +156,14 @@ public class DefaultRackConfig implements RackConfig {
     public RackLogger getLogger() {
         if ( logger == null ) {
             String loggerClass = getLoggerClassName();
-            final Map<String, String> loggerTypes = getLoggerTypes();
-            final String loggerKey = loggerClass.toLowerCase();
-            if ( loggerTypes.containsKey(loggerKey) ) {
-                loggerClass = loggerTypes.get(loggerKey);
+            if ( loggerClass != null ) {
+                final Map<String, String> loggerTypes = getLoggerTypes();
+                final String loggerKey = loggerClass.toLowerCase();
+                if ( loggerTypes.containsKey(loggerKey) ) {
+                    loggerClass = loggerTypes.get(loggerKey);
+                }
+                logger = createLogger(loggerClass);
             }
-            logger = createLogger(loggerClass);
             if ( logger == null ) logger = defaultLogger();
         }
         return logger;
@@ -246,7 +248,7 @@ public class DefaultRackConfig implements RackConfig {
         return getProperty("jruby.rack.logging.name", "jruby.rack");
     }
 
-    protected String defaultLoggerClassName() { return "stdout"; }
+    protected String defaultLoggerClassName() { return null; }
 
     public String getLoggerClassName() {
         return getProperty("jruby.rack.logging", defaultLoggerClassName());
