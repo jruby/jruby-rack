@@ -312,9 +312,7 @@ public class Logger extends RubyObject { // implements RackLogger
     @JRubyMethod(name = "unknown")
     public IRubyObject unknown(final ThreadContext context,
         final IRubyObject msg, final Block block) {
-
-        // TODO support UNKNOWN in RackLogger ?!
-
+        // NOTE possible to "somehow" support UNKNOWN in RackLogger ?!
         return context.runtime.newBoolean( add(UNKNOWN, context, msg, block) );
     }
 
@@ -510,7 +508,7 @@ public class Logger extends RubyObject { // implements RackLogger
 
 
     /**
-     * @deprecated mostly for 1.1 compatibility
+     * @deprecated Likely not used at all, mostly for 1.1 compatibility!
      */
     @JRubyClass(name="JRuby::Rack::ServletLog")
     public static class ServletLog extends RubyObject {

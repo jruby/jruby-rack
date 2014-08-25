@@ -61,6 +61,13 @@ public class RackLibrary implements Library, BasicLibraryService {
               "Logger", _Object, Logger.ALLOCATOR
         );
         _Logger.defineAnnotatedMethods(Logger.class);
+        // Rails compatibility as it assumes logger.class::DEBUG to work :
+        _Logger.setConstant("DEBUG", runtime.newFixnum(Logger.DEBUG));
+        _Logger.setConstant("INFO",  runtime.newFixnum(Logger.INFO));
+        _Logger.setConstant("WARN",  runtime.newFixnum(Logger.WARN));
+        _Logger.setConstant("ERROR", runtime.newFixnum(Logger.ERROR));
+        _Logger.setConstant("FATAL", runtime.newFixnum(Logger.FATAL));
+        //_Logger.setConstant("UNKNOWN", runtime.newFixnum(Logger.UNKNOWN));
         // JRuby::Rack::ServletLog
         final RubyClass _ServletLog = _JRuby_Rack.defineClassUnder(
               "ServletLog", _Object, Logger.ServletLog.ALLOCATOR
