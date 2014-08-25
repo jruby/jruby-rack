@@ -24,6 +24,10 @@ public class ServletRackConfig extends DefaultRackConfig {
         this.context = context;
     }
 
+    public ServletContext getServletContext() {
+        return context;
+    }
+
     @Override
     public String getProperty(String key) {
         String value;
@@ -43,14 +47,21 @@ public class ServletRackConfig extends DefaultRackConfig {
     }
 
     @Override
+    protected String defaultLoggerClassName() { return "servlet_context"; }
+
+    @Override
     protected RackLogger createLogger(String loggerClass) {
-        if (loggerClass == null || loggerClass.equals(ServletContextLogger.class.getName())) {
+        if (loggerClass == null ||
+            "servlet_context".equalsIgnoreCase(loggerClass) ||
+            ServletContextLogger.class.getName().equals(loggerClass)) {
             return new ServletContextLogger(context);
         }
         return super.createLogger(loggerClass);
     }
 
-    public ServletContext getServletContext() {
-        return context;
+    @Override
+    protected RackLogger defaultLogger() {
+        return new ServletContextLogger(context);
     }
+
 }

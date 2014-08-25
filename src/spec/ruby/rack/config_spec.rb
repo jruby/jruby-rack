@@ -1,11 +1,27 @@
-#--
-# Copyright (c) 2010-2012 Engine Yard, Inc.
-# Copyright (c) 2007-2009 Sun Microsystems, Inc.
-# This source code is available under the MIT license.
-# See the file LICENSE.txt for details.
-#++
-
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
+
+describe org.jruby.rack.DefaultRackConfig do
+
+  let(:config) do
+    config = org.jruby.rack.DefaultRackConfig.new
+    config.quiet = true; config
+  end
+
+  let(:logger) { config.getLogger }
+
+  it "constructs a standard out logger when the logging attribute is unrecognized" do
+    java.lang.System.setProperty("jruby.rack.logging", "other")
+    logger.should be_a(org.jruby.rack.logging.StandardOutLogger)
+  end
+
+  it "constructs a standard out logger when the logger can't be instantiated" do
+    java.lang.System.setProperty("jruby.rack.logging", "java.lang.String")
+    logger.should be_a(org.jruby.rack.logging.StandardOutLogger)
+  end
+
+  after { java.lang.System.clearProperty("jruby.rack.logging") }
+
+end
 
 describe org.jruby.rack.servlet.ServletRackConfig do
 
@@ -49,14 +65,14 @@ describe org.jruby.rack.servlet.ServletRackConfig do
       logger.should be_a(org.jruby.rack.logging.CommonsLoggingLogger)
     end
 
-    it "constructs a standard out logger when the logging attribute is unrecognized" do
+    it "constructs a servlet logger when the logging attribute is unrecognized" do
       java.lang.System.setProperty("jruby.rack.logging", "other")
-      logger.should be_a(org.jruby.rack.logging.StandardOutLogger)
+      logger.should be_a(org.jruby.rack.logging.ServletContextLogger)
     end
 
-    it "constructs a standard out logger when the logger can't be instantiated" do
+    it "constructs a servlet logger when the logger can't be instantiated" do
       java.lang.System.setProperty("jruby.rack.logging", "java.lang.String")
-      logger.should be_a(org.jruby.rack.logging.StandardOutLogger)
+      logger.should be_a(org.jruby.rack.logging.ServletContextLogger)
     end
 
     it "constructs a servlet context logger by default" do
