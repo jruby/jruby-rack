@@ -12,11 +12,6 @@ module Rack
   module Handler
     class Servlet
 
-      # @deprecated please use #create_env instead
-      def create_lazy_env(servlet_env)
-        DefaultEnv.new(servlet_env).to_hash
-      end
-
       @@env = nil
       def self.env; @@env ||= DefaultEnv; end
 

@@ -699,7 +699,7 @@ describe Rack::Handler::Servlet do
 
     before do
       def servlet.create_env(servlet_env)
-        create_lazy_env(servlet_env)
+        Rack::Handler::Servlet::DefaultEnv.new(servlet_env)
       end
     end
 
