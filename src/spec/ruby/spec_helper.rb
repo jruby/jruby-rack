@@ -84,6 +84,30 @@ module SharedHelpers
     org.jruby.rack.logging.RaiseLogger.new(level, JRuby.runtime.out)
   end
 
+  def gem_install_unless_installed(name, version)
+    found = nil
+    begin
+      if Gem::Specification.respond_to? :find_all
+        all = Gem::Specification.find_all
+        found = all.find do |spec|
+          spec.name == name && spec.version.to_s == version
+        end
+      elsif Gem::Specification.respond_to? :find_by_name
+        found = Gem::Specification.find_by_name name, version
+      else
+        raise Gem::LoadError unless Gem.available? name, version
+      end
+    rescue Gem::LoadError
+      found = false
+    end
+    # NOTE: won't ever be found in RubyGems >= 2.3 likely due Bundler
+    unless found
+      require 'rubygems/dependency_installer'
+      installer = Gem::DependencyInstaller.new
+      installer.install name, version
+    end
+  end
+
   ExpectationNotMetError = RSpec::Expectations::ExpectationNotMetError
 
   def expect_eql_java_bytes(actual, expected)

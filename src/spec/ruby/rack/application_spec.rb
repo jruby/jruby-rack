@@ -311,12 +311,10 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       end
 
       it "loads specified version of rack", :lib => :stub do
-        gem_install_rack_unless_installed '1.3.10'
+        gem_install_unless_installed 'rack', '1.3.10'
         set_config 'jruby.runtime.env', 'false'
 
-        script = "" +
-          "# rack.version: ~>1.3.6\n" +
-          "Proc.new { 'proc-rack-app' }"
+        script = "# rack.version: ~>1.3.6\n Proc.new { 'proc-rack-app' }"
         app_factory.setRackupScript script
         @runtime = app_factory.newRuntime
         @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
@@ -330,7 +328,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       end
 
       it "loads bundler with rack", :lib => :stub do
-        gem_install_rack_unless_installed '1.3.6'
+        gem_install_unless_installed 'rack', '1.3.6'
         set_config 'jruby.runtime.env', 'false'
 
         script = "# encoding: UTF-8\n" +
@@ -352,20 +350,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_not_eval_as_nil "defined?(Bundler)"
         should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
         should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.6'
-      end
-
-      def gem_install_rack_unless_installed(version)
-        begin
-          if Gem::Specification.respond_to? :find_by_name
-            Gem::Specification.find_by_name 'rack', version
-          else
-            raise Gem::LoadError unless Gem.available? 'rack', version
-          end
-        rescue Gem::LoadError
-          require 'rubygems/dependency_installer'
-          installer = Gem::DependencyInstaller.new
-          installer.install 'rack', version
-        end
       end
 
       # should not matter on 1.7.x due https://github.com/jruby/jruby/pull/123

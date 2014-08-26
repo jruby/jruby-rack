@@ -1,4 +1,4 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
 group :default do
   if rack_version = ENV['RACK_VERSION']
