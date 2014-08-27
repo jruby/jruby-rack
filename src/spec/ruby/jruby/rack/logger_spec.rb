@@ -1,3 +1,4 @@
+require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 
 describe JRuby::Rack::Logger do
 
@@ -99,6 +100,19 @@ describe JRuby::Rack::Logger do
   it 'handles constant resolution (for Rails compatibility)' do
     expect( logger.class::DEBUG ).to eql 0
     expect( logger.class::FATAL ).to eql 4
+  end
+
+  it 'is not silencable (by default)' do
+    expect( JRuby::Rack::Logger.silencer ).to be false
+  end
+
+  it 'supports silence with block' do
+    called = nil
+    logger.silence do |logger|
+      called = true
+      expect( logger ).to be logger
+    end
+    expect( called ).to be true
   end
 
   describe JRuby::Rack::ServletLog do

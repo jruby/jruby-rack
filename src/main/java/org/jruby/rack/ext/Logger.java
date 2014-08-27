@@ -312,7 +312,7 @@ public class Logger extends RubyObject { // implements RackLogger
     @JRubyMethod(name = "unknown")
     public IRubyObject unknown(final ThreadContext context,
         final IRubyObject msg, final Block block) {
-        // NOTE possible to "somehow" support UNKNOWN in RackLogger ?!
+        // NOTE possibly - "somehow" support UNKNOWN in RackLogger ?!
         return context.runtime.newBoolean( add(UNKNOWN, context, msg, block) );
     }
 
@@ -341,9 +341,7 @@ public class Logger extends RubyObject { // implements RackLogger
     public IRubyObject add(final ThreadContext context,
         final IRubyObject severity, final IRubyObject msg,
         final IRubyObject progname, final Block block) {
-
-        // TODO support UNKNOWN in RackLogger ?!
-
+        // NOTE possibly - "somehow" support UNKNOWN in RackLogger ?!
         return context.runtime.newBoolean( add(UNKNOWN, context, msg, block) );
     }
 
@@ -445,20 +443,21 @@ public class Logger extends RubyObject { // implements RackLogger
 
     /*
     private static String formatSeverity(final int severity) {
-    switch ( severity) {
-    case DEBUG: return "DEBUG";
-    case INFO : return "INFO" ;
-    case WARN : return "WARN" ;
-    case ERROR: return "ERROR";
-    case FATAL: return "FATAL";
-    }
-    return "ANY";
+        switch ( severity) {
+            case DEBUG: return "DEBUG";
+            case INFO : return "INFO" ;
+            case WARN : return "WARN" ;
+            case ERROR: return "ERROR";
+            case FATAL: return "FATAL";
+        }
+        return "ANY";
     } */
 
     // RackLogger
 
     @Override
     public Object toJava(Class target) {
+        // NOTE: maybe this is not a good idea ?!
         if ( RackLogger.class == target ) return logger;
         return super.toJava(target);
     }
@@ -498,17 +497,63 @@ public class Logger extends RubyObject { // implements RackLogger
 
     @Override @Deprecated
     public void log(String level, String message) {
-        logger.log(Level.valueOf(level), message);
+        logger.log(level, message);
     }
 
     @Override @Deprecated
     public void log(String level, String message, Throwable ex) {
-        logger.log(Level.valueOf(level), message, ex);
+        logger.log(level, message, ex);
     } */
 
+    // LoggerSilence API :
+
+    private static boolean silencer = false; // we're NOT true by default!
+
+    @JRubyMethod(name= "silencer", meta = true)
+    public static IRubyObject get_silencer(final ThreadContext context, final IRubyObject self) {
+        return context.runtime.newBoolean(silencer);
+    }
+
+    @JRubyMethod(name = "silencer=", meta = true)
+    public static IRubyObject set_silencer(final ThreadContext context, final IRubyObject self,
+        final IRubyObject value) {
+        return context.runtime.newBoolean(silencer = value.isTrue());
+    }
+
+    @JRubyMethod(name = "silence")
+    public IRubyObject silence(final ThreadContext context, final Block block) {
+        return doSilence(ERROR, context, block); // temp_level = Logger::ERROR
+    }
+
+    @JRubyMethod(name = "silence", required = 1)
+    public IRubyObject silence(final ThreadContext context,
+        final IRubyObject temp_level, final Block block) {
+        final int tempLevel = (int) temp_level.convertToInteger("to_i").getLongValue();
+        return doSilence(tempLevel, context, block);
+    }
+
+    private IRubyObject doSilence(final int tempLevel,
+        final ThreadContext context, final Block block) {
+        if ( silencer ) {
+            try { // not implemented - on purpose!
+                return block.yield(context, this);
+            }
+            finally { /* noop */ }
+        }
+        else {
+            return block.yield(context, this);
+        }
+    }
+
+    // (old) BufferedLogger API compatibility :
+
+    @JRubyMethod(name = "flush", alias = { "auto_flushing", "auto_flushing=" })
+    public IRubyObject stub(final ThreadContext context) {
+        return context.nil;
+    }
 
     /**
-     * @deprecated Likely not used at all, mostly for 1.1 compatibility!
+     * @deprecated Likely, no longer used at all, mostly for 1.1 compatibility.
      */
     @JRubyClass(name="JRuby::Rack::ServletLog")
     public static class ServletLog extends RubyObject {
@@ -564,19 +609,17 @@ public class Logger extends RubyObject { // implements RackLogger
 
         @JRubyMethod
         public IRubyObject write(final IRubyObject msg) {
-            // NOTE: this is a Java RackContext#log (RackLogger#log) call ...
-            //return getInstanceVariable("@context").callMethod(context, "log", msg);
             context.log( msg.toString() );
             return msg;
         }
 
         @JRubyMethod
         public IRubyObject puts(final IRubyObject msg) {
-            return write(msg); // return this.callMethod(context, "write", msg);
+            return write(msg);
         }
 
         @JRubyMethod(name = "close", alias = "flush")
-        public IRubyObject close(final ThreadContext context) {
+        public IRubyObject noop(final ThreadContext context) {
             return context.nil; /* NOOP */
         }
 
