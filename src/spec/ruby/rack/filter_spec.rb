@@ -86,6 +86,17 @@ describe org.jruby.rack.RackFilter do
     filter.doFilter(@request, @response, chain)
   end
   
+  it "dispatches to the rack dispatcher if the chain resulted in a 501" do
+    # non standard verbs like PATCH produce HTTP 501
+    # see also http://httpstatus.es/501 and http://tools.ietf.org/html/rfc5789
+    chain.should_receive(:doFilter).ordered.and_return do |_, resp|
+      resp.sendError(501)
+    end
+    @response.should_receive(:reset)
+    dispatcher.should_receive(:process)
+    filter.doFilter(@request, @response, chain)
+  end
+
   it "dispatches to the rack dispatcher out of configured non handled statuses" do
     filter = Class.new(org.jruby.rack.RackFilter) do
       def wrapResponse(response)
