@@ -308,7 +308,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
         try { // try to set jruby home to jar file path
             final URL resource = Ruby.class.getResource("/META-INF/jruby.home");
-            if ( resource != null && "jar".equals(resource.getProtocol()) ) {
+            if ( !config.getJRubyHome().startsWith("uri:classloader:") && resource != null && "jar".equals(resource.getProtocol()) ) {
                 String home;
                 try { // http://weblogs.java.net/blog/2007/04/25/how-convert-javaneturl-javaiofile
                     home = resource.toURI().getSchemeSpecificPart();
