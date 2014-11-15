@@ -7,6 +7,13 @@
  -->
 <project xsi:schemaLocation='http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd' xmlns='http://maven.apache.org/POM/4.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
   <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
   <version>1.1.17-SNAPSHOT</version>
@@ -44,33 +51,6 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-
-  <distributionManagement>
-    <repository>
-      <id>codehaus-jruby-repository</id>
-      <name>JRuby Central Repository</name>
-      <url>dav:https://dav.codehaus.org/repository/jruby</url>
-    </repository>
-    <snapshotRepository>
-      <id>codehaus-jruby-snapshot-repository</id>
-      <name>JRuby Central Development Repository</name>
-      <url>dav:https://dav.codehaus.org/snapshots.repository/jruby</url>
-    </snapshotRepository>
-  </distributionManagement>
-
-  <repositories>
-    <repository>
-      <id>codehaus</id>
-      <name>Codehaus Repository</name>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <url>http://repository.codehaus.org</url>
-    </repository>
-  </repositories>
 
   <developers>
     <developer>
@@ -143,6 +123,27 @@
       <version>3.1.4.RELEASE</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>rubygems</groupId>
+      <artifactId>bouncy-castle-java</artifactId>
+      <version>1.5.0147</version>
+      <scope>provided</scope>
+      <type>gem</type>
+    </dependency>
+    <dependency>
+      <groupId>rubygems</groupId>
+      <artifactId>jruby-openssl</artifactId>
+      <version>0.9.4</version>
+      <scope>provided</scope>
+      <type>gem</type>
+    </dependency>
+    <dependency>
+      <groupId>rubygems</groupId>
+      <artifactId>bundler</artifactId>
+      <version>${bundler.version}</version>
+      <scope>provided</scope>
+      <type>gem</type>
+    </dependency>
   </dependencies>
 
   <build>
@@ -190,28 +191,16 @@
           <groupId>de.saumya.mojo</groupId>
           <artifactId>gem-maven-plugin</artifactId>
           <version>${saumya.mojo.version}</version>
+	  <configuration>
+            <includeOpenSSL>false</includeOpenSSL>
+	    <gemHomes>
+	      <provided>${project.build.directory}/rubygems</provided>
+	    </gemHomes>
+	  </configuration>
           <executions>
-            <execution>
-              <!-- NOTE: due JRuby 1.6.8 -->
-              <id>gem-install-jruby-openssl</id>
-              <phase>test</phase>
-              <goals><goal>install</goal></goals>
-              <configuration>
-                <jruby.version>${jruby.version}</jruby.version>
-                <includeOpenSSL>false</includeOpenSSL>
-                <args>--local ${vendor.gems.path}/bouncy-castle-java-1.5.0147.gem ${vendor.gems.path}/jruby-openssl-0.9.4.gem</args>
-              </configuration>
-            </execution>
-            <execution>
-              <id>gem-install-bundler</id>
-              <phase>test</phase>
-              <goals><goal>install</goal></goals>
-              <configuration>
-                <jruby.version>${jruby.version}</jruby.version>
-                <includeOpenSSL>false</includeOpenSSL>
-                <args>bundler -v ${bundler.version}</args>
-              </configuration>
-            </execution>
+	    <execution>
+	      <goals><goal>initialize</goal></goals>
+	    </execution>
           </executions>
       </plugin>
       <plugin>
@@ -259,13 +248,6 @@
         </executions>
       </plugin>
     </plugins>
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-webdav</artifactId>
-        <version>1.0-beta-2</version>
-      </extension>
-    </extensions>
   </build>
 
   <profiles>
