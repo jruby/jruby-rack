@@ -45,11 +45,20 @@ public class UnmappedRackFilter extends AbstractFilter {
 
     private boolean responseHandledByDefault = true;
 
-    private Collection<Integer> responseNotHandledStatuses =
+    private static final Collection<Integer> RESPONSE_NOT_HANDLED_STATUSES;
+    static {
+        final HashSet<Integer> statuses = new HashSet<Integer>(8, 1);
+        statuses.add( 404 );
         // 403 due containers not supporting PUT/DELETE correctly (Tomcat 6)
+        statuses.add( 403 );
         // 405 returned by Jetty 7/8 on PUT/DELETE requests by default
+        statuses.add( 405 );
         // 501 is returned for non standard http verbs like PATCH
-        Collections.unmodifiableList( Arrays.asList(404, 403, 405, 501) );
+        statuses.add( 501 );
+        RESPONSE_NOT_HANDLED_STATUSES = Collections.unmodifiableSet(statuses);
+    }
+
+    private Collection<Integer> responseNotHandledStatuses = RESPONSE_NOT_HANDLED_STATUSES;
     private RackContext context;
     private RackDispatcher dispatcher;
 
