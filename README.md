@@ -138,8 +138,8 @@ using is `org.jruby.rack.RackFilter`, the filter supports the following
   only), by default "true"
 - **addsHtmlToPathInfo** controls whether the .html suffix is added to the URI
   when checking if the request is for a static page
-- **verifiesHtmlResource** used with the previous parameter to makee sure the
-  requested static resource exist before adding the .html request URI suffix
+- **verifiesHtmlResource** used with the previous parameter to make sure the
+  requested static resource exists before adding the .html request URI suffix
 
 The application can also be configured to dispatch through a servlet instead of
 a filter, the servlet class name is `org.jruby.rack.RackServlet`.
