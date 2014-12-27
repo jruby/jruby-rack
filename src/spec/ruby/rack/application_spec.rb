@@ -932,8 +932,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @rack_config.stub(:getMaximumRuntimes).and_return 8
 
     @pooling_factory.init(@rack_context)
+    sleep(0.10)
     @pooling_factory.getApplicationPool.size.should < 6
-    sleep(0.45) # 6 x 0.15 == 0.9 but we're booting in paralel
+    sleep(ENV['TRAVIS'] == 'true' ? 0.9 : 0.45) # 6 x 0.15 == 0.9 but we're parallel
     @pooling_factory.getApplicationPool.size.should >= 6
 
     expect( @pooling_factory.getManagedApplications ).to_not be_empty
