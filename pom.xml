@@ -30,7 +30,7 @@
     <bundler.version>1.6.5</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
     <saumya.mojo.version>1.0.6</saumya.mojo.version>
-    <!--default: <gem.home>target/rubygems</gem.home>-->
+    <gem.home>${project.build.directory}/rubygems</gem.home>
   </properties>
 
   <issueManagement>
@@ -203,13 +203,16 @@
           <configuration>
             <includeOpenSSL>false</includeOpenSSL>
             <gemHomes>
-              <provided>${project.build.directory}/rubygems</provided>
+              <provided>${gem.home}</provided>
             </gemHomes>
           </configuration>
           <executions>
-	        <execution>
-	          <goals><goal>initialize</goal></goals>
-	        </execution>
+            <execution>
+              <id>default-initialize</id>
+              <configuration>
+                <libDirectory>smt-that-does-not-exists</libDirectory>
+              </configuration>
+            </execution>
           </executions>
       </plugin>
       <plugin>
@@ -262,6 +265,9 @@
   <profiles>
     <profile>
       <id>jars</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <build>
         <plugins>
           <plugin>
