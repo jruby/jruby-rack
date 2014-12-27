@@ -29,7 +29,7 @@
     <vendor.gems.path>vendor/gems</vendor.gems.path>
     <bundler.version>1.6.5</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
-    <saumya.mojo.version>1.0.4</saumya.mojo.version>
+    <saumya.mojo.version>1.0.6</saumya.mojo.version>
     <!--default: <gem.home>target/rubygems</gem.home>-->
   </properties>
 
@@ -68,6 +68,23 @@
       <email>self@kares.org</email>
     </developer>
   </developers>
+
+  <repositories>
+    <repository>
+      <id>rubygems-releases</id>
+      <url>http://rubygems-proxy.torquebox.org/releases</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>sonatype</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
@@ -125,24 +142,17 @@
     </dependency>
     <dependency>
       <groupId>rubygems</groupId>
-      <artifactId>bouncy-castle-java</artifactId>
-      <version>1.5.0147</version>
-      <scope>provided</scope>
-      <type>gem</type>
-    </dependency>
-    <dependency>
-      <groupId>rubygems</groupId>
       <artifactId>jruby-openssl</artifactId>
-      <version>0.9.4</version>
-      <scope>provided</scope>
+      <version>0.9.6</version>
       <type>gem</type>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>rubygems</groupId>
       <artifactId>bundler</artifactId>
       <version>${bundler.version}</version>
-      <scope>provided</scope>
       <type>gem</type>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
@@ -186,21 +196,20 @@
         <artifactId>maven-help-plugin</artifactId>
         <version>2.2</version>
       </plugin>
-
       <plugin>
           <groupId>de.saumya.mojo</groupId>
           <artifactId>gem-maven-plugin</artifactId>
           <version>${saumya.mojo.version}</version>
-	  <configuration>
+          <configuration>
             <includeOpenSSL>false</includeOpenSSL>
-	    <gemHomes>
-	      <provided>${project.build.directory}/rubygems</provided>
-	    </gemHomes>
-	  </configuration>
+            <gemHomes>
+              <provided>${project.build.directory}/rubygems</provided>
+            </gemHomes>
+          </configuration>
           <executions>
-	    <execution>
-	      <goals><goal>initialize</goal></goals>
-	    </execution>
+	        <execution>
+	          <goals><goal>initialize</goal></goals>
+	        </execution>
           </executions>
       </plugin>
       <plugin>
