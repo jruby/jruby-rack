@@ -39,7 +39,7 @@ before_install:
   - ((echo $BUNDLE_GEMFILE | grep rails23) && jruby --1.9 -S gem update --system 1.8.29) || true
 matrix:
   allow_failures:
-    - rvm: jruby-head
+    #- rvm: jruby-head
     #- gemfile: gemfiles/rails41.gemfile
   exclude:
     ## avoid jruby-head with JDK6 :
