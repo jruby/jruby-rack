@@ -375,6 +375,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             runtime.evalScriptlet("JRuby::Rack::Booter.on_boot { require 'jruby/rack/chunked' }");
             // `require 'jruby/rack/chunked'` that happens after Rack is loaded
         }
+        String swallowAbort = rackContext.getConfig().getProperty("jruby.rack.response.swallow_client_abort");
+        Boolean swallowAbortFlag = (Boolean) DefaultRackConfig.toStrictBoolean(swallowAbort, null);
+        if ( swallowAbortFlag != null ) {
+            runtime.evalScriptlet("JRuby::Rack::Response.swallow_client_abort = " + swallowAbortFlag + "");
+        }
     }
 
     /**
