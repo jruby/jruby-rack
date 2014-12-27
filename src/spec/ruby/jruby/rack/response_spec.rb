@@ -118,9 +118,8 @@ describe JRuby::Rack::Response do
   describe "#write_body" do
 
     let(:stream) do
-      StubOutputStream.new.tap do |stream|
-        @servlet_response.stub(:getOutputStream).and_return stream
-      end
+      @servlet_response.stub(:getOutputStream).and_return stream = StubOutputStream.new
+      stream
     end
 
     it "writes the body to the stream and flushes when the response is chunked" do
@@ -443,6 +442,81 @@ describe JRuby::Rack::Response do
 
     end
 
+    it "swallows client abort exceptions by default" do
+      @servlet_response.stub(:getOutputStream).and_return BrokenPipeOutputStream.new
+      @body.stub(:each).and_yield 'one-line'; @body.stub(:close)
+      with_swallow_client_abort do
+        @response.write_body(@servlet_response)
+      end
+    end
+
+    class BrokenPipeOutputStream < StubOutputStream
+
+      def flush; raise java.io.EOFException.new 'broken pipe' end
+
+    end
+
+    it "raises client abort exceptions if not set to swallow" do
+      @servlet_response.stub(:getOutputStream).and_return BrokenPipeOutputStream.new
+      @body.stub(:each).and_yield 'one-line'; @body.stub(:close)
+      begin
+        with_swallow_client_abort(false) do
+          @response.write_body(@servlet_response)
+        end
+        fail 'EOF exception NOT raised!'
+      rescue java.io.IOException => e
+        e.to_s.should =~ /broken pipe/i
+      end
+    end
+
+    it "raises exceptions that do not look like abort exceptions" do
+      @servlet_response.stub(:getOutputStream).and_return BrokenCigarOutputStream.new
+      @body.stub(:each).and_yield 'one-line'; @body.stub(:close)
+      begin
+        @response.write_body(@servlet_response)
+        fail 'IO exception NOT raised!'
+      rescue java.io.IOException => e
+        e.to_s.should =~ /broken cigar/i
+      end
+    end
+
+    class BrokenCigarOutputStream < StubOutputStream
+
+      def flush; raise java.io.IOException.new 'broken cigar' end
+
+    end
+
+    it "raises client abort exceptions if not set to swallow ('Broken pipe')" do
+      servlet_response = org.jruby.rack.mock.fail.FailingHttpServletResponse.new
+      servlet_response.setFailure java.io.IOException.new 'Broken pipe'
+      @body.stub(:each).and_yield 'one-line'; @body.stub(:close)
+      begin
+        with_swallow_client_abort(false) do
+          @response.write_body(servlet_response)
+        end
+        fail 'EOF exception NOT raised!'
+      rescue java.io.IOException
+      end
+    end
+
+    it "swallows client abort exceptions (Tomcat-like ClientAbortException)" do
+      servlet_response = org.jruby.rack.mock.fail.FailingHttpServletResponse.new
+      servlet_response.setFailure org.jruby.rack.mock.fail.ClientAbortException.new java.io.IOException.new
+      @body.stub(:each).and_yield 'one-line'; @body.stub(:close)
+      with_swallow_client_abort do
+        @response.write_body(servlet_response)
+      end
+    end
+
+    it "swallows client abort exceptions (Jetty-like EofException)" do
+      servlet_response = org.jruby.rack.mock.fail.FailingHttpServletResponse.new
+      servlet_response.setFailure org.jruby.rack.mock.fail.EofException.new
+      @body.stub(:each).and_yield 'one-line'; @body.stub(:close)
+      with_swallow_client_abort do
+        @response.write_body(servlet_response)
+      end
+    end
+
     private
 
     def with_dechunk(dechunk = true)
@@ -452,6 +526,16 @@ describe JRuby::Rack::Response do
         yield
       ensure
         JRuby::Rack::Response.dechunk = prev_dechunk
+      end
+    end
+
+    def with_swallow_client_abort(client_abort = true)
+      begin
+        prev_client_abort = JRuby::Rack::Response.swallow_client_abort?
+        JRuby::Rack::Response.swallow_client_abort = client_abort
+        yield
+      ensure
+        JRuby::Rack::Response.swallow_client_abort = prev_client_abort
       end
     end
 

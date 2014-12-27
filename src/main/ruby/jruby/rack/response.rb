@@ -10,7 +10,7 @@ require 'java'
 module JRuby
   module Rack
     # Takes a Rack response to map it into the Servlet world.
-    # 
+    #
     # Assumes servlet containers auto-handle chunking when the output stream
     # gets flushed. Thus de-chunks data if Rack chunked them, to disable this
     # behavior execute the following before delivering responses :
@@ -22,7 +22,12 @@ module JRuby
       include org.jruby.rack.RackResponse
       java_import 'java.nio.ByteBuffer'
       java_import 'java.nio.channels.Channels'
-      
+
+      @@swallow_client_abort = true
+      # Whether we swallow client abort exceptions (EOF received on the socket).
+      def self.swallow_client_abort?; @@swallow_client_abort; end
+      def self.swallow_client_abort=(flag); @@swallow_client_abort = !! flag; end
+
       @@dechunk = nil
       # Whether responses should de-chunk data (when chunked response detected).
       def self.dechunk?; @@dechunk; end
@@ -42,7 +47,7 @@ module JRuby
       def self.channel_chunk_size; @@channel_chunk_size; end
       def self.channel_chunk_size=(size); @@channel_chunk_size = size; end
       def channel_chunk_size; self.class.channel_chunk_size; end
-      
+
       @@channel_buffer_size = 16 * 1024 # 16 kB
       # Returns a byte buffer size that will be allocated when copying between
       # channels. This usually won't happen at all (unless you return an exotic
@@ -52,7 +57,7 @@ module JRuby
       def self.channel_buffer_size; @@channel_buffer_size; end
       def self.channel_buffer_size=(size); @@channel_buffer_size = size; end
       def channel_buffer_size; self.class.channel_buffer_size; end
-      
+
       # Expects a Rack response: [status, headers, body].
       def initialize(array)
         @status, @headers, @body = *array
@@ -93,7 +98,7 @@ module JRuby
           write_body(response)
         end
       end
-      
+
       # Writes the response status.
       # @see #respond
       def write_status(response)
@@ -114,7 +119,7 @@ module JRuby
             # setContentLength(int) ... addHeader must be used for large files (>2GB)
             response.setContentLength(length) if ! chunked? && length < 2_147_483_648
           else
-            # servlet container auto handle chunking when response is flushed 
+            # servlet container auto handle chunking when response is flushed
             # (and Content-Length headers has not been set) :
             next if key == TRANSFER_ENCODING && skip_encoding_header?(value)
             # NOTE: effectively the same as `v.split("\n").each` which is what
@@ -147,16 +152,16 @@ module JRuby
             @body.call response.getOutputStream
           elsif @body.respond_to?(:to_path) # send_file
             send_file @body.to_path, response
-          elsif @body.respond_to?(:to_channel) && 
+          elsif @body.respond_to?(:to_channel) &&
               ! object_polluted_with_anyio?(@body, :to_channel)
             body = @body.to_channel # so that we close the channel
             transfer_channel body, response.getOutputStream
-          elsif @body.respond_to?(:to_inputstream) && 
+          elsif @body.respond_to?(:to_inputstream) &&
               ! object_polluted_with_anyio?(@body, :to_inputstream)
             body = @body.to_inputstream # so that we close the stream
             body = Channels.newChannel(body) # closing the channel closes the stream
             transfer_channel body, response.getOutputStream
-          elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel) && 
+          elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel) &&
               ! object_polluted_with_anyio?(@body.body_parts, :to_channel)
             # ActionDispatch::Response "raw" body access in case it's a File
             body = @body.body_parts.to_channel # so that we close the channel
@@ -178,9 +183,8 @@ module JRuby
           # HACK: deal with objects that don't comply with Rack specification
           @body = [ @body.to_s ]
           retry
-        rescue NativeException => e
-          # Don't needlessly raise errors because of client abort exceptions
-          raise unless e.cause.toString =~ /(clientabortexception|broken pipe)/i
+        rescue java.io.IOException => e
+          raise e if ! client_abort_exception?(e) || ! self.class.swallow_client_abort?
         ensure
           @body.close if @body.respond_to?(:close)
           body && body.close rescue nil
@@ -188,34 +192,34 @@ module JRuby
       end
 
       protected
-      
+
       # @return [true, false] whether a chunked encoding is detected
       def chunked?
         return @chunked unless @chunked.nil?
         @chunked = !! ( @headers && @headers[TRANSFER_ENCODING] == 'chunked' )
       end
-      
+
       # @return [true, false] whether output (body) should be flushed after each
       # written (yielded) line
       # @see #chunked?
       def flush?
         chunked? || ! ( @headers && @headers['Content-Length'] )
       end
-      
+
       # Whether de-chunking (a chunked Rack response) should be performed.
       # @see JRuby::Rack::Response#dechunk?
       # @see #chunked?
       def dechunk?
         self.class.dechunk? && chunked?
       end
-      
+
       # Sends a file when a Rails/Rack file response (`body.to_path`) is detected.
       # This allows for potential application server overrides when file streaming.
       # By default JRuby-Rack will stream the file using a (native) file channel.
-      # 
+      #
       # @param path the file path
       # @param response the response environment
-      # 
+      #
       # @note That this is not related to `Rack::Sendfile` support, since if you
       # have configured *sendfile.type* (e.g. to Apache's "X-Sendfile") this part
       # would not have been executing at all.
@@ -229,18 +233,22 @@ module JRuby
           input.close rescue nil
         end
       end
-      
+
       private
-      
+
+      def client_abort_exception?(ioe)
+        ioe.inspect =~ /(ClientAbortException|EofException|broken pipe)/i
+      end
+
       def skip_encoding_header?(value)
         value == 'chunked' && @@dechunk != false
       end
-      
+
       def write_body_dechunked(output_stream)
         # NOTE: due Rails 3.2 stream-ed rendering http://git.io/ooCOtA#L223
         # Only required if the patch at jruby/rack/chunked.rb is not applied ...
         term = "\r\n"; tail = "0#{term}#{term}".freeze
-        # we assume no support here for chunk-extensions e.g. 
+        # we assume no support here for chunk-extensions e.g.
         # chunk = chunk-size [ chunk-extension ] CRLF chunk-data CRLF
         # no need to be handled - we simply unwrap what Rails chunked :
         chunk = /^([0-9a-fA-F]+)#{Regexp.escape(term)}(.+)#{Regexp.escape(term)}/mo
@@ -259,7 +267,7 @@ module JRuby
           output_stream.flush
         end
       end
-      
+
       def transfer_channel(channel, output_stream)
         output_channel = Channels.newChannel output_stream
         if channel.respond_to?(:transfer_to) && channel_chunk_size # FileChannel
@@ -280,11 +288,11 @@ module JRuby
           end
         end
       end
-      
+
       # Fixnum should not have this method, and it shouldn't be on Object
       @@object_polluted = ( Fixnum.method(:to_channel).owner == Object ) rescue nil # :nodoc
-      
-      # See http://bugs.jruby.org/5444 - we need to account for pre-1.6 JRuby 
+
+      # See http://bugs.jruby.org/5444 - we need to account for pre-1.6 JRuby
       # where Object was polluted with #to_channel ( by IOJavaAddions.AnyIO )
       def object_polluted_with_anyio?(obj, meth) # :nodoc
         @@object_polluted && begin
@@ -295,7 +303,7 @@ module JRuby
           false
         end
       end
-      
+
     end
   end
 end
