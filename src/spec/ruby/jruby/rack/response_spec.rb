@@ -18,11 +18,7 @@ describe JRuby::Rack::Response do
 
   let(:servlet_response) { javax.servlet.http.HttpServletResponse.impl {} }
 
-  let(:response_environment) do
-    org.jruby.rack.RackResponseEnvironment.impl do |name, *args|
-      servlet_response.send(name, *args)
-    end
-  end
+  let(:response_environment) { new_response_environment(servlet_response) }
 
   it "converts status to integer" do
     response = JRuby::Rack::Response.new [ '202', {}, [''] ]
@@ -435,6 +431,75 @@ describe JRuby::Rack::Response do
 
     end
 
+    it "swallows client abort exceptions by default" do
+      response_environment.stub(:getOutputStream).and_return BrokenPipeOutputStream.new
+      with_swallow_client_abort do
+        response.write_body response_environment
+      end
+    end
+
+    class BrokenPipeOutputStream < StubOutputStream
+
+      def flush; raise java.io.EOFException.new 'broken pipe' end
+
+    end
+
+    it "raises client abort exceptions if not set to swallow" do
+      response_environment.stub(:getOutputStream).and_return BrokenPipeOutputStream.new
+      begin
+        with_swallow_client_abort(false) do
+          response.write_body response_environment
+        end
+        fail 'EOF exception NOT raised!'
+      rescue java.io.IOException => e
+        e.to_s.should =~ /broken pipe/i
+      end
+    end
+
+    it "raises exceptions that do not look like abort exceptions" do
+      response_environment.stub(:getOutputStream).and_return BrokenCigarOutputStream.new
+      begin
+        response.write_body response_environment
+        fail 'IO exception NOT raised!'
+      rescue java.io.IOException => e
+        e.to_s.should =~ /broken cigar/i
+      end
+    end
+
+    class BrokenCigarOutputStream < StubOutputStream
+
+      def flush; raise java.io.IOException.new 'broken cigar' end
+
+    end
+
+    it "raises client abort exceptions if not set to swallow ('Broken pipe')" do
+      servlet_response = org.jruby.rack.mock.fail.FailingHttpServletResponse.new
+      servlet_response.setFailure java.io.IOException.new 'Broken pipe'
+      begin
+        with_swallow_client_abort(false) do
+          response.write_body new_response_environment(servlet_response)
+        end
+        fail 'EOF exception NOT raised!'
+      rescue java.io.IOException
+      end
+    end
+
+    it "swallows client abort exceptions (Tomcat-like ClientAbortException)" do
+      servlet_response = org.jruby.rack.mock.fail.FailingHttpServletResponse.new
+      servlet_response.setFailure org.jruby.rack.mock.fail.ClientAbortException.new java.io.IOException.new
+      with_swallow_client_abort do
+        response.write_body new_response_environment(servlet_response)
+      end
+    end
+
+    it "swallows client abort exceptions (Jetty-like EofException)" do
+      servlet_response = org.jruby.rack.mock.fail.FailingHttpServletResponse.new
+      servlet_response.setFailure org.jruby.rack.mock.fail.EofException.new
+      with_swallow_client_abort do
+        response.write_body new_response_environment(servlet_response)
+      end
+    end
+
     private
 
     def with_dechunk(dechunk = true)
@@ -447,12 +512,28 @@ describe JRuby::Rack::Response do
       end
     end
 
+    def with_swallow_client_abort(client_abort = true)
+      begin
+        prev_client_abort = JRuby::Rack::Response.swallow_client_abort?
+        JRuby::Rack::Response.swallow_client_abort = client_abort
+        yield
+      ensure
+        JRuby::Rack::Response.swallow_client_abort = prev_client_abort
+      end
+    end
+
   end
 
   private
 
   def update_response_headers(headers, response = response)
     response.to_java.getHeaders.update(headers)
+  end
+
+  def new_response_environment(servlet_response = servlet_response)
+    org.jruby.rack.RackResponseEnvironment.impl do |name, *args|
+      servlet_response.send(name, *args)
+    end
   end
 
 end

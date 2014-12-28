@@ -231,7 +231,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
                     return false;
                 }
                 for ( final String headerName : headerNames ) {
-                    if ( ! "Allow".equals(headerName) ) {
+                    if ( ! "Allow".equals( headerName ) ) {
                         return handled = true; // not just Allow header - consider handled
                     }
                 }
@@ -274,8 +274,8 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     private Collection<String> getHeaderNamesOrNull() {
         // NOTE: getHeaderNames since Servlet API 3.0 JRuby-Rack 1.1 still supports 2.5
         try {
-            final Method getHeaderNames = HttpServletResponse.class.getMethod("getHeaderNames");
-            return (Collection<String>) getHeaderNames.invoke(this);
+            final Method getHeaderNames = getResponse().getClass().getMethod("getHeaderNames");
+            return (Collection<String>) getHeaderNames.invoke( getResponse() );
         }
         catch (NoSuchMethodException e) { return null; }
         catch (IllegalAccessException e) { return null; }

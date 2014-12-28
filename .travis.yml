@@ -1,4 +1,5 @@
 language: ruby
+sudo: false
 bundler_args: --without development
 script: rake spec
 branches:
@@ -34,13 +35,72 @@ before_script:
   - export JRUBY_VERSION="1.7.13"
   - jruby -S gem env || true
 before_install:
+  # NOTE: RubyGems 2.4.x fails us at application_spec's gem_install_rack_unless_installed !
+  - (jruby --1.9 -S gem update --system 2.2.3) || true
   - ((jruby -v | grep 1.8.7) && jruby --1.9 -S gem update --system 2.1.11) || true
   - ((echo $BUNDLE_GEMFILE | grep rails23) && jruby --1.9 -S gem update --system 1.8.29) || true
 matrix:
   allow_failures:
-    - rvm: jruby-head
+    #- rvm: jruby-head
     #- gemfile: gemfiles/rails41.gemfile
   exclude:
+    ## avoid jruby-head with JDK6 :
+    - rvm: jruby-head
+      gemfile: Gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: Gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails23.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails23.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails30.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails30.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails31.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails31.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails32.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails32.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: openjdk6
+    - rvm: jruby-head
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: openjdk6
     ## rails 4.0 does not run on --1.8
     - rvm: jruby
       gemfile: gemfiles/rails40.gemfile
@@ -68,10 +128,10 @@ matrix:
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
     ## rails 4.0 does not run on --1.8 (jruby-head)
-    - rvm: jruby-head
-      gemfile: gemfiles/rails40.gemfile
-      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
-      jdk: openjdk6
+    #- rvm: jruby-head
+    #  gemfile: gemfiles/rails40.gemfile
+    #  env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+    #  jdk: openjdk6
     - rvm: jruby-head
       gemfile: gemfiles/rails40.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
@@ -81,10 +141,10 @@ matrix:
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
     ## rails 4.1 won't run on --1.8 (jruby-head)
-    - rvm: jruby-head
-      gemfile: gemfiles/rails41.gemfile
-      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
-      jdk: openjdk6
+    #- rvm: jruby-head
+    #  gemfile: gemfiles/rails41.gemfile
+    #  env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+    #  jdk: openjdk6
     - rvm: jruby-head
       gemfile: gemfiles/rails41.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
@@ -94,10 +154,10 @@ matrix:
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
     ## rails 3.2 jruby-head won't support --1.8
-    - rvm: jruby-head
-      gemfile: gemfiles/rails32.gemfile
-      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
-      jdk: openjdk6
+    #- rvm: jruby-head
+    #  gemfile: gemfiles/rails32.gemfile
+    #  env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+    #  jdk: openjdk6
     - rvm: jruby-head
       gemfile: gemfiles/rails32.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
@@ -156,10 +216,10 @@ matrix:
       env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
       jdk: openjdk6
     ## do not run with 2.3 (jruby-head) :
-    - rvm: jruby-head
-      gemfile: gemfiles/rails23.gemfile
-      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
-      jdk: openjdk6
+    #- rvm: jruby-head
+    #  gemfile: gemfiles/rails23.gemfile
+    #  env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+    #  jdk: openjdk6
     - rvm: jruby-head
       gemfile: gemfiles/rails23.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
@@ -181,10 +241,10 @@ matrix:
       env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
       jdk: oraclejdk8
     ## do not run with 3.0 (jruby-head) :
-    - rvm: jruby-head
-      gemfile: gemfiles/rails30.gemfile
-      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
-      jdk: openjdk6
+    #- rvm: jruby-head
+    #  gemfile: gemfiles/rails30.gemfile
+    #  env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+    #  jdk: openjdk6
     - rvm: jruby-head
       gemfile: gemfiles/rails30.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
@@ -193,10 +253,10 @@ matrix:
       gemfile: gemfiles/rails30.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
-    - rvm: jruby-head
-      gemfile: gemfiles/rails30.gemfile
-      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
-      jdk: openjdk6
+    #- rvm: jruby-head
+    #  gemfile: gemfiles/rails30.gemfile
+    #  env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+    #  jdk: openjdk6
     - rvm: jruby-head
       gemfile: gemfiles/rails30.gemfile
       env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
@@ -206,10 +266,10 @@ matrix:
       env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
       jdk: oraclejdk8
     ## do not run with 3.1 (jruby-head) :
-    - rvm: jruby-head
-      gemfile: gemfiles/rails31.gemfile
-      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
-      jdk: openjdk6
+    #- rvm: jruby-head
+    #  gemfile: gemfiles/rails31.gemfile
+    #  env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+    #  jdk: openjdk6
     - rvm: jruby-head
       gemfile: gemfiles/rails31.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
@@ -218,10 +278,10 @@ matrix:
       gemfile: gemfiles/rails31.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
-    - rvm: jruby-head
-      gemfile: gemfiles/rails31.gemfile
-      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
-      jdk: openjdk6
+    #- rvm: jruby-head
+    #  gemfile: gemfiles/rails31.gemfile
+    #  env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+    #  jdk: openjdk6
     - rvm: jruby-head
       gemfile: gemfiles/rails31.gemfile
       env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"

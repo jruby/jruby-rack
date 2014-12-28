@@ -1,4 +1,5 @@
 #--
+# Copyright (c) 2013-2014 Karol Bucek, LTD.
 # Copyright (c) 2010-2012 Engine Yard, Inc.
 # Copyright (c) 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.

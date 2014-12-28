@@ -70,6 +70,34 @@ import org.jruby.util.ByteList;
 @JRubyClass(name="JRuby::Rack::Response")
 public class Response extends RubyObject implements RackResponse {
 
+    protected static Boolean swallowClientAbort = Boolean.TRUE;
+
+    /**
+     * # Whether we swallow client abort exceptions (EOF received on the socket).
+     * @param context
+     * @param self
+     * @return a ruby boolean
+     */
+    @JRubyMethod(name = "swallow_client_abort?", meta = true)
+    public static IRubyObject is_swallow_client_abort(final ThreadContext context, final IRubyObject self) {
+        if ( swallowClientAbort == null ) return context.runtime.getFalse();
+        return context.runtime.newBoolean(swallowClientAbort);
+    }
+
+    /**
+     * @see #is_swallow_client_abort(ThreadContext, IRubyObject)
+     */
+    @JRubyMethod(name = "swallow_client_abort=", meta = true, required = 1)
+    public static IRubyObject set_swallow_client_abort(final IRubyObject self, final IRubyObject value) {
+        if ( value instanceof RubyBoolean ) {
+            swallowClientAbort = ((RubyBoolean) value).isTrue();
+        }
+        else {
+            swallowClientAbort = ! value.isNil();
+        }
+        return value;
+    }
+
     protected static Boolean dechunk; // null means not set
 
     /**
@@ -426,30 +454,34 @@ public class Response extends RubyObject implements RackResponse {
 
             final OutputStream output = response.getOutputStream();
             final ThreadContext context = currentContext();
+            IOException error = null;
             if ( doDechunk() ) {
                 final IRubyObject output_stream = JavaUtil.convertJavaToRuby(context.runtime, output);
                 callMethod(context, "write_body_dechunked", output_stream);
             }
             else {
                 final String method = body.respondsTo("each_line") ? "each_line" : "each";
-                invoke(context, body, method,
-                    new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
-                    @Override
-                    public IRubyObject yield(ThreadContext context, IRubyObject line) {
-                        //final ByteList bytes = line.asString().getByteList();
-                        try {
-                            output.write( line.asString().getBytes() );
-                            //output.write(bytes.unsafeBytes(), bytes.getBegin(), bytes.getRealSize());
-                            if ( doFlush() ) output.flush();
+                try {
+                    invoke(context, body, method,
+                        new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
+                        @Override
+                        public IRubyObject yield(ThreadContext context, IRubyObject line) {
+                            //final ByteList bytes = line.asString().getByteList();
+                            try {
+                                output.write( line.asString().getBytes() );
+                                //output.write(bytes.unsafeBytes(), bytes.getBegin(), bytes.getRealSize());
+                                if ( doFlush() ) output.flush();
+                            }
+                            catch (IOException e) { throw new WrappedException(e); }
+                            return context.nil;
                         }
-                        catch (IOException e) { throw new RackException(e); }
-                        return context.nil;
-                    }
-                });
+                    });
+                }
+                catch (WrappedException e) { throw e.getIOCause(); }
             }
         }
-        catch (IOException e) { if ( ! isClientAbortException(e) ) throw e; }
-        catch (RuntimeException e) { if ( ! isClientAbortException(e) ) throw e; }
+        catch (IOException e) { if ( ! handledAsClientAbort(e) ) throw e; }
+        catch (RuntimeException e) { if ( ! handledAsClientAbort(e) ) throw e; }
         finally {
             if ( body.respondsTo("close") ) {
                 body.callMethod(currentContext(), "close");
@@ -458,6 +490,16 @@ public class Response extends RubyObject implements RackResponse {
                 bodyChannel.close(); // closing the channel closes the stream
             }
         }
+    }
+
+    private static class WrappedException extends RuntimeException {
+
+        WrappedException(IOException cause) {
+            super(cause);
+        }
+
+        IOException getIOCause() { return (IOException) getCause(); }
+
     }
 
     /**
@@ -544,14 +586,23 @@ public class Response extends RubyObject implements RackResponse {
         return false;
     }
 
-    protected boolean isClientAbortException(final Exception e) {
-        String message = e.toString();
+    private boolean handledAsClientAbort(final Exception ioe) {
+        if ( swallowClientAbort == Boolean.TRUE ) {
+            return isClientAbortException(ioe);
+        }
+        return false;
+    }
+
+    // ioe.inspect =~ /(ClientAbortException|EofException|broken pipe)/i
+    protected boolean isClientAbortException(final Exception ioe) {
+        String error = ioe.toString();
+        if ( error.contains("ClientAbortException") ) return true;
+        if ( error.contains("EofException") ) return true;
         while ( true ) {
-            // e.g. org.apache.catalina.connector.ClientAbortException
-            if ( message.contains("ClientAbortException") ) return true;
-            if ( message.toLowerCase().contains("broken pipe") ) return true;
-            if ( e.getCause() == null ) break;
-            message = e.getCause().getMessage();
+            if ( error.toLowerCase().contains("broken pipe") ) return true;
+            if ( ioe.getCause() == null ) break;
+            error = ioe.getCause().getMessage();
+            if ( error == null ) break;
         }
         return false;
     }

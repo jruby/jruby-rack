@@ -7,6 +7,7 @@
  -->
 <project xsi:schemaLocation='http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd' xmlns='http://maven.apache.org/POM/4.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
   <version>1.2.0-SNAPSHOT</version>
@@ -22,14 +23,25 @@
     <vendor.gems.path>vendor/gems</vendor.gems.path>
     <bundler.version>1.6.5</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
-    <saumya.mojo.version>1.0.5</saumya.mojo.version>
-    <!--default: <gem.home>target/rubygems</gem.home>-->
+    <saumya.mojo.version>1.0.6</saumya.mojo.version>
+    <gem.home>${project.build.directory}/rubygems</gem.home>
   </properties>
 
   <issueManagement>
     <system>Github</system>
     <url>http://github.com/jruby/jruby-rack/issues</url>
   </issueManagement>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
 
   <scm>
     <connection>scm:git:git://github.com/jruby/jruby-rack.git</connection>
@@ -44,36 +56,6 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-
-  <distributionManagement>
-    <repository>
-      <id>codehaus-jruby-repository</id>
-      <name>JRuby Central Repository</name>
-      <url>dav:https://dav.codehaus.org/repository/jruby</url>
-    </repository>
-    <snapshotRepository>
-      <id>codehaus-jruby-snapshot-repository</id>
-      <name>JRuby Central Development Repository</name>
-      <url>dav:https://dav.codehaus.org/snapshots.repository/jruby</url>
-    </snapshotRepository>
-  </distributionManagement>
-
-  <repositories>
-    <repository>
-      <id>codehaus</id>
-      <name>Codehaus Repository</name>
-      <releases><enabled>true</enabled></releases>
-      <snapshots><enabled>false</enabled></snapshots>
-      <url>http://repository.codehaus.org</url>
-    </repository>
-    <repository>
-      <id>tesla</id>
-      <name>tesla</name>
-      <url>http://repository.tesla.io:8081/nexus/content/groups/public</url>
-      <releases><enabled>false</enabled></releases>
-      <snapshots><enabled>false</enabled></snapshots>
-    </repository>
-  </repositories>
 
   <developers>
     <developer>
@@ -91,6 +73,23 @@
       <email>self@kares.org</email>
     </developer>
   </developers>
+
+  <repositories>
+    <repository>
+      <id>rubygems-releases</id>
+      <url>http://rubygems-proxy.torquebox.org/releases</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>sonatype</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
@@ -147,6 +146,20 @@
       <version>3.2.10.RELEASE</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>rubygems</groupId>
+      <artifactId>jruby-openssl</artifactId>
+      <version>0.9.6</version>
+      <type>gem</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>rubygems</groupId>
+      <artifactId>bundler</artifactId>
+      <version>${bundler.version}</version>
+      <type>gem</type>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -189,21 +202,26 @@
         <artifactId>maven-help-plugin</artifactId>
         <version>2.2</version>
       </plugin>
-
       <plugin>
           <groupId>de.saumya.mojo</groupId>
           <artifactId>gem-maven-plugin</artifactId>
           <version>${saumya.mojo.version}</version>
+          <configuration>
+            <includeOpenSSL>false</includeOpenSSL>
+            <gemHomes>
+              <provided>${gem.home}</provided>
+            </gemHomes>
+          </configuration>
           <executions>
             <execution>
               <id>gem-install-bundler</id>
               <phase>test</phase>
               <goals><goal>install</goal></goals>
+              <!--
+              <id>default-initialize</id>
               <configuration>
-                <jruby.version>${jruby.version}</jruby.version>
-                <includeOpenSSL>false</includeOpenSSL>
-                <args>bundler -v ${bundler.version}</args>
-              </configuration>
+                <libDirectory>smt-that-does-not-exists</libDirectory>
+              </configuration>-->
             </execution>
           </executions>
       </plugin>
@@ -252,18 +270,14 @@
         </executions>
       </plugin>
     </plugins>
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-webdav</artifactId>
-        <version>1.0-beta-2</version>
-      </extension>
-    </extensions>
   </build>
 
   <profiles>
     <profile>
       <id>jars</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
       <build>
         <plugins>
           <plugin>
