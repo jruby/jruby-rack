@@ -24,27 +24,31 @@ end
 GENERATED = FileList.new
 
 namespace :clean do
-  desc "Remove generated files"
+  desc "Remove generated files (only)"
   task :generated do
     GENERATED.each { |fn| rm_r fn rescue nil }
+  end
+  desc "Remove lib/*.jar (test) dependencies"
+  task :lib do
+    rm_r 'target/lib' rescue nil
   end
 end
 
 directory 'target/classes'
 
 desc "Compile classes"
-task(:compile => 'target/classes') { sh 'mvn compile' }
+task(:compile => 'target/classes') { sh 'mvn compile -Dmdep.skip=true' }
 
 directory 'target/test-classes'
 
 desc "Compile test classes"
-task(:test_compile => 'target/test-classes') { sh 'mvn test-compile' }
+task(:test_compile => 'target/test-classes') { sh 'mvn test-compile -Dmdep.skip=true' }
 
 desc "Copy .jar dependencies for (local) testing"
-task(:test_jars) { sh 'mvn test-compile -P jars' }
+task(:test_jars) { sh 'mvn test-compile' }
 
 task(:test_prepare => ['target/classes', 'target/test-classes']) do
-  sh 'mvn compile test-compile -P jars'
+  sh 'mvn test-compile'
 end
 
 desc "Unpack the rack gem"
@@ -96,7 +100,7 @@ end
 namespace :resources do
   desc "Copy (and generate) resources"
   task :copy => :resources do
-    sh 'mvn process-resources'
+    sh 'mvn process-resources -Dmdep.skip=true'
   end
   desc "Generate test resources"
   task :test => :test_resources
@@ -219,16 +223,24 @@ task :release_checks do
       "Please run `mvn install' to bring the two files in sync."
   end
 
-  puts "Release looks ready to go!"
+  puts "release #{GEM_VERSION} looks ready to go ..."
 end
 
 desc "Release the gem to rubygems and jar to repository.codehaus.org"
-task :release => [:release_checks, :clean, :gem] do
+task :release => [:release_checks, :clean] do
+  args = ''
+  args << "-Dgpg.keyname=#{ENV['GPG_KEYNAME']} " if ENV['GPG_KEYNAME']
+
+  sh "mvn -Prelease #{args} -DupdateReleaseInfo=true clean deploy"
+
   sh "git tag #{GEM_VERSION}"
-  sh "mvn deploy -DupdateReleaseInfo=true"
+
+  ENV['SKIP_SPECS'] = 'true'; Rake::Task['gem'].invoke
   sh "gem push target/jruby-rack-#{GEM_VERSION}.gem"
+
   git_branch = `git branch | sed -n '/\* /s///p'`.chomp
   sh "git push --tags #{ENV['GIT_REMOTE'] || 'origin'} #{git_branch}"
+
   puts "released JRuby-Rack #{GEM_VERSION} update next SNAPSHOT version using `rake update_version`"
 end
 
