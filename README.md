@@ -1,18 +1,18 @@
 # JRuby-Rack
 
 JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows
-any Rack-based application to run unmodified in a Java Servlet container.
+any (Ruby) Rack-based application to run unmodified in a Java Servlet container.
 JRuby-Rack supports Rails as well as any Rack-compatible Ruby web framework.
 
-For more information on Rack, visit http://rack.rubyforge.org.
+For more information on Rack, visit http://rack.github.io/.
 
-[![Build Status][0]](http://travis-ci.org/jruby/jruby-rack)
+[![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][8]
+[![Build Status][9]](http://travis-ci.org/jruby/jruby-rack)
 
 ## Compatibility
 
-JRuby-Rack 1.1.x aims to be compatible with JRuby 1.6 as well as 1.7 (we do
-recommend 1.7), Generally, any container that supports Java Servlet >= 2.5
-(JavaEE 5) specification is supported.
+JRuby-Rack 1.1.x aims to be compatible with JRuby >= 1.6.4 (we recommend 1.7.x),
+Generally, any container that supports Java Servlet >= 2.5 (JEE 5) is supported.
 
 ## Getting Started
 
@@ -326,11 +326,12 @@ package and push the .jar every time a commit changes a source file).
 ## Support
 
 Please use [github][4] to file bugs, patches and/or pull requests.
-More information at the [wiki][5] or ask us at the #jruby IRC channel.
+More information at the [wiki][5] or ask us at **#jruby**'s IRC channel.
 
-[0]: https://secure.travis-ci.org/jruby/jruby-rack.png?branch=master
-[1]: http://caldersphere.rubyforge.org/warbler
-[2]: http://repository.codehaus.org/org/jruby/rack/jruby-rack/
+[1]: https://github.com/jruby/warbler#warbler--
+[2]: https://oss.sonatype.org/content/repositories/releases/org/jruby/rack/jruby-rack/
 [3]: https://github.com/trinidad/trinidad
 [4]: https://github.com/jruby/jruby-rack/issues
 [5]: https://wiki.github.com/jruby/jruby-rack
+[8]: http://badge.fury.io/rb/jruby-rack
+[9]: https://secure.travis-ci.org/jruby/jruby-rack.png?branch=1.1-stable
