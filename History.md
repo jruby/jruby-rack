@@ -1,3 +1,13 @@
+## 1.1.17 (30/12/14)
+
+This release changes deployment from codehaus.org to oss.sonatype.org for artifacts.
+
+- just keep the jruby-home when set by jruby to "uri:classsloader:..." JRuby 9k
+- support configuration of `Response.swallow_client_abort?` (#186)
+- better client EOF (socket abort "Broken pipe") detection in Response
+  we're now "officially" handling Jetty and maybe a bunch of others
+- allow PATCH verb to be processed by the ruby application (#184)
+
 ## 1.1.16 (14/08/14)
 
 - deal with `real_path` (file-system) layout regression introduced in 1.1.15
