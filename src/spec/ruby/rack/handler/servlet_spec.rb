@@ -969,6 +969,26 @@ describe Rack::Handler::Servlet do
       rack_request.request_method.should == 'PUT'
     end
 
+    it "does not truncate query strings containing semi-colons (Rack-compat)" do
+      servlet_request.setMethod 'GET'
+      servlet_request.setContextPath '/'
+      servlet_request.setPathInfo '/path'
+      servlet_request.setRequestURI '/home/path'
+      servlet_request.setQueryString 'foo=bar&quux=b;la'
+      # Query params :
+      servlet_request.addParameter('foo', 'bar')
+      servlet_request.addParameter('quux', 'b;la')
+
+      env = servlet.create_env(servlet_env)
+      rack_request = Rack::Request.new(env)
+
+      rack_request.GET.should == { "foo" => "bar", "quux" => "b;la" }
+      rack_request.POST.should == {}
+      rack_request.params.should == { "foo" => "bar", "quux" => "b;la" }
+
+      rack_request.query_string.should == 'foo=bar&quux=b;la'
+    end
+
     it "sets cookies from servlet requests" do
       cookies = []
       cookies << javax.servlet.http.Cookie.new('foo', 'bar')
