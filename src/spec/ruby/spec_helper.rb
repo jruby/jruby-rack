@@ -82,6 +82,7 @@ module SharedHelpers
 
   def rack_release(at_least = nil)
     require 'rack'; release = Rack.release
+    release = '1.6' if Gem.loaded_specs['rack'].version.to_s == '1.6.0'
     at_least.nil? ? release : release >= at_least
   end
   private :rack_release
