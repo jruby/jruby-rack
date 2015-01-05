@@ -111,7 +111,7 @@ module Rack
         public :[]
 
         # @private
-        KEY_SEP = /([^\[\]]*)(?:\[(.*?)\])?/
+        KEY_SEP = /([^\[\]]+)(?:\[(.*)\])?/
 
         # Store the parameter into the given Hash.
         # By default this is performed in a Rack compatible way and thus
@@ -138,12 +138,11 @@ module Rack
               end
               hash[ n_key ] = val.to_a # String[]
             else # foo[bar]=rrr&foo[baz]=zzz
-              v = val[ val.length - 1 ] # last
               if hsh = hash[ n_key ]
                 return mark_parameter_error "expected Hash (got #{hsh.class}) for param `#{n_key}'" unless hsh.is_a?(Hash)
-                hsh[ sub ] = v
+                store_parameter(sub, val, hsh)
               else
-                hash[ n_key ] = { sub => v }
+                hash[ n_key ] = { sub => val[ val.length - 1 ] }
               end
             end
           else
