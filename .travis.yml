@@ -13,7 +13,7 @@ rvm:
   # @see ruby/rack/application_spec.rb for an explanation on this
   #- jruby-18mode
   #- jruby-19mode
-  - jruby
+  - jruby-1.7.16
   - jruby-head
 jdk:
   - openjdk6
