@@ -363,6 +363,72 @@ describe Rack::Handler::Servlet do
       expect( env['org.apache.internal'] ).to be true
     end
 
+    it "parses strange request parameters (Rack-compat)" do
+      servlet_request = @servlet_request
+      servlet_request.setMethod 'GET'
+      servlet_request.setContextPath '/'
+      servlet_request.setPathInfo '/path'
+      servlet_request.setRequestURI '/home/path'
+
+      servlet_request.setQueryString 'foo]=0&bar[=1&baz_=2&[meh=3'
+      servlet_request.addParameter('foo]', '0')
+      servlet_request.addParameter('bar[', '1')
+      servlet_request.addParameter('baz_', '2')
+      servlet_request.addParameter('[meh', '3')
+
+      env = servlet.create_env(@servlet_env)
+      rack_request = Rack::Request.new(env)
+
+      # Rack (1.5.2) does it as :
+      # { "foo" => "0", "bar" => nil, "baz_" => "2", "meh" => "3" }
+      # 1.6.0 :
+      # { "foo" => "0", "bar[" => "1", "baz_" => "2", "meh" => "3" }
+
+      expect( rack_request.GET['foo'] ).to eql('0')
+      expect( rack_request.GET['baz_'] ).to eql('2')
+
+      if rack_release('1.6')
+        # expect( rack_request.GET['bar['] ).to eql('1')
+      else
+        expect( rack_request.GET.key?('bar') ).to be true
+      end
+      expect( rack_request.GET['meh'] ).to eql('3')
+
+      expect( rack_request.query_string ).to eql 'foo]=0&bar[=1&baz_=2&[meh=3'
+    end
+
+    it "parses nestedx request parameters (Rack-compat)" do
+      servlet_request = @servlet_request
+      servlet_request.setMethod 'GET'
+      servlet_request.setContextPath '/'
+      servlet_request.setPathInfo '/path'
+      servlet_request.setRequestURI '/home/path'
+
+      servlet_request.setQueryString 'foo[bar]=0&foo[baz]=1&foo[bar]=2&foo[meh[]]=x&foo[meh[]]=42&huh[1]=b&huh[0]=a'
+      servlet_request.addParameter('foo[bar]', '0')
+      servlet_request.addParameter('foo[baz]', '1')
+      servlet_request.addParameter('foo[bar]', '2')
+      servlet_request.addParameter('foo[meh[]]', 'x')
+      servlet_request.addParameter('foo[meh[]]', '42')
+      servlet_request.addParameter('huh[1]', 'b')
+      servlet_request.addParameter('huh[0]', 'a')
+
+      env = servlet.create_env(@servlet_env)
+      rack_request = Rack::Request.new(env)
+
+      #params = { "foo" => { "bar" => "2", "baz" => "1", "meh" => [ nil, nil ] }, "huh" => { "1" => "b", "0" => "a" } }
+      #expect( rack_request.GET ).to eql(params)
+
+      expect( rack_request.GET['foo']['bar'] ).to eql('2')
+      expect( rack_request.GET['foo']['baz'] ).to eql('1')
+      expect( rack_request.params['foo']['meh'] ).to be_a Array
+      expect( rack_request.params['huh'] ).to eql({ "1" => "b", "0" => "a" })
+
+      expect( rack_request.POST ).to eql Hash.new
+
+      expect( rack_request.query_string ).to eql 'foo[bar]=0&foo[baz]=1&foo[bar]=2&foo[meh[]]=x&foo[meh[]]=42&huh[1]=b&huh[0]=a'
+    end
+
     it "raises if nested request parameters are broken (Rack-compat)" do
       servlet_request = @servlet_request
       servlet_request.setMethod 'GET'
