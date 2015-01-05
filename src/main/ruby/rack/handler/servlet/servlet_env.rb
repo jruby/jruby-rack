@@ -50,6 +50,12 @@ module Rack
         # @private
         POST_PARAM_METHODS = [ 'POST', 'PUT', 'DELETE' ].freeze
 
+        if defined? Rack::Utils::ParameterTypeError
+          ParameterTypeError = Rack::Utils::ParameterTypeError
+        else
+          ParameterTypeError = TypeError
+        end
+
         # Load parameters into the (Rack) env from the Servlet API.
         # using javax.servlet.http.HttpServletRequest#getParameterMap
         def load_parameters
@@ -65,7 +71,7 @@ module Rack
           @servlet_env.getParameterMap.each do |key, val| # String, String[]
             val = [''] if val.nil? # e.g. buggy Jetty 6
             val = [''] if val.length == 1 && val[0].nil?
-            
+
             if ( q_vals = query_values(key) ) || get_only
               if q_vals.length != val.length
                 # some are GET params some POST params
@@ -93,6 +99,20 @@ module Rack
           @env[ FORM_HASH ] = form_hash
         end
 
+        def [](key)
+          value = super(key)
+          if key.eql? QUERY_HASH
+            if @parameter_error ||= nil
+              raise @parameter_error
+            end
+          end
+          value
+        end
+        public :[]
+
+        # @private
+        KEY_SEP = /([^\[\]]*)(?:\[(.*?)\])?/
+
         # Store the parameter into the given Hash.
         # By default this is performed in a Rack compatible way and thus
         # some parameter values might get "lost" - it only accepts multiple
@@ -102,12 +122,33 @@ module Rack
         # @param val the value(s) in a array-like structure
         # @param hash the Hash to store the name, value pair
         def store_parameter(key, val, hash)
-          # Rack::Utils.parse_nested_query behaviour
-          # for 'foo=bad&foo=bar' does { 'foo' => 'bar' }
-          if key[-2, 2] == '[]' # foo[]=f1&foo[]=f2
-            hash[ key[0...-2] ] = val.to_a # String[]
+          # emulating Rack::Utils.parse_nested_query behavior
+
+          if match = key.match(KEY_SEP)
+            n_key = match[1]; sub = match[2]
           else
-            hash[ key ] = val[ val.length - 1 ] # last
+            n_key = key; sub = nil # normalized-key[ sub-key ]
+          end
+
+          if sub
+            if sub.empty? # e.g. foo[]=1&foo[]=2
+              if arr = hash[ n_key ]
+                return mark_parameter_error "expected Array (got #{arr.class}) for param `#{n_key}'" unless arr.is_a?(Array)
+                hash[ n_key ] = arr + val.to_a; return
+              end
+              hash[ n_key ] = val.to_a # String[]
+            else # foo[bar]=rrr&foo[baz]=zzz
+              v = val[ val.length - 1 ] # last
+              if hsh = hash[ n_key ]
+                return mark_parameter_error "expected Hash (got #{hsh.class}) for param `#{n_key}'" unless hsh.is_a?(Hash)
+                hsh[ sub ] = v
+              else
+                hash[ n_key ] = { sub => v }
+              end
+            end
+          else
+            # for 'foo=bad&foo=bar' does { 'foo' => 'bar' }
+            hash[ n_key ] = val[ val.length - 1 ] # last
           end
         end
 
@@ -147,6 +188,12 @@ module Rack
 
         def parse_query_string
           Java::JavaxServletHttp::HttpUtils.parseQueryString(query_string)
+        end
+
+        def mark_parameter_error(msg)
+          raise ParameterTypeError, msg
+        rescue ParameterTypeError => e
+          @parameter_error = e
         end
 
       end

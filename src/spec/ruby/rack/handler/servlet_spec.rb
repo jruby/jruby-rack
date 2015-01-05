@@ -363,6 +363,33 @@ describe Rack::Handler::Servlet do
       expect( env['org.apache.internal'] ).to be true
     end
 
+    it "raises if nested request parameters are broken (Rack-compat)" do
+      servlet_request = @servlet_request
+      servlet_request.setMethod 'GET'
+      servlet_request.setContextPath '/'
+      servlet_request.setPathInfo '/path'
+      servlet_request.setRequestURI '/home/path'
+      servlet_request.setQueryString 'foo[]=0&foo[bar]=1'
+      servlet_request.addParameter('foo[]', '0')
+      servlet_request.addParameter('foo[bar]', '1')
+
+      env = servlet.create_env(@servlet_env)
+      rack_request = Rack::Request.new(env)
+
+      # Rack::Utils::ParameterTypeError (< TypeError) since 1.6.0
+      if Rack::Utils.const_defined? :ParameterTypeError
+        error = Rack::Utils::ParameterTypeError
+      else
+        error = TypeError
+      end
+
+      expect { rack_request.GET }.to raise_error(error, "expected Hash (got Array) for param `foo'")
+      rack_request.POST.should == {}
+      expect { rack_request.params }.to raise_error(error, "expected Hash (got Array) for param `foo'") if rack_release('1.6')
+
+      rack_request.query_string.should == 'foo[]=0&foo[bar]=1'
+    end
+
   end
 
   shared_examples "(eager)rack-env" do
