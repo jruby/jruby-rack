@@ -83,15 +83,6 @@ module JRuby
 
       protected
 
-      def accept_html?(env)
-        http_accept = env['HTTP_ACCEPT'].to_s
-        if ! http_accept.empty? # NOTE: some really stupid matching for now :
-          !! ( http_accept.index('text/html') || http_accept.index('*/*') )
-        else
-          nil
-        end
-      end
-
       def map_error_code(exc)
         cause = exc.respond_to?(:cause) ? exc.cause : nil
         if UNAVAILABLE_EXCEPTIONS.any? { |type| exc.kind_of?(type) }
@@ -150,7 +141,28 @@ module JRuby
       begin
         require 'rack/utils'
         require 'rack/mime'
-      rescue LoadError
+      rescue LoadError; end
+
+      if defined? Rack::Utils.best_q_match
+
+        def accepts_html?(env)
+          Rack::Utils.best_q_match(env['HTTP_ACCEPT'], %w[text/html])
+        rescue
+          http_accept?(env, 'text/html')
+        end
+
+      else
+
+        def accepts_html?(env)
+          http_accept?(env, 'text/html') || http_accept?(env, '*/*')
+        end
+
+      end
+      alias accept_html? accepts_html? # JRuby-Rack 1.1 compatibility
+
+      def http_accept?(env, mime)
+        http_accept = env['HTTP_ACCEPT'].to_s
+        http_accept.empty? ? nil : !! http_accept.index(mime)
       end
 
     end
