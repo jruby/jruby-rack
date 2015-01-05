@@ -88,6 +88,12 @@ module SharedHelpers
   end
   private :servlet_30?
 
+  def rack_release(at_least = nil)
+    require 'rack'; release = Rack.release
+    at_least.nil? ? release : release >= at_least
+  end
+  private :rack_release
+
   @@raise_logger = nil
 
   def raise_logger
