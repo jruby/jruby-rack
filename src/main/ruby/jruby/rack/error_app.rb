@@ -75,13 +75,13 @@ module JRuby
         body = env['REQUEST_METHOD'] == 'HEAD' ? [] : FileBody.new(path, size = File.size?(path))
         response = [ code, headers, body ]
 
-        size ||= ::Rack::Utils.bytesize(File.read(path)) if defined?(::Rack::Utils)
+        size ||= ::Rack::Utils.bytesize(File.read(path)) if defined?(::Rack::Utils.bytesize)
 
         response[1]['Content-Length'] = size.to_s if size
         response
       end
 
-      private
+      protected
 
       def accept_html?(env)
         http_accept = env['HTTP_ACCEPT'].to_s
@@ -112,15 +112,6 @@ module JRuby
         [ status, headers, body ? [ body ] : [] ]
       end
 
-      def expand_path(path, root = self.root)
-        exp_path = File.join(root, path)
-        begin
-          return exp_path if File.file?(exp_path) && File.readable?(exp_path)
-        rescue SystemCallError
-          nil
-        end
-      end
-
       class FileBody
 
         attr_reader :path, :size
@@ -145,14 +136,22 @@ module JRuby
 
       end
 
-      def self.silent_require(feature)
-        require feature
-      rescue LoadError
-        nil
+      private
+
+      def expand_path(path, root = self.root)
+        exp_path = File.join(root, path)
+        begin
+          return exp_path if File.file?(exp_path) && File.readable?(exp_path)
+        rescue SystemCallError
+          nil
+        end
       end
 
-      silent_require 'rack/utils'
-      silent_require 'rack/mime'
+      begin
+        require 'rack/utils'
+        require 'rack/mime'
+      rescue LoadError
+      end
 
     end
   end
