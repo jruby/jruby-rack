@@ -80,6 +80,12 @@ module SharedHelpers
   end
   private :servlet_30?
 
+  def rack_release(at_least = nil)
+    require 'rack'; release = Rack.release
+    at_least.nil? ? release : release >= at_least
+  end
+  private :rack_release
+
   def raise_logger(level = 'WARN')
     org.jruby.rack.logging.RaiseLogger.new(level, JRuby.runtime.out)
   end
