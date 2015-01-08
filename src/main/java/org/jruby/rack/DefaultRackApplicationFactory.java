@@ -7,8 +7,10 @@
 
 package org.jruby.rack;
 
-import java.io.IOException;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
@@ -531,15 +533,21 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 }
             }
 
-            if (rackup != null) {
-                rackupLocation = rackContext.getRealPath(rackup);
-                try {
-                    rackup = IOHelpers.inputStreamToString(rackContext.getResourceAsStream(rackup));
+            InputStream is = null;
+            try {
+                if (rackup != null) {
+                    is = rackContext.getResourceAsStream(rackup);
+                    rackupLocation = rackContext.getRealPath(rackup);
                 }
-                catch (IOException e) {
-                    rackContext.log(RackLogger.ERROR, "failed to read rackup from '"+ rackup + "' (" + e + ")");
-                    throw new RackInitializationException("failed to read rackup input", e);
+                else {
+                    is = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.ru");
+                    rackupLocation = "uri:classloader://config.ru";
                 }
+                rackup = IOHelpers.inputStreamToString(is);
+            }
+            catch (IOException e) {
+                rackContext.log(RackLogger.ERROR, "failed to read rackup from '"+ rackup + "' (" + e + ")");
+                throw new RackInitializationException("failed to read rackup input", e);
             }
         }
 
