@@ -8,10 +8,7 @@ branches:
     - 1.1-stable
     - maintenance-1.1.13
 rvm:
-  # NOTE: do not use jruby-19mode otherwise some specs might fail
-  # @see ruby/rack/application_spec.rb for an explanation on this
-  #- jruby-18mode
-  #- jruby-19mode
+  - jruby-1.6.8
   - jruby-1.7.16
   - jruby-head
 jdk:
@@ -99,6 +96,63 @@ matrix:
       gemfile: gemfiles/rails41.gemfile
       env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
       jdk: openjdk6
+    ## avoid jruby-1.6.8 with JDK8 :
+    - rvm: jruby-1.6.8
+      gemfile: Gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: Gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails23.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails23.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails30.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails30.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails31.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails31.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails32.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails32.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk8
     ## rails 4.0 does not run on --1.8
     - rvm: jruby-1.7.16
       gemfile: gemfiles/rails40.gemfile
@@ -112,6 +166,18 @@ matrix:
       gemfile: gemfiles/rails40.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: openjdk6
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk7
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
     ## rails 4.1 won't run on --1.8
     - rvm: jruby-1.7.16
       gemfile: gemfiles/rails41.gemfile
@@ -122,6 +188,18 @@ matrix:
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk7
     - rvm: jruby-1.7.16
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: openjdk6
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk7
+    - rvm: jruby-1.6.8
       gemfile: gemfiles/rails41.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
