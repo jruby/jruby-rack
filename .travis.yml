@@ -36,7 +36,7 @@ before_install:
   - ((echo $BUNDLE_GEMFILE | grep rails23) && jruby --1.9 -S gem update --system 1.8.29) || true
 matrix:
   allow_failures:
-    #- rvm: jruby-head
+    - rvm: jruby-1.6.8
     #- gemfile: gemfiles/rails41.gemfile
   exclude:
     ## avoid jruby-head with JDK6 :
@@ -166,6 +166,7 @@ matrix:
       gemfile: gemfiles/rails40.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
+      ## rails 4.0 won't run on JRuby 1.6
     - rvm: jruby-1.6.8
       gemfile: gemfiles/rails40.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
@@ -176,7 +177,19 @@ matrix:
       jdk: oraclejdk7
     - rvm: jruby-1.6.8
       gemfile: gemfiles/rails40.gemfile
-      env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: openjdk6
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk7
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails40.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
       jdk: oraclejdk8
     ## rails 4.1 won't run on --1.8
     - rvm: jruby-1.7.16
@@ -191,6 +204,7 @@ matrix:
       gemfile: gemfiles/rails41.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
+    ## rails 4.1 won't run on JRuby 1.6
     - rvm: jruby-1.6.8
       gemfile: gemfiles/rails41.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
@@ -202,6 +216,18 @@ matrix:
     - rvm: jruby-1.6.8
       gemfile: gemfiles/rails41.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
+      jdk: oraclejdk8
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: openjdk6
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
+      jdk: oraclejdk7
+    - rvm: jruby-1.6.8
+      gemfile: gemfiles/rails41.gemfile
+      env: JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION"
       jdk: oraclejdk8
     ## rails 4.0 does not run on --1.8 (jruby-head)
     #- rvm: jruby-head
