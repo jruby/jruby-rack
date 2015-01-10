@@ -412,6 +412,7 @@ describe Rack::Handler::Servlet do
       servlet_request.addParameter('foo[meh[]]', '42')
       servlet_request.addParameter('huh[1]', 'b')
       servlet_request.addParameter('huh[0]', 'a')
+      set_rack_input @servlet_env # due rack_request.POST
 
       env = servlet.create_env(@servlet_env)
       rack_request = Rack::Request.new(env)
@@ -438,6 +439,7 @@ describe Rack::Handler::Servlet do
       servlet_request.setQueryString 'foo[]=0&foo[bar]=1'
       servlet_request.addParameter('foo[]', '0')
       servlet_request.addParameter('foo[bar]', '1')
+      set_rack_input @servlet_env # due rack_request.POST
 
       env = servlet.create_env(@servlet_env)
       rack_request = Rack::Request.new(env)
@@ -1077,6 +1079,7 @@ describe Rack::Handler::Servlet do
       # Query params :
       servlet_request.addParameter('foo', 'bar')
       servlet_request.addParameter('quux', 'b;la')
+      set_rack_input servlet_env # due rack_request.POST
 
       env = servlet.create_env(servlet_env)
       rack_request = Rack::Request.new(env)
