@@ -6,7 +6,7 @@ GEM
       rake
     diff-lcs (1.2.5)
     jruby-openssl (0.9.6-java)
-    rack (1.4.5)
+    rack (1.5.2)
     rake (10.3.2)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
@@ -23,6 +23,6 @@ PLATFORMS
 DEPENDENCIES
   appraisal
   jruby-openssl
-  rack (~> 1.4.5)
+  rack (~> 1.5.2)
   rake (~> 10.3.1)
   rspec (~> 2.14.1)
