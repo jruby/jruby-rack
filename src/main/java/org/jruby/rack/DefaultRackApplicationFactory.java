@@ -189,7 +189,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
         if (errorApp == null) {
             errorApp = "require 'jruby/rack/error_app' \n" +
-            "use Rack::ShowStatus \n" +
+            "use JRuby::Rack::ErrorApp::ShowStatus \n" +
             "run JRuby::Rack::ErrorApp.new";
         }
         runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");

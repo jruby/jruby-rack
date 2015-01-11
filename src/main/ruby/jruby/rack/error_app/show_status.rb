@@ -3,14 +3,12 @@ require 'rack/request'
 require 'rack/utils'
 
 class JRuby::Rack::ErrorApp
-  # Rack::ShowStatus catches all empty responses and replaces them
-  # with a site explaining the error.
-  #
-  # Additional details can be put into <tt>rack.showstatus.detail</tt>
-  # and will be shown as HTML.  If such details exist, the error page
-  # is always rendered, even if the reply was not empty.
 
+  # catches empty responses and replaces them with a site explaining the error.
+  #
+  # @note kindly adapted from on Rack::ShowStatus
   class ShowStatus
+
     def initialize(app)
       @app = app
       @template = ERB.new(TEMPLATE)
@@ -18,35 +16,31 @@ class JRuby::Rack::ErrorApp
 
     def call(env)
       status, headers, body = @app.call(env)
-      headers = Utils::HeaderHash.new(headers)
-      empty = headers[CONTENT_LENGTH].to_i <= 0
+      headers = ::Rack::Utils::HeaderHash.new(headers)
+      empty = headers['Content-Length'].to_i <= 0
 
       # client or server error, or explicit message
       if (status.to_i >= 400 && empty) || env["rack.showstatus.detail"]
-        # This double assignment is to prevent an "unused variable" warning on
-        # Ruby 1.9.3.  Yes, it is dumb, but I don't like Ruby yelling at me.
-        req = req = Rack::Request.new(env)
-
-        message = Rack::Utils::HTTP_STATUS_CODES[status.to_i] || status.to_s
-
-        # This double assignment is to prevent an "unused variable" warning on
-        # Ruby 1.9.3.  Yes, it is dumb, but I don't like Ruby yelling at me.
+        # required erb template variables (captured with binding) :
+        req = req = ::Rack::Request.new(env)
+        message = ::Rack::Utils::HTTP_STATUS_CODES[status.to_i] || status.to_s
         detail = detail = env["rack.showstatus.detail"] || message
 
         body = @template.result(binding)
-        size = Rack::Utils.bytesize(body)
-        [status, headers.merge(CONTENT_TYPE => "text/html", CONTENT_LENGTH => size.to_s), [body]]
+        size = ::Rack::Utils.bytesize(body)
+        [status, headers.merge('Content-Type' => "text/html", 'Content-Length' => size.to_s), [body]]
       else
         [status, headers, body]
       end
     end
 
-    def h(obj)                  # :nodoc:
+    # @private
+    def h(obj)
       case obj
       when String
-        Utils.escape_html(obj)
+        ::Rack::Utils.escape_html(obj)
       else
-        Utils.escape_html(obj.inspect)
+        ::Rack::Utils.escape_html(obj.inspect)
       end
     end
 
@@ -101,7 +95,7 @@ TEMPLATE = <<'HTML'
 
   <div id="explanation">
     <p>
-    You're seeing this error because you use <code>Rack::ShowStatus</code>.
+    You're seeing this error because you use <code>JRuby::Rack::ErrorApp::ShowStatus</code>.
     </p>
   </div>
 </body>
