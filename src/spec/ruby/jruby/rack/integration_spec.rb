@@ -1,7 +1,5 @@
 
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
-require 'fileutils'
-require 'jruby'
 
 java_import org.jruby.rack.RackContext
 java_import org.jruby.rack.servlet.ServletRackContext
@@ -14,6 +12,8 @@ java_import org.jruby.rack.PoolingRackApplicationFactory
 java_import org.jruby.rack.rails.RailsRackApplicationFactory
 
 describe "integration" do
+
+  before(:all) { require 'fileutils' }
 
   #after(:all) { JRuby::Rack.context = nil }
 
@@ -90,12 +90,7 @@ describe "integration" do
 
   shared_examples_for 'a rails app', :shared => true do
 
-    let(:servlet_context) do
-      servlet_context = org.jruby.rack.mock.MockServletContext.new base_path
-      servlet_context.logger = raise_logger
-      set_compat_version servlet_context
-      servlet_context
-    end
+    let(:servlet_context) { new_servlet_context(base_path) }
 
     it "initializes (pooling by default)" do
       listener = org.jruby.rack.rails.RailsServletContextListener.new
@@ -318,6 +313,55 @@ describe "integration" do
 
   end
 
+  describe 'rails 4.1', :lib => :rails41 do
+
+    before(:all) do name = :rails41 # copy_gemfile :
+      FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/Gemfile")
+      FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/Gemfile.lock")
+      Dir.chdir File.join(STUB_DIR, name.to_s)
+    end
+
+    def prepare_servlet_context(servlet_context)
+      servlet_context.addInitParameter('rails.root', "#{STUB_DIR}/rails41")
+      servlet_context.addInitParameter('jruby.rack.layout_class', 'FileSystemLayout')
+    end
+
+    def base_path; "file://#{STUB_DIR}/rails41" end
+    # let(:base_path) { "file://#{STUB_DIR}/rails41" }
+
+    it_should_behave_like 'a rails app'
+
+    context "initialized" do
+
+      before(:all) { initialize_rails 'production', base_path }
+      after(:all)  { restore_rails }
+
+      it "loaded rack ~> 1.5" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rack.release)"
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '1.5'
+      end
+
+      it "booted with a servlet logger" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rails)"
+        should_eval_as_not_nil "Rails.logger"
+        # NOTE: TaggedLogging is a module that extends the instance now :
+        should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::TaggedLogging", true
+        should_eval_as_eql_to "Rails.logger.instance_variable_get(:'@logdev').dev.class.name",
+                              'JRuby::Rack::ServletLog'
+        should_eval_as_eql_to "Rails.logger.level", Logger::INFO
+      end
+
+      it "sets up public_path (as for a war)" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_eql_to "Rails.public_path.to_s", "#{STUB_DIR}/rails41/public"
+      end
+
+    end
+
+  end
+
   describe 'rails 2.3', :lib => :rails23 do
 
     before(:all) do
@@ -411,11 +455,15 @@ describe "integration" do
   def new_servlet_context(base_path = nil)
     servlet_context = org.jruby.rack.mock.MockServletContext.new base_path
     servlet_context.logger = raise_logger
-    set_compat_version servlet_context
+    prepare_servlet_context servlet_context
     servlet_context
   end
 
-  def set_compat_version(servlet_context = @servlet_context)
+  def prepare_servlet_context(servlet_context)
+    set_compat_version servlet_context
+  end
+
+  def set_compat_version(servlet_context = @servlet_context); require 'jruby'
     compat_version = JRuby.runtime.getInstanceConfig.getCompatVersion # RUBY1_9
     servlet_context.addInitParameter("jruby.compat.version", compat_version.to_s)
   end
