@@ -40,6 +40,7 @@ module JRuby
       def real_path(path)
         real_path = @rack_context.getRealPath(path)
         real_path.chomp!('/') if real_path
+        # just use the given path if there is no real path
         real_path
       end
 
@@ -90,6 +91,31 @@ module JRuby
     end
 
     RailsWebInfLayout = WebInfLayout
+
+    class ClassPathLayout < WebInfLayout
+
+      URI_CLASSLOADER = 'uri:classloader://'
+
+      def real_path(path)
+        if path.start_with? URI_CLASSLOADER
+          path
+        else
+          super
+        end
+      end
+
+      def app_uri
+        @app_uri ||=
+          @rack_context.getInitParameter('app.root') ||
+          URI_CLASSLOADER
+      end
+
+      def gem_uri
+        @gem_uri ||=
+          @rack_context.getInitParameter('gem.path') ||
+          URI_CLASSLOADER
+      end
+    end
 
     # @deprecated will be removed (with Merb support)
     class MerbWebInfLayout < WebInfLayout
