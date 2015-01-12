@@ -1,15 +1,15 @@
 require 'erb'
-require 'rack/request'
-require 'rack/utils'
 
 class JRuby::Rack::ErrorApp
 
   # catches empty responses and replaces them with a site explaining the error.
   #
   # @note kindly adapted from on Rack::ShowStatus
+  # @private internal API - likely won't exist in 1.2.x
   class ShowStatus
 
     def initialize(app)
+      require 'rack/request'; require 'rack/utils'
       @app = app
       @template = ERB.new(TEMPLATE)
     end
