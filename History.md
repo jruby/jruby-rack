@@ -1,3 +1,14 @@
+## 1.1.18 (13/01/15)
+
+- back-port Rack::ShowStatus to be used with out ErrorApp (contains XSS fix #190)
+- search rackup (config.ru) on context-classloader if not found elsewhere
+- introduce a new ClassPathLayout where the whole app + gems are on CP (#191)
+- update to (vendored) rack ~> 1.5.2 (for JRuby-Rack 1.1.x)
+- use Rack::Utils.best_q_match in ErrorApp if available
+- improved rack-compatibility for our "pure" servlet-env request env parsing
+  * raise a TypeError just like rack does when it detects invalid parameters
+  * compatibility with rack's parse_nested_query logic
+
 ## 1.1.17 (30/12/14)
 
 This release changes deployment from codehaus.org to oss.sonatype.org for artifacts.
