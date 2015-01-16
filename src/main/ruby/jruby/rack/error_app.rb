@@ -9,6 +9,8 @@ module JRuby
   module Rack
     class ErrorApp
 
+      autoload :ShowStatus, 'jruby/rack/error_app/show_status'
+
       EXCEPTION = org.jruby.rack.RackEnvironment::EXCEPTION
 
       DEFAULT_RESPONSE_CODE = 500

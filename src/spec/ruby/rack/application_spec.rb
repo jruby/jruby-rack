@@ -245,8 +245,8 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         rack_app = error_application.getApplication
         #expect( rack_app ).to be_a Rack::Handler::Servlet
         expect( rack_app.class.name ).to eql 'Rack::Handler::Servlet'
-        expect( rack_app.app ).to be_a Rack::ShowStatus
-        #expect( app.class.name ).to eql 'Rack::ShowStatus'
+        expect( rack_app.app ).to be_a JRuby::Rack::ErrorApp::ShowStatus
+        #expect( app.class.name ).to eql 'JRuby::Rack::ErrorApp::ShowStatus'
         error_app = rack_app.app.instance_variable_get('@app')
         expect( error_app ).to be_a JRuby::Rack::ErrorApp
         #expect( error_app.class.name ).to eql 'JRuby::Rack::ErrorApp'

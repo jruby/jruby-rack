@@ -7,13 +7,14 @@
 
 package org.jruby.rack;
 
-import java.io.IOException;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -195,7 +196,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
         if (errorApp == null) {
             errorApp = "require 'jruby/rack/error_app' \n" +
-            "use Rack::ShowStatus \n" +
+            "use JRuby::Rack::ErrorApp::ShowStatus \n" +
             "run JRuby::Rack::ErrorApp.new";
         }
         runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
@@ -510,13 +511,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
             if (level > 0) {
                 level--;
-                for ( Iterator<String> i = entries.iterator(); i.hasNext(); ) {
-                    String subpath = i.next();
-                    if (subpath.endsWith("/")) {
+                for ( String subpath : entries ) {
+                    final int len = subpath.length();
+                    if ( len > 0 && subpath.charAt(len - 1) == '/' ) {
                         subpath = findConfigRuPathInSubDirectories(subpath, level);
-                        if (subpath != null) {
-                            return subpath;
-                        }
+                        if ( subpath != null ) return subpath;
                     }
                 }
             }
@@ -524,9 +523,22 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         return null;
     }
 
-    private String resolveRackupScript() throws RackInitializationException {
-        rackupLocation = "<web.xml>";
+    private static String getContextLoaderScript(final String name, final boolean silent)
+        throws IOException {
+        try { // still try context-loader for resolving rackup :
+            final ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+            InputStream is = contextLoader.getResourceAsStream(name);
+            return IOHelpers.inputStreamToString(is);
+        }
+        catch (IOException e) {
+            if ( silent ) return null; throw e;
+        }
+        catch (RuntimeException e) {
+            if ( silent ) return null; throw e;
+        }
+    }
 
+    private String resolveRackupScript() throws RackInitializationException {
         String rackup = rackContext.getConfig().getRackup();
         if (rackup == null) {
             rackup = rackContext.getConfig().getRackupPath();
@@ -543,15 +555,38 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             }
 
             if (rackup != null) {
-                rackupLocation = rackContext.getRealPath(rackup);
+                InputStream is;
                 try {
-                    rackup = IOHelpers.inputStreamToString(rackContext.getResourceAsStream(rackup));
+                    is = rackContext.getResourceAsStream(rackup);
+                    rackupLocation = rackContext.getRealPath(rackup);
+                    return this.rackupScript = IOHelpers.inputStreamToString(is);
+                }
+                catch (IOException e) {
+                    try { // last - try context-loader for resolving rackup :
+                        if ( (rackup = getContextLoaderScript(rackup, true)) != null ) {
+                            return this.rackupScript = rackup;
+                        }
+                    }
+                    catch (IOException ex) { /* won't happen */ }
+
+                    rackContext.log(RackLogger.ERROR, "failed to read rackup from '"+ rackup + "' (" + e + ")");
+                    throw new RackInitializationException("failed to read rackup input", e);
+                }
+            }
+            else {
+                rackup = "config.ru";
+                try {
+                    rackup = getContextLoaderScript(rackup, false);
+                    rackupLocation = "uri:classloader://config.ru";
                 }
                 catch (IOException e) {
                     rackContext.log(ERROR, "failed to read rackup from '"+ rackup + "' (" + e + ")");
                     throw new RackInitializationException("failed to read rackup input", e);
                 }
             }
+        }
+        else {
+            rackupLocation = "<web.xml>";
         }
 
         return this.rackupScript = rackup;
