@@ -64,6 +64,7 @@ module JRuby
       end
 
       def serve(code, path, env)
+        env['rack.showstatus.detail'] = nil
         last_modified = File.mtime(path).httpdate
         return [ 304, {}, [] ] if env['HTTP_IF_MODIFIED_SINCE'] == last_modified
 
