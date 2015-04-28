@@ -1,7 +1,7 @@
 language: ruby
 sudo: false
 bundler_args: --without development
-script: rake spec
+script: jruby -G -S rake spec
 branches:
   only:
     - master
