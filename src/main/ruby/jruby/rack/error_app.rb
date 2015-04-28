@@ -11,7 +11,11 @@ module JRuby
 
       autoload :ShowStatus, 'jruby/rack/error_app/show_status'
 
+      # @private
+      InterruptedException = Java::JavaLang::InterruptedException
+
       EXCEPTION = org.jruby.rack.RackEnvironment::EXCEPTION
+      DEFAULT_EXCEPTION_DETAIL = ''
 
       DEFAULT_RESPONSE_CODE = 500
       DEFAULT_MIME = 'text/plain'
@@ -57,7 +61,14 @@ module JRuby
 
       def response_code(env)
         if exc = env[EXCEPTION]
-          env['rack.showstatus.detail'] = exc.message rescue ''
+          unless env.key?(key = 'rack.showstatus.detail')
+            begin
+              env[key] = exc.message || DEFAULT_EXCEPTION_DETAIL
+            rescue => e
+              env[key] = DEFAULT_EXCEPTION_DETAIL
+              warn e.inspect
+            end
+          end
           map_error_code(exc)
         else
           nil
@@ -89,7 +100,7 @@ module JRuby
       def map_error_code(exc)
         if UNAVAILABLE_EXCEPTIONS.any? { |type| exc.kind_of?(type) }
           503 # Service Unavailable
-        elsif exc.respond_to?(:cause) && exc.cause.kind_of?(Java::JavaLang::InterruptedException)
+        elsif exc.respond_to?(:cause) && exc.cause.kind_of?(InterruptedException)
           503 # Service Unavailable
         else
           500

@@ -10,8 +10,7 @@ class JRuby::Rack::ErrorApp
 
     def initialize(app)
       require 'rack/request'; require 'rack/utils'
-      @app = app
-      @template = ERB.new(TEMPLATE)
+      @app = app; @template = ERB.new(TEMPLATE, nil, '-')
     end
 
     def call(env)
@@ -19,12 +18,13 @@ class JRuby::Rack::ErrorApp
       headers = ::Rack::Utils::HeaderHash.new(headers)
       empty = headers['Content-Length'].to_i <= 0
 
+      detail = env['rack.showstatus.detail']
       # client or server error, or explicit message
-      if (status.to_i >= 400 && empty) || env["rack.showstatus.detail"]
+      if (status.to_i >= 400 && empty) || detail
         # required erb template variables (captured with binding) :
-        req = req = ::Rack::Request.new(env)
+        request = req = ::Rack::Request.new(env); request && req # avoid un-used warning
         message = ::Rack::Utils::HTTP_STATUS_CODES[status.to_i] || status.to_s
-        detail = detail = env["rack.showstatus.detail"] || message
+        detail = detail.nil? ? message : detail # false for no detail
 
         body = @template.result(binding)
         size = ::Rack::Utils.bytesize(body)
@@ -55,7 +55,7 @@ TEMPLATE = <<'HTML'
 <html lang="en">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-  <title><%=h message %> at <%=h req.script_name + req.path_info %></title>
+  <title><%=h message %> at <%=h request.script_name + request.path_info %></title>
   <meta name="robots" content="NONE,NOARCHIVE" />
   <style type="text/css">
     html * { padding:0; margin:0; }
@@ -81,16 +81,16 @@ TEMPLATE = <<'HTML'
     <table class="meta">
       <tr>
         <th>Request Method:</th>
-        <td><%=h req.request_method %></td>
+        <td><%=h request.request_method %></td>
       </tr>
       <tr>
         <th>Request URL:</th>
-      <td><%=h req.url %></td>
+        <td><%=h request.url %></td>
       </tr>
     </table>
   </div>
   <div id="info">
-    <p><%=h detail %></p>
+    <% if detail -%><p><%=h detail %></p><% end %>
   </div>
 
   <div id="explanation">
@@ -102,6 +102,5 @@ TEMPLATE = <<'HTML'
 </html>
 HTML
 
-    # :startdoc:
   end
 end
