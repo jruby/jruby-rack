@@ -22,6 +22,8 @@ module JRuby
         # org.jruby.rack.RackInitializationException
       ]
 
+      ALLOW_METHODS = 'HEAD, GET, POST, PUT, DELETE, OPTIONS'
+
       attr_reader :root
 
       def initialize(root = nil)
@@ -35,8 +37,7 @@ module JRuby
 
       def call(env)
         if env['REQUEST_METHOD'] == 'OPTIONS'
-          allow_methods = 'HEAD, GET, POST, PUT, DELETE, OPTIONS'
-          return [ 200, {'Allow' => allow_methods, 'Content-Length' => '0'}, [] ]
+          return [ 200, {'Allow' => ALLOW_METHODS, 'Content-Length' => '0'}, [] ]
         end
 
         code = response_code(env)
@@ -86,10 +87,9 @@ module JRuby
       protected
 
       def map_error_code(exc)
-        cause = exc.respond_to?(:cause) ? exc.cause : nil
         if UNAVAILABLE_EXCEPTIONS.any? { |type| exc.kind_of?(type) }
           503 # Service Unavailable
-        elsif cause.kind_of?(Java::JavaLang::InterruptedException)
+        elsif exc.respond_to?(:cause) && exc.cause.kind_of?(Java::JavaLang::InterruptedException)
           503 # Service Unavailable
         else
           500
@@ -107,6 +107,8 @@ module JRuby
 
       class FileBody
 
+        CHUNK_SIZE = 8192
+
         attr_reader :path, :size
         alias to_path path
 
@@ -116,7 +118,7 @@ module JRuby
           File.open(@path, "rb") do |file|
             # file.seek(0)
             remaining = @size || (1.0 / 0)
-            chunk_size = 8192
+            chunk_size = CHUNK_SIZE
             while remaining > 0
               chunk_size = remaining if remaining < chunk_size
               break unless part = file.read(chunk_size)
