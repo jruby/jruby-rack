@@ -33,7 +33,7 @@ GEM
     diff-lcs (1.2.5)
     erubis (2.7.0)
     hike (1.2.3)
-    i18n (0.7.0)
+    i18n (0.6.11)
     journey (1.0.4)
     json (1.8.2-java)
     mail (2.5.4)
@@ -91,6 +91,7 @@ PLATFORMS
   java
 
 DEPENDENCIES
+  i18n (< 0.7)
   rails (~> 3.2.21)
   rake (~> 10.3.1)
   rspec (~> 2.14.1)

@@ -7,10 +7,12 @@ appraise "rails30" do
 end
 
 appraise "rails31" do
+  gem "i18n", "< 0.7"
   gem "rails", "~> 3.1.12"
 end
 
 appraise "rails32" do
+  gem "i18n", "< 0.7"
   gem "rails", "~> 3.2.21"
 end
 
