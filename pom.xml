@@ -19,11 +19,11 @@
   </description>
 
   <properties>
-    <jruby.version>1.7.13</jruby.version>
+    <jruby.version>1.7.19</jruby.version>
     <vendor.gems.path>vendor/gems</vendor.gems.path>
-    <bundler.version>1.6.5</bundler.version>
+    <bundler.version>1.7.14</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
-    <saumya.mojo.version>1.0.6</saumya.mojo.version>
+    <saumya.mojo.version>1.0.9</saumya.mojo.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
   </properties>
 
@@ -234,12 +234,9 @@
             <execution>
               <id>gem-install-bundler</id>
               <phase>test</phase>
-              <goals><goal>install</goal></goals>
-              <!--
-              <id>default-initialize</id>
-              <configuration>
-                <libDirectory>smt-that-does-not-exists</libDirectory>
-              </configuration>-->
+              <goals>
+                <goal>initialize</goal>
+              </goals>
             </execution>
           </executions>
       </plugin>
