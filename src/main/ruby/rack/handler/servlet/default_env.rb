@@ -113,7 +113,7 @@ module Rack
             when 'CONTENT_TYPE'
               @env[name] = value if value
             else
-              @env[name] = value ? value : ''
+              @env[name] = value
             end
           end
         end

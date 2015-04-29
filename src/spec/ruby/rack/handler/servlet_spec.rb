@@ -363,6 +363,26 @@ describe Rack::Handler::Servlet do
       expect( env['org.apache.internal'] ).to be true
     end
 
+    it "sets attributes with false/null values" do
+      @servlet_request.addHeader "Content-Type", "text/plain"
+      @servlet_request.setContentType 'text/html'
+      @servlet_request.setContent ('0' * 100).to_java_bytes
+      @servlet_request.setAttribute 'org.false', false
+      @servlet_request.setAttribute 'null.attr', nil
+      @servlet_request.setAttribute 'the.truth', java.lang.Boolean::TRUE
+
+      env = servlet.create_env @servlet_env
+
+      expect( env['org.false'] ).to be false
+      expect( env['null.attr'] ).to be nil
+      expect( env['the.truth'] ).to be true
+
+      expect( env.keys ).to include 'org.false'
+      
+      pending "TODO: expect( env.keys ).to include 'null.attr'"
+      # expect( env.keys ).to include 'null.attr'
+    end
+
     it "parses strange request parameters (Rack-compat)" do
       servlet_request = @servlet_request
       servlet_request.setMethod 'GET'
