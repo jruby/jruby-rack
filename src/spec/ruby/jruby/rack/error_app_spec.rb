@@ -16,6 +16,8 @@ describe 'JRuby::Rack::ErrorApp' do
   before :each do
     @servlet_request = double "servlet request"
     @env = {'java.servlet_request' => @servlet_request}
+    # for Rack::Request to work (rendered from ShowStatus's TEMPLATE) :
+    @env["rack.url_scheme"] = 'http'
   end
 
   it "should determine the response status code based on the exception in the servlet attribute" do
