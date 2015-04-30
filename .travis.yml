@@ -1,7 +1,7 @@
 language: ruby
 sudo: false
 bundler_args: --without development
-script: jruby -r bundler/setup -S rake spec
+script: rake spec
 branches:
   only:
     - master
@@ -29,7 +29,7 @@ env:
   - JRUBY_OPTS="$JRUBY_OPTS" JAVA_OPTS="-Djruby.version=$JRUBY_VERSION" # for mvn's jruby plugins
 before_script:
   - export JRUBY_OPTS="--server -Xcext.enabled=false -Xcompile.invokedynamic=false -J-XX:MaxPermSize=128m"
-  - export JRUBY_VERSION="1.7.12"
+  - export JRUBY_VERSION="1.7.16"
 before_install:
   # NOTE: RubyGems 2.4.x fails us at application_spec's gem_install_rack_unless_installed !
   - (jruby --1.9 -S gem update --system 2.2.3) || true
