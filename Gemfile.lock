@@ -5,7 +5,7 @@ GEM
       bundler
       rake
     diff-lcs (1.2.5)
-    jruby-openssl (0.9.6-java)
+    jruby-openssl (0.9.7-java)
     rack (1.5.5)
     rake (10.4.2)
     rspec (2.14.1)
