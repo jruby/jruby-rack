@@ -23,7 +23,7 @@
     <vendor.gems.path>vendor/gems</vendor.gems.path>
     <bundler.version>1.6.5</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
-    <saumya.mojo.version>1.0.6</saumya.mojo.version>
+    <saumya.mojo.version>1.0.10</saumya.mojo.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
   </properties>
 
