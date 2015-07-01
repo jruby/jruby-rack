@@ -1,3 +1,10 @@
+## 1.1.19 (30/06/15)
+
+- update (bundled) rack to 1.5.5
+- servlet attrs with null/false values should not end up with an '' env value (#195)
+- tune ErrorApp + ShowStatus to respect set 'rack.showstatus.detail' (#194)
+- allow for more `JRuby::Rack::ErrorApp` customizations + retrieve cause when needed
+
 ## 1.1.18 (13/01/15)
 
 - back-port Rack::ShowStatus to be used with out ErrorApp (contains XSS fix #190)
