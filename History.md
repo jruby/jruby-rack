@@ -1,4 +1,4 @@
-## 1.1.19 (30/06/15)
+## 1.1.19 (01/07/15)
 
 - update (bundled) rack to 1.5.5
 - servlet attrs with null/false values should not end up with an '' env value (#195)
