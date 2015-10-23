@@ -56,6 +56,7 @@ import org.jruby.runtime.BlockBody;
 import org.jruby.runtime.Helpers;
 import org.jruby.runtime.JavaInternalBlockBody;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.Signature;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -285,13 +286,18 @@ public class Response extends RubyObject implements RackResponse {
         try {
             final StringBuilder bodyParts = new StringBuilder();
             invoke(context, this.body, "each",
-                new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
+                    new JavaInternalBlockBody(context.runtime, Signature.ONE_REQUIRED) {
+
                     @Override
-                    public IRubyObject yield(ThreadContext context, IRubyObject part) {
-                        bodyParts.append( part.asString().toString() );
-                        return part;
+                    public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
+                        for (IRubyObject part : args) {
+                            bodyParts.append( part.asString().toString() );
+                        }
+                        return args[0];
                     }
+                        
                 }
+                 
             );
             return bodyParts.toString();
         }
@@ -376,13 +382,16 @@ public class Response extends RubyObject implements RackResponse {
                     final RubyString newLine = RubyString.newString(context.runtime, NEW_LINE);
                     // value.each_line { |val| response.addHeader(key.to_s, val.chomp("\n")) }
                     invoke(context, val, each_line ? "each_line" : "each",
-                        new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
+                        new JavaInternalBlockBody(context.runtime, Signature.ONE_REQUIRED) {
+
                             @Override
-                            public IRubyObject yield(ThreadContext context, IRubyObject value) {
+                            public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
+                                IRubyObject value = args[0];
                                 value.callMethod(context, "chomp!", newLine);
                                 response.addHeader(name, value.toString());
                                 return value;
                             }
+                                                    
                         }
                     );
                     return;
@@ -463,10 +472,12 @@ public class Response extends RubyObject implements RackResponse {
                 final String method = body.respondsTo("each_line") ? "each_line" : "each";
                 try {
                     invoke(context, body, method,
-                        new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
+                        new JavaInternalBlockBody(context.runtime, Signature.ONE_REQUIRED) {
+
                         @Override
-                        public IRubyObject yield(ThreadContext context, IRubyObject line) {
-                            //final ByteList bytes = line.asString().getByteList();
+                        public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
+                            IRubyObject line = args[0];
+                            final ByteList bytes = line.asString().getByteList();
                             try {
                                 output.write( line.asString().getBytes() );
                                 //output.write(bytes.unsafeBytes(), bytes.getBegin(), bytes.getRealSize());
@@ -474,7 +485,8 @@ public class Response extends RubyObject implements RackResponse {
                             }
                             catch (IOException e) { throw new WrappedException(e); }
                             return context.nil;
-                        }
+                        }                                               
+                        
                     });
                 }
                 catch (WrappedException e) { throw e.getIOCause(); }

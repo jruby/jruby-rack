@@ -19,11 +19,11 @@
   </description>
 
   <properties>
-    <jruby.version>1.7.19</jruby.version>
+    <jruby.version>9.0.3.0</jruby.version>
     <vendor.gems.path>vendor/gems</vendor.gems.path>
-    <bundler.version>1.7.14</bundler.version>
+    <bundler.version>1.10.6</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
-    <saumya.mojo.version>1.0.9</saumya.mojo.version>
+    <saumya.mojo.version>1.1.2</saumya.mojo.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
   </properties>
 
