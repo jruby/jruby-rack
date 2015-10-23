@@ -58,7 +58,7 @@ task :unpack_gem => "target" do |t|
   if spec.respond_to?(:cache_file)
     gem_file = spec.cache_file
   else
-    gem_file = File.join(spec.installation_path, 'cache', spec.file_name)
+    gem_file = File.join(spec.base_dir, 'cache', spec.file_name)
   end
   unless uptodate?("#{target}/vendor/rack.rb", [__FILE__, gem_file])
     mkdir_p "target/vendor"
