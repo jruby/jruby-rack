@@ -4,6 +4,8 @@
 - servlet attrs with null/false values should not end up with an '' env value (#195)
 - tune ErrorApp + ShowStatus to respect set 'rack.showstatus.detail' (#194)
 - allow for more `JRuby::Rack::ErrorApp` customizations + retrieve cause when needed
+- `ActionController::Base` provides a method `servlet_response` to return the
+  `java.servlet_response` rack env.
 
 ## 1.1.18 (13/01/15)
 

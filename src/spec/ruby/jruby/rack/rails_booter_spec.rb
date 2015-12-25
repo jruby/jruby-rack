@@ -406,6 +406,11 @@ describe JRuby::Rack, "Rails controller extensions" do
     controller.servlet_request.should == servlet_request
   end
 
+  it "should add a #servlet_response method to ActionController::Base" do
+    controller.should respond_to(:servlet_response)
+    controller.servlet_response.should == servlet_response
+  end
+
   it "should add a #forward_to method for forwarding to another servlet" do
     #@servlet_response = double "servlet response"
     controller.request.should_receive(:forward_to).with("/forward.jsp")
