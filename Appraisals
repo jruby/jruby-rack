@@ -21,11 +21,11 @@ appraise "rails40" do
 end
 
 appraise "rails41" do
-  gem "rails", "~> 4.1.10"
+  gem "rails", "~> 4.1.11"
 end
 
 appraise "rails42" do
-  gem "rails", "~> 4.2.1"
+  gem "rails", "~> 4.2.5"
 end
 
 appraise "railsNG" do

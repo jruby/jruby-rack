@@ -79,9 +79,9 @@ PLATFORMS
   java
 
 DEPENDENCIES
-  rails (~> 4.1.10)
+  rails (~> 4.1.11)
   rake (~> 10.4.2)
   rspec (~> 2.14.1)
 
 BUNDLED WITH
-   1.10.2
+   1.10.6
