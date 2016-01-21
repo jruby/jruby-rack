@@ -446,7 +446,10 @@ describe JRuby::Rack, "Rails controller extensions" do
   let(:servlet_response) { org.jruby.rack.mock.MockHttpServletResponse.new }
 
   before :each do
-    request.stub(:env).and_return 'java.servlet_request' => servlet_request
+    request.stub(:env).and_return({
+        'java.servlet_request' => servlet_request,
+        'java.servlet_response' => servlet_response
+    })
     response.stub(:headers).and_return @headers = {}
   end
 
