@@ -262,6 +262,22 @@ describe JRuby::Rack::RailsBooter do
       paths['public/stylesheets'].should == public_path.join("stylesheets").to_s
     end
 
+    it "works when JRuby::Rack.public_path is nil (public does not exist)" do
+      paths = %w( public public/javascripts public/stylesheets ).inject({}) do
+        |hash, path| hash[ path ] = [ path.sub('public', 'NO-SUCH-DiR') ]; hash
+      end
+      app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
+      JRuby::Rack.public_path = nil
+
+      before_config = Rails::Railtie.config.__before_configuration.first
+      before_config.should_not be nil
+      before_config.call(app)
+
+      paths['public'].should == [ public_path = "NO-SUCH-DiR" ]
+      paths['public/javascripts'].should == [ File.join(public_path, "javascripts") ]
+      paths['public/stylesheets'].should ==[ File.join(public_path, "stylesheets") ]
+    end
+
     it "should not set the PUBLIC_ROOT constant" do
       lambda { PUBLIC_ROOT }.should raise_error
     end
