@@ -236,7 +236,33 @@ describe JRuby::Rack::Booter do
 
   require 'jruby'
 
-  if JRUBY_VERSION >= '1.7.0'
+  if JRUBY_VERSION >= '9.0.0'
+    it "adjusts load path when runtime.jruby_home == /tmp" do
+      tmpdir = java.lang.System.getProperty('java.io.tmpdir')
+      jruby_home = JRuby.runtime.instance_config.getJRubyHome
+      load_path = $LOAD_PATH.dup
+      begin # emulating a "bare" load path :
+        $LOAD_PATH.clear
+        $LOAD_PATH << "#{tmpdir}/lib/ruby/2.2/site_ruby"
+        $LOAD_PATH << "#{tmpdir}/lib/ruby/stdlib"
+        # "stub" runtime.jruby_home :
+        JRuby.runtime.instance_config.setJRubyHome(tmpdir)
+
+        #booter.stub(:require)
+        booter.boot!
+
+        expected = []
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/2.2/site_ruby"
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/stdlib"
+
+        $LOAD_PATH.should == expected
+      ensure # restore all runtime modifications :
+        $LOAD_PATH.clear
+        $LOAD_PATH.replace load_path
+        JRuby.runtime.instance_config.setJRubyHome(jruby_home)
+      end
+    end
+  elsif JRUBY_VERSION >= '1.7.0'
     it "adjusts load path when runtime.jruby_home == /tmp" do
       tmpdir = java.lang.System.getProperty('java.io.tmpdir')
       jruby_home = JRuby.runtime.instance_config.getJRubyHome
