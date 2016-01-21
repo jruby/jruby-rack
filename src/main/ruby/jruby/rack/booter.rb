@@ -94,8 +94,8 @@ module JRuby::Rack
       adjust_load_path
       adjust_gem_path
       ENV['RACK_ENV'] = rack_env
-      export_global_settings
       change_working_directory
+      export_global_settings
       load_settings_from_init_rb
       set_relative_url_root
       run_boot_hooks
