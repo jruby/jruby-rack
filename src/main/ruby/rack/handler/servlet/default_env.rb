@@ -1,4 +1,5 @@
 #--
+# Copyright (c) 2012-2016 Karol Bucek, LTD.
 # Copyright (c) 2010-2012 Engine Yard, Inc.
 # Copyright (c) 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
@@ -82,13 +83,23 @@ module Rack
           end
         end
 
-        def [](key)
-          val = super
-          val.nil? ? load_env_key(self, key) : val
+        # @private
+        DEFAULT = Object.new
+        private_constant :DEFAULT rescue nil
+
+        alias_method '_fetch', :fetch; private '_fetch' # Hash#fetch
+        def fetch(key, default = DEFAULT, &block)
+          default.equal?(DEFAULT) ? _fetch(key, &block) : _fetch(key, default, &block)
         end
 
+        def [](key)
+          value = _fetch(key, DEFAULT)
+          value.equal?(DEFAULT) ? load_env_key(self, key) : value
+        end
+
+        alias_method '_key?', :key?; private '_key?'
         def key?(key)
-          super || load_env_key(self, key) != nil
+          _key?(key) || load_env_key(self, key) != nil
         end
         alias_method :has_key?, :key?
         alias_method :include?, :key?
