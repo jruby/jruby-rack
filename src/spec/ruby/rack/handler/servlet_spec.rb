@@ -366,7 +366,7 @@ describe Rack::Handler::Servlet do
     it "sets attributes with false/null values" do
       @servlet_request.addHeader "Content-Type", "text/plain"
       @servlet_request.setContentType 'text/html'
-      @servlet_request.setContent ('0' * 100).to_java_bytes
+      @servlet_request.setContent ('0' * 100).to_java_bytes rescue nil # 1.6.8 BUG
       @servlet_request.setAttribute 'org.false', false
       @servlet_request.setAttribute 'null.attr', nil
       @servlet_request.setAttribute 'the.truth', java.lang.Boolean::TRUE
@@ -378,7 +378,7 @@ describe Rack::Handler::Servlet do
       expect( env['the.truth'] ).to be true
 
       expect( env.keys ).to include 'org.false'
-      
+
       pending "TODO: expect( env.keys ).to include 'null.attr'"
       # expect( env.keys ).to include 'null.attr'
     end
