@@ -112,6 +112,8 @@ describe JRuby::Rack::RailsBooter do
 
   describe "Rails 2.3", :lib => :stub do
 
+    RAILS23_ROOT_DIR = File.expand_path("../../../rails23", __FILE__)
+
     before do
       booter.stub(:rails2?).and_return true
     end
@@ -157,7 +159,7 @@ describe JRuby::Rack::RailsBooter do
     it "should set the PUBLIC_ROOT constant to the location of the public root",
       :lib => [ :rails23, :stub ] do
 
-      booter.app_path = File.expand_path("../../../rails23", __FILE__)
+      booter.app_path = RAILS23_ROOT_DIR
       booter.boot!
       expect( PUBLIC_ROOT ).to eql booter.public_path
     end
@@ -171,7 +173,7 @@ describe JRuby::Rack::RailsBooter do
       before :each do
         $servlet_context = @servlet_context
         @rack_context.should_receive(:getContextPath).and_return "/foo"
-        booter.app_path = File.expand_path("../../../rails23", __FILE__)
+        booter.app_path = RAILS23_ROOT_DIR
         booter.boot!
         silence_warnings { booter.load_environment }
       end
@@ -209,11 +211,24 @@ describe JRuby::Rack::RailsBooter do
   # NOTE: specs currently only test with a stubbed Rails::Railtie
   describe "Rails 3.x", :lib => :stub do
 
+    RAILS_ROOT_DIR = File.expand_path("../../../rails3x", __FILE__)
+
+    before :all do
+      $LOAD_PATH.unshift File.join(RAILS_ROOT_DIR, 'stub') # for require 'rails/railtie'
+    end
+
     before :each do
       $servlet_context = @servlet_context
-      booter.app_path = File.expand_path("../../../rails3x", __FILE__)
+      booter.layout_class = JRuby::Rack::FileSystemLayout
+      booter.app_path = RAILS_ROOT_DIR.dup
       booter.boot!
       silence_warnings { booter.load_environment }
+    end
+
+    after :each do
+      [ :app_path, :public_path, :context ].each do |name|
+        JRuby::Rack.send :remove_instance_variable, :"@#{name}"
+      end
     end
 
     after :all do
@@ -225,9 +240,8 @@ describe JRuby::Rack::RailsBooter do
     end
 
     it "should set the application configuration's public path" do
-      paths = {}
-      for p in %w( public public/javascripts public/stylesheets )
-        paths[p] = [p]
+      paths = %w( public public/javascripts public/stylesheets ).inject({}) do
+        |hash, path| hash[ path ] = [ File.join(RAILS_ROOT_DIR, path) ]; hash
       end
       app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
       public_path = Pathname.new(booter.public_path)
@@ -235,6 +249,7 @@ describe JRuby::Rack::RailsBooter do
       Rails::Railtie.config.__before_configuration.size.should == 1
       before_config = Rails::Railtie.config.__before_configuration.first
       before_config.should_not be nil
+
       before_config.call(app)
 
       paths['public'].should == public_path.to_s
@@ -336,7 +351,7 @@ describe JRuby::Rack::RailsBooter do
       before_config.last.call(app)
     end
 
-  end if defined? Rails
+  end # if defined? Rails
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
   describe "Rails 3.1", :lib => [ :stub ] do
@@ -344,6 +359,7 @@ describe JRuby::Rack::RailsBooter do
     before :each do
       $servlet_context = @servlet_context
       booter.app_path = File.expand_path("../../../rails3x", __FILE__)
+      def booter.rails2?; false end
       booter.boot!
       booter.load_environment
     end
@@ -375,7 +391,7 @@ describe JRuby::Rack::RailsBooter do
       init.last.call(app)
     end
 
-  end if defined? Rails
+  end # if defined? Rails
 
 end
 
