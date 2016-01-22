@@ -5,7 +5,7 @@ class JRuby::Rack::ErrorApp
   # catches empty responses and replaces them with a site explaining the error.
   #
   # @note kindly adapted from on Rack::ShowStatus
-  # @private internal API - likely won't exist in 1.2.x
+  # @private internal API - likely won't exist in 1.2
   class ShowStatus
 
     def initialize(app)
@@ -36,12 +36,7 @@ class JRuby::Rack::ErrorApp
 
     # @private
     def h(obj)
-      case obj
-      when String
-        Utils.escape_html(obj)
-      else
-        Utils.escape_html(obj.inspect)
-      end
+      obj.is_a?(String) ? Utils.escape_html(obj) : Utils.escape_html(obj.inspect)
     end
 
     # :stopdoc:
