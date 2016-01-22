@@ -15,7 +15,7 @@ class JRuby::Rack::ErrorApp
 
     def call(env)
       status, headers, body = @app.call(env)
-      headers = ::Rack::Utils::HeaderHash.new(headers)
+      headers = Utils::HeaderHash.new(headers)
       empty = headers['Content-Length'].to_i <= 0
 
       detail = env['rack.showstatus.detail']
@@ -23,11 +23,11 @@ class JRuby::Rack::ErrorApp
       if (status.to_i >= 400 && empty) || detail
         # required erb template variables (captured with binding) :
         request = req = ::Rack::Request.new(env); request && req # avoid un-used warning
-        message = ::Rack::Utils::HTTP_STATUS_CODES[status.to_i] || status.to_s
+        message = Utils::HTTP_STATUS_CODES[status.to_i] || status.to_s
         detail = detail.nil? ? message : detail # false for no detail
 
         body = @template.result(binding)
-        size = ::Rack::Utils.bytesize(body)
+        size = Utils.bytesize(body)
         [status, headers.merge('Content-Type' => "text/html", 'Content-Length' => size.to_s), [body]]
       else
         [status, headers, body]
@@ -38,9 +38,9 @@ class JRuby::Rack::ErrorApp
     def h(obj)
       case obj
       when String
-        ::Rack::Utils.escape_html(obj)
+        Utils.escape_html(obj)
       else
-        ::Rack::Utils.escape_html(obj.inspect)
+        Utils.escape_html(obj.inspect)
       end
     end
 

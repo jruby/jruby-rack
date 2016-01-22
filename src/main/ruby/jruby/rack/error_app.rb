@@ -89,7 +89,7 @@ module JRuby
         body = env['REQUEST_METHOD'] == 'HEAD' ? [] : FileBody.new(path, size = File.size?(path))
         response = [ code, headers, body ]
 
-        size ||= ::Rack::Utils.bytesize(File.read(path)) if defined?(::Rack::Utils.bytesize)
+        size ||= Utils.bytesize(File.read(path))
 
         response[1]['Content-Length'] = size.to_s if size
         response
@@ -155,13 +155,21 @@ module JRuby
 
       begin
         require 'rack/utils'
+        Utils = ::Rack::Utils
+
+        if ''.respond_to?(:bytesize) # Ruby >= 1.9
+          def Utils.bytesize(string); string.bytesize end
+        else
+          def Utils.bytesize(string); string.size end
+        end unless defined? Utils.bytesize
+
         require 'rack/mime'
       rescue LoadError; end
 
-      if defined? Rack::Utils.best_q_match
+      if defined? Utils.best_q_match
 
         def accepts_html?(env)
-          Rack::Utils.best_q_match(env['HTTP_ACCEPT'], %w[text/html])
+          Utils.best_q_match(env['HTTP_ACCEPT'], %w[text/html])
         rescue
           http_accept?(env, 'text/html')
         end
