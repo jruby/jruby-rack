@@ -81,7 +81,7 @@ module JRuby
       # @return [String]
       # @see #Java::OrgJrubyRack::RackResponse#getBody
       def getBody
-        body = ""
+        body = ''.dup
         @body.each { |part| body << part }
         body
       ensure
