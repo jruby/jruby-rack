@@ -1,11 +1,19 @@
+## 1.1.20 (22/01/16)
+
+- pre-maturely avoid Ruby frozen string literals coming at us ... ''.dup meh!
+- allow to boot when RAILS_ROOT/public directory does not exist (closes #197)
+- for better booter detection - export public path after working dir was changed
+- `ActionController::Base` provides a method `servlet_response` to return the
+  `java.servlet_response` rack env (#201)
+- adjust jruby home dir fallback (for default $LOAD_PATH) correctly on 9K and --2.0
+- servlet env should behave on `fetch` and `[]` like a Hash (nil value can be set)
+
 ## 1.1.19 (01/07/15)
 
 - update (bundled) rack to 1.5.5
 - servlet attrs with null/false values should not end up with an '' env value (#195)
 - tune ErrorApp + ShowStatus to respect set 'rack.showstatus.detail' (#194)
 - allow for more `JRuby::Rack::ErrorApp` customizations + retrieve cause when needed
-- `ActionController::Base` provides a method `servlet_response` to return the
-  `java.servlet_response` rack env.
 
 ## 1.1.18 (13/01/15)
 
