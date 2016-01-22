@@ -38,6 +38,7 @@ before_install:
 matrix:
   allow_failures:
     - rvm: jruby-1.6.8
+    - rvm: jruby-1.7.4
     - gemfile: gemfiles/railsNG.gemfile
   include:
     # jruby-9.0.4.0
