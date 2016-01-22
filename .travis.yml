@@ -66,28 +66,28 @@ matrix:
       gemfile: gemfiles/rails42.gemfile
       jdk: oraclejdk8
     ## rails 2.3 --1.8
-    - rvm: jruby-1.7.16
+    - rvm: jruby-1.7.4
       gemfile: gemfiles/rails23.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: openjdk6
-    - rvm: jruby-1.7.16
+    - rvm: jruby-1.7.4
       gemfile: gemfiles/rails23.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk7
-    - rvm: jruby-1.7.16
+    - rvm: jruby-1.7.4
       gemfile: gemfiles/rails23.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
     ## rails 3.1 --1.8
-    - rvm: jruby-1.7.16
+    - rvm: jruby-1.7.4
       gemfile: gemfiles/rails31.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: openjdk6
-    - rvm: jruby-1.7.16
+    - rvm: jruby-1.7.4
       gemfile: gemfiles/rails31.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk7
-    - rvm: jruby-1.7.16
+    - rvm: jruby-1.7.4
       gemfile: gemfiles/rails31.gemfile
       env: JRUBY_OPTS="--1.8 $JRUBY_OPTS"
       jdk: oraclejdk8
