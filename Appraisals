@@ -29,6 +29,7 @@ appraise "rails42" do
 end
 
 appraise "railsNG" do
-  gem 'rails', :github => 'rails/rails', :branch => 'master'
-  gem 'arel', :github => 'rails/arel', :branch => 'master'
+  gem 'rails', "5.0.0.beta1"
+  #gem 'rails', :github => 'rails/rails', :branch => 'master'
+  #gem 'arel', :github => 'rails/arel', :branch => 'master'
 end

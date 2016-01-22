@@ -66,6 +66,13 @@ matrix:
     - rvm: jruby-9.0.4.0
       gemfile: gemfiles/rails42.gemfile
       jdk: oraclejdk8
+    # rails NG
+    - rvm: jruby-9.0.4.0
+      gemfile: gemfiles/railsNG.gemfile
+      jdk: oraclejdk7
+    - rvm: jruby-9.0.4.0
+      gemfile: gemfiles/railsNG.gemfile
+      jdk: oraclejdk8
     ## rails 2.3 --1.8
     - rvm: jruby-1.7.4
       gemfile: gemfiles/rails23.gemfile
