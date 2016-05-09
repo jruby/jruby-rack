@@ -12,8 +12,11 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +27,13 @@ import javax.servlet.http.HttpServletResponseWrapper;
  * Response wrapper passed to filter chain.
  */
 public class ResponseCapture extends HttpServletResponseWrapper {
+    /**
+     * In case of OPTION calls we check what headers are set by the servlet to decide if a request is
+     * already handled. Some container implementation of DefaultServlet already set 'Allow' and/or 'Date' fields which
+     * we need to ignore when working with this approach
+     */
+    private static final Set<String> HEADERS_NOT_CONSIDERED_HANDLED_FOR_OPTIONS_CALL
+            = new HashSet<String>(Arrays.asList("Allow", "Date"));
 
     private static final String STREAM = "stream";
     private static final String WRITER = "writer";
@@ -230,9 +240,10 @@ public class ResponseCapture extends HttpServletResponseWrapper {
                     // not to happen but there's all kind of beasts out there
                     return false;
                 }
+                // if any other headers occur beside 'Allow' and 'Date' we consider this request handled.
                 for ( final String headerName : headerNames ) {
-                    if ( ! "Allow".equals( headerName ) ) {
-                        return handled = true; // not just Allow header - consider handled
+                    if ( !HEADERS_NOT_CONSIDERED_HANDLED_FOR_OPTIONS_CALL.contains(headerName) ) {
+                        return handled = true;
                     }
                 }
                 return false; // OPTIONS with only Allow header set - unhandled
