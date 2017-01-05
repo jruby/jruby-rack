@@ -98,7 +98,13 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     public RackApplication newApplication() {
         return createApplication(new ApplicationObjectFactory() {
             public IRubyObject create(Ruby runtime) {
-                return createApplicationObject(runtime);
+                try {
+                    return createApplicationObject(runtime);
+                }
+                catch (RaiseException ex) {
+                    ex.printStackTrace(rackContext.getConfig().getErr()); // write exception stacktrace to error log
+                    throw new RackInitializationException("failed to load environment", ex);
+                }
             }
         });
     }
