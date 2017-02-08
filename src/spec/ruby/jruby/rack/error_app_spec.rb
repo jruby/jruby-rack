@@ -61,6 +61,7 @@ describe 'JRuby::Rack::ErrorApp' do
       expect( body = response[2] ).to be_a JRuby::Rack::ErrorApp::FileBody
       content = ''; body.each { |chunk| content << chunk }
       expect( content ).to eql '-503-'
+      expect( @env["rack.showstatus.detail"] ).to be_nil
     end
   end
 
@@ -79,6 +80,7 @@ describe 'JRuby::Rack::ErrorApp' do
       expect( body = response[2] ).to be_a JRuby::Rack::ErrorApp::FileBody
       content = ''; body.each { |chunk| content << chunk }
       expect( content ).to eql _500_html
+      expect( @env["rack.showstatus.detail"] ).to be_nil
     end
   end
 
