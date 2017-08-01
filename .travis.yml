@@ -9,8 +9,8 @@ branches:
     - maintenance-1.1.13
 rvm:
   - jruby-1.6.8
-  - jruby-1.7.23
-  #- jruby-9.0.4.0 see include matrix
+  - jruby-1.7.26
+  #- jruby-9.1.8.0 see include matrix
 jdk:
   - openjdk6
   - oraclejdk7
@@ -41,36 +41,36 @@ matrix:
     - rvm: jruby-1.7.4
     - gemfile: gemfiles/railsNG.gemfile
   include:
-    # jruby-9.0.4.0
-    - rvm: jruby-9.0.4.0
+    # jruby-9.1.8.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/rails32.gemfile
       jdk: oraclejdk7
-    - rvm: jruby-9.0.4.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/rails32.gemfile
       jdk: oraclejdk8
-    - rvm: jruby-9.0.4.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/rails40.gemfile
       jdk: oraclejdk7
-    - rvm: jruby-9.0.4.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/rails40.gemfile
       jdk: oraclejdk8
-    - rvm: jruby-9.0.4.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/rails41.gemfile
       jdk: oraclejdk7
-    - rvm: jruby-9.0.4.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/rails41.gemfile
       jdk: oraclejdk8
-    - rvm: jruby-9.0.4.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/rails42.gemfile
       jdk: oraclejdk7
-    - rvm: jruby-9.0.4.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/rails42.gemfile
       jdk: oraclejdk8
     # rails NG
-    - rvm: jruby-9.0.4.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/railsNG.gemfile
       jdk: oraclejdk7
-    - rvm: jruby-9.0.4.0
+    - rvm: jruby-9.1.8.0
       gemfile: gemfiles/railsNG.gemfile
       jdk: oraclejdk8
     ## rails 2.3 --1.8
@@ -101,28 +101,28 @@ matrix:
       jdk: oraclejdk8
   exclude:
 #    ## avoid jruby-9K with JDK6 :
-#    - rvm: jruby-9.0.4.0
+#    - rvm: jruby-9.1.8.0
 #      gemfile: Gemfile
 #      jdk: openjdk6
-#    - rvm: jruby-9.0.4.0
+#    - rvm: jruby-9.1.8.0
 #      gemfile: gemfiles/rails23.gemfile
 #      jdk: openjdk6
-#    - rvm: jruby-9.0.4.0
+#    - rvm: jruby-9.1.8.0
 #      gemfile: gemfiles/rails30.gemfile
 #      jdk: openjdk6
-#    - rvm: jruby-9.0.4.0
+#    - rvm: jruby-9.1.8.0
 #      gemfile: gemfiles/rails31.gemfile
 #      jdk: openjdk6
-#    - rvm: jruby-9.0.4.0
+#    - rvm: jruby-9.1.8.0
 #      gemfile: gemfiles/rails32.gemfile
 #      jdk: openjdk6
-#    - rvm: jruby-9.0.4.0
+#    - rvm: jruby-9.1.8.0
 #      gemfile: gemfiles/rails40.gemfile
 #      jdk: openjdk6
-#    - rvm: jruby-9.0.4.0
+#    - rvm: jruby-9.1.8.0
 #      gemfile: gemfiles/rails41.gemfile
 #      jdk: openjdk6
-#    - rvm: jruby-9.0.4.0
+#    - rvm: jruby-9.1.8.0
 #      gemfile: gemfiles/rails42.gemfile
 #      jdk: openjdk6
     ## avoid jruby-1.6.8 with JDK8 :
