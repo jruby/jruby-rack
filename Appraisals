@@ -21,15 +21,23 @@ appraise "rails40" do
 end
 
 appraise "rails41" do
-  gem "rails", "~> 4.1.11"
+  gem "rails", "~> 4.1.16"
 end
 
 appraise "rails42" do
-  gem "rails", "~> 4.2.5"
+  gem "mime-types", "< 3", :require => false
+  gem "rails", "~> 4.2.9"
+end
+
+appraise "rails50" do
+  gem "rails", "~> 5.0.5"
+end
+
+appraise "rails51" do
+  gem "rails", "~> 5.1.2"
 end
 
 appraise "railsNG" do
-  gem 'rails', "5.0.0.beta1"
-  #gem 'rails', :github => 'rails/rails', :branch => 'master'
-  #gem 'arel', :github => 'rails/arel', :branch => 'master'
+  gem 'rails', :github => 'rails/rails', :branch => 'master'
+  gem 'arel', :github => 'rails/arel', :branch => 'master'
 end

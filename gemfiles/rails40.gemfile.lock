@@ -30,6 +30,7 @@ GEM
     diff-lcs (1.2.5)
     erubis (2.7.0)
     i18n (0.7.0)
+    jruby-openssl (0.9.21-java)
     mail (2.6.3)
       mime-types (>= 1.16, < 3)
     mime-types (2.6.1)
@@ -74,9 +75,10 @@ PLATFORMS
   java
 
 DEPENDENCIES
+  jruby-openssl (~> 0.9.20)
   rails (~> 4.0.13)
   rake (~> 10.4.2)
   rspec (~> 2.14.1)
 
 BUNDLED WITH
-   1.10.2
+   1.14.6
