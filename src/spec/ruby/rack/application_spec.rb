@@ -339,7 +339,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         gem_install_rack_unless_installed '1.3.10'
         set_config 'jruby.runtime.env', 'false'
 
-        script = "" +
+        script = ''.dup +
           "# rack.version: ~>1.3.6\n" +
           "Proc.new { 'proc-rack-app' }"
         app_factory.setRackupScript script
@@ -386,7 +386,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
           else
             raise Gem::LoadError unless Gem.available? 'rack', version
           end
-        rescue Gem::LoadError
+        rescue ::LoadError # Gem::LoadError
           require 'rubygems/dependency_installer'
           installer = Gem::DependencyInstaller.new
           installer.install 'rack', version
