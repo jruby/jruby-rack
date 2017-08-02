@@ -243,7 +243,7 @@ describe JRuby::Rack::Booter do
       load_path = $LOAD_PATH.dup
       begin # emulating a "bare" load path :
         $LOAD_PATH.clear
-        $LOAD_PATH << "#{tmpdir}/lib/ruby/2.2/site_ruby"
+        $LOAD_PATH << "#{tmpdir}/lib/ruby/#{RUBY_VERSION[0..2]}/site_ruby"
         $LOAD_PATH << "#{tmpdir}/lib/ruby/stdlib"
         # "stub" runtime.jruby_home :
         JRuby.runtime.instance_config.setJRubyHome(tmpdir)
@@ -252,7 +252,7 @@ describe JRuby::Rack::Booter do
         booter.boot!
 
         expected = []
-        expected << "classpath:/META-INF/jruby.home/lib/ruby/2.2/site_ruby"
+        expected << "classpath:/META-INF/jruby.home/lib/ruby/#{RUBY_VERSION[0..2]}/site_ruby"
         expected << "classpath:/META-INF/jruby.home/lib/ruby/stdlib"
 
         $LOAD_PATH.should == expected
