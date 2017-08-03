@@ -161,10 +161,11 @@ module JRuby
             body = @body.to_inputstream # so that we close the stream
             body = Channels.newChannel(body) # closing the channel closes the stream
             transfer_channel body, response.getOutputStream
-          elsif @body.respond_to?(:body_parts) && @body.body_parts.respond_to?(:to_channel) &&
-              ! object_polluted_with_anyio?(@body.body_parts, :to_channel)
+          elsif @body.respond_to?(:body_parts) && ! @body.respond_to?(:stream) &&
+              ( body_parts = @body.body_parts ).respond_to?(:to_channel) &&
+              ! object_polluted_with_anyio?(body_parts, :to_channel)
             # ActionDispatch::Response "raw" body access in case it's a File
-            body = @body.body_parts.to_channel # so that we close the channel
+            body = body_parts.to_channel # so that we close the channel
             transfer_channel body, response.getOutputStream
           else
             if dechunk?
