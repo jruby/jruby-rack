@@ -60,6 +60,10 @@ module Rack
           end
         end
 
+        def get_header(key)
+          @env[key]
+        end
+
         def populate
           unless @populated
             populate! if @servlet_env
