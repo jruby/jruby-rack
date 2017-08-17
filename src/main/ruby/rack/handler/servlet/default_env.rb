@@ -30,6 +30,8 @@ module Rack
           SCRIPT_NAME SERVER_NAME SERVER_PORT SERVER_SOFTWARE).
           map!(&:freeze)
 
+        attr_reader :env
+
         # Factory method for creating the Hash.
         # Besides initializing a new env instance this method by default
         # eagerly populates (and returns) the env Hash.
@@ -60,6 +62,16 @@ module Rack
           end
         end
 
+        # If a block is given, it yields to the block if the value hasn't been set
+        # on the request.
+        def fetch_header(name, &block)
+          @env.fetch(name, &block)
+        end
+
+        def get_header(key)
+          @env[key]
+        end
+
         def populate
           unless @populated
             populate! if @servlet_env
@@ -73,6 +85,16 @@ module Rack
           load_variables
           load_headers
           self
+        end
+
+        def session_options
+          fetch_header(RACK_SESSION_OPTIONS) do |k|
+            set_header RACK_SESSION_OPTIONS, {}
+          end
+        end
+
+        def set_header(name, v)
+          @env[name] = v
         end
 
         def to_hash(bare = nil)
