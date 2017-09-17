@@ -1,3 +1,12 @@
+## 1.1.21 (17/09/17)
+
+- update (bundled) rack to 1.6.8
+- add Rack::Handler::Servlet::DefaultEnv#get_header (#212)
+  missing methods to handle ActionController::Base#reset_session
+- can only safely stream natively on ActionDispatch <= 3.2 (#210) 
+  (broken Rails streaming for Rails 4.x)
+- when handling OPTION calls ignore both 'Date' and 'Allow' headers (#205)
+
 ## 1.1.20 (22/01/16)
 
 - pre-maturely avoid Ruby frozen string literals coming at us ... ''.dup meh!
