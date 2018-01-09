@@ -49,7 +49,7 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
             context.log(RackLogger.ERROR, "couldn't handle exception "+ e +" : response is committed");
             return;
         }
-        context.log(RackLogger.DEBUG, "resetting rack response due exception");
+        context.log(RackLogger.ERROR, "resetting rack response due to exception:" + e);
         response.reset();
 
         afterException(request, e, response);
