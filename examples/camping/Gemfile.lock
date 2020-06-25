@@ -6,10 +6,11 @@ GEM
       rack (>= 1.0)
     markaby (0.7.1)
       builder (>= 2.0.0)
-    rack (1.2.1)
+    rack (2.1.4)
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
   camping
