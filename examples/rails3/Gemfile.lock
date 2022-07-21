@@ -31,6 +31,7 @@ GEM
     activesupport (3.1.0)
       multi_json (~> 1.0)
     arel (2.2.1)
+    bcrypt-ruby (3.0.0)
     bcrypt-ruby (3.0.0-java)
     bouncy-castle-java (1.5.0146.1)
     builder (3.0.0)
@@ -51,6 +52,7 @@ GEM
       thor (~> 0.14)
     jruby-openssl (0.7.4)
       bouncy-castle-java
+    json (1.5.4)
     json (1.5.4-java)
     mail (2.3.0)
       i18n (>= 0.4.0)
@@ -100,13 +102,14 @@ GEM
     treetop (1.4.10)
       polyglot
       polyglot (>= 0.3.1)
-    tzinfo (0.3.29)
+    tzinfo (0.3.61)
     uglifier (1.0.3)
       execjs (>= 0.3.0)
       multi_json (>= 1.0.2)
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
   coffee-rails (~> 3.1.0)
