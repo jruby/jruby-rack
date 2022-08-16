@@ -4,7 +4,7 @@ group :default do
   if rack_version = ENV['RACK_VERSION']
     gem 'rack', rack_version
   else
-    gem 'rack', '~> 1.6.8'
+    gem 'rack', '~> 1.6.13'
   end
 end
 
@@ -14,4 +14,4 @@ end
 
 gem 'rake', '~> 10.4.2', :group => :test, :require => nil
 gem 'rspec', '~> 2.14.1', :group => :test
-gem 'jruby-openssl', '~> 0.9.20', :group => :test
+gem 'jruby-openssl', '~> 0.9', :group => :test
