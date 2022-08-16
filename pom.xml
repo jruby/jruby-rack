@@ -10,7 +10,7 @@
 
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>1.1.21</version>
+  <version>1.1.22-SNAPSHOT</version>
   <name>JRuby-Rack</name>
   <url>http://github.com/jruby/jruby-rack/</url>
   <description>
@@ -19,9 +19,9 @@
   </description>
 
   <properties>
-    <jruby.version>1.6.8</jruby.version>
+    <jruby.version>1.7.25</jruby.version>
     <vendor.gems.path>vendor/gems</vendor.gems.path>
-    <bundler.version>1.7.15</bundler.version>
+    <bundler.version>1.14.6</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
     <saumya.mojo.version>1.0.10</saumya.mojo.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
@@ -148,7 +148,7 @@
     <dependency>
       <groupId>rubygems</groupId>
       <artifactId>jruby-openssl</artifactId>
-      <version>0.9.14</version>
+      <version>0.9.21</version>
       <type>gem</type>
       <scope>provided</scope>
     </dependency>
