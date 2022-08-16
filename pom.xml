@@ -21,7 +21,7 @@
   <properties>
     <jruby.version>1.7.25</jruby.version>
     <vendor.gems.path>vendor/gems</vendor.gems.path>
-    <bundler.version>1.14.6</bundler.version>
+    <bundler.version>1.17.3</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
     <saumya.mojo.version>1.0.10</saumya.mojo.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
@@ -76,10 +76,6 @@
 
   <repositories>
     <repository>
-      <id>rubygems-releases</id>
-      <url>http://rubygems-proxy.torquebox.org/releases</url>
-    </repository>
-    <repository>
       <releases>
         <enabled>false</enabled>
       </releases>
@@ -88,6 +84,10 @@
       </snapshots>
       <id>sonatype</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+    <repository>
+      <id>mavengems</id>
+      <url>mavengem:https://rubygems.org</url>
     </repository>
   </repositories>
 
@@ -283,6 +283,13 @@
         </executions>
       </plugin>
     </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.torquebox.mojo</groupId>
+        <artifactId>mavengem-wagon</artifactId>
+        <version>1.0.3</version>
+      </extension>
+    </extensions>
   </build>
 
   <profiles>
