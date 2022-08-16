@@ -128,12 +128,5 @@ module JRuby::Rack
       end
     end
 
-    module Native
-      def capture
-        super
-        output.puts "\n--- Java Exception"
-        cause.printStackTrace java.io.PrintStream.new(output.to_outputstream)
-      end
-    end
   end
 end

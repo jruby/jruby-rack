@@ -22,7 +22,3 @@ end
 class LoadError
   include JRuby::Rack::Capture::LoadPath
 end
-
-class NativeException
-  include JRuby::Rack::Capture::Native
-end
