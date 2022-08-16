@@ -1,9 +1,17 @@
+## 1.1.22
+
+- compile using Java 6 source compat
+- update (bundled) rack to 1.6.13
+- avoid NativeException - not used on recent JRuby
+- avoid Fixnum warning - assume recent JRuby
+- Add error message to log when runtime error is handled (#213)
+
 ## 1.1.21 (17/09/17)
 
 - update (bundled) rack to 1.6.8
 - add Rack::Handler::Servlet::DefaultEnv#get_header (#212)
   missing methods to handle ActionController::Base#reset_session
-- can only safely stream natively on ActionDispatch <= 3.2 (#210) 
+- can only safely stream natively on ActionDispatch <= 3.2 (#210)
   (broken Rails streaming for Rails 4.x)
 - when handling OPTION calls ignore both 'Date' and 'Allow' headers (#205)
 
