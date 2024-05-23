@@ -5,12 +5,12 @@
  This source code is available under the MIT license.
  See the file LICENSE.txt for details.
  -->
-<project xsi:schemaLocation='http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd' xmlns='http://maven.apache.org/POM/4.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>1.2.0-SNAPSHOT</version>
+  <version>1.2.0</version>
   <name>JRuby-Rack</name>
   <url>http://github.com/jruby/jruby-rack/</url>
   <description>
@@ -47,6 +47,7 @@
     <connection>scm:git:git://github.com/jruby/jruby-rack.git</connection>
     <developerConnection>scm:git:git@github.com:jruby/jruby-rack.git</developerConnection>
     <url>http://github.com/jruby/jruby-rack/</url>
+    <tag>jruby-rack-1.2.0</tag>
   </scm>
 
   <licenses>
