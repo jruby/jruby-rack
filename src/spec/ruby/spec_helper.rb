@@ -138,7 +138,7 @@ module SharedHelpers
       runtime, options = options, {}
     end
     message = options[:message] || "expected eval #{code.inspect} to be == $expected but was $actual"
-    be_flag = options.has_key?(:should) ? options[:should] : be_true
+    be_flag = options.has_key?(:should) ? options[:should] : (be true)
 
     expected = expected.inspect.to_java
     actual = runtime.evalScriptlet(code).inspect.to_java
@@ -146,7 +146,7 @@ module SharedHelpers
   end
 
   def should_eval_as_not_eql_to(code, expected, options = {})
-    should_eval_as_eql_to(code, expected, options.merge(:should => be_false,
+    should_eval_as_eql_to(code, expected, options.merge(:should => (be false),
         :message => options[:message] || "expected eval #{code.inspect} to be != $expected but was not")
     )
   end
@@ -157,7 +157,7 @@ module SharedHelpers
   end
 
   def should_eval_as_not_nil(code, runtime = @runtime)
-    should_eval_as_eql_to code, nil, :should => be_false, :runtime => runtime,
+    should_eval_as_eql_to code, nil, :should => (be false), :runtime => runtime,
       :message => "expected eval #{code.inspect} to not be nil but was"
   end
 

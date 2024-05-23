@@ -69,13 +69,12 @@ describe org.jruby.rack.RackTag do
   end
 
   it 'should override the path, query params, and http method of the request' do
-    @application.should_receive(:call).and_return do |wrapped_request|
+    @application.should_receive(:call) do |wrapped_request|
       wrapped_request.servlet_path.should == ""
       wrapped_request.path_info.should == '/controller/action/id'
       wrapped_request.query_string.should == 'fruit=apple&horse_before=cart'
       wrapped_request.request_uri.should == '/controller/action/id?fruit=apple&horse_before=cart'
       wrapped_request.method.should == 'GET'
-      @result
     end
 
     @tag.doEndTag

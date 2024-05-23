@@ -175,7 +175,7 @@ describe JRuby::Rack::Queues::MessageDispatcher do
   it "should unmarshal the message if the marshal payload property is set" do
     @message.should_receive(:getBooleanProperty).with(JRuby::Rack::Queues::MARSHAL_PAYLOAD).and_return true
     first = false
-    @message.should_receive(:readBytes).twice.and_return do |byte_array|
+    @message.should_receive(:readBytes).twice do |byte_array|
       if first
         -1
       else

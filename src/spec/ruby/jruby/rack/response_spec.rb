@@ -181,7 +181,7 @@ describe JRuby::Rack::Response do
         response.write_headers(response_environment)
 
         times = 0
-        stream.should_receive(:write).exactly(6).times.with do |bytes|
+        stream.should_receive(:write).exactly(6).times.with no_args do |bytes|
           str = String.from_java_bytes(bytes)
           str = str.force_encoding('UTF-8') if str.respond_to?(:force_encoding)
           case times += 1
@@ -223,7 +223,7 @@ describe JRuby::Rack::Response do
         response.write_headers(response_environment)
 
         times = 0
-        stream.should_receive(:write).exactly(3).times.with do |bytes|
+        stream.should_receive(:write).exactly(3).times.with no_args do |bytes|
           str = String.from_java_bytes(bytes)
           case times += 1
           when 1 then str.should == "1\r\n1\r\n"
@@ -258,7 +258,7 @@ describe JRuby::Rack::Response do
       response.write_headers(response_environment)
 
       times = 0
-      stream.should_receive(:write).exactly(5).times.with do |bytes|
+      stream.should_receive(:write).exactly(5).times.with no_args do |bytes|
         str = String.from_java_bytes(bytes)
         case times += 1
         when 1 then str.should == "1"
@@ -404,7 +404,7 @@ describe JRuby::Rack::Response do
       path = File.expand_path('../../files/image.jpg', File.dirname(__FILE__))
 
       response = JRuby::Rack::Response.new [ 200, {}, FileBody.new(path) ]
-      response.should_receive(:send_file).with do |path, response|
+      response.should_receive(:send_file).with no_args do |path, response|
         expect( path ).to eql path
         expect( response).to be response_environment
       end
