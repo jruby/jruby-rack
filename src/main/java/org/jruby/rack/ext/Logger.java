@@ -388,7 +388,7 @@ public class Logger extends RubyObject { // implements RackLogger
     @JRubyMethod(name = "<<")
     public IRubyObject append(final ThreadContext context, final IRubyObject msg) {
         final RubyString msgString = msg.asString();
-        doLog(msgString); return msgString.length();
+        doLog(msgString); return msgString.rubyLength(context);
     }
 
     // private

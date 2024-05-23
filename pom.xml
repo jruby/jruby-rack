@@ -19,11 +19,11 @@
   </description>
 
   <properties>
-    <jruby.version>1.7.19</jruby.version>
+    <jruby.version>9.4.7.0</jruby.version>
     <vendor.gems.path>vendor/gems</vendor.gems.path>
-    <bundler.version>1.7.14</bundler.version>
+    <bundler.version>2.4.19</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
-    <saumya.mojo.version>1.0.9</saumya.mojo.version>
+    <jruby.maven.plugins.version>3.0.3</jruby.maven.plugins.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
   </properties>
 
@@ -76,10 +76,6 @@
 
   <repositories>
     <repository>
-      <id>rubygems-releases</id>
-      <url>http://rubygems-proxy.torquebox.org/releases</url>
-    </repository>
-    <repository>
       <releases>
         <enabled>false</enabled>
       </releases>
@@ -88,6 +84,10 @@
       </snapshots>
       <id>sonatype</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+    <repository>
+      <id>mavengems</id>
+      <url>mavengem:https://rubygems.org</url>
     </repository>
   </repositories>
 
@@ -160,9 +160,21 @@
       <type>gem</type>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>activation</artifactId>
+      <version>1.1</version>
+    </dependency>
   </dependencies>
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>org.jruby.maven</groupId>
+        <artifactId>mavengem-wagon</artifactId>
+        <version>2.0.2</version>
+      </extension>
+    </extensions>
     <defaultGoal>install</defaultGoal>
     <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
     <resources>
@@ -186,8 +198,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>8</source>
+          <target>8</target>
           <showDeprecation>true</showDeprecation>
           <showWarnings>true</showWarnings>
         </configuration>
@@ -221,9 +233,9 @@
         </executions>
       </plugin>
       <plugin>
-          <groupId>de.saumya.mojo</groupId>
+          <groupId>org.jruby.maven</groupId>
           <artifactId>gem-maven-plugin</artifactId>
-          <version>${saumya.mojo.version}</version>
+          <version>${jruby.maven.plugins.version}</version>
           <configuration>
             <includeOpenSSL>false</includeOpenSSL>
             <gemHomes>
@@ -241,9 +253,9 @@
           </executions>
       </plugin>
       <plugin>
-        <groupId>de.saumya.mojo</groupId>
+        <groupId>org.jruby.maven</groupId>
         <artifactId>bundler-maven-plugin</artifactId>
-        <version>${saumya.mojo.version}</version>
+        <version>${jruby.maven.plugins.version}</version>
         <executions>
           <execution>
             <id>bundle-install</id>
@@ -258,9 +270,9 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>de.saumya.mojo</groupId>
+        <groupId>org.jruby.maven</groupId>
         <artifactId>rake-maven-plugin</artifactId>
-        <version>${saumya.mojo.version}</version>
+        <version>${jruby.maven.plugins.version}</version>
         <executions>
           <execution>
             <id>rake-spec</id>
