@@ -13,5 +13,5 @@ group :development do
 end
 
 gem 'rake', '~> 13.2', :group => :test, :require => nil
-gem 'rspec', :group => :test
-gem 'jruby-openssl', :group => :test if JRUBY_VERSION < '1.7.0'
+gem 'rspec', '~> 3.13', :group => :test
+gem 'jruby-openssl', :group => :test

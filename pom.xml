@@ -20,7 +20,6 @@
 
   <properties>
     <jruby.version>9.4.7.0</jruby.version>
-    <vendor.gems.path>vendor/gems</vendor.gems.path>
     <bundler.version>2.4.19</bundler.version>
     <bundler.local>false</bundler.local> <!-- true by default -->
     <jruby.maven.plugins.version>3.0.3</jruby.maven.plugins.version>
@@ -145,13 +144,6 @@
       <artifactId>spring-core</artifactId>
       <version>3.2.10.RELEASE</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>rubygems</groupId>
-      <artifactId>jruby-openssl</artifactId>
-      <version>0.9.6</version>
-      <type>gem</type>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>rubygems</groupId>
