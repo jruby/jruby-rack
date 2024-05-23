@@ -64,7 +64,7 @@ task :unpack_gem => "target" do |t|
     mkdir_p "target/vendor"
     require 'rubygems/installer'
     rack_dir = File.basename(gem_file).sub(/\.gem$/, '')
-    Gem::Installer.new(gem_file, :unpack => true, :install_dir => rack_dir).unpack "#{target}/#{rack_dir}"
+    Gem::Installer.new(Gem::Package.new(gem_file), :unpack => true, :install_dir => rack_dir).unpack "#{target}/#{rack_dir}"
     File.open("#{target}/vendor/rack.rb", "w") do |f|
       f << "dir = File.dirname(__FILE__)\n"
       f << "if dir =~ /.jar!/ && dir !~ /^file:/\n"

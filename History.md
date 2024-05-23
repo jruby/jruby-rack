@@ -39,7 +39,7 @@ Changes from 1.1.15 apply since the previous release got yanked due a regression
 - a work-around for WAS (8.5) failing on `Dir.chdir` while booting (#170)
 - consider response unhandled when OPTIONS with "Allow" header set (#153)
 - improved handling for jruby.compat.version (should work with jruby-head)
-- start using de.saumya.mojo jruby plugins for mvn (relates to #108 as well)
+- start using org.jruby.maven jruby plugins for mvn (relates to #108 as well)
   this allows us to work without a GEM_HOME/GEM_PATH (local ruby install)
 - use ruby-style methods for the servlet api (in our servlet_env handler)
 

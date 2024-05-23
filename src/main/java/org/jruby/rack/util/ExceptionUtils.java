@@ -81,9 +81,9 @@ public abstract class ExceptionUtils {
 
     private static void appendInspect(final RubyException error, final StringBuilder out) {
         final RubyClass errorClass = error.getMetaClass().getRealClass();
-        if ( error.message != null && ! error.message.isNil() ) {
+        if ( error.getMessage() != null && ! error.getMessage().isNil() ) {
             out.append("#<").append( errorClass.getName() ).append(": ");
-            out.append( error.message.asString() ).append('>');
+            out.append( error.getMessage().asString() ).append('>');
         }
         else {
             out.append( errorClass.getName() );

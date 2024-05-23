@@ -287,6 +287,11 @@ public class Response extends RubyObject implements RackResponse {
             invoke(context, this.body, "each",
                 new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
                     @Override
+                    public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
+                        return yield(context, args[0]);
+                    }
+
+                    @Override
                     public IRubyObject yield(ThreadContext context, IRubyObject part) {
                         bodyParts.append( part.asString().toString() );
                         return part;
@@ -378,6 +383,11 @@ public class Response extends RubyObject implements RackResponse {
                     invoke(context, val, each_line ? "each_line" : "each",
                         new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
                             @Override
+                            public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
+                                return yield(context, args[0]);
+                            }
+
+                            @Override
                             public IRubyObject yield(ThreadContext context, IRubyObject value) {
                                 value.callMethod(context, "chomp!", newLine);
                                 response.addHeader(name, value.toString());
@@ -464,6 +474,11 @@ public class Response extends RubyObject implements RackResponse {
                 try {
                     invoke(context, body, method,
                         new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
+                        @Override
+                        public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
+                            return yield(context, args[0]);
+                        }
+
                         @Override
                         public IRubyObject yield(ThreadContext context, IRubyObject line) {
                             //final ByteList bytes = line.asString().getByteList();
