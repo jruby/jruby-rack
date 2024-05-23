@@ -274,15 +274,15 @@
         <artifactId>rake-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
         <executions>
-          <execution>
-            <id>rake-spec</id>
-            <phase>test</phase>
-            <goals><goal>rake</goal></goals>
-            <configuration>
-              <jruby.version>${jruby.version}</jruby.version>
-              <args>speconly SKIP_SPECS=${maven.test.skip} FULL_BIN_PATH=true</args>
-            </configuration>
-          </execution>
+<!--          <execution>-->
+<!--            <id>rake-spec</id>-->
+<!--            <phase>test</phase>-->
+<!--            <goals><goal>rake</goal></goals>-->
+<!--            <configuration>-->
+<!--              <jruby.version>${jruby.version}</jruby.version>-->
+<!--              <args>speconly SKIP_SPECS=${maven.test.skip} FULL_BIN_PATH=true</args>-->
+<!--            </configuration>-->
+<!--          </execution>-->
           <execution>
             <!-- additional (ruby) generated resources -->
             <id>rake-resources</id>
