@@ -29,6 +29,7 @@ import org.jruby.util.ByteList;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.servlet.RewindableInputStream;
 import org.jruby.rack.util.ExceptionUtils;
+import org.jruby.util.StringSupport;
 
 /**
  * Native (Java) implementation of a Rack input.
@@ -143,7 +144,7 @@ public class Input extends RubyObject {
             if ( bytes != null ) {
                 if ( buffer != null ) {
                     buffer.clear();
-                    buffer.cat(bytes);
+                    buffer.catWithCodeRange(new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
                     return buffer;
                 }
                 return context.runtime.newString(new ByteList(bytes, false));
