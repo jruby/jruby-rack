@@ -290,6 +290,11 @@ public class Logger extends RubyObject { // implements RackLogger
         return context.runtime.newBoolean( add(INFO, context, msg, block) );
     }
 
+    @JRubyMethod(name = "info")
+    public IRubyObject info(final ThreadContext context, final Block block) {
+        return info(context, context.nil, block);
+    }
+    
     //
     // Log a +WARN+ message.
     //
@@ -297,6 +302,11 @@ public class Logger extends RubyObject { // implements RackLogger
     public IRubyObject warn(final ThreadContext context,
         final IRubyObject msg, final Block block) {
         return context.runtime.newBoolean( add(WARN, context, msg, block) );
+    }
+
+    @JRubyMethod(name = "warn")
+    public IRubyObject warn(final ThreadContext context, final Block block) {
+        return warn(context, context.nil, block);
     }
 
     //
@@ -308,6 +318,11 @@ public class Logger extends RubyObject { // implements RackLogger
         return context.runtime.newBoolean( add(ERROR, context, msg, block) );
     }
 
+    @JRubyMethod(name = "error")
+    public IRubyObject error(final ThreadContext context, final Block block) {
+        return error(context, context.nil, block);
+    }
+
     //
     // Log a +FATAL+ message.
     //
@@ -315,6 +330,11 @@ public class Logger extends RubyObject { // implements RackLogger
     public IRubyObject fatal(final ThreadContext context,
         final IRubyObject msg, final Block block) {
         return context.runtime.newBoolean( add(FATAL, context, msg, block) );
+    }
+
+    @JRubyMethod(name = "fatal")
+    public IRubyObject fatal(final ThreadContext context, final Block block) {
+        return fatal(context, context.nil, block);
     }
 
     //
@@ -326,6 +346,11 @@ public class Logger extends RubyObject { // implements RackLogger
         final IRubyObject msg, final Block block) {
         // NOTE possibly - "somehow" support UNKNOWN in RackLogger ?!
         return context.runtime.newBoolean( add(UNKNOWN, context, msg, block) );
+    }
+
+    @JRubyMethod(name = "unknown")
+    public IRubyObject unknown(final ThreadContext context, final Block block) {
+        return unknown(context, context.nil, block);
     }
 
     // def add(severity, message = nil, progname = nil, &block)
