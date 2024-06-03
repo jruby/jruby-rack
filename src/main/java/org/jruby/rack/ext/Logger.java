@@ -118,6 +118,18 @@ public class Logger extends RubyObject { // implements RackLogger
     }
 
     @JRubyMethod
+    public IRubyObject initialize_copy(final ThreadContext context, final IRubyObject logger) {
+        Logger other = (Logger) logger;
+
+        this.level = other.level;
+        this.logger = other.logger;
+        this.formatter = other.formatter;
+        this.progname = other.progname;
+
+        return this;
+    }
+
+    @JRubyMethod
     public IRubyObject real_logger(final ThreadContext context) {
         return JavaEmbedUtils.javaToRuby(context.runtime, logger);
     }
