@@ -11,23 +11,25 @@ describe 'JRuby::Rack::ErrorApp' do
 
   before(:all) { require 'jruby/rack/error_app' }
 
+  let(:error_app) { JRuby::Rack::ErrorApp.new } # subject { error_app }
+
   before :each do
     @servlet_request = double "servlet request"
     @env = {'java.servlet_request' => @servlet_request}
+    # for Rack::Request to work (rendered from ShowStatus's TEMPLATE) :
+    @env["rack.url_scheme"] = 'http'
   end
-
-  subject { JRuby::Rack::ErrorApp.new }
 
   it "should determine the response status code based on the exception in the servlet attribute" do
     init_exception
 
-    expect( subject.call(@env)[0] ).to eql 500
+    expect( error_app.call(@env)[0] ).to eql 500
     @env["rack.showstatus.detail"].should == "something went wrong"
   end
 
   it "returns 503 if there is a nested InterruptedException" do
     init_exception java.lang.InterruptedException.new
-    response = subject.call(@env)
+    response = error_app.call(@env)
 
     expect( response[0] ).to eql 503
     expect( response[1] ).to be_a Hash
@@ -38,7 +40,7 @@ describe 'JRuby::Rack::ErrorApp' do
     @env[ 'HTTP_ACCEPT' ] = 'text/html'
     @env[ JRuby::Rack::ErrorApp::EXCEPTION ] = org.jruby.rack.AcquireTimeoutException.new('failed')
 
-    response = subject.call(@env)
+    response = error_app.call(@env)
     expect( response[0] ).to eql 503
     expect( response[1] ).to be_a Hash
     expect( response[2] ).to eql []
@@ -78,6 +80,69 @@ describe 'JRuby::Rack::ErrorApp' do
       content = ''; body.each { |chunk| content << chunk }
       expect( content ).to eql _500_html
     end
+  end
+
+  it spec = "still serves when retrieving exception's message fails" do
+    @env[ 'HTTP_ACCEPT' ] = '*/*'
+    @env[ JRuby::Rack::ErrorApp::EXCEPTION ] = InitException.new spec
+
+    response = error_app.call(@env)
+    expect( response[0] ).to eql 500
+    expect( response[1] ).to be_a Hash
+    expect( response[2] ).to eql []
+  end
+
+  class InitException < org.jruby.rack.RackInitializationException
+    def message; raise super.to_s end
+  end
+
+  context 'show-status' do
+
+    let(:show_status) do
+      JRuby::Rack::ErrorApp::ShowStatus.new error_app
+    end
+
+    it "does not alter 'rack.showstatus.detail' when set" do
+      @env[ 'HTTP_ACCEPT' ] = '*/*'; init_exception
+      @env[ 'rack.showstatus.detail' ] = false
+
+      response = show_status.call(@env)
+      expect( response[0] ).to eql 500
+      expect( @env[ 'rack.showstatus.detail' ] ).to be false
+    end
+
+    it "renders template" do
+      @env[ 'HTTP_ACCEPT' ] = '*/*'; init_exception
+
+      response = show_status.call(@env)
+      expect( response[0] ).to eql 500
+      body = response[2][0]
+      expect( body ).to include 'Internal Server Error'
+      expect( body ).to match /<div id="info">\n\s{4}<p>something went wrong<\/p>\n\s{2}<\/div>/m
+    end
+
+    it "does not render detail info when 'rack.showstatus.detail' set to false" do
+      @env[ 'HTTP_ACCEPT' ] = '*/*'; init_exception
+      @env[ 'rack.showstatus.detail' ] = false
+
+      response = show_status.call(@env)
+      expect( response[0] ).to eql 500
+      expect( response[2][0] ).to match /<div id="info">\s*?<\/div>/m
+      expect( @env[ 'rack.showstatus.detail' ] ).to be false
+    end
+
+    it "with response < 400 and 'rack.showstatus.detail' set to false does not render exception" do
+      @env[ 'HTTP_ACCEPT' ] = '*/*'; init_exception
+      @env[ 'rack.showstatus.detail' ] = false
+
+      def error_app.map_error_code(exc); 399 end
+
+      response = show_status.call(@env)
+      expect( response[0] ).to eql 399
+      # 399, {"Content-Type"=>"text/plain", "X-Cascade"=>"pass"}, []
+      expect( @env[ 'rack.showstatus.detail' ] ).to be false
+    end
+
   end
 
   private

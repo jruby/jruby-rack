@@ -65,6 +65,16 @@ describe org.jruby.rack.servlet.ResponseCapture do
     expect( response_capture.isHandled(servlet_request) ).to be false
   end
 
+  it "is not considered handled when only Allow or Date header is added with OPTIONS" do
+    servlet_request.method = 'OPTIONS'
+
+    # NOTE: Jetty sets both Date and Allow in DefaultServlet#doOptions
+    response_capture.addHeader "Allow", "GET, POST, OPTIONS"
+    response_capture.addHeader "Date", Time.now.httpdate
+
+    expect( response_capture.isHandled(servlet_request) ).to be false
+  end
+
   it "is considered handled when more than Allow header is added with OPTIONS" do
     pending "need Servlet API 3.0" unless servlet_30?
 
