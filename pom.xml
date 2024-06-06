@@ -307,9 +307,9 @@
     </plugins>
     <extensions>
       <extension>
-        <groupId>org.torquebox.mojo</groupId>
+        <groupId>org.jruby.maven</groupId>
         <artifactId>mavengem-wagon</artifactId>
-        <version>1.0.3</version>
+        <version>2.0.2</version>
       </extension>
     </extensions>
   </build>
