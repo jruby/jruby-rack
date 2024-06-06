@@ -10,6 +10,9 @@ package org.jruby.rack.ext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -21,6 +24,7 @@ import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.Helpers;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -39,6 +43,24 @@ import org.jruby.util.StringSupport;
  */
 @SuppressWarnings("serial")
 public class Input extends RubyObject {
+    private static final MethodHandle CONCAT_WITH_CODERANGE;
+
+    static {
+        // set up coderange-aware concat that works with the new catWithCodeRange as well as earlier JRuby without it.
+        // TODO: remove and replace with direct call once 9.3 is fully unsupported
+        MethodHandle catWithCR = null;
+        MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+        try {
+            catWithCR = lookup.findVirtual(RubyString.class, "catWithCodeRange", MethodType.methodType(int.class, ByteList.class, int.class));
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            try {
+                catWithCR = lookup.findVirtual(RubyString.class, "cat19", MethodType.methodType(int.class, ByteList.class, int.class));
+            } catch (Exception t) {
+                Helpers.throwException(t);
+            }
+        }
+        CONCAT_WITH_CODERANGE = catWithCR;
+    }
 
     static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
         public IRubyObject allocate(Ruby runtime, RubyClass klass) {
@@ -144,7 +166,12 @@ public class Input extends RubyObject {
             if ( bytes != null ) {
                 if ( buffer != null ) {
                     buffer.clear();
-                    buffer.catWithCodeRange(new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
+                    try {
+                        int _ = (int) CONCAT_WITH_CODERANGE.invokeExact(new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
+                    } catch (Throwable t) {
+                        Helpers.throwException(t);
+                    }
+
                     return buffer;
                 }
                 return context.runtime.newString(new ByteList(bytes, false));
