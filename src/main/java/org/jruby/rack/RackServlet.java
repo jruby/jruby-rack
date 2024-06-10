@@ -15,11 +15,17 @@ public class RackServlet extends AbstractServlet {
     private RackDispatcher dispatcher;
     private RackContext context;
 
-    /** Default constructor for servlet container */
+    /**
+     * Default constructor for servlet container
+     */
     public RackServlet() {
     }
     
-    /** dependency injection ctor, used by unit tests */
+    /**
+     * dependency injection ctor, used by unit tests
+     * @param dispatcher the dispatcher
+     * @param context the context
+     */
     public RackServlet(RackDispatcher dispatcher, RackContext context) {
         this.dispatcher = dispatcher;
         this.context = context;

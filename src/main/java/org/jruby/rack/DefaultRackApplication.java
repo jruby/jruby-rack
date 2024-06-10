@@ -17,7 +17,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  * (which is wrapped in a <code>Rack::Handler::Servlet</code> instance).
  * Returns the response converted to a Java {@link RackResponse} object.
  *
- * @see rack/handler/servlet.rb
+ * See src/main/ruby/rack/handler/servlet.rb
  *
  * @author nicksieger
  */
@@ -34,8 +34,8 @@ public class DefaultRackApplication implements RackApplication {
     public DefaultRackApplication() { /* NOOP */ }
 
     /**
-     * @see #setApplication(IRubyObject)
-     * @param application
+     * @see DefaultRackApplication#setApplication(IRubyObject)
+     * @param application the application object
      */
     public DefaultRackApplication(final IRubyObject application) {
         this();
@@ -88,7 +88,7 @@ public class DefaultRackApplication implements RackApplication {
 
     /**
      * Sets the application object.
-     * @param application
+     * @param application the application
      */
     public void setApplication(IRubyObject application) {
         this.application = application;

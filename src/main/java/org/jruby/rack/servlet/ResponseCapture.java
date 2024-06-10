@@ -38,7 +38,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
 
     /**
      * Wrap a response
-     * @param response
+     * @param response the response
      */
     public ResponseCapture(HttpServletResponse response) {
         super(response);
@@ -65,6 +65,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
      *
      * @param status the new HTTP status
      * @param error whether the status comes from a {@code sendError}
+     * @return the code handler
      * @see #isHandled(HttpServletRequest)
      */
     protected boolean handleStatus(int status, boolean error) {
@@ -197,6 +198,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     /**
      * @deprecated no longer to be used from outside
      * @see #isHandled(HttpServletRequest)
+     * @return true if handled
      */
     public boolean isHandled() {
         return isHandled(null);
@@ -208,6 +210,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
      * Response is considered to be handled if a status has been set
      * and it is (by default) not a HTTP NOT FOUND (404) status.
      *
+     * @param request the request
      * @return true if this response should be considered as handled
      * @see #handleStatus(int, boolean)
      */

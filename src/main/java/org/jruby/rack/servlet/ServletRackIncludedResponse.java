@@ -34,7 +34,7 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	
     /**
      * Wraps a response.
-     * @param response 
+     * @param response the response
      * @see #setBufferSize(int)
      */
 	public ServletRackIncludedResponse(HttpServletResponse response) {
@@ -47,6 +47,7 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	 * Returns the output of the include as a string, encoded by the
 	 * character encoding available {@link #getCharacterEncoding()}}.
 	 * @return the included output as a String
+	 * @throws IOException if there's an IO exception
 	 */
 	public String getOutput() throws IOException {
         flushBuffer();

@@ -35,7 +35,7 @@ public interface RackResponse {
     Map getHeaders() ;
 
     /**
-     * @note Normally, this method won't be used at all as we stream the
+     * Note: Normally, this method won't be used at all as we stream the
      * response body from {@link #respond(RackResponseEnvironment)}.
      * @return the response body (as a string)
      */

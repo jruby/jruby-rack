@@ -55,6 +55,7 @@ public class Servlet extends RubyObject {
 
     /**
      * @param app the rack app
+     * @return nil
      */
     @JRubyMethod(required = 1)
     public IRubyObject initialize(final IRubyObject app) {
@@ -75,7 +76,9 @@ public class Servlet extends RubyObject {
     public IRubyObject get_app() { return app; }
 
     /**
+     * @param context the current ThreadContext
      * @param servlet_env the (servlet) environment
+     * @return a response from the servlet
      */
     @JRubyMethod(required = 1)
     public IRubyObject call(final ThreadContext context, final IRubyObject servlet_env) {
@@ -87,7 +90,9 @@ public class Servlet extends RubyObject {
     }
 
     /**
+     * @param context the current ThreadContext
      * @param servlet_env the (servlet) environment
+     * @return a new ENV hash
      */
     @JRubyMethod(required = 1)
     public RubyHash create_env(final ThreadContext context, final IRubyObject servlet_env) {

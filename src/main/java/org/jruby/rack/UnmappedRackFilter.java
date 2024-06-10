@@ -63,13 +63,19 @@ public class UnmappedRackFilter extends AbstractFilter {
 
     public UnmappedRackFilter() { /** constructor used by container */ }
 
-    /** Dependency-injected constructor for testing */
+    /**
+     * Dependency-injected constructor for testing
+     * @param dispatcher the dispatcher
+     * @param context the context
+     */
     public UnmappedRackFilter(RackDispatcher dispatcher, RackContext context) {
         this.context = context;
         this.dispatcher = dispatcher;
     }
 
-    /** Construct a new dispatcher with the servlet context */
+    /**
+     * Construct a new dispatcher with the servlet context
+     */
     @Override
     public void init(FilterConfig config) throws ServletException {
         this.context = (RackContext)
@@ -134,11 +140,11 @@ public class UnmappedRackFilter extends AbstractFilter {
 
     /**
      * Handle the filter chain response before dispatching the request.
-     * @param request
-     * @param response
+     * @param request the request
+     * @param response the response
      * @return true if the dispatcher should do a dispatch (to rails), otherwise
      * it is assumed that the request has been handled somewhere down the chain.
-     * @throws IOException
+     * @throws IOException if there's an IOException
      */
     protected boolean handleChainResponse(RequestCapture request, ResponseCapture response)
         throws IOException {

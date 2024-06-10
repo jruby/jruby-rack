@@ -34,7 +34,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
 
     /**
      * Wrap a request
-     * @param request 
+     * @param request the request
      */
     public RequestCapture(HttpServletRequest request) {
         super(request);
@@ -42,7 +42,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
     
     /**
      * @deprecated use {@link #RequestCapture(HttpServletRequest)}
-     * @param request
+     * @param request the request
      * @param config will be ignored
      */
     @Deprecated

@@ -125,6 +125,8 @@ public class Input extends RubyObject {
 
     /**
      * gets must be called without arguments and return a string, or nil on EOF.
+     * @param context the current ThreadContext
+     * @return a gotten string
      */
     @JRubyMethod()
     public IRubyObject gets(final ThreadContext context) {
@@ -145,13 +147,16 @@ public class Input extends RubyObject {
 
     /**
      * read behaves like IO#read. Its signature is read([length, [buffer]]). If given,
-     * length must be an non-negative Integer (>= 0) or nil, and buffer must be a
+     * length must be an non-negative Integer (&gt;= 0) or nil, and buffer must be a
      * String and may not be nil. If length is given and not nil, then this method
      * reads at most length bytes from the input stream. If length is not given or
      * nil, then this method reads all data until EOF. When EOF is reached, this
      * method returns nil if length is given and not nil, or "" if length is not
      * given or is nil. If buffer is given, then the read data will be placed into
      * buffer instead of a newly created String object.
+     * @param context the current ThreadContext
+     * @param args the read arguments
+     * @return the read content as a string or nil
      */
     @JRubyMethod(optional = 2)
     public IRubyObject read(final ThreadContext context, final IRubyObject[] args) {
@@ -167,7 +172,7 @@ public class Input extends RubyObject {
                 if ( buffer != null ) {
                     buffer.clear();
                     try {
-                        int _ = (int) CONCAT_WITH_CODERANGE.invokeExact(new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
+                        int unused = (int) CONCAT_WITH_CODERANGE.invokeExact(new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
                     } catch (Throwable t) {
                         Helpers.throwException(t);
                     }
@@ -185,6 +190,9 @@ public class Input extends RubyObject {
 
     /**
      * each must be called without arguments and only yield Strings.
+     * @param context the current ThreadContext
+     * @param block the block for iteration
+     * @return nil
      */
     @JRubyMethod
     public IRubyObject each(final ThreadContext context, final Block block) {
@@ -201,6 +209,8 @@ public class Input extends RubyObject {
      * to the beginning. It must not raise Errno::ESPIPE: that is, it may not be
      * a pipe or a socket. Therefore, handler developers must buffer the input
      * data into some rewindable object if the underlying input stream is not rewindable.
+     * @param context the current ThreadContext
+     * @return nil
      */
     @JRubyMethod
     public IRubyObject rewind(final ThreadContext context) {
@@ -226,6 +236,8 @@ public class Input extends RubyObject {
 
     /**
      * Returns the size of the input.
+     * @param context the current ThreadContext
+     * @return the size of the input
      */
     @JRubyMethod
     public IRubyObject size(final ThreadContext context) {

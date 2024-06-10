@@ -46,7 +46,7 @@ public class RewindableInputStream extends ServletInputStream {
     /**
      * Set the (default) initial buffer size for all instances created using
      * {@link #RewindableInputStream(java.io.InputStream)}.
-     * @param iniBufferSize 
+     * @param iniBufferSize the initial buffer size
      */
     public static void setDefaultInitialBufferSize(int iniBufferSize) {
         RewindableInputStream.iniBufferSize = iniBufferSize;
@@ -61,7 +61,7 @@ public class RewindableInputStream extends ServletInputStream {
     /**
      * Set the (default) maximum buffer size for all instances created using
      * {@link #RewindableInputStream(java.io.InputStream)}.
-     * @param maxBufferSize 
+     * @param maxBufferSize the max buffer size
      */
     public static void setDefaultMaximumBufferSize(int maxBufferSize) {
         RewindableInputStream.maxBufferSize = maxBufferSize;
@@ -85,7 +85,7 @@ public class RewindableInputStream extends ServletInputStream {
     
     /**
      * Wrap an input stream to be king and rewind ...
-     * @param input 
+     * @param input the input stream
      */
     public RewindableInputStream(InputStream input) {
         this(input, iniBufferSize, maxBufferSize);
@@ -93,7 +93,7 @@ public class RewindableInputStream extends ServletInputStream {
 
     /**
      * Wrap an input stream to be king and rewind ...
-     * @param input 
+     * @param input the input stream
      * @param bufferSize the buffer size
      */
     public RewindableInputStream(InputStream input, int bufferSize) {
@@ -102,7 +102,7 @@ public class RewindableInputStream extends ServletInputStream {
 
     /**
      * Wrap an input stream to be king and rewind ...
-     * @param input 
+     * @param input the input stream
      * @param iniBufferSize initial buffer size
      * @param maxBufferSize maximum buffer size (when reached content gets written into a file)
      */
@@ -216,7 +216,7 @@ public class RewindableInputStream extends ServletInputStream {
     
     /**
      * Rewind this stream (kindly) to the start.
-     * @throws IOException 
+     * @throws IOException if there's an IO exception
      */
     public synchronized void rewind() throws IOException {
         ensureOpen();

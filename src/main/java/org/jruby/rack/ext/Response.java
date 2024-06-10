@@ -74,8 +74,8 @@ public class Response extends RubyObject implements RackResponse {
 
     /**
      * # Whether we swallow client abort exceptions (EOF received on the socket).
-     * @param context
-     * @param self
+     * @param context the current ThreadContext
+     * @param self the self object
      * @return a ruby boolean
      */
     @JRubyMethod(name = "swallow_client_abort?", meta = true)
@@ -85,7 +85,10 @@ public class Response extends RubyObject implements RackResponse {
     }
 
     /**
-     * @see #is_swallow_client_abort(ThreadContext, IRubyObject)
+     * @see Response#is_swallow_client_abort(ThreadContext, IRubyObject)
+     * @param self the self object
+     * @param value the value
+     * @return the given value
      */
     @JRubyMethod(name = "swallow_client_abort=", meta = true, required = 1)
     public static IRubyObject set_swallow_client_abort(final IRubyObject self, final IRubyObject value) {
@@ -102,8 +105,8 @@ public class Response extends RubyObject implements RackResponse {
 
     /**
      * Whether responses should de-chunk data (when chunked response detected).
-     * @param context
-     * @param self
+     * @param context the current ThreadContext
+     * @param self the self object
      * @return a ruby boolean
      */
     @JRubyMethod(name = "dechunk?", meta = true)
@@ -113,7 +116,10 @@ public class Response extends RubyObject implements RackResponse {
     }
 
     /**
-     * @see #is_dechunk(ThreadContext, IRubyObject)
+     * @see Response#is_dechunk(ThreadContext, IRubyObject)
+     * @param self the self object
+     * @param value the value
+     * @return the given value
      */
     @JRubyMethod(name = "dechunk=", meta = true, required = 1)
     public static IRubyObject set_dechunk(final IRubyObject self, final IRubyObject value) {
@@ -133,15 +139,15 @@ public class Response extends RubyObject implements RackResponse {
      * response is detected. By setting this value to nil you force an "explicit"
      * byte buffer to be used when copying between channels.
      *
-     * @note High values won't hurt when sending small files since most Java
+     * Note: High values won't hurt when sending small files since most Java
      * (file) channel implementations handle this gracefully. However if you're
      * on Windows it is  recommended to not set this higher than the "magic"
      * number (64 * 1024 * 1024) - (32 * 1024) as there seems to be anecdotal
      * evidence that attempts to transfer more than 64MB at a time on certain
      * Windows versions results in a slow copy.
      * @see #get_channel_buffer_size(ThreadContext, IRubyObject)
-     * @param context
-     * @param self
+     * @param context the current ThreadContext
+     * @param self the self object
      * @return a (ruby) integer value
      */
     @JRubyMethod(name = "channel_chunk_size", meta = true)
@@ -152,6 +158,9 @@ public class Response extends RubyObject implements RackResponse {
 
     /**
      * @see #get_channel_chunk_size(ThreadContext, IRubyObject)
+     * @param self the self object
+     * @param value the value
+     * @return the given value
      */
     @JRubyMethod(name = "channel_chunk_size=", meta = true, required = 1)
     public static IRubyObject set_channel_chunk_size(final IRubyObject self, final IRubyObject value) {
@@ -173,8 +182,8 @@ public class Response extends RubyObject implements RackResponse {
      * channel backed object) as with file responses the response channel is
      * always transferable and thus {#channel_chunk_size} will be used.
      * @see #get_channel_chunk_size(ThreadContext, IRubyObject)
-     * @param context
-     * @param self
+     * @param context the current thread context
+     * @param self the self object
      * @return a (ruby) integer value
      */
     @JRubyMethod(name = "channel_buffer_size", meta = true)
@@ -184,6 +193,9 @@ public class Response extends RubyObject implements RackResponse {
 
     /**
      * @see #get_channel_buffer_size(ThreadContext, IRubyObject)
+     * @param self the self object
+     * @param value the value
+     * @return the given value
      */
     @JRubyMethod(name = "channel_buffer_size=", meta = true, required = 1)
     public static IRubyObject set_channel_buffer_size(final IRubyObject self, final IRubyObject value) {
@@ -213,8 +225,9 @@ public class Response extends RubyObject implements RackResponse {
 
     /**
      * Expects a Rack response.
-     * @param context
+     * @param context the current ThreadContext
      * @param arg [status, headers, body]
+     * @return nil
      */
     @JRubyMethod(required = 1)
     public IRubyObject initialize(final ThreadContext context, final IRubyObject arg) {
@@ -521,10 +534,11 @@ public class Response extends RubyObject implements RackResponse {
      * Sends a file when a Rails/Rack file response (`body.to_path`) is detected.
      * This allows for potential application server overrides when file streaming.
      * By default JRuby-Rack will stream the file using a (native) file channel.
-     * @param context
+     * @param context the current ThreadContext
      * @param path the file path
      * @param response the response environment
-     * @throws IOException
+     * @return nil
+     * @throws IOException if there is an IO exception
      */
     @JRubyMethod(name = "send_file")
     public IRubyObject send_file(final ThreadContext context,
@@ -681,6 +695,7 @@ public class Response extends RubyObject implements RackResponse {
         Block block = new Block(body, context.currentBinding(self, Visibility.PUBLIC));
         return Helpers.invoke(context, self, method, block);
     }
+
 
     @Override
     public Object toJava(Class target) {

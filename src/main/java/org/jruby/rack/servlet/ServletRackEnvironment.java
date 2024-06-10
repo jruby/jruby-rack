@@ -41,9 +41,9 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
 
     /**
      * Creates an environment instance for the given request, response and context.
-     * @param request
-     * @param response
-     * @param context
+     * @param request the request
+     * @param response the response
+     * @param context the context
      */
     public ServletRackEnvironment(HttpServletRequest request, HttpServletResponse response, RackContext context) {
         super(request);
