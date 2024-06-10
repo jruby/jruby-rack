@@ -10,7 +10,7 @@
 
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>1.2.2-SNAPSHOT</version>
+  <version>1.2.2</version>
   <name>JRuby-Rack</name>
   <url>http://github.com/jruby/jruby-rack/</url>
   <description>
@@ -47,7 +47,7 @@
     <connection>scm:git:git://github.com/jruby/jruby-rack.git</connection>
     <developerConnection>scm:git:git@github.com:jruby/jruby-rack.git</developerConnection>
     <url>http://github.com/jruby/jruby-rack/</url>
-    <tag>HEAD</tag>
+    <tag>jruby-rack-1.2.2</tag>
   </scm>
 
   <licenses>
