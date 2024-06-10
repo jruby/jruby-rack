@@ -12,6 +12,7 @@ GEM
       activesupport (= 2.3.18)
     activesupport (2.3.18)
     diff-lcs (1.2.5)
+    jruby-openssl (0.9.21-java)
     rack (1.1.6)
     rails (2.3.18)
       actionmailer (= 2.3.18)
@@ -20,7 +21,7 @@ GEM
       activeresource (= 2.3.18)
       activesupport (= 2.3.18)
       rake (>= 0.8.3)
-    rake (10.3.2)
+    rake (10.4.2)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
@@ -34,6 +35,10 @@ PLATFORMS
   java
 
 DEPENDENCIES
+  jruby-openssl (~> 0.9.20)
   rails (~> 2.3.18)
-  rake (~> 10.3.1)
+  rake (~> 10.4.2)
   rspec (~> 2.14.1)
+
+BUNDLED WITH
+   1.14.6

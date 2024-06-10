@@ -148,9 +148,15 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>activation</artifactId>
+      <version>1.1.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>rubygems</groupId>
       <artifactId>jruby-openssl</artifactId>
-      <version>0.9.6</version>
+      <version>0.9.21</version>
       <type>gem</type>
       <scope>provided</scope>
     </dependency>
@@ -297,7 +303,25 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.13</version>
+        <extensions>true</extensions>
+        <configuration>
+           <serverId>ossrh</serverId>
+           <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+           <autoReleaseAfterClose>false</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
     </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.torquebox.mojo</groupId>
+        <artifactId>mavengem-wagon</artifactId>
+        <version>1.0.3</version>
+      </extension>
+    </extensions>
   </build>
 
   <profiles>
@@ -334,6 +358,9 @@
                 <goals>
                   <goal>jar</goal>
                 </goals>
+                <configuration>
+                  <additionalparam>${javadoc.opts}</additionalparam>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -354,7 +381,15 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>java8-disable-doclint</id>
+      <activation>
+        <jdk>[1.8,)</jdk>
+      </activation>
+      <properties>
+        <javadoc.opts>-Xdoclint:none</javadoc.opts>
+      </properties>
+    </profile>
   </profiles>
 
 </project>
-

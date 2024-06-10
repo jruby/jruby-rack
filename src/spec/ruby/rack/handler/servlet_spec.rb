@@ -368,6 +368,44 @@ describe Rack::Handler::Servlet do
       expect( env['org.apache.internal'] ).to be true
     end
 
+    it "sets attributes with false/null values" do
+      @servlet_request.addHeader "Content-Type", "text/plain"
+      @servlet_request.setContentType 'text/html'
+      @servlet_request.setContent ('0' * 100).to_java_bytes rescue nil # 1.6.8 BUG
+      @servlet_request.setAttribute 'org.false', false
+      @servlet_request.setAttribute 'null.attr', nil
+      @servlet_request.setAttribute 'the.truth', java.lang.Boolean::TRUE
+
+      env = servlet.create_env @servlet_env
+
+      expect( env['org.false'] ).to be false
+      expect( env['null.attr'] ).to be nil
+      expect( env['the.truth'] ).to be true
+
+      expect( env.keys ).to include 'org.false'
+
+      pending "TODO: expect( env.keys ).to include 'null.attr'"
+      #expect( env.keys ).to include 'null.attr'
+    end
+
+    it "works like a Hash (fetching values)" do
+      @servlet_request.addHeader "Content-Type", "text/plain"
+      @servlet_request.setContentType 'text/html'
+
+      env = servlet.create_env @servlet_env
+      env['attr1'] = 1
+      env['attr2'] = false
+      env['attr3'] = nil
+
+      expect( env.fetch('attr1', 11) ).to eql 1
+      expect( env.fetch('attr2', true) ).to eql false
+      expect( env['attr2'] ).to eql false
+      expect( env.fetch('attr3', 33) ).to eql nil
+      expect( env['attr4'] ).to eql nil
+      expect( env.fetch('attr4') { 42 } ).to eql 42
+      expect { env.fetch('attr4') }.to raise_error # KeyError
+    end
+
     it "parses strange request parameters (Rack-compat)" do
       servlet_request = @servlet_request
       servlet_request.setMethod 'GET'

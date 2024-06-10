@@ -54,11 +54,16 @@ end
 desc "Unpack the rack gem"
 task :unpack_gem => "target" do |t|
   target = File.expand_path(t.prerequisites.first)
-  spec = Gem.loaded_specs["rack"]
-  if spec.respond_to?(:cache_file)
-    gem_file = spec.cache_file
-  else
-    gem_file = File.join(spec.installation_path, 'cache', spec.file_name)
+  spec = Gem.loaded_specs['rack']
+  # JRuby <= 1.7.20 does not handle respond_to? with method_missing right
+  # ... issue with Bundler::StubSpecification wrapping (in bundler 1.10.x)
+  unless ( gem_file = spec.cache_file rescue nil )
+    #if defined?(::Bundler) && ::Bundler.const_defined?(:StubSpecification) # since Bundler 1.10.1
+    #  spec = spec.to_spec if spec.is_a?(::Bundler::StubSpecification)
+    #else
+    #  spec = spec.to_spec if spec.respond_to?(:to_spec)
+    #end
+    gem_file = File.join(spec.base_dir, 'cache', spec.file_name)
   end
   unless uptodate?("#{target}/vendor/rack.rb", [__FILE__, gem_file])
     mkdir_p "target/vendor"

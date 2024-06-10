@@ -11,7 +11,11 @@ module JRuby
 
       autoload :ShowStatus, 'jruby/rack/error_app/show_status'
 
+      # @private
+      InterruptedException = Java::JavaLang::InterruptedException
+
       EXCEPTION = org.jruby.rack.RackEnvironment::EXCEPTION
+      DEFAULT_EXCEPTION_DETAIL = ''
 
       DEFAULT_RESPONSE_CODE = 500
       DEFAULT_MIME = 'text/plain'
@@ -21,6 +25,8 @@ module JRuby
         org.jruby.rack.AcquireTimeoutException,
         # org.jruby.rack.RackInitializationException
       ]
+
+      ALLOW_METHODS = 'HEAD, GET, POST, PUT, DELETE, OPTIONS'
 
       attr_reader :root
 
@@ -35,8 +41,7 @@ module JRuby
 
       def call(env)
         if env['REQUEST_METHOD'] == 'OPTIONS'
-          allow_methods = 'HEAD, GET, POST, PUT, DELETE, OPTIONS'
-          return [ 200, {'Allow' => allow_methods, 'Content-Length' => '0'}, [] ]
+          return [ 200, {'Allow' => ALLOW_METHODS, 'Content-Length' => '0'}, [] ]
         end
 
         code = response_code(env)
@@ -56,7 +61,14 @@ module JRuby
 
       def response_code(env)
         if exc = env[EXCEPTION]
-          env['rack.showstatus.detail'] = exc.message rescue ''
+          unless env.key?(key = 'rack.showstatus.detail')
+            begin
+              env[key] = exc.message || DEFAULT_EXCEPTION_DETAIL
+            rescue => e
+              env[key] = DEFAULT_EXCEPTION_DETAIL
+              warn e.inspect
+            end
+          end
           map_error_code(exc)
         else
           nil
@@ -77,7 +89,7 @@ module JRuby
         body = env['REQUEST_METHOD'] == 'HEAD' ? [] : FileBody.new(path, size = File.size?(path))
         response = [ code, headers, body ]
 
-        size ||= ::Rack::Utils.bytesize(File.read(path)) if defined?(::Rack::Utils.bytesize)
+        size ||= Utils.bytesize(File.read(path))
 
         response[1]['Content-Length'] = size.to_s if size
         response
@@ -86,10 +98,9 @@ module JRuby
       protected
 
       def map_error_code(exc)
-        cause = exc.respond_to?(:cause) ? exc.cause : nil
         if UNAVAILABLE_EXCEPTIONS.any? { |type| exc.kind_of?(type) }
           503 # Service Unavailable
-        elsif cause.kind_of?(Java::JavaLang::InterruptedException)
+        elsif exc.respond_to?(:cause) && exc.cause.kind_of?(InterruptedException)
           503 # Service Unavailable
         else
           500
@@ -107,6 +118,8 @@ module JRuby
 
       class FileBody
 
+        CHUNK_SIZE = 8192
+
         attr_reader :path, :size
         alias to_path path
 
@@ -116,7 +129,7 @@ module JRuby
           File.open(@path, "rb") do |file|
             # file.seek(0)
             remaining = @size || (1.0 / 0)
-            chunk_size = 8192
+            chunk_size = CHUNK_SIZE
             while remaining > 0
               chunk_size = remaining if remaining < chunk_size
               break unless part = file.read(chunk_size)
@@ -142,13 +155,21 @@ module JRuby
 
       begin
         require 'rack/utils'
+        Utils = ::Rack::Utils
+
+        if ''.respond_to?(:bytesize) # Ruby >= 1.9
+          def Utils.bytesize(string); string.bytesize end
+        else
+          def Utils.bytesize(string); string.size end
+        end unless defined? Utils.bytesize
+
         require 'rack/mime'
       rescue LoadError; end
 
-      if defined? Rack::Utils.best_q_match
+      if defined? Utils.best_q_match
 
         def accepts_html?(env)
-          Rack::Utils.best_q_match(env['HTTP_ACCEPT'], %w[text/html])
+          Utils.best_q_match(env['HTTP_ACCEPT'], %w[text/html])
         rescue
           http_accept?(env, 'text/html')
         end

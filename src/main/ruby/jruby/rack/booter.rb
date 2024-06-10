@@ -1,4 +1,5 @@
 #--
+# Copyright (c) 2012-2016 Karol Bucek, LTD.
 # Copyright (c) 2010-2012 Engine Yard, Inc.
 # Copyright (c) 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
@@ -93,8 +94,8 @@ module JRuby::Rack
       adjust_load_path
       adjust_gem_path
       ENV['RACK_ENV'] = rack_env
-      export_global_settings
       change_working_directory
+      export_global_settings
       load_settings_from_init_rb
       set_relative_url_root
       run_boot_hooks
@@ -178,11 +179,18 @@ module JRuby::Rack
       # http://kenai.com/jira/browse/JRUBY_RACK-8 If some containers do
       # not allow proper detection of jruby.home, fall back to this
       tmpdir = ENV_JAVA['java.io.tmpdir']
-      if JRuby.runtime.instance_config.jruby_home == tmpdir
+      if tmpdir && JRuby.runtime.jruby_home == tmpdir
         ruby_paths = # mirroring org.jruby.runtime.load.LoadService#init
-          if JRUBY_VERSION >= '1.7.0'
-            # 2.0 is 1.9 as well and uses the same setup as 1.9 currently ...
-            %w{ site_ruby shared } << ( JRuby.runtime.is1_9 ? '1.9' : '1.8' )
+          if JRUBY_VERSION >= '9.0.0'
+            # "/opt/local/rvm/rubies/jruby-9.0.4.0/lib/ruby/2.2/site_ruby"
+            # "/opt/local/rvm/rubies/jruby-9.0.4.0/lib/ruby/stdlib"
+            %W{ #{RUBY_VERSION[0, 3]}/site_ruby stdlib }
+          elsif JRUBY_VERSION >= '1.7.0'
+            if (JRuby.runtime.is2_0 rescue nil)
+              %w{ site_ruby shared 2.0 1.9 }
+            else
+              %w{ site_ruby shared } << ( JRuby.runtime.is1_9 ? '1.9' : '1.8' )
+            end
           else # <= JRuby 1.6.8
             if JRuby.runtime.is1_9
               %w{ site_ruby/1.9 site_ruby/shared site_ruby/1.8 1.9 }

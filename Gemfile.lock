@@ -22,7 +22,7 @@ GEM
     rspec-support (3.13.1)
 
 PLATFORMS
-  universal-java-1.8
+  universal-java-22
 
 DEPENDENCIES
   appraisal (< 1.0)
