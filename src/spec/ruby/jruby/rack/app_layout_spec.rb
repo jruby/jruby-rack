@@ -89,7 +89,7 @@ end
 
 shared_examples "FileSystemLayout" do
 
-  @@__work_dir__ = Dir.pwd
+  __work_dir__ = Dir.pwd
 
   before do
     require 'tmpdir'
@@ -97,7 +97,7 @@ shared_examples "FileSystemLayout" do
   end
 
   after do
-    Dir.chdir @@__work_dir__
+    Dir.chdir __work_dir__
   end
 
   it "sets app and public uri defaults based on a typical (Rails/Rack) app" do
