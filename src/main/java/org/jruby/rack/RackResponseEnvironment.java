@@ -38,55 +38,58 @@ public interface RackResponseEnvironment {
 
     /**
      * @see javax.servlet.ServletResponse#setContentType(String)
+     * @param type the content type
      */
     void setContentType(String type) ;
 
     /**
      * @see javax.servlet.ServletResponse#setContentLength(int)
+     * @param length the content length
      */
     void setContentLength(int length) ;
 
     /**
      * @see javax.servlet.ServletResponse#setCharacterEncoding(String)
+     * @param charset the charset
      */
     void setCharacterEncoding(String charset) ;
 
     /**
      * Sets a (HTTP) header.
-     * @param name
-     * @param value
+     * @param name the header name
+     * @param value the header value as a String
      */
     void setHeader(String name, String value) ;
     /**
      * Adds a (HTTP) header.
-     * @param name
-     * @param value
+     * @param name the header name
+     * @param value the header value as a String
      */
     void addHeader(String name, String value) ;
 
     /**
      * Sets a (HTTP) header.
-     * @param name
-     * @param date
+     * @param name the header name
+     * @param date the header value as a long date
      */
     void setDateHeader(String name, long date) ;
     /**
      * Adds a (HTTP) header.
-     * @param name
-     * @param date
+     * @param name the header name
+     * @param date the header value as a long date
      */
     void addDateHeader(String name, long date) ;
 
     /**
      * Sets a (HTTP) header.
-     * @param name
-     * @param value
+     * @param name the header name
+     * @param value the header value as an int
      */
     void setIntHeader(String name, int value) ;
     /**
      * Adds a (HTTP) header.
-     * @param name
-     * @param value
+     * @param name the header name
+     * @param value the header value as an int
      */
     void addIntHeader(String name, int value) ;
 
@@ -99,22 +102,28 @@ public interface RackResponseEnvironment {
     /**
      * Send a simple error page response (based on the status code).
      * @param code the (HTTP) status code
-     * @throws IOException
+     * @throws IOException if there's an IO exception
      */
     void sendError(int code) throws IOException ;
 
     /**
      * @see javax.servlet.ServletResponse#getOutputStream()
+     * @return the output stream
+     * @throws IOException if there's an IO exception
      */
     OutputStream getOutputStream() throws IOException ;
 
     /**
      * @see javax.servlet.ServletResponse#getWriter()
+     * @return the writer
+     * @throws IOException if there's an IO exception
      */
     PrintWriter getWriter() throws IOException ;
 
     /**
      * @see RackResponse#respond(RackResponseEnvironment)
+     * @param response the response
+     * @throws IOException if there's an IO exception
      * @deprecated (should) no longer (be) used
      */
     @Deprecated

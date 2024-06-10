@@ -15,7 +15,7 @@ import static org.jruby.rack.RackLogger.Level.*;
  * Works like the pooling application factory, with the variation that it will
  * create all application instances (runtimes) serially, using no extra threads.
  *
- * @author Ola Bini <ola.bini@gmail.com>
+ * @author Ola Bini &lt;ola.bini@gmail.com&gt;
  */
 public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationFactory {
 

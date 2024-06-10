@@ -85,7 +85,7 @@ public abstract class RackApplicationFactoryDecorator
 
     /**
      * Allows to set the initialization error for concrete factories.
-     * @param initError
+     * @param initError the initialization error to raise
      * @see #getApplication()
      */
     protected synchronized void setInitError(RuntimeException initError) {
@@ -94,8 +94,8 @@ public abstract class RackApplicationFactoryDecorator
 
     /**
      * @see RackApplicationFactory#init(RackContext)
-     * @param context
-     * @throws RackInitializationException
+     * @param context the current RackContext
+     * @throws RackInitializationException if there's an error while initializing
      */
     @Override
     public void init(final RackContext context) throws RackInitializationException {
@@ -110,6 +110,7 @@ public abstract class RackApplicationFactoryDecorator
 
     /**
      * Perform the initialization for this factory.
+     * @throws Exception if there's an exception
      */
     protected void doInit() throws Exception {
         getDelegate().init(context);
@@ -130,7 +131,7 @@ public abstract class RackApplicationFactoryDecorator
      * factory.
      * @see RackApplicationFactory#getApplication()
      * @see #getApplicationImpl()
-     * @throws RackException
+     * @throws RackException if there is a failure to initialize
      */
     @Override
     public RackApplication getApplication() throws RackException {
@@ -165,8 +166,8 @@ public abstract class RackApplicationFactoryDecorator
 
     /**
      * Log a message.
-     * @param level
-     * @param message
+     * @param level the logger level
+     * @param message the log message
      */
     protected void log(final RackLogger.Level level, final String message) {
         getContextBang().log(level, message);
@@ -179,9 +180,9 @@ public abstract class RackApplicationFactoryDecorator
 
     /**
      * Log a message (and an exception).
-     * @param level
-     * @param message
-     * @param e
+     * @param level the logger level
+     * @param message the log message
+     * @param e the exception raised
      */
     protected void log(final RackLogger.Level level, final String message, Exception e) {
         getContextBang().log(level, message, e);

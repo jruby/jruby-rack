@@ -192,7 +192,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
 
     /**
      * @return true if a permit is acquired, false if no permit necessary
-     * @throws TimeoutException if a permit can not be acquired
+     * @throws AcquireTimeoutException if a permit can not be acquired
      */
     protected boolean acquireApplicationPermit() throws AcquireTimeoutException {
         // NOTE: permits are only used if a pool maximum is specified !
@@ -276,7 +276,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
     }
 
     /**
-     * @param apps
+     * @param apps a queue of apps
      * @deprecated override {@link #launchInitialization(java.util.Queue)}
      */
     @Deprecated

@@ -75,9 +75,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     /**
      * Initialize this factory using the given context.
-     * <br/>
+     *
      * NOTE: exception handling is left to the outer factory.
-     * @param rackContext
+     * @param rackContext the RackContext
      */
     @Override
     public void init(final RackContext rackContext) {
@@ -93,7 +93,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     /**
      * Creates a new application instance (without initializing it).
-     * <br/>
+     *
      * NOTE: exception handling is left to the outer factory.
      * @return new application instance
      */
@@ -108,7 +108,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     /**
      * Creates a new application and initializes it.
-     * <br/>
+     *
      * NOTE: exception handling is left to the outer factory.
      * @return new, initialized application
      */
@@ -121,7 +121,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     /**
      * Destroys the application (assumably) created by this factory.
-     * <br/>
+     *
      * NOTE: exception handling is left to the outer factory.
      * @param app the application to "release"
      */
@@ -147,7 +147,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     /**
      * Set the (default) error application to be used.
-     * @param errorApplication
+     * @param errorApplication the error application
      */
     public synchronized void setErrorApplication(RackApplication errorApplication) {
         this.errorApplication = errorApplication;
@@ -227,8 +227,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     /**
      * @see #createRackServletWrapper(Ruby, String, String)
-     * @param runtime
-     * @param rackup
+     * @param runtime the JRuby runtime
+     * @param rackup the rackup string
      * @return (Ruby) built Rack Servlet handler
      */
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup) {
@@ -237,9 +237,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     /**
      * Creates the handler to bridge the Servlet and Rack worlds.
-     * @param runtime
-     * @param rackup
-     * @param filename
+     * @param runtime the JRuby runtime
+     * @param rackup the rackup string
+     * @param filename the filename
      * @return (Ruby) built Rack Servlet handler
      */
     protected IRubyObject createRackServletWrapper(Ruby runtime, String rackup, String filename) {

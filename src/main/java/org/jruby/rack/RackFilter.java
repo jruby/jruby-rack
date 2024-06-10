@@ -44,7 +44,11 @@ public class RackFilter extends UnmappedRackFilter {
     public RackFilter() {
     }
 
-    /** Dependency-injected constructor for testing */
+    /**
+     * Dependency-injected constructor for testing
+     * @param dispatcher the dispatcher
+     * @param context the context
+     */
     public RackFilter(RackDispatcher dispatcher, RackContext context) {
         super(dispatcher, context);
         initializeFromConfig();

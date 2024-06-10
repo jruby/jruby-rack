@@ -18,13 +18,20 @@ public interface RackApplication {
     void init() throws RackInitializationException;
     void destroy();
 
-    /** Make a request into the Rack-based Ruby web application. */
+    /**
+     * Make a request into the Rack-based Ruby web application.
+     *
+     * @param env the RackEnvironment
+     * @return the RackResponse
+     */
     public RackResponse call(RackEnvironment env);
 
     /**
      * Get a reference to the underlying runtime that holds the application
      * and supporting code. Useful for embedding environments that wish to access
      * the application without entering through the web request/response cycle.
+     *
+     * @return the JRuby runtime
      */
     Ruby getRuntime();
 }

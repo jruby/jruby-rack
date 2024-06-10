@@ -32,7 +32,7 @@ public class Context implements RackContext, RackLogger {
     }
 
     /**
-     * @param serverInfo
+     * @param serverInfo a string to describe the server software you have
      * @param config rack configuration
      */
     public Context(final String serverInfo, final Config config) {

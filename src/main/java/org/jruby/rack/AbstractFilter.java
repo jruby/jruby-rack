@@ -42,11 +42,11 @@ public abstract class AbstractFilter implements Filter {
 
     /**
      * @see Filter#doFilter(ServletRequest, ServletResponse, FilterChain)
-     * @param request
-     * @param response
-     * @param chain
-     * @throws IOException
-     * @throws ServletException
+     * @param request the request
+     * @param response the response
+     * @param chain the FilterChain
+     * @throws IOException if there's an IO exception
+     * @throws ServletException if there's a servlet exception
      */
     public final void doFilter(
             ServletRequest request, ServletResponse response,
@@ -82,11 +82,15 @@ public abstract class AbstractFilter implements Filter {
      * requests are given to the {@link RackDispatcher}, but you can extend
      * this method and return false if you want to signal that you don't want
      * the {@link RackDispatcher} to see the request.
-
+     *
+     * @param request the request
+     * @param response the response
+     * @param chain the FilterChain
+     * @param env the RackEnvironent
      * @return true if the dispatcher should handle the request, false if it
      * shouldn't.
-     * @throws IOException
-     * @throws ServletException
+     * @throws IOException if there's an IO exception
+     * @throws ServletException if there's a servlet exception
      */
     protected boolean isDoDispatch(
             RequestCapture request, ResponseCapture response,
@@ -97,6 +101,14 @@ public abstract class AbstractFilter implements Filter {
 
     /**
      * @deprecated use {@link #isDoDispatch(RequestCapture, ResponseCapture, FilterChain, RackEnvironment)}
+     * @param request the request
+     * @param response the response
+     * @param chain the FilterChain
+     * @param env the RackEnvironent
+     * @param responseEnv the RackResponseEnvironment
+     * @return isDoDispatch
+     * @throws IOException if there's an IO exception
+     * @throws ServletException if there's a servlet exception
      */
     @Deprecated
     protected boolean isDoDispatch(
@@ -109,7 +121,7 @@ public abstract class AbstractFilter implements Filter {
 
     /**
      * Extension point if you'll need to customize {@link RequestCapture}
-     * @param request
+     * @param request the request
      * @return request capture
      */
     protected RequestCapture wrapRequest(ServletRequest request) {
@@ -118,7 +130,7 @@ public abstract class AbstractFilter implements Filter {
 
     /**
      * Extension point if you'll need to customize {@link ResponseCapture}
-     * @param response
+     * @param response the response
      * @return response capture
      */
     protected ResponseCapture wrapResponse(ServletResponse response) {
