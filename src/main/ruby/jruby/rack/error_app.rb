@@ -70,14 +70,13 @@ module JRuby
         headers = { 'Last-Modified' => last_modified }
         DEFAULT_HEADERS.each { |field, content| headers[field] = content }
         ext = File.extname(path)
+        size = File.size?(path)
         mime = ::Rack::Mime.mime_type(ext, DEFAULT_MIME) if defined?(::Rack::Mime)
         mime = 'text/html' if ! mime && ( ext == '.html' || ext == '.htm' )
         headers['Content-Type'] = mime if mime
 
-        body = env['REQUEST_METHOD'] == 'HEAD' ? [] : FileBody.new(path, size = File.size?(path))
+        body = env['REQUEST_METHOD'] == 'HEAD' ? [] : FileBody.new(path, size)
         response = [ code, headers, body ]
-
-        size ||= ::Rack::Utils.bytesize(File.read(path)) if defined?(::Rack::Utils.bytesize)
 
         response[1]['Content-Length'] = size.to_s if size
         response

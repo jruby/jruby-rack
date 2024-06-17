@@ -27,7 +27,7 @@ class JRuby::Rack::ErrorApp
         detail = detail = env["rack.showstatus.detail"] || message
 
         body = @template.result(binding)
-        size = ::Rack::Utils.bytesize(body)
+        size = body.bytesize
         [status, headers.merge('Content-Type' => "text/html", 'Content-Length' => size.to_s), [body]]
       else
         [status, headers, body]
