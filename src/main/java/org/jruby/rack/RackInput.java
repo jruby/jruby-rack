@@ -27,6 +27,7 @@ import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
+import org.jruby.util.StringSupport;
 
 /**
  * Native (Java) implementation of a Rack input.
@@ -147,7 +148,7 @@ public class RackInput extends RubyObject {
             if (bytes != null) {
                 if (string != null) {
                     string.clear();
-                    string.cat(bytes);
+                    string.cat19(new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
                     return string;
                 }
                 return getRuntime().newString(new ByteList(bytes));
