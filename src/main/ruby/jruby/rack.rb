@@ -53,14 +53,13 @@ module JRuby
       end
 
       @@logger = nil
-      # Returns a {Logger} instance that uses the {#context} as a logger.
-      def logger; @@logger ||= Logger.new(context!) end
+      # Returns a {Logger} instance. Wraps ServletLog with context.
+      def logger; @@logger ||= ::Logger.new(logdev) end
       # @private
       def logger=(logger); @@logger = logger end
 
       private
 
-      # @deprecated Mostly for compatibility - not used anymore.
       def logdev; ServletLog.new(context!) end; alias servlet_log logdev
 
       def context!; context || raise('no context available') end
