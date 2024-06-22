@@ -26,7 +26,7 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
 
   let(:servlet_context) do
     servlet_context = double("servlet_context")
-    servlet_context.stub(:getInitParameter).and_return do |name|
+    servlet_context.stub(:getInitParameter) do |name|
       name && nil # return null
     end
     servlet_context
@@ -182,7 +182,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     @app_factory.init @rack_context
     @app_factory.rackup_script.should == nil
 
-    @rack_context.should_receive(:log).with do |*args|
+    @rack_context.should_receive(:log) do |*args|
       expect( args.first.to_s ).to eql 'WARN' if args.size > 1
       args.last.should =~ /no rackup script found/
     end
@@ -221,7 +221,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       @rack_context.stub(:getInitParameter).and_return nil
       @rack_context.stub(:getResourcePaths).and_return nil
       @rack_context.stub(:getRealPath) { |path| path }
-      #@rack_context.stub(:log).with do |*args|
+      #@rack_context.stub(:log) do |*args|
         #puts args.inspect
       #end
     end
@@ -311,10 +311,10 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       end
 
       it "loads specified version of rack", :lib => :stub do
-        gem_install_unless_installed 'rack', '1.3.10'
+        gem_install_unless_installed 'rack', '2.1.4'
         set_config 'jruby.runtime.env', 'false'
 
-        script = "# rack.version: ~>1.3.6\n Proc.new { 'proc-rack-app' }"
+        script = "# rack.version: ~>2.1.0\n Proc.new { 'proc-rack-app' }"
         app_factory.setRackupScript script
         @runtime = app_factory.newRuntime
         @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
@@ -323,8 +323,8 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         app_factory.checkAndSetRackVersion(@runtime)
         @runtime.evalScriptlet "require 'rack'"
 
-        should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
-        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.10'
+        should_eval_as_eql_to "Rack.release if defined? Rack.release", '2.1'
+        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '2.1.4'
       end
 
       it "loads bundler with rack", :lib => :stub do
@@ -462,14 +462,14 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         set_config 'jruby.compat.version', '1.9'
         #@rack_config.stub(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
         @runtime = app_factory.new_runtime
-        @runtime.is1_9.should be_true
+        @runtime.is1_9.should be_truthy
       end
 
       it "handles jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
         set_config 'jruby.runtime.arguments', '-X+O -Ke'
         #@rack_config.stub(:getRuntimeArguments).and_return ['-X+O', '-Ke'].to_java(:String)
         @runtime = app_factory.new_runtime
-        @runtime.object_space_enabled.should be_true
+        @runtime.object_space_enabled.should be_truthy
         @runtime.kcode.should == Java::OrgJrubyUtil::KCode::EUC
       end
 
@@ -688,7 +688,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "creates applications during initialization according to the jruby.min.runtimes context parameter" do
     @factory.stub(:init)
-    @factory.stub(:newApplication).and_return do
+    @factory.stub(:newApplication) do
       app = double "app"
       app.should_receive(:init)
       app
@@ -721,7 +721,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "forces the maximum size to be greater or equal to the initial size" do
     @factory.stub(:init)
-    @factory.stub(:newApplication).and_return do
+    @factory.stub(:newApplication) do
       app = double "app"
       app.should_receive(:init)
       app
@@ -743,9 +743,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "waits till initial runtimes get initialized (with wait set to true)" do
     @factory.stub(:init)
-    @factory.stub(:newApplication).and_return do
+    @factory.stub(:newApplication) do
       app = double "app"
-      app.stub(:init).and_return do
+      app.stub(:init) do
         sleep(0.10)
       end
       app
@@ -762,9 +762,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
      "(even when only a single application initialization fails)" do
     @factory.stub(:init)
     app_count = java.util.concurrent.atomic.AtomicInteger.new(0)
-    @factory.stub(:newApplication).and_return do
+    @factory.stub(:newApplication) do
       app = double "app"
-      app.stub(:init).and_return do
+      app.stub(:init) do
         if app_count.addAndGet(1) == 2
           raise org.jruby.rack.RackInitializationException.new('failed app init')
         end
@@ -794,9 +794,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "wait until pool is filled when invoking getApplication (with wait set to false)" do
     @factory.stub(:init)
-    @factory.stub(:newApplication).and_return do
+    @factory.stub(:newApplication) do
       app = double "app"
-      app.stub(:init).and_return { sleep(0.2) }
+      app.stub(:init) { sleep(0.2) }
       app
     end
     @rack_config.stub(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
@@ -812,9 +812,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "waits acquire timeout till an application is available from the pool (than raises)" do
     @factory.stub(:init)
-    @factory.should_receive(:newApplication).twice.and_return do
+    @factory.should_receive(:newApplication).twice do
       app = double "app"
-      app.should_receive(:init).and_return { sleep(0.2) }
+      app.should_receive(:init) { sleep(0.2) }
       app
     end
     @rack_config.stub(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
@@ -842,9 +842,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "gets and initializes new applications until maximum allows to create more" do
     @factory.stub(:init)
-    @factory.should_receive(:newApplication).twice.and_return do
+    @factory.should_receive(:newApplication).twice do
       app = double "app (new)"
-      app.should_receive(:init).and_return { sleep(0.1) }
+      app.should_receive(:init) { sleep(0.1) }
       app
     end
     @rack_config.stub(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
@@ -858,7 +858,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
       2.times { @pooling_factory.getApplication.should_not be nil }
     }.should_not raise_error
 
-    @factory.should_receive(:getApplication).twice.and_return do
+    @factory.should_receive(:getApplication).twice do
       app = double "app (get)"; sleep(0.15); app
     end
 
@@ -879,9 +879,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "initializes initial runtimes in paralel (with wait set to false)" do
     @factory.stub(:init)
-    @factory.stub(:newApplication).and_return do
+    @factory.stub(:newApplication) do
       app = double "app"
-      app.stub(:init).and_return do
+      app.stub(:init) do
         sleep(0.15)
       end
       app
@@ -902,9 +902,9 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "throws from init when application initialization in thread failed" do
     @factory.stub(:init)
-    @factory.stub(:newApplication).and_return do
+    @factory.stub(:newApplication) do
       app = double "app"
-      app.stub(:init).and_return do
+      app.stub(:init) do
         sleep(0.05); raise "app.init raising"
       end
       app
@@ -913,7 +913,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @rack_config.stub(:getMaximumRuntimes).and_return 2
 
     raise_error_logged = 0
-    @rack_context.stub(:log).with do |level, msg, e|
+    @rack_context.stub(:log) do |level, msg, e|
       if level.to_s == 'ERROR'
         expect( msg ).to eql 'unable to initialize application'
         expect( e ).to be_a org.jruby.exceptions.RaiseException
@@ -923,9 +923,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
       end
     end
 
-    expect(lambda {
-      @pooling_factory.init(@rack_context)
-    }).to raise_error org.jruby.rack.RackInitializationException
+    expect { @pooling_factory.init(@rack_context) }.to raise_error org.jruby.rack.RackInitializationException
     expect( raise_error_logged ).to eql 1 # logs same init exception once
 
     # NOTE: seems it's not such a good idea to return empty on init error
@@ -944,9 +942,9 @@ describe org.jruby.rack.SerialPoolingRackApplicationFactory do
 
   it "initializes initial runtimes in serial order" do
     @factory.should_receive(:init).with(@rack_context)
-    @factory.stub(:newApplication).and_return do
+    @factory.stub(:newApplication) do
       app = double "app"
-      app.stub(:init).and_return do
+      app.stub(:init) do
         sleep(0.05)
       end
       app
@@ -981,7 +979,7 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     @factory.should_receive(:init).with(@rack_context)
     @factory.should_receive(:getApplication).and_raise java.lang.ArithmeticException.new('42')
 
-    @rack_context.should_receive(:log).with do |level, msg, e|
+    @rack_context.should_receive(:log) do |level, msg, e|
       if level == 'ERROR'
         expect( e ).to be_a java.lang.ArithmeticException
       else
@@ -1011,9 +1009,7 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     rescue java.lang.RuntimeException => e
       # NOOP
     end
-    expect( lambda {
-      @shared_factory.getApplication
-    }).to raise_error(org.jruby.rack.RackInitializationException)
+    expect { @shared_factory.getApplication }.to raise_error(org.jruby.rack.RackInitializationException)
   end
 
   it "returns the same application for any newApplication or getApplication call" do
