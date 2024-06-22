@@ -25,11 +25,14 @@ describe JRuby::Rack::RailsBooter do
     booter.app_path.should == "./WEB-INF"
   end
 
-  @@rails_env = ENV['RAILS_ENV']; @@rack_env = ENV['RACK_ENV']
+  before do
+    @rails_env = ENV['RAILS_ENV']
+    @rack_env = ENV['RACK_ENV']
+  end
 
   after do
-    @@rails_env.nil? ? ENV.delete('RAILS_ENV') : ENV['RAILS_ENV'] = @@rails_env
-    @@rack_env.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = @@rack_env
+    @rails_env.nil? ? ENV.delete('RAILS_ENV') : ENV['RAILS_ENV'] = @rails_env
+    @rack_env.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = @rack_env
   end
 
   it "should default rails path to /WEB-INF" do

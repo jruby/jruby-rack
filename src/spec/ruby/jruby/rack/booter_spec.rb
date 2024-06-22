@@ -16,14 +16,16 @@ describe JRuby::Rack::Booter do
 
   after(:all) { JRuby::Rack.context = nil }
 
-  @@rack_env = ENV['RACK_ENV']
-  @@gem_path = Gem.path.dup
-  @@env_gem_path = ENV['GEM_PATH']
+  before do
+    @rack_env = ENV['RACK_ENV']
+    @gem_path = Gem.path.to_a
+    @env_gem_path = ENV['GEM_PATH']
+  end
 
   after do
-    @@rack_env.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = @@rack_env
-    Gem.path.replace(@@gem_path)
-    @@env_gem_path.nil? ? ENV.delete('GEM_PATH') : ENV['GEM_PATH'] = @@env_gem_path
+    @rack_env.nil? ? ENV.delete('RACK_ENV') : ENV['RACK_ENV'] = @rack_env
+    Gem.path.replace(@gem_path)
+    @env_gem_path.nil? ? ENV.delete('GEM_PATH') : ENV['GEM_PATH'] = @env_gem_path
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do

@@ -526,11 +526,11 @@ describe JRuby::Rack::Response do
 
   private
 
-  def update_response_headers(headers, response = response)
+  def update_response_headers(headers, response)
     response.to_java.getHeaders.update(headers)
   end
 
-  def new_response_environment(servlet_response = servlet_response)
+  def new_response_environment(servlet_response)
     org.jruby.rack.RackResponseEnvironment.impl do |name, *args|
       servlet_response.send(name, *args)
     end
