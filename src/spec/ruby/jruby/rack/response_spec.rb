@@ -333,7 +333,7 @@ describe JRuby::Rack::Response do
       response.write_body(response_environment)
     end
 
-    it "writes a (Temfile) stream using a channel" do
+    it "writes a (Tempfile) stream using a channel" do
       body = ( require 'tempfile'; Tempfile.new 'to_channel_spec' )
       body << "1234567890"; body << "\n"; body << '1234567890'; body.rewind
       def body.each; raise "each not-expected"; end
@@ -357,7 +357,7 @@ describe JRuby::Rack::Response do
 
       response.write_body(response_environment)
       expect( stream.to_s ).to eql "1234567890\n1234567890"
-      expect { body.close }.to raise_error IOError, /closed/
+      expect { body.to_channel }.not_to raise_error
     end
 
     it "streams a file using a channel if wrapped in body_parts",
