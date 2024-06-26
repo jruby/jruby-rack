@@ -172,7 +172,7 @@ public class Input extends RubyObject {
                 if ( buffer != null ) {
                     buffer.clear();
                     try {
-                        int unused = (int) CONCAT_WITH_CODERANGE.invokeExact(new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
+                        int unused = (int) CONCAT_WITH_CODERANGE.invokeExact(buffer, new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
                     } catch (Throwable t) {
                         Helpers.throwException(t);
                     }
