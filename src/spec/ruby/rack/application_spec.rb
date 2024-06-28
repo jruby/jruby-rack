@@ -170,7 +170,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     $servlet_context = @servlet_context
     # NOTE: a workaround to be able to mock it :
     klass = Class.new(DefaultRackApplicationFactory) do
-      def createRackServletWrapper(runtime, rackup); end
+      def createRackServletWrapper(runtime, rackup, filename); end
     end
     @app_factory = klass.new
 
@@ -311,10 +311,10 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       end
 
       it "loads specified version of rack", :lib => :stub do
-        gem_install_unless_installed 'rack', '2.1.4'
+        gem_install_unless_installed 'rack', '1.3.10'
         set_config 'jruby.runtime.env', 'false'
 
-        script = "# rack.version: ~>2.1.0\n Proc.new { 'proc-rack-app' }"
+        script = "# rack.version: ~>1.3.6\n Proc.new { 'proc-rack-app' }"
         app_factory.setRackupScript script
         @runtime = app_factory.newRuntime
         @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
@@ -323,8 +323,8 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         app_factory.checkAndSetRackVersion(@runtime)
         @runtime.evalScriptlet "require 'rack'"
 
-        should_eval_as_eql_to "Rack.release if defined? Rack.release", '2.1'
-        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '2.1.4'
+        should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
+        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.10'
       end
 
       it "loads bundler with rack", :lib => :stub do
@@ -338,7 +338,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         @runtime = app_factory.newRuntime
 
         file = Tempfile.new('Gemfile')
-        file << "source 'http://rubygems.org'\n gem 'rack', '1.3.6'"
+        file << "source 'https://rubygems.org'\n gem 'rack', '1.3.6'"
         file.flush
         @runtime.evalScriptlet "ENV['BUNDLE_GEMFILE'] = #{file.path.inspect}"
         @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
@@ -350,57 +350,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_not_eval_as_nil "defined?(Bundler)"
         should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
         should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.6'
-      end
-
-      # should not matter on 1.7.x due https://github.com/jruby/jruby/pull/123
-      if JRUBY_VERSION < '1.7.0'
-        it "does not load any features (until load path is adjusted)" do
-          set_runtime_environment("false")
-          # due to incorrectly detected jruby.home some container e.g. WebSphere 8
-          # fail if things such as 'fileutils' get required during runtime init !
-
-          # TODO: WTF? JRuby magic - $LOADED_FEATURES seems to get "inherited" if
-          # Ruby.newInstance(config) is called with the factory's defaultConfig,
-          # but only if it's executed with bundler e.g. `bundle exec rake spec`
-          #@runtime = app_factory.new_runtime
-          @runtime = org.jruby.Ruby.newInstance
-          app_factory.send :initRuntime, @runtime
-
-          #@runtime.evalScriptlet 'puts "initRuntime $LOADED_FEATURES: #{$LOADED_FEATURES.inspect}"'
-          # NOTE: the above scriptlet behaves slightly different on Travis-CI
-          # depending on whether jruby + JRUBY_OPTS="--1.9" is used and or using
-          # jruby-19mode with the later the LOADED_FEATURES do get expanded e.g. :
-          #
-          #   "/home/travis/builds/kares/jruby-rack/target/classes/rack/handler/servlet.rb",
-          #   "/home/travis/builds/kares/jruby-rack/target/classes/jruby/rack.rb",
-          #   "/home/travis/builds/kares/jruby-rack/target/classes/jruby/rack/environment.rb",
-          #   "java.rb",
-          #   "/home/travis/.rvm/rubies/jruby-1.6.8-d19/lib/ruby/site_ruby/shared/builtin/javasupport.rb",
-          #   "/home/travis/.rvm/rubies/jruby-1.6.8-d19/lib/ruby/site_ruby/shared/builtin/javasupport/java.rb",
-          #   ...
-          #
-          # compared to jruby --1.9 :
-          #
-          #   "enumerator.jar",
-          #   "rack/handler/servlet.rb",
-          #   "jruby/rack.rb",
-          #   "jruby/rack/environment.rb",
-          #   "java.rb",
-          #   "builtin/javasupport.rb",
-          #   "builtin/javasupport/java.rb",
-          #   ...
-
-          reject_files =
-            "p =~ /.jar$/ || " +
-            "p =~ /^builtin/ || " +
-            "p =~ /java.rb$/ || p =~ /jruby.rb$/ || " +
-            "p =~ /jruby\\/java.*.rb/ || " +
-            "p =~ /jruby\\/rack.*.rb/ || " +
-            "p =~ /^rack\\/handler\\/servlet/"
-          # NOTE: fails with JRuby 1.7 as it has all kind of things loaded e.g. :
-          # thread.rb, rbconfig.rb, java.rb, lib/ruby/shared/rubygems.rb etc
-          should_eval_as_eql_to "$LOADED_FEATURES.reject { |p| #{reject_files} }", []
-        end
       end
 
       it "initializes the $servlet_context global variable" do
@@ -429,10 +378,10 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         set_config 'jruby.runtime.env', 'false'
         set_config 'jruby.runtime.env.rubyopt', 'true'
 
-        app_factory = app_factory_with_RUBYOPT '-rubygems'
+        app_factory = app_factory_with_RUBYOPT '-W:no-deprecated'
         @runtime = app_factory.newRuntime
         should_eval_as_nil "ENV['HOME']"
-        should_eval_as_eql_to "ENV['RUBYOPT']", '-rubygems'
+        should_eval_as_eql_to "ENV['RUBYOPT']", '-W:no-deprecated'
       end
 
       it "keeps RUBYOPT by default with empty ENV (backwards compat)" do
@@ -490,7 +439,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
       private
 
-      def app_factory_with_RUBYOPT(rubyopt = '-rubygems')
+      def app_factory_with_RUBYOPT(rubyopt)
         app_factory =
           Class.new(org.jruby.rack.DefaultRackApplicationFactory) do
 
@@ -613,7 +562,7 @@ describe org.jruby.rack.rails.RailsRackApplicationFactory do
   it "should init and create application object" do
     # NOTE: a workaround to be able to mock it :
     klass = Class.new(RailsRackApplicationFactory) do
-      def createRackServletWrapper(runtime, rackup); end
+      def createRackServletWrapper(runtime, rackup, filename); end
     end
     @app_factory = klass.new
 
@@ -990,7 +939,6 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     begin
       @shared_factory.init(@rack_context)
     rescue org.jruby.rack.RackInitializationException => e
-      e = unwrap_native_exception(e)
       expect( e.message ).to eql 'java.lang.ArithmeticException: 42'
     else
       fail "expected to rescue RackInitializationException"
