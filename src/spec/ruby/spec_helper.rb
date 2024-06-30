@@ -57,21 +57,6 @@ module SharedHelpers
     JRuby::Rack::Helpers.silence_warnings(&block)
   end
 
-  def unwrap_native_exception(e)
-    # JRuby 1.6.8 issue :
-    #  begin
-    #    ...
-    #  rescue org.jruby.rack.RackInitializationException => e
-    #    # e is still wrapped in a NativeException !
-    #    e.cause.class.name == 'org.jruby.rack.RackInitializationException'
-    #  end
-    if JRUBY_VERSION < '1.7.0'
-      e.is_a?(NativeException) ? e.cause : e
-    else
-      e
-    end
-  end
-
   @@servlet_30 = nil
 
   def servlet_30?
@@ -138,7 +123,7 @@ module SharedHelpers
       runtime, options = options, {}
     end
     message = options[:message] || "expected eval #{code.inspect} to be == $expected but was $actual"
-    be_flag = options.has_key?(:should) ? options[:should] : be_true
+    be_flag = options.has_key?(:should) ? options[:should] : be_truthy
 
     expected = expected.inspect.to_java
     actual = runtime.evalScriptlet(code).inspect.to_java
@@ -146,7 +131,7 @@ module SharedHelpers
   end
 
   def should_eval_as_not_eql_to(code, expected, options = {})
-    should_eval_as_eql_to(code, expected, options.merge(:should => be_false,
+    should_eval_as_eql_to(code, expected, options.merge(:should => be_falsy,
         :message => options[:message] || "expected eval #{code.inspect} to be != $expected but was not")
     )
   end
@@ -157,7 +142,7 @@ module SharedHelpers
   end
 
   def should_eval_as_not_nil(code, runtime = @runtime)
-    should_eval_as_eql_to code, nil, :should => be_false, :runtime => runtime,
+    should_eval_as_eql_to code, nil, :should => be_falsy, :runtime => runtime,
       :message => "expected eval #{code.inspect} to not be nil but was"
   end
 

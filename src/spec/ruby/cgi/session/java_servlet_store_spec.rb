@@ -24,7 +24,7 @@ describe CGI::Session::JavaServletStore do
 
   it "should raise an error if the servlet request is not present" do
     @options.delete("java_servlet_request")
-    lambda { session_store }.should raise_error
+    expect { session_store }.to raise_error(RuntimeError)
   end
 
   describe "#restore" do

@@ -423,7 +423,7 @@ describe "integration" do
     should_eval_as_eql_to script, "1\nsecond"
   end
 
-  ENV_COPY = ENV.dup
+  ENV_COPY = ENV.to_h
 
   def initialize_rails(env = nil, servlet_context = @servlet_context)
     if ! servlet_context || servlet_context.is_a?(String)

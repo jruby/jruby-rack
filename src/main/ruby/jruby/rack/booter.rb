@@ -90,7 +90,6 @@ module JRuby::Rack
 
     # Boot-up this booter, preparing the environment for the application.
     def boot!
-      adjust_load_path
       adjust_gem_path
       ENV['RACK_ENV'] = rack_env
       export_global_settings
@@ -168,63 +167,6 @@ module JRuby::Rack
       app_path = layout.app_path
       if app_path && File.directory?(app_path)
         Dir.chdir(app_path) rescue nil # Errno::ENOENT
-      end
-    end
-
-    # Adjust the load path (mostly due some J2EE servers slightly misbehaving).
-    # @note called during {#boot!}
-    def adjust_load_path
-      require 'jruby'
-      # http://kenai.com/jira/browse/JRUBY_RACK-8 If some containers do
-      # not allow proper detection of jruby.home, fall back to this
-      tmpdir = ENV_JAVA['java.io.tmpdir']
-      if JRuby.runtime.instance_config.jruby_home == tmpdir
-        ruby_paths = # mirroring org.jruby.runtime.load.LoadService#init
-          if JRUBY_VERSION >= '1.7.0'
-            # 2.0 is 1.9 as well and uses the same setup as 1.9 currently ...
-            %w{ site_ruby shared } << ( JRuby.runtime.is1_9 ? '1.9' : '1.8' )
-          else # <= JRuby 1.6.8
-            if JRuby.runtime.is1_9
-              %w{ site_ruby/1.9 site_ruby/shared site_ruby/1.8 1.9 }
-            else
-              %w{ site_ruby/1.8 site_ruby/shared 1.8 }
-            end
-          end
-        # NOTE: most servers end up with 'classpath:/...' entries :
-        #  JRuby.home: "classpath:/META-INF/jruby.home"
-        #  $LOAD_PATH (JRuby 1.6.8 --1.9):
-        #
-        #   "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.9"
-        #   "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/shared"
-        #   "classpath:/META-INF/jruby.home/lib/ruby/site_ruby/1.8"
-        #   "classpath:/META-INF/jruby.home/lib/ruby/1.9"
-        #
-        #  $LOAD_PATH (JRuby 1.7.0):
-        #
-        #   classpath:/META-INF/jruby.home/lib/ruby/site_ruby (missing dir)
-        #   classpath:/META-INF/jruby.home/lib/ruby/shared
-        #   classpath:/META-INF/jruby.home/lib/ruby/1.9
-        #
-        # seems to be the case for JBoss/Tomcat/WebLogic - it's best to
-        # emulate the same setup for containers such as WebSphere where the
-        # JRuby bootstrap fails to detect a correct home and points to /tmp
-        #
-        # since JRuby 1.6.7 LoadService has better support for 'classpath:'
-        # prefixed entries https://github.com/jruby/jruby-rack/issues/89
-        #
-        # also since JRuby 1.7.0 there's a fix for incorrect home detection
-        # (avoids /tmp on IBM WAS) https://github.com/jruby/jruby/pull/123
-        #
-        ruby_paths.each do |path|
-          # NOTE: even better replace everything starting with '/tmp' ?
-          if index = $LOAD_PATH.index("#{tmpdir}/lib/ruby/#{path}")
-            $LOAD_PATH[index] = "classpath:/META-INF/jruby.home/lib/ruby/#{path}"
-          else
-            # e.g. "classpath:/META-INF/jruby.home/lib/ruby/1.8"
-            full_path = "classpath:/META-INF/jruby.home/lib/ruby/#{path}"
-            $LOAD_PATH << full_path unless $LOAD_PATH.include?(full_path)
-          end
-        end
       end
     end
 

@@ -20,9 +20,6 @@
 
   <properties>
     <jruby.version>9.4.7.0</jruby.version>
-    <vendor.gems.path>vendor/gems</vendor.gems.path>
-    <bundler.version>2.4.19</bundler.version>
-    <bundler.local>false</bundler.local> <!-- true by default -->
     <jruby.maven.plugins.version>3.0.3</jruby.maven.plugins.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
   </properties>
@@ -97,6 +94,7 @@
       <groupId>org.jruby</groupId>
       <artifactId>jruby-core</artifactId>
       <version>${jruby.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- JavaEE 6 APIs -->
     <dependency>
@@ -146,20 +144,6 @@
       <artifactId>spring-core</artifactId>
       <version>3.2.10.RELEASE</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>rubygems</groupId>
-      <artifactId>jruby-openssl</artifactId>
-      <version>0.9.6</version>
-      <type>gem</type>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>rubygems</groupId>
-      <artifactId>bundler</artifactId>
-      <version>${bundler.version}</version>
-      <type>gem</type>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.activation</groupId>
@@ -235,26 +219,6 @@
         </executions>
       </plugin>
       <plugin>
-          <groupId>org.jruby.maven</groupId>
-          <artifactId>gem-maven-plugin</artifactId>
-          <version>${jruby.maven.plugins.version}</version>
-          <configuration>
-            <includeOpenSSL>false</includeOpenSSL>
-            <gemHomes>
-              <provided>${gem.home}</provided>
-            </gemHomes>
-          </configuration>
-          <executions>
-            <execution>
-              <id>gem-install-bundler</id>
-              <phase>test</phase>
-              <goals>
-                <goal>initialize</goal>
-              </goals>
-            </execution>
-          </executions>
-      </plugin>
-      <plugin>
         <groupId>org.jruby.maven</groupId>
         <artifactId>bundler-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
@@ -264,9 +228,9 @@
             <phase>test</phase>
             <goals><goal>install</goal></goals>
             <configuration>
-              <jruby.version>${jruby.version}</jruby.version>
-              <!--<local>false</local>-->
-              <bundlerVersion>${bundler.version}</bundlerVersion>
+              <jrubyVersion>${jruby.version}</jrubyVersion>
+              <local>false</local>
+              <quiet>false</quiet>
             </configuration>
           </execution>
         </executions>
@@ -275,16 +239,18 @@
         <groupId>org.jruby.maven</groupId>
         <artifactId>rake-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
+        <configuration>
+          <jrubyVersion>${jruby.version}</jrubyVersion>
+        </configuration>
         <executions>
-<!--          <execution>-->
-<!--            <id>rake-spec</id>-->
-<!--            <phase>test</phase>-->
-<!--            <goals><goal>rake</goal></goals>-->
-<!--            <configuration>-->
-<!--              <jruby.version>${jruby.version}</jruby.version>-->
-<!--              <args>speconly SKIP_SPECS=${maven.test.skip} FULL_BIN_PATH=true</args>-->
-<!--            </configuration>-->
-<!--          </execution>-->
+          <execution>
+            <id>rake-spec</id>
+            <phase>test</phase>
+            <goals><goal>rake</goal></goals>
+            <configuration>
+              <args>speconly SKIP_SPECS=${maven.test.skip}</args>
+            </configuration>
+          </execution>
           <execution>
             <!-- additional (ruby) generated resources -->
             <id>rake-resources</id>
@@ -292,7 +258,6 @@
             <!-- bind "late" so we do not run during compile/test-compile -->
             <goals><goal>rake</goal></goals>
             <configuration>
-              <jruby.version>${jruby.version}</jruby.version>
               <args>resources VERSION=${project.version}</args>
             </configuration>
           </execution>

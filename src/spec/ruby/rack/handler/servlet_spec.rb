@@ -542,44 +542,42 @@ describe Rack::Handler::Servlet do
       env = servlet.create_env filled_servlet_env
       env.freeze
 
-      expect( lambda { env['REQUEST_METHOD'] } ).to_not raise_error
-      expect( lambda { env['SCRIPT_NAME'] } ).to_not raise_error
+      expect { env['REQUEST_METHOD'] }.to_not raise_error
+      expect { env['SCRIPT_NAME'] }.to_not raise_error
       Rack::Handler::Servlet::DefaultEnv::BUILTINS.each do |key|
-        expect( lambda { env[key] } ).to_not raise_error
+        expect { env[key] }.to_not raise_error
         env[key].should_not be nil
       end
-      expect( lambda { env['OTHER_METHOD'] } ).to_not raise_error
+      expect { env['OTHER_METHOD'] }.to_not raise_error
       env['OTHER_METHOD'].should be nil
 
-      expect( lambda { env['rack.version'] } ).to_not raise_error
-      expect( lambda { env['rack.input'] } ).to_not raise_error
-      expect( lambda { env['rack.errors'] } ).to_not raise_error
-      expect( lambda { env['rack.run_once'] } ).to_not raise_error
-      expect( lambda { env['rack.multithread'] } ).to_not raise_error
-      expect( lambda { env['java.servlet_context'] } ).to_not raise_error
-      expect( lambda { env['java.servlet_request'] } ).to_not raise_error
-      expect( lambda { env['java.servlet_response'] } ).to_not raise_error
+      expect { env['rack.version'] }.to_not raise_error
+      expect { env['rack.input'] }.to_not raise_error
+      expect { env['rack.errors'] }.to_not raise_error
+      expect { env['rack.run_once'] }.to_not raise_error
+      expect { env['rack.multithread'] }.to_not raise_error
+      expect { env['java.servlet_context'] }.to_not raise_error
+      expect { env['java.servlet_request'] }.to_not raise_error
+      expect { env['java.servlet_response'] }.to_not raise_error
       Rack::Handler::Servlet::DefaultEnv::VARIABLES.each do |key|
         lambda { env[key] }.should_not raise_error
         env[key].should_not be(nil), "key: #{key.inspect} nil"
       end
-      expect( lambda { env['rack.whatever'] } ).to_not raise_error
+      expect { env['rack.whatever'] }.to_not raise_error
       env['rack.whatever'].should be nil
 
-      expect( lambda {
+      expect {
         env['HTTP_X_FORWARDED_PROTO']
         env['HTTP_IF_NONE_MATCH']
         env['HTTP_IF_MODIFIED_SINCE']
         env['HTTP_X_SOME_REALLY_LONG_HEADER']
-      }).to_not raise_error
+      }.to_not raise_error
       env['HTTP_X_FORWARDED_PROTO'].should_not be nil
       env['HTTP_IF_NONE_MATCH'].should_not be nil
       env['HTTP_IF_MODIFIED_SINCE'].should_not be nil
       env['HTTP_X_SOME_REALLY_LONG_HEADER'].should_not be nil
 
-      expect( lambda {
-        env['HTTP_X_SOME_NON_EXISTENT_HEADER']
-      }).to_not raise_error
+      expect { env['HTTP_X_SOME_NON_EXISTENT_HEADER'] }.to_not raise_error
       env['HTTP_X_SOME_NON_EXISTENT_HEADER'].should be nil
     end
 

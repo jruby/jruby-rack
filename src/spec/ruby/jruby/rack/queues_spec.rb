@@ -108,11 +108,11 @@ describe JRuby::Rack::Queues do
     @registry.register_listener "FooQ", listener
     @queue_manager.should_receive(:close).with "FooQ"
     @registry.unregister_listener(listener)
-    lambda { @registry.receive_message("FooQ", mock_message("msg")) }.should raise_error
+    lambda { @registry.receive_message("FooQ", mock_message("msg")) }.should raise_error(RuntimeError)
   end
 
   it "#receive_message should raise an exception if there is no listener for the queue" do
-    lambda { @registry.receive_message("NoQ", "hi") }.should raise_error
+    lambda { @registry.receive_message("NoQ", "hi") }.should raise_error(RuntimeError)
   end
 
   it "#register_listener should allow multiple listeners per queue" do
@@ -175,7 +175,7 @@ describe JRuby::Rack::Queues::MessageDispatcher do
   it "should unmarshal the message if the marshal payload property is set" do
     @message.should_receive(:getBooleanProperty).with(JRuby::Rack::Queues::MARSHAL_PAYLOAD).and_return true
     first = false
-    @message.should_receive(:readBytes).twice.and_return do |byte_array|
+    @message.should_receive(:readBytes).twice do |byte_array|
       if first
         -1
       else
@@ -233,13 +233,13 @@ describe JRuby::Rack::Queues::MessageDispatcher do
     @servlet_context.should_receive(:log).with(/something went wrong/)
     lambda do
       JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
-    end.should raise_error
+    end.should raise_error(RuntimeError)
   end
 
   it "should raise an exception if it was unable to dispatch to anything" do
     @message.stub(:getBooleanProperty).and_return false
     lambda do
       JRuby::Rack::Queues::MessageDispatcher.new(@listener).dispatch(@message)
-    end.should raise_error
+    end.should raise_error(RuntimeError)
   end
 end

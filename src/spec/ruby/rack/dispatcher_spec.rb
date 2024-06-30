@@ -82,9 +82,7 @@ describe org.jruby.rack.DefaultRackDispatcher do
         res.stub(:reset)
         res.should_not_receive(:sendError)
 
-        expect( lambda {
-            @dispatcher.process(req, res)
-        } ).to raise_error(org.jruby.rack.RackException)
+        expect { @dispatcher.process(req, res) }.to raise_error(org.jruby.rack.RackException)
       end
 
     end

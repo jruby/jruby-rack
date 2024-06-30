@@ -44,7 +44,7 @@ describe JRuby::Rack::Helpers do
   end
   
   it "constantizes strictly" do
-    expect( lambda { constantize('Some', A::B) } ).to raise_error(NameError)
+    expect { constantize('Some', A::B) }.to raise_error(NameError)
   end
 
   it "constantizes non-stricly from Object (parent) context" do
@@ -95,8 +95,8 @@ describe JRuby::Rack::Helpers do
   
   it "resolves a constant" do
     expect( resolve_constant("JRuby::Rack::Helpers::Some") ).to be_a Class
-    expect( lambda { resolve_constant("JRuby::Rack::Helpers::Missing") }).to raise_error NameError
-    expect( lambda { resolve_constant("JRuby::Rack::Helpers::Another") }).to raise_error NameError
+    expect { resolve_constant("JRuby::Rack::Helpers::Missing") }.to raise_error NameError
+    expect { resolve_constant("JRuby::Rack::Helpers::Another") }.to raise_error NameError
   end
   
 end
