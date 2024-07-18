@@ -208,7 +208,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       def newRuntime() # use the current runtime instead of creating new
         require 'jruby'
         runtime = JRuby.runtime
-        JRuby::Rack.silence_warnings { initRuntime(runtime) }
+        JRuby::Rack::Helpers.silence_warnings { initRuntime(runtime) }
         runtime
       end
     end
@@ -310,24 +310,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_eval_as_nil "defined?(::Rack::VERSION)"
       end
 
-      it "loads specified version of rack", :lib => :stub do
-        gem_install_unless_installed 'rack', '1.3.10'
-        set_config 'jruby.runtime.env', 'false'
-
-        script = "# rack.version: ~>1.3.6\n Proc.new { 'proc-rack-app' }"
-        app_factory.setRackupScript script
-        @runtime = app_factory.newRuntime
-        @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
-        @runtime.evalScriptlet "ENV['GEM_PATH'] = #{ENV['GEM_PATH'].inspect}"
-
-        app_factory.checkAndSetRackVersion(@runtime)
-        @runtime.evalScriptlet "require 'rack'"
-
-        should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
-        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.10'
-      end
-
-      it "loads bundler with rack", :lib => :stub do
+      it "loads specified version of rack via bundler", :lib => :stub do
         gem_install_unless_installed 'rack', '1.3.6'
         set_config 'jruby.runtime.env', 'false'
 
