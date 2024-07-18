@@ -54,8 +54,8 @@ describe org.jruby.rack.servlet.ServletRackConfig do
     end
 
     it "constructs a slf4j logger with default logger name" do
-      java.lang.System.setProperty("jruby.rack.logging", "Log4J")
-      logger.should be_a(org.jruby.rack.logging.Log4jLogger)
+      java.lang.System.setProperty("jruby.rack.logging", "slf4j")
+      logger.should be_a(org.jruby.rack.logging.Slf4jLogger)
       logger.logger.name.should == 'jruby.rack'
     end
 

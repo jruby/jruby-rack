@@ -12,7 +12,7 @@
   <artifactId>jruby-rack</artifactId>
   <version>1.2.3-SNAPSHOT</version>
   <name>JRuby-Rack</name>
-  <url>http://github.com/jruby/jruby-rack/</url>
+  <url>https://github.com/jruby/jruby-rack/</url>
   <description>
     A servlet bridge for (Ruby-based) Rack applications that allow them
     to run in Java Application servers using JRuby.
@@ -22,11 +22,12 @@
     <jruby.version>9.4.7.0</jruby.version>
     <jruby.maven.plugins.version>3.0.3</jruby.maven.plugins.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
+    <slf4j.version>2.0.12</slf4j.version>
   </properties>
 
   <issueManagement>
     <system>Github</system>
-    <url>http://github.com/jruby/jruby-rack/issues</url>
+    <url>https://github.com/jruby/jruby-rack/issues</url>
   </issueManagement>
 
   <distributionManagement>
@@ -43,14 +44,14 @@
   <scm>
     <connection>scm:git:git://github.com/jruby/jruby-rack.git</connection>
     <developerConnection>scm:git:git@github.com:jruby/jruby-rack.git</developerConnection>
-    <url>http://github.com/jruby/jruby-rack/</url>
+    <url>https://github.com/jruby/jruby-rack/</url>
     <tag>HEAD</tag>
   </scm>
 
   <licenses>
     <license>
       <name>MIT License</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <url>https://www.opensource.org/licenses/mit-license.php</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -123,21 +124,21 @@
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
-      <version>1.1</version>
+      <artifactId>commons-logging</artifactId>
+      <version>1.3.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.2</version>
+      <version>${slf4j.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-      <scope>provided</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
