@@ -97,29 +97,22 @@
       <version>${jruby.version}</version>
       <scope>provided</scope>
     </dependency>
-    <!-- JavaEE 6 APIs -->
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-servlet_3.0_spec</artifactId>
-      <version>1.0</version>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-jsp_2.2_spec</artifactId>
-      <version>1.2</version>
+      <groupId>jakarta.servlet.jsp</groupId>
+      <artifactId>jakarta.servlet.jsp-api</artifactId>
+      <version>2.3.6</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-el_2.2_spec</artifactId>
-      <version>1.0.4</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-jms_1.1_spec</artifactId>
-      <version>1.1.1</version>
+      <groupId>jakarta.jms</groupId>
+      <artifactId>jakarta.jms-api</artifactId>
+      <version>2.0.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -143,13 +136,13 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>3.2.10.RELEASE</version>
+      <version>3.2.18.RELEASE</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>javax.activation</groupId>
-      <artifactId>activation</artifactId>
-      <version>1.1</version>
+      <groupId>jakarta.el</groupId>
+      <artifactId>jakarta.el-api</artifactId>
+      <version>3.0.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
