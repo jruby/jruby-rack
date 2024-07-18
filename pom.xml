@@ -12,7 +12,7 @@
   <artifactId>jruby-rack</artifactId>
   <version>1.2.3-SNAPSHOT</version>
   <name>JRuby-Rack</name>
-  <url>http://github.com/jruby/jruby-rack/</url>
+  <url>https://github.com/jruby/jruby-rack/</url>
   <description>
     A servlet bridge for (Ruby-based) Rack applications that allow them
     to run in Java Application servers using JRuby.
@@ -20,16 +20,14 @@
 
   <properties>
     <jruby.version>9.4.7.0</jruby.version>
-    <vendor.gems.path>vendor/gems</vendor.gems.path>
-    <bundler.version>2.4.19</bundler.version>
-    <bundler.local>false</bundler.local> <!-- true by default -->
     <jruby.maven.plugins.version>3.0.3</jruby.maven.plugins.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
+    <slf4j.version>2.0.12</slf4j.version>
   </properties>
 
   <issueManagement>
     <system>Github</system>
-    <url>http://github.com/jruby/jruby-rack/issues</url>
+    <url>https://github.com/jruby/jruby-rack/issues</url>
   </issueManagement>
 
   <distributionManagement>
@@ -46,14 +44,14 @@
   <scm>
     <connection>scm:git:git://github.com/jruby/jruby-rack.git</connection>
     <developerConnection>scm:git:git@github.com:jruby/jruby-rack.git</developerConnection>
-    <url>http://github.com/jruby/jruby-rack/</url>
+    <url>https://github.com/jruby/jruby-rack/</url>
     <tag>HEAD</tag>
   </scm>
 
   <licenses>
     <license>
       <name>MIT License</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <url>https://www.opensource.org/licenses/mit-license.php</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -97,74 +95,54 @@
       <groupId>org.jruby</groupId>
       <artifactId>jruby-core</artifactId>
       <version>${jruby.version}</version>
-    </dependency>
-    <!-- JavaEE 6 APIs -->
-    <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-servlet_3.0_spec</artifactId>
-      <version>1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-jsp_2.2_spec</artifactId>
-      <version>1.2</version>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-el_2.2_spec</artifactId>
-      <version>1.0.4</version>
+      <groupId>jakarta.servlet.jsp</groupId>
+      <artifactId>jakarta.servlet.jsp-api</artifactId>
+      <version>2.3.6</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geronimo.specs</groupId>
-      <artifactId>geronimo-jms_1.1_spec</artifactId>
-      <version>1.1.1</version>
+      <groupId>jakarta.jms</groupId>
+      <artifactId>jakarta.jms-api</artifactId>
+      <version>2.0.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
-      <version>1.1</version>
+      <artifactId>commons-logging</artifactId>
+      <version>1.3.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.2</version>
+      <version>${slf4j.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.17</version>
-      <scope>provided</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>3.2.10.RELEASE</version>
+      <version>3.2.18.RELEASE</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>rubygems</groupId>
-      <artifactId>jruby-openssl</artifactId>
-      <version>0.9.6</version>
-      <type>gem</type>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>rubygems</groupId>
-      <artifactId>bundler</artifactId>
-      <version>${bundler.version}</version>
-      <type>gem</type>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.activation</groupId>
-      <artifactId>activation</artifactId>
-      <version>1.1</version>
+      <groupId>jakarta.el</groupId>
+      <artifactId>jakarta.el-api</artifactId>
+      <version>3.0.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -198,7 +176,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.13.0</version>
         <configuration>
           <source>8</source>
           <target>8</target>
@@ -209,17 +187,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.17</version>
+        <version>3.3.1</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-help-plugin</artifactId>
-        <version>2.2</version>
+        <version>3.4.1</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.9</version>
+        <version>3.7.1</version>
         <executions>
           <execution>
             <phase>process-sources</phase>
@@ -235,26 +213,6 @@
         </executions>
       </plugin>
       <plugin>
-          <groupId>org.jruby.maven</groupId>
-          <artifactId>gem-maven-plugin</artifactId>
-          <version>${jruby.maven.plugins.version}</version>
-          <configuration>
-            <includeOpenSSL>false</includeOpenSSL>
-            <gemHomes>
-              <provided>${gem.home}</provided>
-            </gemHomes>
-          </configuration>
-          <executions>
-            <execution>
-              <id>gem-install-bundler</id>
-              <phase>test</phase>
-              <goals>
-                <goal>initialize</goal>
-              </goals>
-            </execution>
-          </executions>
-      </plugin>
-      <plugin>
         <groupId>org.jruby.maven</groupId>
         <artifactId>bundler-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
@@ -264,9 +222,9 @@
             <phase>test</phase>
             <goals><goal>install</goal></goals>
             <configuration>
-              <jruby.version>${jruby.version}</jruby.version>
-              <!--<local>false</local>-->
-              <bundlerVersion>${bundler.version}</bundlerVersion>
+              <jrubyVersion>${jruby.version}</jrubyVersion>
+              <local>false</local>
+              <quiet>false</quiet>
             </configuration>
           </execution>
         </executions>
@@ -275,16 +233,18 @@
         <groupId>org.jruby.maven</groupId>
         <artifactId>rake-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
+        <configuration>
+          <jrubyVersion>${jruby.version}</jrubyVersion>
+        </configuration>
         <executions>
-<!--          <execution>-->
-<!--            <id>rake-spec</id>-->
-<!--            <phase>test</phase>-->
-<!--            <goals><goal>rake</goal></goals>-->
-<!--            <configuration>-->
-<!--              <jruby.version>${jruby.version}</jruby.version>-->
-<!--              <args>speconly SKIP_SPECS=${maven.test.skip} FULL_BIN_PATH=true</args>-->
-<!--            </configuration>-->
-<!--          </execution>-->
+          <execution>
+            <id>rake-spec</id>
+            <phase>test</phase>
+            <goals><goal>rake</goal></goals>
+            <configuration>
+              <args>speconly SKIP_SPECS=${maven.test.skip}</args>
+            </configuration>
+          </execution>
           <execution>
             <!-- additional (ruby) generated resources -->
             <id>rake-resources</id>
@@ -292,11 +252,15 @@
             <!-- bind "late" so we do not run during compile/test-compile -->
             <goals><goal>rake</goal></goals>
             <configuration>
-              <jruby.version>${jruby.version}</jruby.version>
               <args>resources VERSION=${project.version}</args>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.17.1</version>
       </plugin>
     </plugins>
   </build>
@@ -328,7 +292,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.10.1</version>
+            <version>3.7.0</version>
             <executions>
               <execution>
                 <id>attach-javadocs</id>

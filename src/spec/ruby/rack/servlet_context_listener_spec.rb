@@ -46,9 +46,7 @@ describe org.jruby.rack.RackServletContextListener do
       @servlet_context.add_init_parameter 'jruby.rack.error', 'false'
       @factory.should_receive(:init).and_raise org.jruby.rack.RackInitializationException.new("help")
 
-      expect(lambda {
-        @listener.contextInitialized servlet_context_event
-      }).to raise_error(org.jruby.rack.RackInitializationException)
+      expect { @listener.contextInitialized servlet_context_event }.to raise_error(org.jruby.rack.RackInitializationException)
     end
 
   end

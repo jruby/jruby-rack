@@ -460,7 +460,6 @@ public class DefaultRackConfig implements RackConfig {
         final Map<String,String> loggerTypes = new HashMap<String, String>(8);
         loggerTypes.put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
-        loggerTypes.put("log4j", "org.jruby.rack.logging.Log4jLogger");
         loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
         loggerTypes.put("jul", "org.jruby.rack.logging.JulLogger");
         //loggerTypes.put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");

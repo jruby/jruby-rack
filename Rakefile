@@ -64,7 +64,7 @@ task :unpack_gem => "target" do |t|
     mkdir_p "target/vendor"
     require 'rubygems/installer'
     rack_dir = File.basename(gem_file).sub(/\.gem$/, '')
-    Gem::Installer.new(Gem::Package.new(gem_file), :unpack => true, :install_dir => rack_dir).unpack "#{target}/#{rack_dir}"
+    Gem::Package.new(gem_file).extract_files("#{target}/#{rack_dir}")
     File.open("#{target}/vendor/rack.rb", "w") do |f|
       f << "dir = File.dirname(__FILE__)\n"
       f << "if dir =~ /.jar!/ && dir !~ /^file:/\n"
@@ -109,8 +109,9 @@ task :speconly => [ :resources, :test_resources ] do
     opts = ENV['SPEC_OPTS'] ? ENV['SPEC_OPTS'] : %q{ --format documentation --color }
     spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
     opts = opts.split(' ').push *FileList[spec].to_a
-    exec = 'rspec'; exec = Gem.bin_path('rspec', exec) if ENV['FULL_BIN_PATH']
-    ruby "-Isrc/spec/ruby", "-rbundler/setup", "-S", exec, *opts
+    ruby = ENV['RUBY'] || 'jruby'
+    args = ruby.split(' ') + %w{-Isrc/spec/ruby -rbundler/setup -S rspec}
+    sh *args, *opts
   end
 end
 
