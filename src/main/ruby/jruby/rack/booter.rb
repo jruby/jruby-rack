@@ -1,4 +1,5 @@
 #--
+# Copyright (c) 2012-2016 Karol Bucek, LTD.
 # Copyright (c) 2010-2012 Engine Yard, Inc.
 # Copyright (c) 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
@@ -92,8 +93,8 @@ module JRuby::Rack
     def boot!
       adjust_gem_path
       ENV['RACK_ENV'] = rack_env
-      export_global_settings
       change_working_directory
+      export_global_settings
       load_settings_from_init_rb
       set_relative_url_root
       run_boot_hooks

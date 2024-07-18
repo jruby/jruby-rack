@@ -16,13 +16,17 @@ describe JRuby::Rack::RailsBooter do
     JRuby::Rack::RailsBooter.new JRuby::Rack.context = @rack_context
   end
 
+  let(:rails_booter) do
+    rails_booter = booter; def rails_booter.rails2?; nil end; rails_booter
+  end
+
   after { JRuby::Rack.context = nil; JRuby::Rack.logger = nil }
 
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
-    booter.boot!
-    booter.app_path.should == "./WEB-INF"
+    rails_booter.boot!
+    rails_booter.app_path.should == "./WEB-INF"
   end
 
   before do
@@ -37,62 +41,62 @@ describe JRuby::Rack::RailsBooter do
 
   it "should default rails path to /WEB-INF" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/usr/apps/WEB-INF"
-    booter.boot!
-    booter.app_path.should == "/usr/apps/WEB-INF"
+    rails_booter.boot!
+    rails_booter.app_path.should == "/usr/apps/WEB-INF"
   end
 
   it "leaves ENV['RAILS_ENV'] as is if it was already set" do
     ENV['RAILS_ENV'] = 'staging'
-    booter.boot!
+    rails_booter.boot!
     ENV['RAILS_ENV'].should == 'staging'
-    booter.rails_env.should == "staging"
+    rails_booter.rails_env.should == "staging"
   end
 
   it "determines RAILS_ENV from the 'rails.env' init parameter" do
     ENV['RAILS_ENV'] = nil
     @rack_context.should_receive(:getInitParameter).with("rails.env").and_return "test"
-    booter.boot!
-    booter.rails_env.should == "test"
+    rails_booter.boot!
+    rails_booter.rails_env.should == "test"
   end
 
   it "gets rails environment from rack environmnent" do
     ENV.delete('RAILS_ENV')
     ENV['RACK_ENV'] = 'development'
     @rack_context.stub(:getInitParameter)
-    booter.boot!
-    booter.rails_env.should == 'development'
+    rails_booter.boot!
+    rails_booter.rails_env.should == 'development'
   end
 
   it "default RAILS_ENV to 'production'" do
     ENV.delete('RAILS_ENV'); ENV.delete('RACK_ENV')
-    booter.boot!
-    booter.rails_env.should == "production"
+    rails_booter.boot!
+    rails_booter.rails_env.should == "production"
   end
 
   it "should set RAILS_RELATIVE_URL_ROOT based on the servlet context path" do
     @rack_context.should_receive(:getContextPath).and_return '/myapp'
-    booter.boot!
+    rails_booter.boot!
     ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp'
   end
 
   it "should append to RAILS_RELATIVE_URL_ROOT if 'rails.relative_url_append' is set" do
     @rack_context.should_receive(:getContextPath).and_return '/myapp'
     @rack_context.should_receive(:getInitParameter).with("rails.relative_url_append").and_return "/blah"
-    booter.boot!
+    rails_booter.boot!
     ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp/blah'
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
-    booter.boot!
-    booter.public_path.should == "."
+    rails_booter.boot!
+    rails_booter.public_path.should == "."
   end
 
   it "should default public root to '/'" do
     @rack_context.should_receive(:getRealPath).with("/").and_return "."
-    booter.boot!
-    booter.public_path.should == "."
+    rails_booter.boot!
+    rails_booter.public_path.should == "."
   end
 
   it "uses JRuby-Rack's logger by default" do
@@ -117,6 +121,8 @@ describe JRuby::Rack::RailsBooter do
   end
 
   describe "Rails 2.3", :lib => :stub do
+
+    RAILS23_ROOT_DIR = File.expand_path("../../../rails23", __FILE__)
 
     before do
       booter.stub(:rails2?).and_return true
@@ -163,12 +169,13 @@ describe JRuby::Rack::RailsBooter do
     it "should set the PUBLIC_ROOT constant to the location of the public root",
       :lib => [ :rails23, :stub ] do
 
-      booter.app_path = File.expand_path("../../../rails23", __FILE__)
+      booter.app_path = RAILS23_ROOT_DIR
       booter.boot!
       expect( PUBLIC_ROOT ).to eql booter.public_path
     end
 
     after(:each) do
+      #Object.send :remove_const, :RAILS_ROOT if Object.const_defined? :RAILS_ROOT
       Object.send :remove_const, :PUBLIC_ROOT if Object.const_defined? :PUBLIC_ROOT
     end
 
@@ -177,7 +184,7 @@ describe JRuby::Rack::RailsBooter do
       before :each do
         $servlet_context = @servlet_context
         @rack_context.should_receive(:getContextPath).and_return "/foo"
-        booter.app_path = File.expand_path("../../../rails23", __FILE__)
+        booter.app_path = RAILS23_ROOT_DIR
         booter.boot!
         silence_warnings { booter.load_environment }
       end
@@ -212,14 +219,27 @@ describe JRuby::Rack::RailsBooter do
 
   end if defined? Rails
 
+  RAILS_ROOT_DIR = File.expand_path("../../../rails3x", __FILE__)
+
   # NOTE: specs currently only test with a stubbed Rails::Railtie
   describe "Rails 3.x", :lib => :stub do
 
+    before :all do
+      $LOAD_PATH.unshift File.join(RAILS_ROOT_DIR, 'stub') # for require 'rails/railtie'
+    end
+
     before :each do
       $servlet_context = @servlet_context
-      booter.app_path = File.expand_path("../../../rails3x", __FILE__)
+      booter.layout_class = JRuby::Rack::FileSystemLayout
+      booter.app_path = RAILS_ROOT_DIR.dup
       booter.boot!
       silence_warnings { booter.load_environment }
+    end
+
+    after :each do
+      [ :app_path, :public_path, :context ].each do |name|
+        JRuby::Rack.send :remove_instance_variable, :"@#{name}"
+      end
     end
 
     after :all do
@@ -231,9 +251,8 @@ describe JRuby::Rack::RailsBooter do
     end
 
     it "should set the application configuration's public path" do
-      paths = {}
-      for p in %w( public public/javascripts public/stylesheets )
-        paths[p] = [p]
+      paths = %w( public public/javascripts public/stylesheets ).inject({}) do
+        |hash, path| hash[ path ] = [ File.join(RAILS_ROOT_DIR, path) ]; hash
       end
       app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
       public_path = Pathname.new(booter.public_path)
@@ -241,11 +260,28 @@ describe JRuby::Rack::RailsBooter do
       Rails::Railtie.config.__before_configuration.size.should == 1
       before_config = Rails::Railtie.config.__before_configuration.first
       before_config.should_not be nil
+
       before_config.call(app)
 
       paths['public'].should == public_path.to_s
       paths['public/javascripts'].should == public_path.join("javascripts").to_s
       paths['public/stylesheets'].should == public_path.join("stylesheets").to_s
+    end
+
+    it "works when JRuby::Rack.public_path is nil (public does not exist)" do
+      paths = %w( public public/javascripts public/stylesheets ).inject({}) do
+        |hash, path| hash[ path ] = [ path.sub('public', 'NO-SUCH-DiR') ]; hash
+      end
+      app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
+      JRuby::Rack.public_path = nil
+
+      before_config = Rails::Railtie.config.__before_configuration.first
+      before_config.should_not be nil
+      before_config.call(app)
+
+      paths['public'].should == [ public_path = "NO-SUCH-DiR" ]
+      paths['public/javascripts'].should == [ File.join(public_path, "javascripts") ]
+      paths['public/stylesheets'].should ==[ File.join(public_path, "stylesheets") ]
     end
 
     it "should not set the PUBLIC_ROOT constant" do
@@ -296,12 +332,14 @@ describe JRuby::Rack::RailsBooter do
       end
 
       it "is wrapped in tagged logging" do # Rails 3.2
-        tagged_logging = ActiveSupport::TaggedLogging rescue nil
+        active_support = defined? ::ActiveSupport
+        tagged_logging = active_support && ActiveSupport::TaggedLogging rescue nil
         begin
           klass = Class.new do # TaggedLogging stub
             def initialize(logger); @logger = logger end
           end
-          ActiveSupport.const_set(:TaggedLogging, klass)
+          module ::ActiveSupport; end
+          ::ActiveSupport.const_set(:TaggedLogging, klass)
           @config.stub(:log_level).and_return(nil)
           @config.stub(:log_formatter).and_return(nil)
 
@@ -310,7 +348,11 @@ describe JRuby::Rack::RailsBooter do
           @app.config.logger.instance_variable_get(:@logger).should be_a(Logger)
         ensure
           if tagged_logging.nil?
-            ActiveSupport.send :remove_const, :TaggedLogging
+            if active_support
+              ActiveSupport.send :remove_const, :TaggedLogging
+            else
+              Object.send :remove_const, :ActiveSupport rescue nil
+            end
           else
             ActiveSupport.const_set(:TaggedLogging, tagged_logging)
           end
@@ -342,14 +384,16 @@ describe JRuby::Rack::RailsBooter do
       before_config.last.call(app)
     end
 
-  end if defined? Rails
+  end # if defined? Rails
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
   describe "Rails 3.1", :lib => [ :stub ] do
 
     before :each do
       $servlet_context = @servlet_context
-      booter.app_path = File.expand_path("../../../rails3x", __FILE__)
+      #booter.layout_class = JRuby::Rack::FileSystemLayout
+      booter.app_path = RAILS_ROOT_DIR.dup
+      def booter.rails2?; false end
       booter.boot!
       booter.load_environment
     end
@@ -364,24 +408,29 @@ describe JRuby::Rack::RailsBooter do
     #      https://github.com/rails/rails/issues/2435
     #
     it "should not set config.action_controller.relative_url_root if the controller doesn't respond to that method" do
-      ENV['RAILS_RELATIVE_URL_ROOT'] = '/blah'
-      app = double "app"
-      app.stub_chain(:config, :action_controller, :respond_to?)
-      # obviously this only tests whatever rails version is loaded
-      # I'm unsure of the best way right now
-      if ActionController::Base.respond_to?(:relative_url_root=)
-        app.config.action_controller.should_receive(:relative_url_root=)
-      else
-        app.config.action_controller.should_not_receive(:relative_url_root=)
-      end
+      require 'action_controller' # stub
+      begin
+        #ActionController::Base.send :remove_method, :relative_url_root=
+        ENV['RAILS_RELATIVE_URL_ROOT'] = '/blah'
+        app = double "app"
+        app.stub_chain(:config, :action_controller)
+        app.config.stub(:action_controller).and_return(nil)
+        # app.config.action_controller.should_not_receive(:relative_url_root=)
+        ActionController::Base.stub(:config).and_return app.config
 
-      init = Rails::Railtie.__initializer.detect { |i| i.first =~ /url/ }
-      init.should_not be nil
-      init[1].should == [{:after => "action_controller.set_configs"}]
-      init.last.call(app)
+        app.config.should_receive(:relative_url_root=).with('/blah')
+        ActionController::Base.should_not_receive(:relative_url_root=)
+
+        init = Rails::Railtie.__initializer.detect { |i| i.first =~ /url/ }
+        init.should_not be nil
+        init[1].should == [{:after => "action_controller.set_configs"}]
+        init.last.call(app)
+      ensure
+        #ActionController::Base.send :attr_writer, :relative_url_root
+      end
     end
 
-  end if defined? Rails
+  end # if defined? Rails
 
 end
 
@@ -403,13 +452,21 @@ describe JRuby::Rack, "Rails controller extensions" do
   let(:servlet_response) { org.jruby.rack.mock.MockHttpServletResponse.new }
 
   before :each do
-    request.stub(:env).and_return 'java.servlet_request' => servlet_request
+    request.stub(:env).and_return({
+        'java.servlet_request' => servlet_request,
+        'java.servlet_response' => servlet_response
+    })
     response.stub(:headers).and_return @headers = {}
   end
 
   it "should add a #servlet_request method to ActionController::Base" do
     controller.should respond_to(:servlet_request)
     controller.servlet_request.should == servlet_request
+  end
+
+  it "should add a #servlet_response method to ActionController::Base" do
+    controller.should respond_to(:servlet_response)
+    controller.servlet_response.should == servlet_response
   end
 
   it "should add a #forward_to method for forwarding to another servlet" do
