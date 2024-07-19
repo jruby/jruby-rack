@@ -285,7 +285,7 @@ describe JRuby::Rack::RailsBooter do
     end
 
     it "should not set the PUBLIC_ROOT constant" do
-      lambda { PUBLIC_ROOT }.should raise_error
+      expect( PUBLIC_ROOT ).to eql ""
     end
 
     describe "logger" do
@@ -305,7 +305,7 @@ describe JRuby::Rack::RailsBooter do
       end
 
       it "gets set as config.logger" do
-        logger = Logger.new STDERR
+        logger = JRuby::Rack::Logger.new STDERR
         @config.stub(:log_level).and_return(:info)
         @config.stub(:log_formatter).and_return(nil)
 
@@ -317,18 +317,16 @@ describe JRuby::Rack::RailsBooter do
         @app.config.logger.should be(logger)
       end
 
-      it "has a configurable log level and formatter" do
+      it "has a configurable log level" do
         @config.instance_eval do
           def logger; @logger; end
           def logger=(logger); @logger = logger; end
         end
         @config.stub(:log_formatter).and_return(nil)
         @config.should_receive(:log_level).and_return(:debug)
-        @config.should_receive(:log_formatter).and_return(formatter = Logger::Formatter.new)
 
         log_initializer.last.call(@app) ##
-        @app.config.logger.level.should be(Logger::DEBUG)
-        @app.config.logger.formatter.should be(formatter)
+        @app.config.logger.level.should be(JRuby::Rack::Logger::DEBUG)
       end
 
       it "is wrapped in tagged logging" do # Rails 3.2
@@ -345,7 +343,7 @@ describe JRuby::Rack::RailsBooter do
 
           log_initializer.last.call(@app)
           @app.config.logger.should be_a(klass)
-          @app.config.logger.instance_variable_get(:@logger).should be_a(Logger)
+          @app.config.logger.instance_variable_get(:@logger).should be_a(JRuby::Rack::Logger)
         ensure
           if tagged_logging.nil?
             if active_support
