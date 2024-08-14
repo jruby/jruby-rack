@@ -23,6 +23,7 @@ GEM
 
 PLATFORMS
   universal-java-1.8
+  universal-java-11
 
 DEPENDENCIES
   appraisal (< 1.0)
