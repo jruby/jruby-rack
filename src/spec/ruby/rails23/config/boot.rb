@@ -3,6 +3,8 @@
 
 RAILS_ROOT = "#{ENV['RAILS_ROOT']}"
 
+def RAILS_ROOT.inspect; "#{super} set at: #{__FILE__}" end
+
 # Simulate the Rails 2.0 boot process here, to test our boot hook
 module Rails
   class << self
