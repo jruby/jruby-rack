@@ -53,11 +53,11 @@ public class Slf4jLogger extends RackLogger.Base {
     public void log(Level level, String message) {
         if ( level == null ) { logger.info(message); return; }
         switch ( level ) {
-            case DEBUG: logger.debug(message);
-            case INFO:  logger.info(message);
-            case WARN:  logger.warn(message);
-            case ERROR: logger.error(message);
-            case FATAL: logger.error(message);
+            case DEBUG: logger.debug(message); break;
+            case INFO:  logger.info(message); break;
+            case WARN:  logger.warn(message); break;
+            case ERROR: logger.error(message); break;
+            case FATAL: logger.error(message); break;
         }
     }
 
@@ -65,11 +65,11 @@ public class Slf4jLogger extends RackLogger.Base {
     public void log(Level level, String message, Throwable ex) {
         if ( level == null ) { logger.error(message, ex); return; }
         switch ( level ) {
-            case DEBUG: logger.debug(message, ex);
-            case INFO:  logger.info(message, ex);
-            case WARN:  logger.warn(message, ex);
-            case ERROR: logger.error(message, ex);
-            case FATAL: logger.error(message, ex);
+            case DEBUG: logger.debug(message, ex); break;
+            case INFO:  logger.info(message, ex); break;
+            case WARN:  logger.warn(message, ex); break;
+            case ERROR: logger.error(message, ex); break;
+            case FATAL: logger.error(message, ex); break;
         }
     }
 
