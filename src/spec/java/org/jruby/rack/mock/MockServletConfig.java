@@ -20,11 +20,11 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
 
 /**
- * Mock implementation of the {@link javax.servlet.ServletConfig} interface.
+ * Mock implementation of the {@link jakarta.servlet.ServletConfig} interface.
  *
  * <p>Used for testing the web framework; typically not necessary for
  * testing application controllers.

@@ -80,11 +80,11 @@ describe 'servlet-ext' do
     
   end
   
-  describe Java::JavaxServlet::ServletContext do
+  describe Java::JakartaServlet::ServletContext do
 
     let(:subject) do 
       context = org.jruby.rack.mock.MockServletContext.new
-      context.removeAttribute("javax.servlet.context.tempdir")
+      context.removeAttribute("jakarta.servlet.context.tempdir")
       context
     end
 
@@ -92,10 +92,10 @@ describe 'servlet-ext' do
     
   end
   
-  describe Java::JavaxServlet::ServletRequest do
+  describe Java::JakartaServlet::ServletRequest do
     
     before :each do
-      @request = Java::JavaxServlet::ServletRequest.impl {}
+      @request = Java::JakartaServlet::ServletRequest.impl {}
     end
 
     it "should allow #[] to access request attributes" do
@@ -125,10 +125,10 @@ describe 'servlet-ext' do
     
   end
 
-  describe Java::JavaxServletHttp::HttpSession do
+  describe Java::JakartaServletHttp::HttpSession do
     
     before :each do
-      @session = Java::JavaxServletHttp::HttpSession.impl {}
+      @session = Java::JakartaServletHttp::HttpSession.impl {}
     end
 
     it "should allow #[] to access session attributes" do

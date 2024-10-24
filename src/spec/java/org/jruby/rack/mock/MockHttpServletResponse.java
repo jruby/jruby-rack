@@ -32,12 +32,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Mock implementation of the {@link javax.servlet.http.HttpServletResponse} interface.
+ * Mock implementation of the {@link jakarta.servlet.http.HttpServletResponse} interface.
  *
  * <p>Compatible with Servlet 2.5 as well as Servlet 3.0.
  *

@@ -11,17 +11,17 @@ import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackLogger;
 
-import javax.servlet.Filter;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.Filter;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 // 3.0
-import javax.servlet.FilterRegistration;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -375,4 +375,45 @@ public class DefaultServletRackContext implements ServletRackContext {
         return context.getJspConfigDescriptor();
     }
 
+    @Override
+    public void setResponseCharacterEncoding(String encoding) {
+        
+    }
+
+    @Override
+    public String getResponseCharacterEncoding() {
+        return null;
+    }
+
+
+    @Override
+    public void setRequestCharacterEncoding(String encoding) {
+        
+    }
+
+    @Override
+    public String getRequestCharacterEncoding() {
+        return null;
+    }
+
+    @Override
+    public void setSessionTimeout(int sessionTimeout) {
+
+    }
+
+    @Override
+    public int getSessionTimeout() throws UnsupportedOperationException {
+        return 30;
+    }
+
+    @Override
+    public String getVirtualServerName() throws UnsupportedOperationException {
+        return null;
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addJspFile(String servletName, String jspFile) 
+        throws IllegalStateException, IllegalArgumentException, UnsupportedOperationException {
+        return null;
+    }
 }

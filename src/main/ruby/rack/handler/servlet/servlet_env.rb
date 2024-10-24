@@ -57,7 +57,7 @@ module Rack
         end
 
         # Load parameters into the (Rack) env from the Servlet API.
-        # using javax.servlet.http.HttpServletRequest#getParameterMap
+        # using jakarta.servlet.http.HttpServletRequest#getParameterMap
         def load_parameters
           get_only = ! POST_PARAM_METHODS.include?( @servlet_env.getMethod )
           # we only need to really do this for POSTs but we'll handle all
@@ -155,7 +155,7 @@ module Rack
         COOKIE_HASH = "rack.request.cookie_hash".freeze
 
         # Load cookies into the (Rack) env from the Servlet API.
-        # using javax.servlet.http.HttpServletRequest#getCookies
+        # using jakarta.servlet.http.HttpServletRequest#getCookies
         def load_cookies
           cookie_hash = {}
           (@servlet_env.getCookies || []).each do |cookie|
@@ -186,7 +186,7 @@ module Rack
         end
 
         def parse_query_string
-          Java::JavaxServletHttp::HttpUtils.parseQueryString(query_string)
+          Java::JakartaServletHttp::HttpUtils.parseQueryString(query_string)
         end
 
         def mark_parameter_error(msg)

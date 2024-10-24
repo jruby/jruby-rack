@@ -16,7 +16,7 @@ describe org.jruby.rack.RackServletContextListener do
   end
 
   let(:servlet_context_event) do
-    javax.servlet.ServletContextEvent.new @servlet_context
+    jakarta.servlet.ServletContextEvent.new @servlet_context
   end
 
   describe "contextInitialized" do

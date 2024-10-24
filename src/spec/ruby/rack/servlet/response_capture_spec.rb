@@ -97,7 +97,7 @@ describe org.jruby.rack.servlet.ResponseCapture do
   private
 
   def servlet_30?
-    Java::JavaClass.for_name('javax.servlet.AsyncContext') rescue nil
+    Java::JavaClass.for_name('jakarta.servlet.AsyncContext') rescue nil
   end
 
 end

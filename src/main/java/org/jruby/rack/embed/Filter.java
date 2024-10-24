@@ -7,8 +7,8 @@
  */
 package org.jruby.rack.embed;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
 
 import org.jruby.rack.AbstractFilter;
 import org.jruby.rack.RackContext;

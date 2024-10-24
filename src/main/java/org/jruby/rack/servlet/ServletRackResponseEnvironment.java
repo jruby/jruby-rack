@@ -13,8 +13,8 @@ import org.jruby.rack.DefaultErrorApplication;
 
 import java.io.IOException;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 
 /**
  * The default (servlet) {@link RackResponseEnvironment} implementation.

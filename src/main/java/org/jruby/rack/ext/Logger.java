@@ -23,7 +23,7 @@
  */
 package org.jruby.rack.ext;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;

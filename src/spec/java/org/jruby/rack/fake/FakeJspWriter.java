@@ -8,7 +8,7 @@
 package org.jruby.rack.fake;
 
 import java.io.IOException;
-import javax.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.JspWriter;
 
 /**
  * Currently only used as a mock for testing.

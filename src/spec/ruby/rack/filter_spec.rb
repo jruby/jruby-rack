@@ -14,7 +14,7 @@ describe org.jruby.rack.RackFilter do
   let(:chain) { double "filter chain" }
 
   def stub_request(path_info)
-    @request = javax.servlet.http.HttpServletRequest.impl {}
+    @request = jakarta.servlet.http.HttpServletRequest.impl {}
     @request.stub(:setAttribute)
     if block_given?
       yield @request, path_info
@@ -27,7 +27,7 @@ describe org.jruby.rack.RackFilter do
 
   before :each do
     stub_request("/index")
-    @response = javax.servlet.http.HttpServletResponse.impl {}
+    @response = jakarta.servlet.http.HttpServletResponse.impl {}
     @rack_context.stub(:getResource).and_return nil
     @rack_config.stub(:getProperty) do |key, default|
       ( key || raise("missing key") ) && default
@@ -337,7 +337,7 @@ describe org.jruby.rack.RackFilter do
   end
 
   it "configures not handled statuses on init" do
-    servlet_context = javax.servlet.ServletContext.impl do |name, *args|
+    servlet_context = jakarta.servlet.ServletContext.impl do |name, *args|
       case name.to_sym
       when :getAttribute
         if args[0] == "rack.context"
@@ -347,7 +347,7 @@ describe org.jruby.rack.RackFilter do
         nil
       end
     end
-    config = javax.servlet.FilterConfig.impl do |name, *args|
+    config = jakarta.servlet.FilterConfig.impl do |name, *args|
       case name.to_sym
       when :getServletContext then servlet_context
       when :getInitParameter

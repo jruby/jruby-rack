@@ -10,8 +10,8 @@ jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
 
 puts "using JRuby #{JRUBY_VERSION} (#{RUBY_VERSION})"
 
-java_import 'javax.servlet.http.HttpServletRequest'
-java_import 'javax.servlet.http.HttpServletResponse'
+java_import 'jakarta.servlet.http.HttpServletRequest'
+java_import 'jakarta.servlet.http.HttpServletResponse'
 
 java_import 'org.jruby.rack.RackApplicationFactory'
 java_import 'org.jruby.rack.DefaultRackApplicationFactory'
@@ -29,8 +29,8 @@ module SharedHelpers
   java_import 'org.jruby.rack.RackContext'
   java_import 'org.jruby.rack.RackConfig'
   java_import 'org.jruby.rack.servlet.ServletRackContext'
-  java_import 'javax.servlet.ServletContext'
-  java_import 'javax.servlet.ServletConfig'
+  java_import 'jakarta.servlet.ServletContext'
+  java_import 'jakarta.servlet.ServletConfig'
 
   def mock_servlet_context
     @servlet_context = ServletContext.impl {}
@@ -61,7 +61,7 @@ module SharedHelpers
 
   def servlet_30?
     return @@servlet_30 unless @@servlet_30.nil?
-    @@servlet_30 = !! ( Java::JavaClass.for_name('javax.servlet.AsyncContext') rescue nil )
+    @@servlet_30 = !! ( Java::JavaClass.for_name('jakarta.servlet.AsyncContext') rescue nil )
   end
   private :servlet_30?
 
@@ -253,7 +253,7 @@ class StubOutputStream < java.io.OutputStream
 
 end
 
-class StubServletInputStream < javax.servlet.ServletInputStream
+class StubServletInputStream < jakarta.servlet.ServletInputStream
 
   def initialize(val = "")
     @delegate = StubInputStream.new(val)

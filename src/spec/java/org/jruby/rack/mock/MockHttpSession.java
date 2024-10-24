@@ -26,14 +26,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-import javax.servlet.http.HttpSessionContext;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
+import jakarta.servlet.http.HttpSessionContext;
 
 /**
- * Mock implementation of the {@link javax.servlet.http.HttpSession} interface.
+ * Mock implementation of the {@link jakarta.servlet.http.HttpSession} interface.
  *
  * <p>Compatible with Servlet 2.5 as well as Servlet 3.0.
  *
