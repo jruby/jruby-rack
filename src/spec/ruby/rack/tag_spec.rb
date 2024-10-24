@@ -58,7 +58,7 @@ describe org.jruby.rack.RackTag do
 
     begin
       @tag.doEndTag
-    rescue Java::JavaxServletJsp::JspException
+    rescue Java::JakartaServletJsp::JspException
       #noop
     end
   end

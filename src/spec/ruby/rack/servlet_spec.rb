@@ -10,8 +10,8 @@ require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 describe org.jruby.rack.RackServlet, "service" do
 
   it "should delegate to process" do
-    request = javax.servlet.http.HttpServletRequest.impl {}
-    response = javax.servlet.http.HttpServletResponse.impl {}
+    request = jakarta.servlet.http.HttpServletRequest.impl {}
+    response = jakarta.servlet.http.HttpServletResponse.impl {}
     dispatcher = double "dispatcher"
     dispatcher.should_receive(:process)
     servlet = org.jruby.rack.RackServlet.new dispatcher, @rack_context

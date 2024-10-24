@@ -32,7 +32,7 @@ describe "integration" do
       )
 
       listener = org.jruby.rack.RackServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
+      listener.contextInitialized jakarta.servlet.ServletContextEvent.new(@servlet_context)
 
       rack_factory = @servlet_context.getAttribute("rack.factory")
       rack_factory.should be_a(RackApplicationFactory)
@@ -50,7 +50,7 @@ describe "integration" do
             "run lambda { |env| [ 200, {'Via' => 'JRuby-Rack', 'Content-Type' => 'text/plain'}, 'OK' ] }"
         )
         listener = org.jruby.rack.RackServletContextListener.new
-        listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
+        listener.contextInitialized jakarta.servlet.ServletContextEvent.new(@servlet_context)
         @rack_context = @servlet_context.getAttribute("rack.context")
         @rack_factory = @servlet_context.getAttribute("rack.factory")
       end
@@ -93,7 +93,7 @@ describe "integration" do
 
     it "initializes (pooling by default)" do
       listener = org.jruby.rack.rails.RailsServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+      listener.contextInitialized jakarta.servlet.ServletContextEvent.new(servlet_context)
 
       rack_factory = servlet_context.getAttribute("rack.factory")
       rack_factory.should be_a(RackApplicationFactory)
@@ -111,7 +111,7 @@ describe "integration" do
       servlet_context.addInitParameter('jruby.max.runtimes', '1')
 
       listener = org.jruby.rack.rails.RailsServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+      listener.contextInitialized jakarta.servlet.ServletContextEvent.new(servlet_context)
 
       rack_factory = servlet_context.getAttribute("rack.factory")
       rack_factory.should be_a(RackApplicationFactory)
@@ -440,7 +440,7 @@ describe "integration" do
     servlet_context.addInitParameter("jruby.runtime.env", the_env)
 
     yield(servlet_context, listener) if block_given?
-    listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+    listener.contextInitialized jakarta.servlet.ServletContextEvent.new(servlet_context)
     @rack_context = servlet_context.getAttribute("rack.context")
     @rack_factory = servlet_context.getAttribute("rack.factory")
     @servlet_context ||= servlet_context

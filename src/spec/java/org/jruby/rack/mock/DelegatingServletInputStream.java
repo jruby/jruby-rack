@@ -18,10 +18,10 @@ package org.jruby.rack.mock;
 
 import java.io.IOException;
 import java.io.InputStream;
-import javax.servlet.ServletInputStream;
+import jakarta.servlet.ServletInputStream;
 
 /**
- * Delegating implementation of {@link javax.servlet.ServletInputStream}.
+ * Delegating implementation of {@link jakarta.servlet.ServletInputStream}.
  *
  * <p>Used by {@link MockHttpServletRequest}; typically not directly
  * used for testing application controllers.

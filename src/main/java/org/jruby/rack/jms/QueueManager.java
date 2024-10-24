@@ -9,7 +9,7 @@ package org.jruby.rack.jms;
 
 import org.jruby.rack.RackContext;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 
 /**
  *

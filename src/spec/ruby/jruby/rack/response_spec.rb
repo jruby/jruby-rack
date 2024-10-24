@@ -16,7 +16,7 @@ describe JRuby::Rack::Response do
     JRuby::Rack::Response.new [ status, headers, body ]
   end
 
-  let(:servlet_response) { javax.servlet.http.HttpServletResponse.impl {} }
+  let(:servlet_response) { jakarta.servlet.http.HttpServletResponse.impl {} }
 
   let(:response_environment) { new_response_environment(servlet_response) }
 
