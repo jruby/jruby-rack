@@ -61,7 +61,7 @@ module SharedHelpers
 
   def servlet_30?
     return @@servlet_30 unless @@servlet_30.nil?
-    @@servlet_30 = !! ( Java::JavaClass.for_name('javax.servlet.AsyncContext') rescue nil )
+    @@servlet_30 = !! ( Java::javax.servlet.AsyncContext rescue nil )
   end
   private :servlet_30?
 
@@ -199,7 +199,6 @@ RSpec.configure do |config|
     /bin\//,
     #/gems/,
     /spec\/spec_helper\.rb/,
-    /lib\/rspec\/(core|expectations|matchers|mocks)/
   ]
 
 end

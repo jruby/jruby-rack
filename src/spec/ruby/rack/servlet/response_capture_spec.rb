@@ -103,11 +103,4 @@ describe org.jruby.rack.servlet.ResponseCapture do
     expect( response_capture.isHandled ).to be true
     expect( response_capture.getStatus ).to eql 200
   end
-
-  private
-
-  def servlet_30?
-    Java::JavaClass.for_name('javax.servlet.AsyncContext') rescue nil
-  end
-
 end
