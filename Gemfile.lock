@@ -5,7 +5,7 @@ GEM
       bundler
       rake
     diff-lcs (1.5.1)
-    rack (2.2.9)
+    rack (2.2.10)
     rake (13.2.1)
     rspec (3.13.0)
       rspec-core (~> 3.13.0)
