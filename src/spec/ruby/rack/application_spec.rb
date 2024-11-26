@@ -704,23 +704,28 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
       end
       app
     end
+    num_runtimes = 3
     @rack_config.stub(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
-    @rack_config.should_receive(:getInitialRuntimes).and_return 3
-    @rack_config.should_receive(:getMaximumRuntimes).and_return 3
+    @rack_config.should_receive(:getInitialRuntimes).and_return num_runtimes
+    @rack_config.should_receive(:getMaximumRuntimes).and_return num_runtimes
 
-    @pooling_factory.init(@rack_context)
+    begin
+      @pooling_factory.init(@rack_context)
+    rescue org.jruby.rack.RackInitializationException
+      # ignore - sometimes initialization happens fast enough that the init error is thrown already
+    end
     sleep(0.20)
 
     failed = 0
-    3.times do
+    num_runtimes.times do
       begin
         @pooling_factory.getApplication
       rescue org.jruby.rack.RackInitializationException
         failed += 1
       end
     end
-    if failed != 3
-      fail "@pooling_factory.getApplication expected to fail once, but failed #{failed}-time(s)"
+    if failed != num_runtimes
+      fail "@pooling_factory.getApplication expected to fail #{num_runtimes} times, but failed #{failed} time(s)"
     end
   end
 
