@@ -81,7 +81,7 @@ public class Config implements RackConfig {
     } */
 
     @SuppressWarnings("unchecked")
-    void doInitialize(final Ruby runtime) {
+    public void doInitialize(final Ruby runtime) {
         setOut( runtime.getOut() );
         setErr( runtime.getErr() );
         rubyENV = runtime.getENV();
