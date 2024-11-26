@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
@@ -31,7 +34,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.activation.FileTypeMap;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
@@ -263,7 +265,12 @@ public class MockServletContext implements ServletContext {
 
     @Override
 	public String getMimeType(String filePath) {
-		return MimeTypeResolver.getMimeType(filePath);
+		try {
+			Path path = Paths.get(filePath);
+			return Files.probeContentType(path);
+		} catch (IOException e) {
+			return "application/octet-stream";  // default MIME type
+		}
 	}
 
     @Override
@@ -455,20 +462,6 @@ public class MockServletContext implements ServletContext {
 	public String getServletContextName() {
 		return this.servletContextName;
 	}
-
-
-	/**
-	 * Inner factory class used to just introduce a Java Activation Framework
-	 * dependency when actually asked to resolve a MIME type.
-	 */
-	private static class MimeTypeResolver {
-
-		public static String getMimeType(String filePath) {
-			return FileTypeMap.getDefaultFileTypeMap().getContentType(filePath);
-		}
-
-	}
-
 
 	//---------------------------------------------------------------------
 	// Methods introduced in Servlet 3.0
