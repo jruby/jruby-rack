@@ -10,7 +10,7 @@ class JRuby::Rack::ErrorApp
 
     def initialize(app)
       require 'rack/request'; require 'rack/utils'
-      @app = app; @template = ERB.new(TEMPLATE, nil, '-')
+      @app = app; @template = ERB.new(TEMPLATE, trim_mode: '-')
     end
 
     def call(env)
