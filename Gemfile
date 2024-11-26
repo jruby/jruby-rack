@@ -9,7 +9,7 @@ group :default do
 end
 
 group :development do
-  gem 'appraisal', '< 1.0', :require => nil
+  gem 'appraisal', :require => nil
 end
 
 gem 'rake', '~> 13.2', :group => :test, :require => nil

@@ -830,7 +830,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @pooling_factory.init(@rack_context)
     sleep(0.10)
     @pooling_factory.getApplicationPool.size.should < 6
-    sleep(ENV['TRAVIS'] == 'true' ? 0.9 : 0.45) # 6 x 0.15 == 0.9 but we're parallel
+    sleep(0.9)
     @pooling_factory.getApplicationPool.size.should >= 6
 
     expect( @pooling_factory.getManagedApplications ).to_not be_empty
