@@ -361,10 +361,10 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         set_config 'jruby.runtime.env', 'false'
         set_config 'jruby.runtime.env.rubyopt', 'true'
 
-        app_factory = app_factory_with_RUBYOPT '-W:no-deprecated'
+        app_factory = app_factory_with_RUBYOPT '-U'
         @runtime = app_factory.newRuntime
         should_eval_as_nil "ENV['HOME']"
-        should_eval_as_eql_to "ENV['RUBYOPT']", '-W:no-deprecated'
+        should_eval_as_eql_to "ENV['RUBYOPT']", '-U'
       end
 
       it "keeps RUBYOPT by default with empty ENV (backwards compat)" do
