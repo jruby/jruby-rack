@@ -352,11 +352,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Initializes the runtime (exports the context, boots the Rack handler).
      *
-     * NOTE: (package) visible due specs
+     * NOTE: visible due to specs
      *
      * @param runtime
      */
-    void initRuntime(final Ruby runtime) {
+    public void initRuntime(final Ruby runtime) {
         loadJRubyRack(runtime);
         // set $servlet_context :
         runtime.getGlobalVariables().set(
@@ -406,7 +406,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
      * @param runtime
      * @return the rack version requirement
      */
-    String checkAndSetRackVersion(final Ruby runtime) {
+    public String checkAndSetRackVersion(final Ruby runtime) {
         String rackVersion = null;
         try {
             rackVersion = IOHelpers.rubyMagicCommentValue(rackupScript, "rack.version:");

@@ -91,7 +91,12 @@ module JRuby::Rack
             unless servlet_request = env['java.servlet_request']
               raise "JavaServletStore expects a servlet request at env['java.servlet_request']"
             end
-            servlet_session = servlet_request.getSession(create)
+            servlet_session =
+              begin
+                servlet_request.getSession(create)
+              rescue java.lang.IllegalStateException => e
+                raise "Failed to obtain session due to IllegalStateException: #{e.message}"
+              end
             env[ENV_SERVLET_SESSION_KEY] = servlet_session
           end
         rescue java.lang.IllegalStateException # cached session invalidated

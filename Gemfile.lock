@@ -5,18 +5,18 @@ GEM
       bundler
       rake
     diff-lcs (1.5.1)
-    rack (2.2.9)
+    rack (2.2.10)
     rake (13.2.1)
     rspec (3.13.0)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
       rspec-mocks (~> 3.13.0)
-    rspec-core (3.13.0)
+    rspec-core (3.13.2)
       rspec-support (~> 3.13.0)
-    rspec-expectations (3.13.1)
+    rspec-expectations (3.13.3)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-mocks (3.13.1)
+    rspec-mocks (3.13.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.1)
@@ -24,6 +24,8 @@ GEM
 PLATFORMS
   universal-java-1.8
   universal-java-11
+  universal-java-17
+  universal-java-21
 
 DEPENDENCIES
   appraisal (< 1.0)
