@@ -49,7 +49,7 @@ public class Input extends RubyObject {
         // set up coderange-aware concat that works with the new catWithCodeRange as well as earlier JRuby without it.
         // TODO: remove and replace with direct call once 9.3 is fully unsupported
         MethodHandle catWithCR = null;
-        MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
         try {
             catWithCR = lookup.findVirtual(RubyString.class, "catWithCodeRange", MethodType.methodType(int.class, ByteList.class, int.class));
         } catch (NoSuchMethodException | IllegalAccessException e) {
