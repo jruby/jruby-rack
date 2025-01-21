@@ -101,7 +101,7 @@ public class MockHttpSession implements HttpSession {
 		return this.id;
 	}
 
-    void setId(String id) {
+    public void setId(String id) {
         this.id = id;
     }
     
@@ -256,7 +256,7 @@ public class MockHttpSession implements HttpSession {
         return getClass().getName() + "@" + Integer.toHexString(hashCode()) + this.attributes;
     }
 
-    Map<String, Object> getAttributes() {
+    public Map<String, Object> getAttributes() {
         return attributes;
     }
     
