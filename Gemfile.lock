@@ -29,7 +29,7 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal (< 1.0)
-  rack (< 3.0)
+  rack (~> 2.2, < 3.0)
   rake (~> 13.2)
   rspec
 

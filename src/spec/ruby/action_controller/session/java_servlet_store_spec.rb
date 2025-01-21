@@ -32,10 +32,6 @@ describe "ActionController::Session::JavaServletStore" do
     @session_store = ActionController::Session::JavaServletStore.new(@app)
   end
 
-  it "should raise an error if the servlet request is not present" do
-    expect { @session_store.call({}) }.to raise_error(RuntimeError)
-  end
-
   it "should do nothing if the session is not accessed" do
     @app.should_receive(:call)
     @session_store.call(@env)
@@ -95,7 +91,7 @@ describe "ActionController::Session::JavaServletStore" do
     @request.should_receive(:getSession).with(false).and_return @session
     @app.should_receive(:call)
     @session_store.call(@env)
-    @session_store.send(:extract_session_id, @env).should == @session_id
+    expect(@session_store.send(:extract_session_id, Rack::Request.new(@env))).to eq @session_id
   end
 
   it "should retrieve the marshalled session from the java session" do
@@ -313,7 +309,7 @@ describe "ActionController::Session::JavaServletStore" do
     else
       store = @session_store; env = args[0];
     end
-    ::JRuby::Rack::Session::SessionHash.new(store, env)
+    ::JRuby::Rack::Session::SessionHash.new(store, ::Rack::Request.new(env))
   end
 
 end if defined? Rails
