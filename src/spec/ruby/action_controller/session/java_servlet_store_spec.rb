@@ -28,6 +28,7 @@ describe "ActionController::Session::JavaServletStore" do
     @session.stub(:synchronized).and_yield
     @request = double "servlet request"
     @app = double "app"
+    @app.stub(:call).and_return [200, {}, ["body"]]
     @env = {"java.servlet_request" => @request, "rack.errors" => $stderr}
     @session_store = ActionController::Session::JavaServletStore.new(@app)
   end
@@ -41,13 +42,13 @@ describe "ActionController::Session::JavaServletStore" do
     @app.should_receive(:call)
     @session_store.call(@env)
     session = @env['rack.session']
-    @session_store.send(:loaded_session?, session).should == false
+    expect(@session_store.send(:loaded_session?, session)).to eq false
   end
 
   it "should pass the application response untouched" do
     response = [200, {}, ["body"]]
     @app.should_receive(:call).and_return response
-    @session_store.call(@env).should == response
+    expect(@session_store.call(@env)).to eq response
   end
 
   it "should load the session when accessed" do
@@ -74,7 +75,7 @@ describe "ActionController::Session::JavaServletStore" do
     end
     @session_store.call(@env)
     session = @env['rack.session']
-    @session_store.send(:loaded_session?, session).should == true
+    expect(@session_store.send(:loaded_session?, session)).to eq true
   end
 
   it "should use custom session hash when loading session" do
@@ -103,8 +104,8 @@ describe "ActionController::Session::JavaServletStore" do
     @session.should_receive(:getAttribute).with(session_key).and_return marshal_data.to_java_bytes
     @session.stub(:setAttribute); @session.stub(:getCreationTime).and_return 1
     @app.should_receive(:call) do |env|
-      env['rack.session']["foo"].should == 1
-      env['rack.session']["bar"].should == true
+      expect(env['rack.session']["foo"]).to eq 1
+      expect(env['rack.session']["bar"]).to eq true
     end
     @session_store.call(@env)
   end
@@ -117,8 +118,8 @@ describe "ActionController::Session::JavaServletStore" do
     @session.should_receive(:getAttribute).with("bar").and_return hash["bar"]
     @session.stub(:setAttribute); @session.stub(:getCreationTime).and_return 1
     @app.should_receive(:call) do |env|
-      env['rack.session']["foo"].should == hash["foo"]
-      env['rack.session']["bar"].should == hash["bar"]
+      expect(env['rack.session']["foo"]).to eq hash["foo"]
+      expect(env['rack.session']["bar"]).to eq hash["bar"]
     end
     @session_store.call(@env)
   end
@@ -257,7 +258,7 @@ describe "ActionController::Session::JavaServletStore" do
     @session.should_receive(:getLastAccessedTime).and_return time
     @session.stub(:setAttribute)
     @app.should_receive(:call) do |env|
-      env['rack.session'].getLastAccessedTime.should == time
+      expect(env['rack.session'].getLastAccessedTime).to eq time
       lambda { env['rack.session'].blah_blah }.should raise_error(NoMethodError)
     end
     @session_store.call(@env)
