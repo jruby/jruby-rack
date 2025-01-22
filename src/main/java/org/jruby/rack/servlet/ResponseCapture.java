@@ -231,7 +231,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
 
             // consider HTTP OPTIONS with "Allow" header unhandled :
             if ( request != null && "OPTIONS".equals( request.getMethod() ) ) {
-                final Collection<String> headerNames = getHeaderNamesOrNull();
+                final Collection<String> headerNames = getHeaderNames();
                 if ( headerNames == null || headerNames.isEmpty() ) {
                     // not to happen but there's all kind of beasts out there
                     return false;
@@ -277,17 +277,4 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     public boolean isOutputAccessed() {
         return output != null;
     }
-
-    @SuppressWarnings("unchecked")
-    private Collection<String> getHeaderNamesOrNull() {
-        // NOTE: getHeaderNames since Servlet API 3.0 JRuby-Rack 1.1 still supports 2.5
-        try {
-            final Method getHeaderNames = getResponse().getClass().getMethod("getHeaderNames");
-            return (Collection<String>) getHeaderNames.invoke( getResponse() );
-        }
-        catch (NoSuchMethodException e) { return null; }
-        catch (IllegalAccessException e) { return null; }
-        catch (InvocationTargetException e) { return null; }
-    }
-
 }

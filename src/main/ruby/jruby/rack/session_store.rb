@@ -71,7 +71,9 @@ module JRuby::Rack
 
       private # Rack::Session::Abstract::ID overrides :
 
-        def session_class; ::JRuby::Rack::Session::SessionHash; end # Rack 1.5
+        def session_class
+          ::JRuby::Rack::Session::SessionHash
+        end
 
         def initialize_sid
           nil # dummy method - not usable with servlet API

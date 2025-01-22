@@ -642,11 +642,7 @@ describe Rack::Handler::Servlet do
       request.logger.should be nil # we do not setup rack.logger
 
       lambda { request.scheme }.should_not raise_error
-      if Rack.release >= '1.3' # rack 1.3.x 1.4.x
-        request.scheme.should == 'https' # X-Forwarded-Proto
-      else
-        request.scheme.should == 'http' # Rails 3.0 / 2.3
-      end
+      request.scheme.should == 'https' # X-Forwarded-Proto
 
       lambda { request.port }.should_not raise_error
       request.port.should == 80
@@ -662,19 +658,11 @@ describe Rack::Handler::Servlet do
 
       if defined?(request.base_url)
         lambda { request.base_url }.should_not raise_error
-        if Rack.release >= '1.3' # Rails >= 3.1.x
-          request.base_url.should == 'https://serverhost:80'
-        else
-          request.base_url.should == 'http://serverhost'
-        end
+        request.base_url.should == 'https://serverhost:80'
       end
 
       lambda { request.url }.should_not raise_error
-      if Rack.release >= '1.3' # Rails >= 3.1.x
-        request.url.should == 'https://serverhost:80/main/app1/path/info?hello=there'
-      else
-        request.url.should == 'http://serverhost/main/app1/path/info?hello=there'
-      end
+      request.url.should == 'https://serverhost:80/main/app1/path/info?hello=there'
     end
 
     describe 'dumped-and-loaded' do

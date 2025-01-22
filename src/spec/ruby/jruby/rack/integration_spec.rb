@@ -407,15 +407,7 @@ describe "integration" do
     script = %{
       headers = { 'Transfer-Encoding' => 'chunked' }
 
-      body = [ \"1\".freeze, \"\", \"\nsecond\" ]
-
-      if defined? Rack::Chunked::Body # Rails 3.x
-        body = Rack::Chunked::Body.new body
-      else # Rack 1.1 / 1.2
-        chunked = Rack::Chunked.new(nil)
-        chunked.chunk(200, headers, body)
-        body = chunked
-      end
+      body = Rack::Chunked::Body.new [ \"1\".freeze, \"\", \"\nsecond\" ]
 
       parts = []; body.each { |part| parts << part }
       parts.join
@@ -431,10 +423,7 @@ describe "integration" do
       servlet_context = new_servlet_context(base)
     end
     listener = org.jruby.rack.rails.RailsServletContextListener.new
-    # Travis-CI might have RAILS_ENV=test set, which is not desired for us :
-    #if ENV['RAILS_ENV'] || ENV['RACK_ENV']
-    #ENV['RAILS_ENV'] = env; ENV.delete('RACK_ENV')
-    #end
+
     the_env = "GEM_HOME=#{ENV['GEM_HOME']},GEM_PATH=#{ENV['GEM_PATH']}"
     the_env << "\nRAILS_ENV=#{env}" if env
     servlet_context.addInitParameter("jruby.runtime.env", the_env)

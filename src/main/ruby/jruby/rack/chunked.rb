@@ -20,16 +20,4 @@ Rack::Chunked::Body.class_eval do
     @body.each(&block) # no-chunking on servlets
   end
   
-end if defined? Rack::Chunked::Body
-
-unless defined? Rack::Chunked::Body # Rack 1.1
-  
-  Rack::Chunked.class_eval do
-    
-    def each(&block)
-      @body.each(&block) # no-chunking on servlets
-    end
-    
-  end
-  
 end
