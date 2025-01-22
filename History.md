@@ -1,3 +1,21 @@
+## 1.2.3
+
+- Corrects Rack 2.x compatibility when used with modern Rails, and requires Rack 2.x going forward
+- update (bundled) rack to 2.2.10
+- forward ports all 1.1.x fixes to the 1.2.x stream which were omitted in 1.2.2 release (#262)
+- fixes regression NoMethodError undefined method get_header (#259)
+- correct use of session store with Rails 7.0+ (#244)
+- reinstate automated tests for Rails 5.0 - 7.2 (#271)
+
+## 1.2.2
+
+First release of the 1.2.x branch.
+- Requires Java 8 or later
+- Requires Java Servlet API 3.0 or later
+- Improved logger implementation
+- Fixes broken multipart data (#247)
+- update (bundled) rack to 2.2.9
+
 ## 1.1.22
 
 - compile using Java 6 source compat
@@ -216,7 +234,6 @@ Changes from 1.1.15 apply since the previous release got yanked due a regression
 - jruby runtime pooling for plain Rack applications (not just Rails)
 
 ## 1.1.7 (21/06/12)
->>>>>>> 1.1-stable:History.md
 
 - support for delegating logs to java.util.logging (jruby.rack.logging: JUL)
 - extend RackLogger with levels for better logging with underlying log impl
