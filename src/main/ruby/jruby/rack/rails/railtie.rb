@@ -6,6 +6,7 @@
 # See the file LICENSE.txt for details.
 #++
 
+require 'active_support'
 require 'rails/railtie'
 require 'pathname'
 
