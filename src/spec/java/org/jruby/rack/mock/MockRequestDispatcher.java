@@ -19,13 +19,13 @@
 
 package org.jruby.rack.mock;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 
 /**
- * Mock implementation of the {@link javax.servlet.RequestDispatcher} interface.
+ * Mock implementation of the {@link jakarta.servlet.RequestDispatcher} interface.
  *
  * <p>Used for testing the web framework; typically not necessary for
  * testing application controllers.

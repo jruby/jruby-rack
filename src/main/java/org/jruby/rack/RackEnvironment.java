@@ -14,7 +14,7 @@ import java.util.Enumeration;
 
 /**
  * Represent a Rack environment (that will most likely by wrapping a
- * {@link javax.servlet.http.HttpServletRequest}).
+ * {@link jakarta.servlet.http.HttpServletRequest}).
  * Allows Rack applications to be loaded outside of JEE servlet environments.
  *
  * @see org.jruby.rack.servlet.ServletRackEnvironment
@@ -38,7 +38,7 @@ public interface RackEnvironment {
     // The following methods are specific to the rack environment
 
     /**
-     * @see javax.servlet.ServletRequest#getInputStream()
+     * @see jakarta.servlet.ServletRequest#getInputStream()
      * @return the input as a stream
      * @throws IOException if there's an IO exception
      */
@@ -54,107 +54,107 @@ public interface RackEnvironment {
     // The following methods are usually inherited from the servlet request
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getPathInfo()
+     * @see jakarta.servlet.http.HttpServletRequest#getPathInfo()
      * @return the request path info
      */
     public String getPathInfo();
 
     /**
      * Request URI should include the query string if available.
-     * @see javax.servlet.http.HttpServletRequest#getRequestURI()
+     * @see jakarta.servlet.http.HttpServletRequest#getRequestURI()
      * @return the request URI
      */
     public String getRequestURI();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getAttributeNames()
+     * @see jakarta.servlet.http.HttpServletRequest#getAttributeNames()
      * @return an enumeration of all attribute names
      */
     public Enumeration<String> getAttributeNames();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getAttribute(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getAttribute(String)
      * @param key the attribute key
      * @return the attribute value
      */
     public Object getAttribute(String key);
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#setAttribute(String, Object)
+     * @see jakarta.servlet.http.HttpServletRequest#setAttribute(String, Object)
      * @param key the key
      * @param value the value
      */
     public void setAttribute(String key, Object value);
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getHeaderNames()
+     * @see jakarta.servlet.http.HttpServletRequest#getHeaderNames()
      * @return an enumeration of all header names
      */
     public Enumeration<String> getHeaderNames();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getHeader(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getHeader(String)
      * @param name the header name
      * @return the header value
      */
     public String getHeader(String name);
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getScheme()
+     * @see jakarta.servlet.http.HttpServletRequest#getScheme()
      * @return the request scheme
      */
     public String getScheme();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getContentType()
+     * @see jakarta.servlet.http.HttpServletRequest#getContentType()
      * @return the content type
      */
     public String getContentType();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getContentLength()
+     * @see jakarta.servlet.http.HttpServletRequest#getContentLength()
      * @return the content length
      */
     public int getContentLength();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getMethod()
+     * @see jakarta.servlet.http.HttpServletRequest#getMethod()
      * @return the request method
      */
     public String getMethod();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getQueryString()
+     * @see jakarta.servlet.http.HttpServletRequest#getQueryString()
      * @return the query string
      */
     public String getQueryString();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getServerName()
+     * @see jakarta.servlet.http.HttpServletRequest#getServerName()
      * @return the server name
      */
     public String getServerName();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getServerPort()
+     * @see jakarta.servlet.http.HttpServletRequest#getServerPort()
      * @return the server port
      */
     public int getServerPort();
 
     /**
-     * @see javax.servlet.ServletRequest#getRemoteHost()
+     * @see jakarta.servlet.ServletRequest#getRemoteHost()
      * @return the remote host
      */
     public String getRemoteHost();
 
     /**
-     * @see javax.servlet.ServletRequest#getRemoteAddr()
+     * @see jakarta.servlet.ServletRequest#getRemoteAddr()
      * @return the remote address
      */
     public String getRemoteAddr();
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getRemoteUser()
+     * @see jakarta.servlet.http.HttpServletRequest#getRemoteUser()
      * @return the remote user
      */
     public String getRemoteUser();

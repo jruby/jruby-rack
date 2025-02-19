@@ -15,14 +15,14 @@
  */
 package org.jruby.rack.mock;
 
-import javax.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionCookieConfig;
 
 /**
- * Mock implementation of the {@link javax.servlet.SessionCookieConfig} interface.
+ * Mock implementation of the {@link jakarta.servlet.SessionCookieConfig} interface.
  *
  * @author Juergen Hoeller
  * @since 4.0
- * @see javax.servlet.ServletContext#getSessionCookieConfig()
+ * @see jakarta.servlet.ServletContext#getSessionCookieConfig()
  */
 public class MockSessionCookieConfig implements SessionCookieConfig {
 

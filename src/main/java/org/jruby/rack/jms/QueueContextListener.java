@@ -10,9 +10,9 @@ package org.jruby.rack.jms;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackContext;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  *

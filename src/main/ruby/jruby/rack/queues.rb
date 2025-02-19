@@ -8,7 +8,7 @@
 module JRuby
   module Rack
     module Queues
-      Session = Java::JavaxJms::Session
+      Session = Java::JakartaJms::Session
       MARSHAL_PAYLOAD = "ruby_marshal_payload"
 
       class QueueRegistry
