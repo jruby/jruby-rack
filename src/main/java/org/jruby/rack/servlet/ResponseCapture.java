@@ -12,8 +12,11 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.WriteListener;
@@ -236,12 +239,14 @@ public class ResponseCapture extends HttpServletResponseWrapper {
                     // not to happen but there's all kind of beasts out there
                     return false;
                 }
+                // Tomcat's DefaultServlet sets 'Allow' header but Jetty also sets the 'Date' header with its servlet
+                // ... if any other headers occur beside 'Allow' and 'Date' we consider this request handled
                 for ( final String headerName : headerNames ) {
-                    if ( ! "Allow".equals( headerName ) ) {
-                        return handled = true; // not just Allow header - consider handled
+                    if ( ! "Allow".equals( headerName ) && ! "Date".equals( headerName ) ) {
+                        return handled = true;
                     }
                 }
-                return false; // OPTIONS with only Allow header set - unhandled
+                return false; // OPTIONS with only 'Allow' (and/or 'Date') header set - unhandled
             }
             return handled = true;
         }

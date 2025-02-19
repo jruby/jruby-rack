@@ -1,4 +1,5 @@
 #--
+# Copyright (c) 2012-2016 Karol Bucek, LTD.
 # Copyright (c) 2010-2012 Engine Yard, Inc.
 # Copyright (c) 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
@@ -100,13 +101,10 @@ module Rack
         end
 
         def [](key)
-          value = super(key)
           if key.eql? QUERY_HASH
-            if @parameter_error ||= nil
-              raise @parameter_error
-            end
+            raise @parameter_error if @parameter_error ||= nil
           end
-          value
+          super(key)
         end
         public :[]
 

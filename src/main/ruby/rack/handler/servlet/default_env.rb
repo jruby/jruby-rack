@@ -1,4 +1,5 @@
 #--
+# Copyright (c) 2012-2016 Karol Bucek, LTD.
 # Copyright (c) 2010-2012 Engine Yard, Inc.
 # Copyright (c) 2007-2009 Sun Microsystems, Inc.
 # This source code is available under the MIT license.
@@ -28,6 +29,8 @@ module Rack
           REMOTE_ADDR REMOTE_HOST REMOTE_USER REQUEST_METHOD REQUEST_URI
           SCRIPT_NAME SERVER_NAME SERVER_PORT SERVER_SOFTWARE).
           map!(&:freeze)
+
+        attr_reader :env
 
         # Factory method for creating the Hash.
         # Besides initializing a new env instance this method by default
@@ -59,6 +62,16 @@ module Rack
           end
         end
 
+        # If a block is given, it yields to the block if the value hasn't been set
+        # on the request.
+        def fetch_header(name, &block)
+          @env.fetch(name, &block)
+        end
+
+        def get_header(key)
+          @env[key]
+        end
+
         def populate
           unless @populated ||= false
             populate! if @servlet_env
@@ -74,6 +87,16 @@ module Rack
           self
         end
 
+        def session_options
+          fetch_header(RACK_SESSION_OPTIONS) do |k|
+            set_header RACK_SESSION_OPTIONS, {}
+          end
+        end
+
+        def set_header(name, v)
+          @env[name] = v
+        end
+
         def to_hash(bare = nil)
           if bare
             {}.update(populate)
@@ -82,13 +105,23 @@ module Rack
           end
         end
 
-        def [](key)
-          val = super
-          val.nil? ? load_env_key(self, key) : val
+        # @private
+        DEFAULT = Object.new
+        private_constant :DEFAULT rescue nil
+
+        alias_method '_fetch', :fetch; private '_fetch' # Hash#fetch
+        def fetch(key, default = DEFAULT, &block)
+          default.equal?(DEFAULT) ? _fetch(key, &block) : _fetch(key, default, &block)
         end
 
+        def [](key)
+          value = _fetch(key, DEFAULT)
+          value.equal?(DEFAULT) ? load_env_key(self, key) : value
+        end
+
+        alias_method '_key?', :key?; private '_key?'
         def key?(key)
-          super || load_env_key(self, key) != nil
+          _key?(key) || load_env_key(self, key) != nil
         end
         alias_method :has_key?, :key?
         alias_method :include?, :key?
@@ -113,7 +146,7 @@ module Rack
             when 'CONTENT_TYPE'
               @env[name] = value if value
             else
-              @env[name] = value ? value : ''
+              @env[name] = value
             end
           end
         end

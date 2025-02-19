@@ -61,7 +61,7 @@ module SharedHelpers
 
   def servlet_30?
     return @@servlet_30 unless @@servlet_30.nil?
-    @@servlet_30 = !! ( Java::JavaClass.for_name('jakarta.servlet.AsyncContext') rescue nil )
+    @@servlet_30 = !! ( Java::jakarta.servlet.AsyncContext rescue nil )
   end
   private :servlet_30?
 
@@ -168,10 +168,8 @@ begin
   end
 rescue LoadError
 end
-# add to load path for stubbed out action_controller, railtie etc
-$LOAD_PATH.unshift File.expand_path('../rails/stub', __FILE__) unless defined?(Rails::VERSION)
 
-# current 'library' environment (based on appraisals) e.g. :rails31
+# current 'library' environment (based on appraisals) e.g. :rails32
 CURRENT_LIB = defined?(Rails::VERSION) ?
   :"rails#{Rails::VERSION::MAJOR}#{Rails::VERSION::MINOR}" : :stub
 
@@ -194,20 +192,13 @@ RSpec.configure do |config|
   config.filter_run_excluding :lib => lambda { |lib|
     return false if lib.nil? # no :lib => specified run with all
     lib = lib.is_a?(Array) ? lib : [ lib ]
-    if CURRENT_LIB == :rails40
-      if RUBY_VERSION < '1.9'
-        return true # NOTE: no sense running Rails 4.0 on 1.8.x
-      end
-      #return ! lib.include?(:rails32)
-    end
-    ! lib.include?(CURRENT_LIB)
+    return ! lib.include?(CURRENT_LIB)
   }
 
   config.backtrace_exclusion_patterns = [
     /bin\//,
     #/gems/,
     /spec\/spec_helper\.rb/,
-    /lib\/rspec\/(core|expectations|matchers|mocks)/
   ]
 
 end
