@@ -6,7 +6,7 @@ GEM
       rake
       thor (>= 0.14.0)
     diff-lcs (1.6.0)
-    rack (2.2.11)
+    rack (2.2.12)
     rake (13.2.1)
     rspec (3.13.0)
       rspec-core (~> 3.13.0)
@@ -28,10 +28,11 @@ PLATFORMS
   universal-java-11
   universal-java-17
   universal-java-21
+  x86_64-linux
 
 DEPENDENCIES
   appraisal
-  rack (~> 2.2, < 3.0)
+  rack (~> 2.2)
   rake (~> 13.2)
   rspec
 
