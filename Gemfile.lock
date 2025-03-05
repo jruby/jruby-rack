@@ -5,7 +5,7 @@ GEM
       bundler
       rake
       thor (>= 0.14.0)
-    diff-lcs (1.6.0)
+    diff-lcs (1.6.1)
     rack (2.2.13)
     rake (13.2.1)
     rspec (3.13.0)
