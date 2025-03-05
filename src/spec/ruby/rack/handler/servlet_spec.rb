@@ -17,11 +17,11 @@ describe Rack::Handler::Servlet do
   let(:servlet_context) { @servlet_context ||= mock_servlet_context }
 
   let(:servlet_request) do
-    org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
+    org.springframework.mock.web.MockHttpServletRequest.new(servlet_context)
   end
 
   let(:servlet_response) do
-    org.jruby.rack.mock.MockHttpServletResponse.new
+    org.springframework.mock.web.MockHttpServletResponse.new
   end
 
   shared_examples "env" do
@@ -189,7 +189,7 @@ describe Rack::Handler::Servlet do
       @servlet_request.setRemoteHost('localhost')
       @servlet_request.setRemoteUser('admin')
 
-      { "Host" => "localhost",
+      { "Host" => "serverhost",
         "Accept" => "text/*",
         "Accept-Encoding" => "gzip"}.each do |name, value|
         @servlet_request.addHeader(name, value)
@@ -198,7 +198,7 @@ describe Rack::Handler::Servlet do
       env = servlet.create_env @servlet_env
       env["rack.version"].should == Rack::VERSION
       env["CONTENT_TYPE"].should == "text/html"
-      env["HTTP_HOST"].should == "localhost"
+      env["HTTP_HOST"].should == "serverhost"
       env["HTTP_ACCEPT"].should == "text/*"
       env["REQUEST_METHOD"].should == "GET"
       env["SCRIPT_NAME"].should == "/app"
@@ -341,7 +341,7 @@ describe Rack::Handler::Servlet do
     end
 
     it "retrieves hidden attribute" do
-      servlet_request_class = Class.new(org.jruby.rack.mock.MockHttpServletRequest) do
+      servlet_request_class = Class.new(org.springframework.mock.web.MockHttpServletRequest) do
 
         def getAttributeNames
           names = super.to_a.reject { |name| name.start_with?('org.apache') }
@@ -501,8 +501,8 @@ describe Rack::Handler::Servlet do
   shared_examples "(eager)rack-env" do
 
     before do
-      @servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new(@servlet_context)
-      @servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
+      @servlet_request = org.springframework.mock.web.MockHttpServletRequest.new(@servlet_context)
+      @servlet_response = org.springframework.mock.web.MockHttpServletResponse.new
       @servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(
         @servlet_request, @servlet_response, @rack_context
       )
@@ -888,9 +888,9 @@ describe Rack::Handler::Servlet do
   context "servlet" do
 
     before do
-      @servlet_context = org.jruby.rack.mock.MockServletContext.new
-      @servlet_request = org.jruby.rack.mock.MockHttpServletRequest.new(@servlet_context)
-      @servlet_response = org.jruby.rack.mock.MockHttpServletResponse.new
+      @servlet_context = org.springframework.mock.web.MockServletContext.new
+      @servlet_request = org.springframework.mock.web.MockHttpServletRequest.new(@servlet_context)
+      @servlet_response = org.springframework.mock.web.MockHttpServletResponse.new
       @servlet_env = org.jruby.rack.servlet.ServletRackEnvironment.new(
         @servlet_request, @servlet_response, @rack_context
       )
@@ -1039,7 +1039,7 @@ describe Rack::Handler::Servlet do
     end
 
     it "handles null values in parameter-map (Jetty)" do
-      org.jruby.rack.mock.MockHttpServletRequest.class_eval do
+      org.springframework.mock.web.MockHttpServletRequest.class_eval do
         field_reader :parameters
       end
       # reproducing https://github.com/jruby/jruby-rack/issues/154

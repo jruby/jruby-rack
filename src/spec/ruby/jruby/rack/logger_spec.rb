@@ -7,7 +7,7 @@ describe JRuby::Rack::Logger do
   end
 
   let(:servlet_context) do
-    servlet_context = org.jruby.rack.mock.MockServletContext.new
+    servlet_context = org.jruby.rack.mock.RackLoggingMockServletContext.new
     servlet_context.logger = real_logger
     servlet_context
   end

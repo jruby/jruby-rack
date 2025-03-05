@@ -33,11 +33,11 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
   end
 
   let(:servlet_request) do
-    org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
+    org.springframework.mock.web.MockHttpServletRequest.new(servlet_context)
   end
 
   let(:servlet_response) do
-    org.jruby.rack.mock.MockHttpServletResponse.new
+    org.springframework.mock.web.MockHttpServletResponse.new
   end
 
   let(:rack_config) do

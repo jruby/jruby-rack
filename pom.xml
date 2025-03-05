@@ -23,6 +23,7 @@
     <jruby.maven.plugins.version>3.0.5</jruby.maven.plugins.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
     <slf4j.version>2.0.17</slf4j.version>
+    <spring.version>4.3.30.RELEASE</spring.version>
   </properties>
 
   <issueManagement>
@@ -135,8 +136,14 @@
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>3.2.18.RELEASE</version>
+      <artifactId>spring-web</artifactId>
+      <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

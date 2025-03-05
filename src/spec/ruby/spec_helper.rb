@@ -204,10 +204,10 @@ RSpec.configure do |config|
 
 end
 
-java_import org.jruby.rack.mock.MockServletConfig
-java_import org.jruby.rack.mock.MockServletContext
-java_import org.jruby.rack.mock.MockHttpServletRequest
-java_import org.jruby.rack.mock.MockHttpServletResponse
+java_import org.springframework.mock.web.MockServletConfig
+java_import org.springframework.mock.web.MockServletContext
+java_import org.springframework.mock.web.MockHttpServletRequest
+java_import org.springframework.mock.web.MockHttpServletResponse
 
 class StubInputStream < java.io.InputStream
 

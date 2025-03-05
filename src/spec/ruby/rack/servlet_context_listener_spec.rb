@@ -42,7 +42,7 @@ describe org.jruby.rack.RackServletContextListener do
     end
 
     it "throws an error if initialization failed (and jruby.rack.error = false)" do
-      @servlet_context = org.jruby.rack.mock.MockServletContext.new
+      @servlet_context = org.springframework.mock.web.MockServletContext.new
       @servlet_context.add_init_parameter 'jruby.rack.error', 'false'
       @factory.should_receive(:init).and_raise org.jruby.rack.RackInitializationException.new("help")
 

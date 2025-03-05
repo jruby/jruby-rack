@@ -218,7 +218,7 @@ describe "ActionController::Session::JavaServletStore" do
   end
 
   it "should attempt to invalidate an invalid servlet session" do
-    session = double_http_session(nil); session.invalidate
+    session = double_http_session; session.invalidate
     @request.should_receive(:getSession).with(false).and_return session
 
     @app.should_receive(:call) do |env|
@@ -265,25 +265,22 @@ describe "ActionController::Session::JavaServletStore" do
   end
 
   it "supports renewing a session" do
-    session = double_http_session sid = "EC72C9F8EC984052C6F13D08893121DF"
+    session = double_http_session
     @request.should_receive(:getSession).ordered.with(false).and_return(session)
 
     new_session = double_http_session
     @request.should_receive(:getSession).ordered.with(true).and_return(new_session)
 
     @app.should_receive(:call) do |env|
-      env['rack.session.options'] = { :id => sid, :renew => true, :defer => true }
+      env['rack.session.options'] = { :id => session.id, :renew => true, :defer => true }
       env['rack.session']['_csrf_token'] = 'v3PrzsdkWug9Q3xCthKkEzUMbZSzgQ9Bt+43lH0bEF8='
     end
     @session_store.call(@env)
 
     expect( session.isInvalid ).to be true
-    attrs = session.send(:getAttributes)
-    expect( attrs['_csrf_token'] ).to be nil
 
     expect( new_session.isInvalid ).to be false
-    attrs = new_session.send(:getAttributes)
-    expect( attrs['_csrf_token'] ).to_not be nil
+    expect( new_session.send(:getAttribute, "_csrf_token") ).to_not be nil
   end
 
   it "handles the skip session option" do
@@ -298,10 +295,8 @@ describe "ActionController::Session::JavaServletStore" do
 
   private
 
-  def double_http_session(id = false)
-    session = Java::OrgJrubyRackMock::MockHttpSession.new
-    session.send(:setId, id) if id != false
-    session
+  def double_http_session
+    Java::OrgSpringframeworkMockWeb::MockHttpSession.new
   end
 
   def new_session_hash(*args)
