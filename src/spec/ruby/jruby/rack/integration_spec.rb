@@ -20,7 +20,7 @@ describe "integration" do
   describe 'rack (lambda)' do
 
     before do
-      @servlet_context = org.jruby.rack.mock.MockServletContext.new "file://#{STUB_DIR}/rack"
+      @servlet_context = org.jruby.rack.mock.RackLoggingMockServletContext.new "file://#{STUB_DIR}/rack"
       @servlet_context.logger = raise_logger
       # make sure we always boot runtimes in the same mode as specs :
       set_compat_version @servlet_context
@@ -56,7 +56,7 @@ describe "integration" do
       end
 
       it "inits servlet" do
-        servlet_config = org.jruby.rack.mock.MockServletConfig.new @servlet_context
+        servlet_config = org.springframework.mock.web.MockServletConfig.new @servlet_context
 
         servlet = org.jruby.rack.RackServlet.new
         servlet.init(servlet_config)
@@ -68,12 +68,12 @@ describe "integration" do
         dispatcher = org.jruby.rack.DefaultRackDispatcher.new(@rack_context)
         servlet = org.jruby.rack.RackServlet.new(dispatcher, @rack_context)
 
-        request = org.jruby.rack.mock.MockHttpServletRequest.new(@servlet_context)
+        request = org.springframework.mock.web.MockHttpServletRequest.new(@servlet_context)
         request.setMethod("GET")
         request.setRequestURI("/")
         request.setContentType("text/html")
         request.setContent("".to_java.bytes)
-        response = org.jruby.rack.mock.MockHttpServletResponse.new
+        response = org.springframework.mock.web.MockHttpServletResponse.new
 
         servlet.service(request, response)
 
@@ -407,15 +407,7 @@ describe "integration" do
     script = %{
       headers = { 'Transfer-Encoding' => 'chunked' }
 
-      body = [ \"1\".freeze, \"\", \"\nsecond\" ]
-
-      if defined? Rack::Chunked::Body # Rails 3.x
-        body = Rack::Chunked::Body.new body
-      else # Rack 1.1 / 1.2
-        chunked = Rack::Chunked.new(nil)
-        chunked.chunk(200, headers, body)
-        body = chunked
-      end
+      body = Rack::Chunked::Body.new [ \"1\".freeze, \"\", \"\nsecond\" ]
 
       parts = []; body.each { |part| parts << part }
       parts.join
@@ -431,10 +423,7 @@ describe "integration" do
       servlet_context = new_servlet_context(base)
     end
     listener = org.jruby.rack.rails.RailsServletContextListener.new
-    # Travis-CI might have RAILS_ENV=test set, which is not desired for us :
-    #if ENV['RAILS_ENV'] || ENV['RACK_ENV']
-    #ENV['RAILS_ENV'] = env; ENV.delete('RACK_ENV')
-    #end
+
     the_env = "GEM_HOME=#{ENV['GEM_HOME']},GEM_PATH=#{ENV['GEM_PATH']}"
     the_env << "\nRAILS_ENV=#{env}" if env
     servlet_context.addInitParameter("jruby.runtime.env", the_env)
@@ -452,7 +441,7 @@ describe "integration" do
   end
 
   def new_servlet_context(base_path = nil)
-    servlet_context = org.jruby.rack.mock.MockServletContext.new base_path
+    servlet_context = org.jruby.rack.mock.RackLoggingMockServletContext.new base_path
     servlet_context.logger = raise_logger
     prepare_servlet_context servlet_context
     servlet_context

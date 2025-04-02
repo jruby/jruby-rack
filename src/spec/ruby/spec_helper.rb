@@ -163,6 +163,7 @@ WD_START = Dir.getwd
 begin
   # NOTE: only if running with a `bundle exec` to better isolate
   if $LOAD_PATH.find { |path| path =~ /\/rails\-[\w\.]*\// }
+    require 'logger' # Workaround for concurrent-ruby problems on older rails versions
     require 'rails/version' # use Rails::VERSION to detect current env
     require 'rails' # attempt to load rails - for "real life" testing
   end
@@ -203,10 +204,10 @@ RSpec.configure do |config|
 
 end
 
-java_import org.jruby.rack.mock.MockServletConfig
-java_import org.jruby.rack.mock.MockServletContext
-java_import org.jruby.rack.mock.MockHttpServletRequest
-java_import org.jruby.rack.mock.MockHttpServletResponse
+java_import org.springframework.mock.web.MockServletConfig
+java_import org.springframework.mock.web.MockServletContext
+java_import org.springframework.mock.web.MockHttpServletRequest
+java_import org.springframework.mock.web.MockHttpServletResponse
 
 class StubInputStream < java.io.InputStream
 

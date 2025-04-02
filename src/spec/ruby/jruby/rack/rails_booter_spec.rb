@@ -446,8 +446,8 @@ describe JRuby::Rack, "Rails controller extensions" do
   let(:request) { double("request") }
   let(:response) { double("response") }
 
-  let(:servlet_request) { org.jruby.rack.mock.MockHttpServletRequest.new }
-  let(:servlet_response) { org.jruby.rack.mock.MockHttpServletResponse.new }
+  let(:servlet_request) { org.springframework.mock.web.MockHttpServletRequest.new }
+  let(:servlet_response) { org.springframework.mock.web.MockHttpServletResponse.new }
 
   before :each do
     request.stub(:env).and_return({

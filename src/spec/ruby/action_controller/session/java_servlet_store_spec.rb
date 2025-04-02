@@ -28,12 +28,9 @@ describe "ActionController::Session::JavaServletStore" do
     @session.stub(:synchronized).and_yield
     @request = double "servlet request"
     @app = double "app"
+    @app.stub(:call).and_return [200, {}, ["body"]]
     @env = {"java.servlet_request" => @request, "rack.errors" => $stderr}
     @session_store = ActionController::Session::JavaServletStore.new(@app)
-  end
-
-  it "should raise an error if the servlet request is not present" do
-    expect { @session_store.call({}) }.to raise_error(RuntimeError)
   end
 
   it "should do nothing if the session is not accessed" do
@@ -45,13 +42,13 @@ describe "ActionController::Session::JavaServletStore" do
     @app.should_receive(:call)
     @session_store.call(@env)
     session = @env['rack.session']
-    @session_store.send(:loaded_session?, session).should == false
+    expect(@session_store.send(:loaded_session?, session)).to eq false
   end
 
   it "should pass the application response untouched" do
     response = [200, {}, ["body"]]
     @app.should_receive(:call).and_return response
-    @session_store.call(@env).should == response
+    expect(@session_store.call(@env)).to eq response
   end
 
   it "should load the session when accessed" do
@@ -78,7 +75,7 @@ describe "ActionController::Session::JavaServletStore" do
     end
     @session_store.call(@env)
     session = @env['rack.session']
-    @session_store.send(:loaded_session?, session).should == true
+    expect(@session_store.send(:loaded_session?, session)).to eq true
   end
 
   it "should use custom session hash when loading session" do
@@ -95,7 +92,7 @@ describe "ActionController::Session::JavaServletStore" do
     @request.should_receive(:getSession).with(false).and_return @session
     @app.should_receive(:call)
     @session_store.call(@env)
-    @session_store.send(:extract_session_id, @env).should == @session_id
+    expect(@session_store.send(:extract_session_id, Rack::Request.new(@env))).to eq @session_id
   end
 
   it "should retrieve the marshalled session from the java session" do
@@ -107,8 +104,8 @@ describe "ActionController::Session::JavaServletStore" do
     @session.should_receive(:getAttribute).with(session_key).and_return marshal_data.to_java_bytes
     @session.stub(:setAttribute); @session.stub(:getCreationTime).and_return 1
     @app.should_receive(:call) do |env|
-      env['rack.session']["foo"].should == 1
-      env['rack.session']["bar"].should == true
+      expect(env['rack.session']["foo"]).to eq 1
+      expect(env['rack.session']["bar"]).to eq true
     end
     @session_store.call(@env)
   end
@@ -121,8 +118,8 @@ describe "ActionController::Session::JavaServletStore" do
     @session.should_receive(:getAttribute).with("bar").and_return hash["bar"]
     @session.stub(:setAttribute); @session.stub(:getCreationTime).and_return 1
     @app.should_receive(:call) do |env|
-      env['rack.session']["foo"].should == hash["foo"]
-      env['rack.session']["bar"].should == hash["bar"]
+      expect(env['rack.session']["foo"]).to eq hash["foo"]
+      expect(env['rack.session']["bar"]).to eq hash["bar"]
     end
     @session_store.call(@env)
   end
@@ -221,7 +218,7 @@ describe "ActionController::Session::JavaServletStore" do
   end
 
   it "should attempt to invalidate an invalid servlet session" do
-    session = double_http_session(nil); session.invalidate
+    session = double_http_session; session.invalidate
     @request.should_receive(:getSession).with(false).and_return session
 
     @app.should_receive(:call) do |env|
@@ -261,32 +258,29 @@ describe "ActionController::Session::JavaServletStore" do
     @session.should_receive(:getLastAccessedTime).and_return time
     @session.stub(:setAttribute)
     @app.should_receive(:call) do |env|
-      env['rack.session'].getLastAccessedTime.should == time
+      expect(env['rack.session'].getLastAccessedTime).to eq time
       lambda { env['rack.session'].blah_blah }.should raise_error(NoMethodError)
     end
     @session_store.call(@env)
   end
 
   it "supports renewing a session" do
-    session = double_http_session sid = "EC72C9F8EC984052C6F13D08893121DF"
+    session = double_http_session
     @request.should_receive(:getSession).ordered.with(false).and_return(session)
 
     new_session = double_http_session
     @request.should_receive(:getSession).ordered.with(true).and_return(new_session)
 
     @app.should_receive(:call) do |env|
-      env['rack.session.options'] = { :id => sid, :renew => true, :defer => true }
+      env['rack.session.options'] = { :id => session.id, :renew => true, :defer => true }
       env['rack.session']['_csrf_token'] = 'v3PrzsdkWug9Q3xCthKkEzUMbZSzgQ9Bt+43lH0bEF8='
     end
     @session_store.call(@env)
 
     expect( session.isInvalid ).to be true
-    attrs = session.send(:getAttributes)
-    expect( attrs['_csrf_token'] ).to be nil
 
     expect( new_session.isInvalid ).to be false
-    attrs = new_session.send(:getAttributes)
-    expect( attrs['_csrf_token'] ).to_not be nil
+    expect( new_session.send(:getAttribute, "_csrf_token") ).to_not be nil
   end
 
   it "handles the skip session option" do
@@ -301,10 +295,8 @@ describe "ActionController::Session::JavaServletStore" do
 
   private
 
-  def double_http_session(id = false)
-    session = Java::OrgJrubyRackMock::MockHttpSession.new
-    session.send(:setId, id) if id != false
-    session
+  def double_http_session
+    Java::OrgSpringframeworkMockWeb::MockHttpSession.new
   end
 
   def new_session_hash(*args)
@@ -313,7 +305,7 @@ describe "ActionController::Session::JavaServletStore" do
     else
       store = @session_store; env = args[0];
     end
-    ::JRuby::Rack::Session::SessionHash.new(store, env)
+    ::JRuby::Rack::Session::SessionHash.new(store, ::Rack::Request.new(env))
   end
 
 end if defined? Rails

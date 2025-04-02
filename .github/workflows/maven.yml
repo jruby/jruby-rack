@@ -1,12 +1,4 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Java CI with Maven
+name: Java CI
 
 on:
   push:
@@ -21,22 +13,95 @@ jobs:
 
     strategy:
       matrix:
+        jruby_version: [ '9.3.15.0', '9.4.12.0' ]
         java_version: [ '8', '11', '17', '21' ]
-        jruby_version: [ '9.3.15.0', '9.4.9.0' ]
       fail-fast: false
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: ${{ matrix.java_version }}
         distribution: 'temurin'
         cache: maven
+
     - name: Build with Maven
-      run: mvn -B install --file pom.xml -Djruby.version=${{ matrix.jruby_version }}
+      run: mvn -B install -Djruby.version=${{ matrix.jruby_version }}
 
     # Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
       if: github.head_ref == 'refs/heads/master' && matrix.java_version == '8' && startsWith(matrix.jruby_version, '9.4')
+
+  appraisals:
+    needs: build
+    name: ${{ matrix.appraisal }} appraisal on ${{ matrix.jruby_version }} / Java ${{ matrix.java_version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        jruby_version: [ '9.3.15.0', '9.4.12.0' ]
+        java_version: [ '8', '11', '17', '21' ]
+        appraisal: [ 'rails50', 'rails52', 'rails60', 'rails61', 'rails70', 'rails71', 'rails72' ]
+        exclude:
+          - jruby_version: '9.3.15.0'
+            java_version: '8'
+            appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '8'
+            appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '8'
+            appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '11'
+            appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '11'
+            appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '11'
+            appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '17'
+            appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '17'
+            appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '17'
+            appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '21'
+            appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '21'
+            appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+          - jruby_version: '9.3.15.0'
+            java_version: '21'
+            appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java_version }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Setup JRuby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: jruby-${{ matrix.jruby_version }}
+          bundler: 2.3.27 # use version that is OK for JRuby 9.3
+
+      - name: Run appraisal for ${{ matrix.appraisal }}
+        env:
+          BUNDLE_GEMFILE: gemfiles/${{ matrix.appraisal }}.gemfile
+        run: bundle install && bundle exec rake spec
+
