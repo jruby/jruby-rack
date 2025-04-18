@@ -1,0 +1,28 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    groups:
+      actions-deps:
+        patterns: [ "*" ]
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: monthly
+    groups:
+      maven-deps:
+        dependency-type: "production"
+      maven-dev-deps:
+        dependency-type: "development"
+  - package-ecosystem: bundler
+    directories:
+      - "/"
+    schedule:
+      interval: monthly
+    allow:
+      - dependency-type: all
+    groups:
+      ruby-deps:
+        patterns: [ "*" ]

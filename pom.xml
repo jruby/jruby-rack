@@ -19,7 +19,7 @@
   </description>
 
   <properties>
-    <jruby.version>9.4.12.0</jruby.version>
+    <jruby.version>10.0.0.0</jruby.version>
     <jruby.maven.plugins.version>3.0.5</jruby.maven.plugins.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
     <slf4j.version>2.0.17</slf4j.version>
@@ -219,7 +219,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.2</version>
+        <version>3.5.3</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
