@@ -19,8 +19,6 @@ describe "integration" do
     before do
       @servlet_context = org.jruby.rack.mock.RackLoggingMockServletContext.new "file://#{STUB_DIR}/rack"
       @servlet_context.logger = raise_logger
-      # make sure we always boot runtimes in the same mode as specs :
-      set_compat_version @servlet_context
     end
 
     it "initializes" do
@@ -260,14 +258,8 @@ describe "integration" do
   end
 
   def prepare_servlet_context(servlet_context, base_path)
-    set_compat_version servlet_context
     servlet_context.addInitParameter('rails.root', base_path)
     servlet_context.addInitParameter('jruby.rack.layout_class', 'FileSystemLayout')
-  end
-
-  def set_compat_version(servlet_context = @servlet_context); require 'jruby'
-    compat_version = JRuby.runtime.getInstanceConfig.getCompatVersion # RUBY1_9
-    servlet_context.addInitParameter("jruby.compat.version", compat_version.to_s)
   end
 
   GEMFILES_DIR = File.expand_path('../../../gemfiles', STUB_DIR)
