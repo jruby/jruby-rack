@@ -3,7 +3,7 @@ require 'java'
 
 target = File.expand_path('target', "#{File.dirname(__FILE__)}/../../..")
 jars = File.exist?(lib = "#{target}/lib") && ( Dir.entries(lib) - [ '.', '..' ] )
-raise "missing .jar dependencies please run `rake test_jars'" if ! jars || jars.empty?
+raise "missing .jar dependencies please run `rake test_prepare'" if ! jars || jars.empty?
 $CLASSPATH << File.expand_path('classes', target)
 $CLASSPATH << File.expand_path('test-classes', target)
 jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }

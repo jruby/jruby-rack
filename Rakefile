@@ -37,18 +37,15 @@ end
 directory 'target/classes'
 
 desc "Compile classes"
-task(:compile => 'target/classes') { sh 'mvn compile -Dmdep.skip=true' }
+task(:compile => 'target/classes') do
+  sh "mvn compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
+end
 
 directory 'target/test-classes'
 
 desc "Compile test classes"
-task(:test_compile => 'target/test-classes') { sh 'mvn test-compile -Dmdep.skip=true' }
-
-desc "Copy .jar dependencies for (local) testing"
-task(:test_jars) { sh 'mvn test-compile' }
-
 task(:test_prepare => ['target/classes', 'target/test-classes']) do
-  sh 'mvn test-compile'
+  sh "mvn test-compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
 end
 
 desc "Unpack the rack gem"
