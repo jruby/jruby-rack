@@ -206,8 +206,6 @@ as context init parameters in web.xml or as VM-wide system properties.
   sub-path of the main servlet context root.
 - `gem.path`: Relative path to the bundled gem repository. Defaults to
   */WEB-INF/gems*.
-- `jruby.compat.version`: Set to "1.8" or "1.9" to make JRuby run a specific
-  version of Ruby (same as the --1.8 / --1.9 command line flags).
 - `jruby.min.runtimes`: For non-threadsafe Rails applications using a runtime
   pool, specify an integer minimum number of runtimes to hold in the pool.
 - `jruby.max.runtimes`: For non-threadsafe Rails applications, an integer
