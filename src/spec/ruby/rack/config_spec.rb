@@ -184,54 +184,8 @@ describe org.jruby.rack.servlet.ServletRackConfig do
 
   end
 
-  it "sets compat version from init parameter" do
-    expect(@servlet_context).to receive(:getInitParameter).with("jruby.compat.version").
-      and_return "RUBY1_9"
-    expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY1_9
-  end
-
-  it "sets compat version from init parameter (dot syntax)" do
-    expect(@servlet_context).to receive(:getInitParameter).with("jruby.compat.version").
-      and_return "1.8"
-    expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY1_8
-  end
-
-  it "leaves compat version nil if not specified" do
-    expect(@servlet_context).to receive(:getInitParameter).with("jruby.compat.version").
-      and_return nil
+  it "always returns nil compat version (backwards compat)" do
     expect( config.getCompatVersion ).to be nil
-  end
-
-  it "leaves compat version nil if invalid value specified" do
-    expect(@servlet_context).to receive(:getInitParameter).with("jruby.compat.version").
-      and_return "4.2"
-    expect( config.getCompatVersion ).to be nil
-  end
-
-    it "sets compat version from init parameter (head-syntax)" do
-      expect(@servlet_context).to receive(:getInitParameter).with("jruby.compat.version").
-        and_return "1.9.3-SNAPSHOT"
-      expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY1_9
-    end
-
-  if JRUBY_VERSION >= '1.7.0'
-    it "sets compat version 2.0 from init parameter" do
-      expect(@servlet_context).to receive(:getInitParameter).with("jruby.compat.version").
-        and_return "RUBY2_0"
-      expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY2_0
-    end
-
-    it "sets compat version 2.0 from init parameter (dot syntax)" do
-      expect(@servlet_context).to receive(:getInitParameter).with("jruby.compat.version").
-        and_return "2_0"
-      expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY2_0
-    end
-
-    it "sets compat version 2.0 from init parameter (head-syntax)" do
-      expect(@servlet_context).to receive(:getInitParameter).with("jruby.compat.version").
-        and_return "2.0.0.dev"
-      expect( config.getCompatVersion ).to be org.jruby.CompatVersion::RUBY2_0
-    end
   end
 
   describe "custom-properties" do

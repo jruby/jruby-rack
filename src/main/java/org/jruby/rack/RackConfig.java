@@ -36,7 +36,10 @@ public interface RackConfig {
     /** 
      * Return the Ruby version that JRuby should run.
      * @return <code>RUBY_VERSION</code> (e.g. 1.8, 1.9)
+     *
+     * @deprecated Since jruby-rack 1.2 (and JRuby 9.2), for removal in 1.3.0
      */
+    @Deprecated
     CompatVersion getCompatVersion();
 
     /** 

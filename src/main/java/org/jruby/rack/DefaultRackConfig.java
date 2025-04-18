@@ -17,8 +17,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jruby.CompatVersion;
 import org.jruby.rack.logging.OutputStreamLogger;
@@ -81,23 +79,6 @@ public class DefaultRackConfig implements RackConfig {
 
     @Override
     public CompatVersion getCompatVersion() {
-        final String version = getProperty("jruby.compat.version");
-        if ( version != null ) {
-            // we handle 1.8, RUBY1_9, --2.0 1_9 2.1.0.dev etc :
-            final Pattern pattern = Pattern.compile("([123])[._]([8901234567])");
-            final Matcher matcher = pattern.matcher(version);
-            if ( matcher.find() ) {
-                final String name = "RUBY" +
-                    matcher.group(1) + '_' + matcher.group(2);
-                try {
-                    return Enum.valueOf(CompatVersion.class, name);
-                }
-                catch (IllegalArgumentException e) {
-                    getLogger().log(WARN,
-                        "could not resolve compat version from '"+ version +"' will use default", e);
-                }
-            }
-        }
         return null;
     }
 

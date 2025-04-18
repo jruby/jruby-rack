@@ -302,10 +302,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         // Process arguments, namely any that might be in RUBYOPT
         config.processArguments(rackConfig.getRuntimeArguments());
 
-        if ( rackConfig.getCompatVersion() != null ) {
-            config.setCompatVersion(rackConfig.getCompatVersion());
-        }
-
         try { // try to set jruby home to jar file path
             final URL resource = Ruby.class.getResource("/META-INF/jruby.home");
             if ( resource != null && "jar".equals( resource.getProtocol() ) ) {

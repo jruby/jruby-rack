@@ -165,7 +165,7 @@ describe 'JRuby::Rack::ErrorApp' do
     end
     yield path
   ensure
-    FileUtils.rm_rf(path) if path && File.exists?(path)
+    FileUtils.rm_rf(path) if path && File.exist?(path)
   end
 
 end

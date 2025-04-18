@@ -44,7 +44,6 @@ public class Config implements RackConfig {
 
     private RackLogger logger;
     private Map<String, String> rubyENV;
-    private CompatVersion compatVersion;
 
     public Config() {
         delegate = new DefaultRackConfig() {
@@ -66,7 +65,6 @@ public class Config implements RackConfig {
         setOut( runtime.getOut() );
         setErr( runtime.getErr() );
         rubyENV = runtime.getENV();
-        compatVersion = runtime.getInstanceConfig().getCompatVersion();
     }
 
 
@@ -106,9 +104,15 @@ public class Config implements RackConfig {
         return delegate.getNumberProperty(key, defaultValue);
     }
 
+    /**
+     * @return Always CompatVersion.RUBY2_1, consistent with JRuby 9.3+
+     *
+     * @deprecated Since jruby-rack 1.2 (and JRuby 9.2), for removal in 1.3.0
+     */
+    @Deprecated
     @Override
     public CompatVersion getCompatVersion() {
-        return compatVersion;
+        return CompatVersion.RUBY2_1;
     }
 
     @Override
