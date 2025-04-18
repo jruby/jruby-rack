@@ -7,8 +7,6 @@
 
 package org.jruby.rack;
 
-import org.jruby.CompatVersion;
-
 import java.io.PrintStream;
 import java.util.Map;
 
@@ -32,12 +30,6 @@ public interface RackConfig {
      * @return <code>STDERR</code>
      */
     PrintStream getErr();
-    
-    /** 
-     * Return the Ruby version that JRuby should run.
-     * @return <code>RUBY_VERSION</code> (e.g. 1.8, 1.9)
-     */
-    CompatVersion getCompatVersion();
 
     /** 
      * Return the rackup Ruby script to be used to launch the application.
