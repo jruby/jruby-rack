@@ -1,7 +1,7 @@
 ## 1.2.3
 
 - Adds basic compatibility with JRuby 10.0
-- update (bundled) rack to 2.2.13
+- update (bundled) rack to 2.2.15
 - Corrects Rack 2.x compatibility when used with modern Rails, and requires Rack 2.x going forward
 - forward ports all 1.1.x fixes to the 1.2.x stream which were omitted in 1.2.2 release (#262)
 - fixes regression NoMethodError undefined method get_header (#259)

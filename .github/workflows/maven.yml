@@ -13,14 +13,14 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.3.15.0', '9.4.12.0', '10.0.0.0' ]
+        jruby_version: [ '9.3.15.0', '9.4.12.1', '10.0.0.1' ]
         java_version: [ '8', '11', '17', '21' ]
         exclude:
-          - jruby_version: '10.0.0.0'
+          - jruby_version: '10.0.0.1'
             java_version: '8' # JRuby 10 requires Java 21
-          - jruby_version: '10.0.0.0'
+          - jruby_version: '10.0.0.1'
             java_version: '11' # JRuby 10 requires Java 21
-          - jruby_version: '10.0.0.0'
+          - jruby_version: '10.0.0.1'
             java_version: '17' # JRuby 10 requires Java 21
       fail-fast: false
 
@@ -49,7 +49,7 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.3.15.0', '9.4.12.0', '10.0.0.0' ]
+        jruby_version: [ '9.3.15.0', '9.4.12.1', '10.0.0.1' ]
         java_version: [ '8', '11', '17', '21' ]
         appraisal: [ 'rails50', 'rails52', 'rails60', 'rails61', 'rails70', 'rails71', 'rails72' ]
         exclude:
@@ -89,11 +89,11 @@ jobs:
           - jruby_version: '9.3.15.0'
             java_version: '21'
             appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '10.0.0.0'
+          - jruby_version: '10.0.0.1'
             java_version: '8' # JRuby 10 requires Java 21
-          - jruby_version: '10.0.0.0'
+          - jruby_version: '10.0.0.1'
             java_version: '11' # JRuby 10 requires Java 21
-          - jruby_version: '10.0.0.0'
+          - jruby_version: '10.0.0.1'
             java_version: '17' # JRuby 10 requires Java 21
       fail-fast: false
 
@@ -108,7 +108,7 @@ jobs:
           cache: maven
 
       - name: Setup JRuby
-        uses: ruby/setup-ruby@ca041f971d66735f3e5ff1e21cc13e2d51e7e535 # v1.233.0
+        uses: ruby/setup-ruby@e34163cd15f4bb403dcd72d98e295997e6a55798 # v1.238.0
         with:
           ruby-version: jruby-${{ matrix.jruby_version }}
           bundler: 2.3.27 # use version that is OK for JRuby 9.3
