@@ -6,7 +6,7 @@ JRuby-Rack supports Rails as well as any Rack-compatible Ruby web framework.
 
 For more information on Rack, visit http://rack.github.io/.
 
-**This README (master) targets JRuby-Rack 1.2. Please use the
+**This README (master) targets JRuby-Rack 1.3. Please use the
 [1.1-stable](https://github.com/jruby/jruby-rack/tree/1.1-stable) branch for
 current stable 1.1.x releases.**
 
@@ -15,12 +15,16 @@ current stable 1.1.x releases.**
 
 ## Compatibility
 
+JRuby-Rack 1.3.x
+- aims to be compatible with JRuby 9.3 -> 10.0 and their supported JDK versions
+- supports any container compatible with Java Servlet 3.0 API
+
 JRuby-Rack 1.2.x
-- aims to be compatible with JRuby >= 9.3 and its supported JDK versions
+- compatible with JRuby 9.3 -> 9.4 and their supported JDK versions
 - supports any container compatible with Java Servlet 3.0 API
 
 JRuby-Rack 1.1.x
-- aims to be compatible with JRuby >= 1.6.4 (used successfully through JRuby 9.4.x)
+- aims to be compatible with JRuby >= 1.6.4 (used successfully through JRuby 9.4)
 - supports any container compatible with Java Servlet 2.5 API (JEE 5)
 
 
