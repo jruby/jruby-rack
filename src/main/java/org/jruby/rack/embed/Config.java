@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Map;
 
-import org.jruby.CompatVersion;
 import org.jruby.Ruby;
 import org.jruby.rack.DefaultRackConfig;
 import org.jruby.rack.RackConfig;
@@ -44,7 +43,6 @@ public class Config implements RackConfig {
 
     private RackLogger logger;
     private Map<String, String> rubyENV;
-    private CompatVersion compatVersion;
 
     public Config() {
         delegate = new DefaultRackConfig() {
@@ -61,31 +59,11 @@ public class Config implements RackConfig {
         };
     }
 
-    /*
-    Config(final RackConfig config) {
-        delegate = new DefaultRackConfig() {
-
-            @Override
-            public String getProperty(String key, String defaultValue) {
-                String value = config.getProperty(key, null);
-                if ( value != null ) return value;
-
-                value = Config.this.resolveProperty(key);
-                return value != null ? value : super.getProperty(key, defaultValue);
-            }
-
-            @Override
-            public RackLogger defaultLogger() { return null; }
-
-        };
-    } */
-
     @SuppressWarnings("unchecked")
     public void doInitialize(final Ruby runtime) {
         setOut( runtime.getOut() );
         setErr( runtime.getErr() );
         rubyENV = runtime.getENV();
-        compatVersion = runtime.getInstanceConfig().getCompatVersion();
     }
 
 
@@ -117,10 +95,6 @@ public class Config implements RackConfig {
 
     public final Number getNumberProperty(String key, Number defaultValue) {
         return delegate.getNumberProperty(key, defaultValue);
-    }
-
-    public CompatVersion getCompatVersion() {
-        return compatVersion;
     }
 
     public RackLogger getLogger() {
