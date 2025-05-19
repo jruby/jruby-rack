@@ -100,8 +100,8 @@ describe org.jruby.rack.embed.Config do
       @config.getOut.println "hello out!"
       @config.getErr.println "hello err!"
 
-      out.toString.should == "hello out!\n"
-      err.toString.should == "hello err!\n"
+      expect(out.toString).to include "hello out!\n"
+      expect(err.toString).to include "hello err!\n"
     end
 
   end

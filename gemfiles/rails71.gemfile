@@ -7,7 +7,7 @@ gem "rspec", group: :test
 gem "rails", "~> 7.1.0"
 
 group :default do
-  gem "rack", "~> 2.2", "< 3.0"
+  gem "rack", "~> 2.2"
 end
 
 group :development do

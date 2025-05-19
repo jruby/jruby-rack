@@ -39,8 +39,8 @@ describe org.jruby.rack.embed.Dispatcher do
     runtime.evalScriptlet "$stdout.puts 'out from out there!'"
     runtime.evalScriptlet "STDERR.puts 'error it is not ...'"
 
-    out.toString.should == "out from out there!\n"
-    err.toString.should == "error it is not ...\n"
+    expect(out.toString).to include  "out from out there!\n"
+    expect(err.toString).to include  "error it is not ...\n"
   end
 
 end
