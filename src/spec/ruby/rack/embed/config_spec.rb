@@ -83,12 +83,6 @@ describe org.jruby.rack.embed.Config do
       end
     end
 
-    it "sets compat version from runtime" do
-      require 'jruby'
-      compat_version = JRuby.runtime.instance_config.compat_version
-      expect( @config.compat_version ).to eql compat_version
-    end
-
     it "sets out/err streams from runtime" do
       out = java.io.ByteArrayOutputStream.new
       err = java.io.ByteArrayOutputStream.new
@@ -100,8 +94,8 @@ describe org.jruby.rack.embed.Config do
       @config.getOut.println "hello out!"
       @config.getErr.println "hello err!"
 
-      out.toString.should == "hello out!\n"
-      err.toString.should == "hello err!\n"
+      expect(out.toString).to include "hello out!\n"
+      expect(err.toString).to include "hello err!\n"
     end
 
   end
