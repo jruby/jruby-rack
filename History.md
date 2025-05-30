@@ -1,6 +1,13 @@
 ## 1.2.3
 
-- Adds basic compatibility with JRuby 10.0
+- avoid warnings due usage of `File.exists?`
+- Fix Rails 7.1 compatibility by ensuring active_support is required before railtie
+- Workaround logger require issues with concurrent-ruby 1.3.5 and older Rails versions
+- Workaround NameError frozen string literal issues with JRuby 9.3 and Rails 5.2/6.0
+- Use non-public lookup to avoid classloader issues (#268)
+- visibility changes to ensure they can be run on Java 17+ as well without using reflection hack
+- Fix ERB deprecation warning
+- Fix new loggers to avoid logging at multiple levels
 - update (bundled) rack to 2.2.15
 - Corrects Rack 2.x compatibility when used with modern Rails, and requires Rack 2.x going forward
 - forward ports all 1.1.x fixes to the 1.2.x stream which were omitted in 1.2.2 release (#262)
