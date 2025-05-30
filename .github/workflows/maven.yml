@@ -2,7 +2,7 @@ name: Java CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches-ignore: [ "internal*" ]
   pull_request:
     branches: [ "master" ]
 
