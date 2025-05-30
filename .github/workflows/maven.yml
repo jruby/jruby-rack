@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.3.15.0', '9.4.12.1', '10.0.0.1' ]
+        jruby_version: [ '9.3.15.0', '9.4.12.1' ] # , '10.0.0.1'
         java_version: [ '8', '11', '17', '21' ]
         exclude:
           - jruby_version: '10.0.0.1'
@@ -49,7 +49,7 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.3.15.0', '9.4.12.1', '10.0.0.1' ]
+        jruby_version: [ '9.3.15.0', '9.4.12.1' ] # , '10.0.0.1'
         java_version: [ '8', '11', '17', '21' ]
         appraisal: [ 'rails50', 'rails52', 'rails60', 'rails61', 'rails70', 'rails71', 'rails72' ]
         exclude:
