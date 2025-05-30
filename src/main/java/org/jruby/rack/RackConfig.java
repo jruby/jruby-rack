@@ -80,8 +80,7 @@ public interface RackConfig {
      * By returning null the environment (JRuby sets up System.getenv) will be
      * kept as is. 
      *
-     * NOTE: This method if not returning null should return a mutable map.
-     *
+     * @apiNote This method if not returning null should return a mutable map.
      * @return the <code>ENV</code> to be used in started Ruby runtimes
      */
     Map<String, String> getRuntimeEnvironment();

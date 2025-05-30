@@ -76,7 +76,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Initialize this factory using the given context.
      *
-     * NOTE: exception handling is left to the outer factory.
+     * @implNote exception handling is left to the outer factory.
      * @param rackContext the RackContext
      */
     @Override
@@ -94,7 +94,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Creates a new application instance (without initializing it).
      *
-     * NOTE: exception handling is left to the outer factory.
+     * @implNote exception handling is left to the outer factory.
      * @return new application instance
      */
     @Override
@@ -109,7 +109,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Creates a new application and initializes it.
      *
-     * NOTE: exception handling is left to the outer factory.
+     * @implNote exception handling is left to the outer factory.
      * @return new, initialized application
      */
     @Override
@@ -122,7 +122,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Destroys the application (assumably) created by this factory.
      *
-     * NOTE: exception handling is left to the outer factory.
+     * @implNote exception handling is left to the outer factory.
      * @param app the application to "release"
      */
     @Override
@@ -352,9 +352,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Initializes the runtime (exports the context, boots the Rack handler).
      *
-     * NOTE: visible due to specs
+     * @apiNote Internal API, only visible due tests.
      *
-     * @param runtime
+     * @param runtime the JRuby runtime
      */
     public void initRuntime(final Ruby runtime) {
         loadJRubyRack(runtime);
@@ -399,11 +399,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Checks and sets the required Rack version (if specified as a magic comment).
      *
-     * e.g. # rack.version: ~>1.3.6
+     * e.g. # rack.version: =1.3.6
      *
-     * NOTE: (package) visible due specs
+     * @apiNote Internal API, only visible due tests.
      *
-     * @param runtime
+     * @param runtime the JRuby runtime
      * @return the rack version requirement
      */
     public String checkAndSetRackVersion(final Ruby runtime) {
