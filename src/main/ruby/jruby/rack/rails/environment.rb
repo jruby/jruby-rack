@@ -9,7 +9,7 @@ require 'jruby/rack/rails_booter'
 
 # Rails 3.x specific booter behavior.
 # @see JRuby::Rack::Railtie
-module JRuby::Rack::RailsBooter::Rails3Environment
+module JRuby::Rack::RailsBooter::RailsEnvironment
 
   # @return [Rails::Application] the (loaded) application instance
   def to_app
@@ -23,7 +23,7 @@ module JRuby::Rack::RailsBooter::Rails3Environment
     require expand_path('config/boot.rb')
     require 'jruby/rack/rails/railtie'
     require expand_path('config/environment.rb')
-    require 'jruby/rack/rails/extensions3'
+    require 'jruby/rack/rails/extensions'
   end
 
   protected
