@@ -2,6 +2,8 @@
 
 - Adds basic compatibility with JRuby 10.0
 - Drop unnecessary jruby.compat.version and RackConfig.getCompatVersion() API
+- Drop JMS support
+- update (bundled) rack to 2.2.16
 
 ## 1.2.4 (UNRELEASED)
 

@@ -208,16 +208,6 @@ public class DefaultRackConfig implements RackConfig {
         return getBooleanProperty("jruby.rack.filter.verifies.resource", false);
     }
 
-    @Override
-    public String getJmsConnectionFactory() {
-        return getProperty("jms.connection.factory");
-    }
-
-    @Override
-    public String getJmsJndiProperties() {
-        return getProperty("jms.jndi.properties");
-    }
-
     public String getLoggerName() {
         return getProperty("jruby.rack.logging.name", "jruby.rack");
     }
