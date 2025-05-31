@@ -83,12 +83,6 @@ describe org.jruby.rack.embed.Config do
       end
     end
 
-    it "sets compat version from runtime" do
-      require 'jruby'
-      compat_version = JRuby.runtime.instance_config.compat_version
-      expect( @config.compat_version ).to eql compat_version
-    end
-
     it "sets out/err streams from runtime" do
       out = java.io.ByteArrayOutputStream.new
       err = java.io.ByteArrayOutputStream.new

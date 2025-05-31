@@ -1,5 +1,7 @@
-## 1.3.0 (UNRELEASED)
+## 1.3.0 (UNRELEASED) 
 
+- Adds basic compatibility with JRuby 10.0
+- Drop unnecessary jruby.compat.version and RackConfig.getCompatVersion() API
 - Drop JMS support
 - update (bundled) rack to 2.2.16
 
