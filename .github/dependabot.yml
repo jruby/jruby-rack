@@ -16,6 +16,15 @@ updates:
         dependency-type: "production"
       maven-dev-deps:
         dependency-type: "development"
+    ignore:
+      - dependency-name: "org.jruby*"
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "jakarta*"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "javax*"
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "org.springframework*"
+        update-types: [ "version-update:semver-major" ]
   - package-ecosystem: bundler
     directories:
       - "/"
@@ -26,3 +35,6 @@ updates:
     groups:
       ruby-deps:
         patterns: [ "*" ]
+    ignore:
+      - dependency-name: "rack"
+        update-types: [ "version-update:semver-major" ]
