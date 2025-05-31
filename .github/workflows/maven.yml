@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "master", "*release*", "*stable*" ]
 
+env:
+  # Default versions for canonical release build
+  DEFAULT_JAVA_VERSION: '8'
+  DEFAULT_JRUBY_VERSION: '9.4.12.1' # Should match pom.xml <jruby.version> property (AND a version inside the test matrix)
+
 jobs:
   build:
     name: JRuby ${{ matrix.jruby_version }} / Java ${{ matrix.java_version }}
@@ -39,8 +44,8 @@ jobs:
 
     # Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
-      uses: advanced-security/maven-dependency-submission-action@aeab9f885293af501bae8bdfe88c589528ea5e25 # v4.1.2
-      if: github.head_ref == 'refs/heads/master' && matrix.java_version == '8' && startsWith(matrix.jruby_version, '9.4')
+      uses: advanced-security/maven-dependency-submission-action@b275d12641ac2d2108b2cbb7598b154ad2f2cee8 # v5.0.0
+      if: github.head_ref == 'refs/heads/master' && matrix.java_version == env.DEFAULT_JAVA_VERSION && matrix.jruby_version == env.DEFAULT_JRUBY_VERSION
 
   appraisals:
     needs: build
@@ -54,40 +59,10 @@ jobs:
         appraisal: [ 'rails50', 'rails52', 'rails60', 'rails61', 'rails70', 'rails71', 'rails72' ]
         exclude:
           - jruby_version: '9.3.15.0'
-            java_version: '8'
             appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
           - jruby_version: '9.3.15.0'
-            java_version: '8'
             appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
           - jruby_version: '9.3.15.0'
-            java_version: '8'
-            appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            java_version: '11'
-            appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            java_version: '11'
-            appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            java_version: '11'
-            appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            java_version: '17'
-            appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            java_version: '17'
-            appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            java_version: '17'
-            appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            java_version: '21'
-            appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            java_version: '21'
-            appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            java_version: '21'
             appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
           - jruby_version: '10.0.0.1'
             java_version: '8' # JRuby 10 requires Java 21
@@ -112,7 +87,7 @@ jobs:
           cache: maven
 
       - name: Setup JRuby
-        uses: ruby/setup-ruby@e34163cd15f4bb403dcd72d98e295997e6a55798 # v1.238.0
+        uses: ruby/setup-ruby@13e7a03dc3ac6c3798f4570bfead2aed4d96abfb # v1.244.0
         with:
           ruby-version: jruby-${{ matrix.jruby_version }}
           bundler-cache: 'false' # Need to install later so we can vary from Gemfile.lock as required for JRuby version compatibility
