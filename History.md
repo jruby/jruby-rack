@@ -1,3 +1,7 @@
+## 1.2.4 (UNRELEASED)
+
+- update (bundled) rack to 2.2.16
+
 ## 1.2.3
 
 - avoid warnings due usage of `File.exists?`
