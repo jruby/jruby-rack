@@ -1,3 +1,8 @@
+## 1.3.0 (UNRELEASED)
+
+- Drop JMS support
+- update (bundled) rack to 2.2.16
+
 ## 1.2.4 (UNRELEASED)
 
 - update (bundled) rack to 2.2.16

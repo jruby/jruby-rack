@@ -221,14 +221,4 @@ public class Config implements RackConfig {
         throw new UnsupportedOperationException("isFilterVerifiesResource()");
     }
 
-    // JMS configuration not used with embed :
-
-    public String getJmsConnectionFactory() {
-        throw new UnsupportedOperationException("getJmsConnectionFactory()");
-    }
-
-    public String getJmsJndiProperties() {
-        throw new UnsupportedOperationException("getJmsJndiProperties()");
-    }
-
 }

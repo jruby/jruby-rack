@@ -176,26 +176,7 @@ public interface RackConfig {
      */
     @Deprecated
     boolean isFilterVerifiesResource();
-
-    /** 
-     * Return the JNDI name of the JMS connection factory.
-     *
-     * @return the JMS connection factory
-     * @deprecated JMS is rarely used thus should not be here
-     */
-    @Deprecated
-    String getJmsConnectionFactory();
-
-    /** 
-     * Return the JNDI properties for JMS.
-     *
-     * @return  the JNDI properties
-     * @deprecated JMS is rarely used thus should not be here
-     */
-    @Deprecated
-    String getJmsJndiProperties();
-    
-    /** 
+        /**
      * General property retrieval for custom configuration values.
      *
      * @param key the key
