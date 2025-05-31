@@ -8,7 +8,7 @@ on:
 
 env:
   # Default versions for canonical release build
-  DEFAULT_JAVA_VERSION: '8'
+  DEFAULT_JAVA_VERSION: '11'
   DEFAULT_JRUBY_VERSION: '9.4.13.0' # Should match pom.xml <jruby.version> property (AND a version inside the test matrix)
 
 jobs:
@@ -18,11 +18,9 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.3.15.0', '9.4.13.0', '10.0.0.1' ]
-        java_version: [ '8', '11', '17', '21' ]
+        jruby_version: [ '9.4.13.0', '10.0.0.1' ]
+        java_version: [ '11', '17', '21' ]
         exclude:
-          - jruby_version: '10.0.0.1'
-            java_version: '8' # JRuby 10 requires Java 21
           - jruby_version: '10.0.0.1'
             java_version: '11' # JRuby 10 requires Java 21
           - jruby_version: '10.0.0.1'
@@ -54,22 +52,12 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.3.15.0', '9.4.13.0', '10.0.0.1' ]
-        java_version: [ '8', '11', '17', '21' ]
+        jruby_version: [ '9.4.13.0', '10.0.0.1' ]
+        java_version: [ '11', '17', '21' ]
         appraisal: [ 'rails50', 'rails52', 'rails60', 'rails61', 'rails70', 'rails71', 'rails72', 'rails80' ]
         exclude:
-          - jruby_version: '9.3.15.0'
-            appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            appraisal: 'rails80' # Requires Ruby 3.4 compatibility, which JRuby 9.3 does not support
           - jruby_version: '9.4.13.0'
             appraisal: 'rails80' # Requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
-          - jruby_version: '10.0.0.1'
-            java_version: '8' # JRuby 10 requires Java 21
           - jruby_version: '10.0.0.1'
             java_version: '11' # JRuby 10 requires Java 21
           - jruby_version: '10.0.0.1'
@@ -95,7 +83,7 @@ jobs:
         with:
           ruby-version: jruby-${{ matrix.jruby_version }}
           bundler-cache: 'false' # Need to install later so we can vary from Gemfile.lock as required for JRuby version compatibility
-          bundler: ${{ startsWith(matrix.jruby_version, '9.3') && '2.3.27' || 'Gemfile.lock' }}
+          bundler: 'Gemfile.lock'
 
       - name: Run appraisal for ${{ matrix.appraisal }}
         run: bundle install && bundle exec rake spec
