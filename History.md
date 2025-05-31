@@ -5,6 +5,7 @@
 - Drop JMS support
 - Drop support for JRuby 9.3
 - Require Java 11 or later
+- Support Jakarta Servlet API 4.0 (JEE 8)
 - update (bundled) rack to 2.2.16
 
 ## 1.2.4 (UNRELEASED)
