@@ -138,7 +138,6 @@ GEM
     websocket-extensions (0.1.5)
 
 PLATFORMS
-  universal-java-1.8
   universal-java-11
   universal-java-17
   universal-java-21
