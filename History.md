@@ -1,3 +1,8 @@
+## 1.3.0 (UNRELEASED) 
+
+- Adds basic compatibility with JRuby 10.0
+- Drop unnecessary jruby.compat.version and RackConfig.getCompatVersion() API
+
 ## 1.2.4 (UNRELEASED)
 
 - update (bundled) rack to 2.2.16
