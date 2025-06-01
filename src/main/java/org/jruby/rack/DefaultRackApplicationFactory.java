@@ -565,7 +565,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                     }
                     catch (IOException ex) { /* won't happen */ }
 
-                    rackContext.log(RackLogger.ERROR, "failed to read rackup from '"+ rackup + "' (" + e + ")");
+                    rackContext.log(ERROR, "failed to read rackup from '"+ rackup + "' (" + e + ")");
                     throw new RackInitializationException("failed to read rackup input", e);
                 }
             }

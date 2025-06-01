@@ -11,6 +11,8 @@ import java.io.IOException;
 
 import org.jruby.rack.servlet.ServletRackContext;
 
+import static org.jruby.rack.RackLogger.Level.*;
+
 /**
  * Dispatcher suited for use in a servlet container
  * @author nick
@@ -50,10 +52,10 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
         }
         catch (final RuntimeException re) {
             // allow the error app to re-throw Ruby/JRuby-Rack exceptions :
-            if (re instanceof RackException) throw (RackException) re;
+            if (re instanceof RackException) throw re;
             //if (e instanceof RaiseException) throw (RaiseException) e;
             // TODO seems redundant maybe we should let the container decide ?!
-            context.log(RackLogger.ERROR, "error app failed to handle exception: " + e, re);
+            context.log(ERROR, "error app failed to handle exception: " + e, re);
             Integer errorCode = getErrorApplicationFailureStatusCode();
             if ( errorCode != null && errorCode.intValue() > 0 ) {
                 response.sendError(errorCode);
