@@ -21,6 +21,13 @@ public interface ServletRackContext extends RackContext, ServletContext {
 
   RackApplicationFactory getRackFactory();
 
-  // ServletContext getRealContext(); // TODO support this in 1.2
+  @Override
+  default void log(String message) {
+    RackContext.super.log(message);
+  }
 
+  @Override
+  default void log(String message, Throwable ex) {
+    RackContext.super.log(message, ex);
+  }
 }

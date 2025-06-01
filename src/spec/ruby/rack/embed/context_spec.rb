@@ -17,7 +17,7 @@ describe org.jruby.rack.embed.Context do
   end
 
   it "outputs log messages with level and new line to stdout" do
-    info = org.jruby.rack.embed.Context::INFO
+    info = org.jruby.rack.RackLogger::Level::INFO
     context.log info, "this is logging at its best"
     captured.should == "INFO: this is logging at its best\n"
   end
