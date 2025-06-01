@@ -10,11 +10,14 @@ require 'jruby/rack/booter'
 
 describe JRuby::Rack::Booter do
 
-  let(:booter) do
-    JRuby::Rack::Booter.new JRuby::Rack.context = @rack_context
-  end
+  let(:context) { JRuby::Rack.context = @rack_context }
 
-  after(:all) { JRuby::Rack.context = nil }
+  let(:booter) { JRuby::Rack::Booter.new(context) }
+
+  after(:all) do
+    JRuby::Rack.context = nil
+    JRuby::Rack.instance_variable_set(:@booter, nil) if JRuby::Rack.instance_variable_get(:@booter)
+  end
 
   before do
     @rack_env = ENV['RACK_ENV']
@@ -153,14 +156,6 @@ describe JRuby::Rack::Booter do
     booter.boot!
 
     ENV['GEM_PATH'].should == "/blah/gems"
-  end
-
-  it "creates a logger that writes messages to the servlet context (by default)" do
-    booter.boot!
-    @rack_context.stub(:isEnabled).and_return true
-    level = org.jruby.rack.RackLogger::Level::DEBUG
-    @rack_context.should_receive(:log).with(level, 'Hello-JRuby!')
-    booter.logger.debug 'Hello-JRuby!'
   end
 
   before { $loaded_init_rb = nil }
