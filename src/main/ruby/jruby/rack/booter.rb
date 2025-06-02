@@ -85,10 +85,6 @@ module JRuby::Rack
     def public_path; layout.public_path end
     def public_path=(path); layout.public_path = path end
 
-    # @deprecated use {JRuby::Rack#logger} instead
-    # @return [Logger]
-    def logger; JRuby::Rack.logger; end
-
     # Boot-up this booter, preparing the environment for the application.
     def boot!
       adjust_gem_path
@@ -157,7 +153,7 @@ module JRuby::Rack
 
     # @note called during {#boot!}
     def export_global_settings
-      JRuby::Rack.send(:instance_variable_set, :@booter, self) # TODO
+      JRuby::Rack.instance_variable_set(:@booter, self) # NOTE: unused for now
       JRuby::Rack.app_path = layout.app_path
       JRuby::Rack.public_path = layout.public_path
     end
@@ -183,7 +179,7 @@ module JRuby::Rack
             stream = url.openStream
             stream.to_io.read
           rescue Exception => e
-            logger.info "failed to read from '#{url.toString}' (#{e.message})"
+            JRuby::Rack.logger.info "failed to read from '#{url.toString}' (#{e.message})"
             next
           ensure
             stream.close rescue nil
