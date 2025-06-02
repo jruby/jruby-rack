@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 
+import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 
 /**
@@ -401,5 +402,18 @@ public class RewindableInputStream extends ServletInputStream {
     public int getMaximumBufferSize() {
         return bufferMax;
     }
-    
+
+    @Override
+    public boolean isFinished() {
+        return buffer != null;
+    }
+
+    @Override
+    public boolean isReady() {
+        return buffer != null;
+    }
+
+    @Override // 4.0 in method signature
+    public void setReadListener(ReadListener readListener) {
+    }
 }

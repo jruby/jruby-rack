@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
@@ -158,7 +159,7 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	 */
 	private static class ByteArrayServletOutputStream extends ServletOutputStream {
 		
-		private final static String LINE_SEPARATOR = System.getProperty("line.separator");
+		private final static String LINE_SEPARATOR = System.lineSeparator();
 		private final DataOutputStream dataOutputStream;
 		private final String charSet;
 		
@@ -224,6 +225,15 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 		public void println(double d) throws IOException {
 			print(d);
 			println();
+		}
+
+		@Override
+		public boolean isReady() {
+			return false;
+		}
+
+		@Override // 4.0 in method signature
+		public void setWriteListener(WriteListener writeListener) {
 		}
 
 		@Override

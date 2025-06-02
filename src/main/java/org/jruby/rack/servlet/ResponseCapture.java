@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -166,7 +167,16 @@ public class ResponseCapture extends HttpServletResponseWrapper {
             // backwards compatibility with isError() :
             return new ServletOutputStream() {
                 @Override
-                public void write(int b) throws IOException {
+                public boolean isReady() {
+                    return false;
+                }
+
+                @Override
+                public void setWriteListener(WriteListener writeListener) {
+                }
+
+                @Override
+                public void write(int b) {
                     // swallow output, because we're going to discard it
                 }
             };
