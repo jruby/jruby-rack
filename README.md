@@ -335,7 +335,7 @@ package and push the .jar every time a commit changes a source file).
 
 ## Releasing
 
-* Make sure auth is configured for "ossrh" repository ID in your .m2/settings.xml
+* Make sure auth is configured for "central" repository ID in your .m2/settings.xml
 * Update the version in src/main/ruby/jruby/rack/version.rb to the release version
 * mvn release:prepare
 * mvn release:perform (possibly with -DuseReleaseProfile=false due to Javadoc doclint failures for now)
