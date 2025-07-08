@@ -106,119 +106,6 @@ describe JRuby::Rack::RailsBooter do
     booter.logger.info 'hello-there'
   end
 
-  it "detects 2.3" do
-    root = File.expand_path('../../../rails23', __FILE__)
-    @rack_context.should_receive(:getInitParameter).with("rails.root").and_return root
-    booter.layout_class = JRuby::Rack::FileSystemLayout
-    expect( booter.send(:rails2?) ).to be true
-  end
-
-  it "detects 3.x" do
-    root = File.expand_path('../../../rails3x', __FILE__)
-    @rack_context.should_receive(:getInitParameter).with("rails.root").and_return root
-    booter.layout_class = JRuby::Rack::FileSystemLayout
-    expect( booter.send(:rails2? ) ).to be false
-  end
-
-  describe "Rails 2.3", :lib => :stub do
-
-    RAILS23_ROOT_DIR = File.expand_path("../../../rails23", __FILE__)
-
-    before do
-      booter.stub(:rails2?).and_return true
-    end
-
-    it "sets up java servlet-based sessions if the session store is the default" do
-
-      booter.boot!
-      booter.should_receive(:rack_based_sessions?).and_return false
-
-      booter.session_options[:database_manager] = ::CGI::Session::PStore
-      booter.setup_sessions
-      booter.session_options[:database_manager].should == ::CGI::Session::JavaServletStore
-    end
-
-    it "turns off Ruby CGI cookies if the java servlet store is used" do
-
-      booter.boot!
-      booter.should_receive(:rack_based_sessions?).and_return false
-
-      booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
-      booter.setup_sessions
-      booter.session_options[:no_cookies].should == true
-    end
-
-    it "provides the servlet request in the session options if the java servlet store is used" do
-
-      booter.boot!
-      booter.should_receive(:rack_based_sessions?).twice.and_return false
-
-      booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
-      booter.setup_sessions
-      booter.instance_variable_set :@load_environment, true
-
-      ::Rack::Adapter::Rails.should_receive(:new).and_return app = double("rails adapter")
-      app.should_receive(:call)
-
-      env = { "java.servlet_request" => double("servlet request") }
-      booter.to_app.call(env)
-      env['rails.session_options'].should have_key(:java_servlet_request)
-      env['rails.session_options'][:java_servlet_request].should == env["java.servlet_request"]
-    end
-
-    it "should set the PUBLIC_ROOT constant to the location of the public root",
-      :lib => [ :rails23, :stub ] do
-
-      booter.app_path = RAILS23_ROOT_DIR
-      booter.boot!
-      expect( PUBLIC_ROOT ).to eql booter.public_path
-    end
-
-    after(:each) do
-      #Object.send :remove_const, :RAILS_ROOT if Object.const_defined? :RAILS_ROOT
-      Object.send :remove_const, :PUBLIC_ROOT if Object.const_defined? :PUBLIC_ROOT
-    end
-
-    context 'booted' do
-
-      before :each do
-        $servlet_context = @servlet_context
-        @rack_context.should_receive(:getContextPath).and_return "/foo"
-        booter.app_path = RAILS23_ROOT_DIR
-        booter.boot!
-        silence_warnings { booter.load_environment }
-      end
-
-      after(:all) { $servlet_context = nil }
-
-      it "should default the page cache directory to the public root" do
-        ActionController::Base.page_cache_directory.should == booter.public_path
-      end
-
-      it "should default the session store to the java servlet session store" do
-        ActionController::Base.session_store.should == CGI::Session::JavaServletStore
-      end
-
-      it "should set the ActionView ASSETS_DIR constant to the public root" do
-        ActionView::Helpers::AssetTagHelper::ASSETS_DIR.should == booter.public_path
-      end
-
-      it "should set the ActionView JAVASCRIPTS_DIR constant to the public root/javascripts" do
-        ActionView::Helpers::AssetTagHelper::JAVASCRIPTS_DIR.should == booter.public_path + "/javascripts"
-      end
-
-      it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
-        ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == booter.public_path + "/stylesheets"
-      end
-
-      it "should set the ActionController.relative_url_root to the servlet context path" do
-        ActionController::Base.relative_url_root.should == "/foo"
-      end
-
-    end
-
-  end if defined? Rails
-
   RAILS_ROOT_DIR = File.expand_path("../../../rails3x", __FILE__)
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
@@ -282,10 +169,6 @@ describe JRuby::Rack::RailsBooter do
       paths['public'].should == [ public_path = "NO-SUCH-DiR" ]
       paths['public/javascripts'].should == [ File.join(public_path, "javascripts") ]
       paths['public/stylesheets'].should ==[ File.join(public_path, "stylesheets") ]
-    end
-
-    it "should not set the PUBLIC_ROOT constant" do
-      expect( PUBLIC_ROOT ).to eql ""
     end
 
     describe "logger" do
