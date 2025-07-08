@@ -82,77 +82,73 @@ describe "integration" do
 
   end
 
+  it "should have defined Rails stub tests" do
+    expect(File.foreach(__FILE__).select { |line| line.include?("describe") }).to include(/^  describe.*lib: :#{CURRENT_LIB}/),
+      "Expected rails stub tests to be defined for #{CURRENT_LIB} inside integration_spec.rb"
+    expect(File.exist?(File.join(STUB_DIR, CURRENT_LIB.to_s))).to be(true),
+      "Expected rails stub dir for #{CURRENT_LIB.to_s} to exist at #{File.join(STUB_DIR, CURRENT_LIB.to_s).inspect}"
+  end if CURRENT_LIB.to_s.include?('rails')
+
   shared_examples_for 'a rails app', :shared => true do
 
+    base_path = "file://#{STUB_DIR}/#{CURRENT_LIB.to_s}"
+
     let(:servlet_context) do
-      new_servlet_context(base_path).tap { |servlet_context| prepare_servlet_context(servlet_context) }
+      new_servlet_context(base_path).tap { |servlet_context| prepare_servlet_context(servlet_context, base_path) }
     end
 
-    it "initializes pooling when min/max set" do
-      servlet_context.addInitParameter('jruby.min.runtimes', '1')
-      servlet_context.addInitParameter('jruby.max.runtimes', '2')
+    context "runtime" do
 
-      listener = org.jruby.rack.rails.RailsServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+      it "initializes pooling when min/max set" do
+        servlet_context.addInitParameter('jruby.min.runtimes', '1')
+        servlet_context.addInitParameter('jruby.max.runtimes', '2')
 
-      rack_factory = servlet_context.getAttribute("rack.factory")
-      expect(rack_factory).to be_a(RackApplicationFactory)
-      expect(rack_factory).to be_a(PoolingRackApplicationFactory)
-      expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
+        listener = org.jruby.rack.rails.RailsServletContextListener.new
+        listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
 
-      expect(servlet_context.getAttribute("rack.context")).to be_a(RackContext)
-      expect(servlet_context.getAttribute("rack.context")).to be_a(ServletRackContext)
+        rack_factory = servlet_context.getAttribute("rack.factory")
+        expect(rack_factory).to be_a(RackApplicationFactory)
+        expect(rack_factory).to be_a(PoolingRackApplicationFactory)
+        expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
 
-      expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
+        expect(servlet_context.getAttribute("rack.context")).to be_a(RackContext)
+        expect(servlet_context.getAttribute("rack.context")).to be_a(ServletRackContext)
+
+        expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
+      end
+
+      it "initializes shared (thread-safe) by default" do
+        listener = org.jruby.rack.rails.RailsServletContextListener.new
+        listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+
+        rack_factory = servlet_context.getAttribute("rack.factory")
+        expect(rack_factory).to be_a(RackApplicationFactory)
+        expect(rack_factory).to be_a(SharedRackApplicationFactory)
+        expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
+
+        expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
+      end
+
+      it "initializes shared (thread-safe) whem max runtimes is 1" do
+        servlet_context.addInitParameter('jruby.max.runtimes', '1')
+
+        listener = org.jruby.rack.rails.RailsServletContextListener.new
+        listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+
+        rack_factory = servlet_context.getAttribute("rack.factory")
+        expect(rack_factory).to be_a(RackApplicationFactory)
+        expect(rack_factory).to be_a(SharedRackApplicationFactory)
+        expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
+      end
     end
-
-    it "initializes shared (thread-safe) by default" do
-      listener = org.jruby.rack.rails.RailsServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
-
-      rack_factory = servlet_context.getAttribute("rack.factory")
-      expect(rack_factory).to be_a(RackApplicationFactory)
-      expect(rack_factory).to be_a(SharedRackApplicationFactory)
-      expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
-
-      expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
-    end
-
-    it "initializes shared (thread-safe) whem max runtimes is 1" do
-      servlet_context.addInitParameter('jruby.max.runtimes', '1')
-
-      listener = org.jruby.rack.rails.RailsServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
-
-      rack_factory = servlet_context.getAttribute("rack.factory")
-      expect(rack_factory).to be_a(RackApplicationFactory)
-      expect(rack_factory).to be_a(SharedRackApplicationFactory)
-      expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
-    end
-
-  end
-
-  describe 'rails 7.2', lib: :rails72 do
-
-    before(:all) do
-      name = :rails72 # copy_gemfile :
-      raise "Environment variable BUNDLE_GEMFILE seems to not contain #{name.to_s}" unless ENV['BUNDLE_GEMFILE']&.include?(name.to_s)
-      FileUtils.cp ENV['BUNDLE_GEMFILE'], File.join(STUB_DIR, "#{name}/Gemfile")
-      FileUtils.cp "#{ENV['BUNDLE_GEMFILE']}.lock", File.join(STUB_DIR, "#{name}/Gemfile.lock")
-      Dir.chdir File.join(STUB_DIR, name.to_s)
-    end
-
-    def base_path
-      "#{STUB_DIR}/rails72"
-    end
-
-    it_should_behave_like 'a rails app'
 
     context "initialized" do
 
+      before(:all) { copy_gemfile }
+
       before(:all) do
         initialize_rails('production', "file://#{base_path}") do |servlet_context, _|
-          prepare_servlet_context(servlet_context)
+          prepare_servlet_context(servlet_context, base_path)
         end
       end
       after(:all) { restore_rails }
@@ -168,18 +164,27 @@ describe "integration" do
         should_eval_as_not_nil "defined?(Rails)"
         should_eval_as_not_nil "Rails.logger"
 
-        # Rails 7.x wraps the default in a ActiveSupport::BroadcastLogger
-        should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::BroadcastLogger", true
-        should_eval_as_eql_to "Rails.logger.broadcasts.size", 1
-        should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? JRuby::Rack::Logger", true
-        # NOTE: TaggedLogging is a module that extends the logger instance:
-        should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? ActiveSupport::TaggedLogging", true
-
         # production.rb: config.log_level = 'info'
         should_eval_as_eql_to "Rails.logger.level", Logger::INFO
-        should_eval_as_eql_to "Rails.logger.broadcasts.first.level", Logger::INFO
 
-        unwrap_logger = "logger = Rails.logger.broadcasts.first;"
+        # Rails 7.1+ wraps the default in a ActiveSupport::BroadcastLogger
+        if Rails::VERSION::STRING < '7.1'
+          should_eval_as_eql_to "Rails.logger.is_a? JRuby::Rack::Logger", true
+          should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::TaggedLogging", true
+          unwrap_logger = "logger = Rails.logger;"
+        else
+          should_eval_as_not_nil "defined?(ActiveSupport::BroadcastLogger)"
+          should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::BroadcastLogger", true
+          should_eval_as_eql_to "Rails.logger.broadcasts.size", 1
+          should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? JRuby::Rack::Logger", true
+          # NOTE: TaggedLogging is a module that extends the logger instance:
+          should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? ActiveSupport::TaggedLogging", true
+
+          should_eval_as_eql_to "Rails.logger.broadcasts.first.level", Logger::INFO
+
+          unwrap_logger = "logger = Rails.logger.broadcasts.first;"
+        end
+
         # sanity check logger-silence works:
         should_eval_as_eql_to "#{unwrap_logger} logger.silence { logger.warn('from-integration-spec') }", true
 
@@ -191,7 +196,43 @@ describe "integration" do
         should_eval_as_eql_to "Rails.public_path.to_s", "#{base_path}/public"
       end
 
+      it "disables rack's chunked support (by default)" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        expect_to_have_monkey_patched_chunked
+      end
     end
+  end
+
+  describe 'rails 5.0', lib: :rails50 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 5.2', lib: :rails52 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 6.0', lib: :rails60 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 6.1', lib: :rails61 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 7.0', lib: :rails70 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 7.1', lib: :rails71 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 7.2', lib: :rails72 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 8.0', lib: :rails80 do
+    it_should_behave_like 'a rails app'
   end
 
   def expect_to_have_monkey_patched_chunked
@@ -232,17 +273,19 @@ describe "integration" do
     servlet_context
   end
 
-  def prepare_servlet_context(servlet_context)
+  def prepare_servlet_context(servlet_context, base_path)
     servlet_context.addInitParameter('rails.root', base_path)
     servlet_context.addInitParameter('jruby.rack.layout_class', 'FileSystemLayout')
   end
 
   GEMFILES_DIR = File.expand_path('../../../gemfiles', STUB_DIR)
 
-  def copy_gemfile(name)
-    # e.g. 'rails30'
-    FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile")
-    FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile.lock")
+  def copy_gemfile
+    name = CURRENT_LIB.to_s
+    raise "Environment variable BUNDLE_GEMFILE seems to not contain #{name}" unless ENV['BUNDLE_GEMFILE']&.include?(name)
+    FileUtils.cp ENV['BUNDLE_GEMFILE'], File.join(STUB_DIR, "#{name}/Gemfile")
+    FileUtils.cp "#{ENV['BUNDLE_GEMFILE']}.lock", File.join(STUB_DIR, "#{name}/Gemfile.lock")
+    Dir.chdir File.join(STUB_DIR, name)
   end
 
   ENV_COPY = ENV.to_h
