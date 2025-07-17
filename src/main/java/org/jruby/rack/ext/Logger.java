@@ -628,7 +628,7 @@ public class Logger extends RubyObject { // implements RackLogger
                 }
                 catch (RaiseException e) { // TypeError
                     final IRubyObject error = e.getException();
-                    if ( error == null && ! context.runtime.getTypeError().isInstance(error) ) {
+                    if ( error == null || ! context.runtime.getTypeError().isInstance(error) ) {
                         throw e;
                     }
                     // support passing in a ServletContext instance (for convenience) :
