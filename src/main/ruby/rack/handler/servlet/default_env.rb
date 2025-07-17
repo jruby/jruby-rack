@@ -22,7 +22,7 @@ module Rack
         BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme
           rack.multithread rack.multiprocess rack.run_once
           java.servlet_request java.servlet_response java.servlet_context
-          jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release).
+          jruby.rack.version).
           map!(&:freeze)
 
         VARIABLES = %w(CONTENT_TYPE CONTENT_LENGTH PATH_INFO QUERY_STRING
@@ -248,8 +248,6 @@ module Rack
           when 'java.servlet_context' then env[key] = servlet_context
           when 'jruby.rack.context'   then env[key] = rack_context
           when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
-          when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
-          when 'jruby.rack.rack.release'  then env[key] = ::Rack.release
           else
             nil
           end
