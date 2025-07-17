@@ -20,7 +20,7 @@ module Rack
       class DefaultEnv < Hash # The environment must be an instance of Hash !
 
         BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme
-          rack.multithread rack.multiprocess rack.run_once
+          rack.multithread rack.multiprocess rack.run_once rack.hijack?
           java.servlet_request java.servlet_response java.servlet_context
           jruby.rack.version).
           map!(&:freeze)
@@ -235,6 +235,7 @@ module Rack
           when 'rack.multithread'     then env[key] = true
           when 'rack.multiprocess'    then env[key] = false
           when 'rack.run_once'        then env[key] = false
+          when 'rack.hijack?'         then env[key] = false
           when 'rack.input'           then
             env[key] = @servlet_env ? JRuby::Rack::Input.new(@servlet_env) : nil
           when 'rack.errors'          then context = rack_context
