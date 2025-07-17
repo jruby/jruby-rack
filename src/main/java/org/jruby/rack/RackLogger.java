@@ -12,10 +12,6 @@ package org.jruby.rack;
  * @author nicksieger
  */
 public interface RackLogger {
-
-    void log(String message) ;
-    void log(String message, Throwable ex) ;
-
     //void debug(String message) ;
     //void debug(String message, Throwable e) ;
 
@@ -37,44 +33,27 @@ public interface RackLogger {
     void log(Level level, String message) ;
     void log(Level level, String message, Throwable ex) ;
 
-    @Deprecated final String DEBUG = Level.DEBUG.name();
-    @Deprecated final String INFO = Level.INFO.name();
-    @Deprecated final String WARN = Level.WARN.name();
-    @Deprecated final String ERROR = Level.ERROR.name();
+    default void log(String message) {
+        log(Level.INFO, message);
+    }
 
-    void log(String level, String message) ;
-    void log(String level, String message, Throwable ex) ;
+    default void log(String message, Throwable ex) {
+        log(Level.ERROR, message, ex);
+    }
+
+    default void log(String level, String message) {
+        log(Level.valueOf(level), message);
+    }
+
+    default void log(String level, String message, Throwable ex) {
+        log(Level.valueOf(level), message, ex);
+    }
 
     abstract class Base implements RackLogger {
-
         public abstract Level getLevel() ;
-
         public void setLevel(Level level) { /* noop */ }
 
         public boolean isFormatting() { return false; }
-
         public void setFormatting(boolean flag) { /* noop */ }
-
-        @Override
-        public void log(String message) {
-            log(Level.INFO, message);
-        }
-
-        @Override
-        public void log(String message, Throwable ex) {
-            log(Level.ERROR, message, ex);
-        }
-
-        @Override
-        public void log(String level, String message) {
-            log(Level.valueOf(level), message);
-        }
-
-        @Override
-        public void log(String level, String message, Throwable ex) {
-            log(Level.valueOf(level), message, ex);
-        }
-
     }
-
 }

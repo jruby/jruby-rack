@@ -21,8 +21,8 @@ java_import 'org.jruby.rack.servlet.RewindableInputStream'
 
 require 'rspec'
 
-require 'jruby'; ext_class = org.jruby.rack.ext.RackLibrary
-JRuby.runtime.loadExtension 'JRuby::Rack', ext_class.new, true
+require 'jruby' # we rely on JRuby.runtime in a few places
+JRuby::Util.load_ext('org.jruby.rack.ext.RackLibrary')
 
 module SharedHelpers
 
@@ -170,7 +170,7 @@ begin
 rescue LoadError
 end
 
-# current 'library' environment (based on appraisals) e.g. :rails32
+# current 'library' environment (based on appraisals) e.g. :rails72
 CURRENT_LIB = defined?(Rails::VERSION) ?
   :"rails#{Rails::VERSION::MAJOR}#{Rails::VERSION::MINOR}" : :stub
 
