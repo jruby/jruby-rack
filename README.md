@@ -16,8 +16,8 @@ current stable 1.1.x releases.**
 ## Compatibility
 
 JRuby-Rack 1.3.x
-- aims to be compatible with JRuby 9.3 -> 10.0 and their supported JDK versions
-- supports any container compatible with Java Servlet 3.0 API
+- aims to be compatible with JRuby 9.4 -> 10.0 and Java 11+
+- supports any container compatible with Java Servlet 4.0 API
 
 JRuby-Rack 1.2.x
 - compatible with JRuby 9.3 -> 9.4 and their supported JDK versions
