@@ -219,6 +219,10 @@ describe "integration" do
     it_should_behave_like 'a rails app'
   end
 
+  describe 'rails 8.0', lib: :rails80 do
+    it_should_behave_like 'a rails app'
+  end
+
   def expect_to_have_monkey_patched_chunked
     @runtime.evalScriptlet "require 'rack/chunked'"
     script = %{
