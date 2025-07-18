@@ -18,12 +18,12 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.4.13.0', '10.0.0.1' ]
+        jruby_version: [ '9.4.13.0', '10.0.1.0' ]
         java_version: [ '11', '17', '21' ]
         exclude:
-          - jruby_version: '10.0.0.1'
+          - jruby_version: '10.0.1.0'
             java_version: '11' # JRuby 10 requires Java 21
-          - jruby_version: '10.0.0.1'
+          - jruby_version: '10.0.1.0'
             java_version: '17' # JRuby 10 requires Java 21
       fail-fast: false
 
@@ -52,15 +52,15 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.4.13.0', '10.0.0.1' ]
+        jruby_version: [ '9.4.13.0', '10.0.1.0' ]
         java_version: [ '11', '17', '21' ]
         appraisal: [ 'rails50', 'rails52', 'rails60', 'rails61', 'rails70', 'rails71', 'rails72', 'rails80' ]
         exclude:
           - jruby_version: '9.4.13.0'
             appraisal: 'rails80' # Requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
-          - jruby_version: '10.0.0.1'
+          - jruby_version: '10.0.1.0'
             java_version: '11' # JRuby 10 requires Java 21
-          - jruby_version: '10.0.0.1'
+          - jruby_version: '10.0.1.0'
             java_version: '17' # JRuby 10 requires Java 21
       fail-fast: false
 
@@ -79,7 +79,7 @@ jobs:
           cache: maven
 
       - name: Setup JRuby
-        uses: ruby/setup-ruby@472790540115ce5bd69d399a020189a8c87d641f # v1.247.0
+        uses: ruby/setup-ruby@a9bfc2ecf3dd40734a9418f89a7e9d484c32b990 # v1.248.0
         with:
           ruby-version: jruby-${{ matrix.jruby_version }}
           bundler-cache: 'false' # Need to install later so we can vary from Gemfile.lock as required for JRuby version compatibility
