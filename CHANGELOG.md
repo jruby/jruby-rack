@@ -5,6 +5,7 @@
 - Ensure rack boot process leaves ENV['GEM_PATH'] and Gem.paths in a consistent state
 - Remove undocumented and unsafe jruby.rack.env.gem_path = false option (unusable on Bundler 1.6+)
 - Fix unintended Rubygems initialization too early in boot process with JRuby 9.4+
+- Adds basic compatibility with JRuby 10.0
 
 ## 1.2.5
 
