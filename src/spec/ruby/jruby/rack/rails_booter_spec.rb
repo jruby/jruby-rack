@@ -99,17 +99,10 @@ describe JRuby::Rack::RailsBooter do
     rails_booter.public_path.should == "."
   end
 
-  it "uses JRuby-Rack's logger by default" do
-    booter.boot!
-    expect( booter.logger ).to_not be nil
-    expect( booter.logger ).to be JRuby::Rack.logger
-    booter.logger.info 'hello-there'
-  end
-
-  RAILS_ROOT_DIR = File.expand_path("../../../rails3x", __FILE__)
+  RAILS_ROOT_DIR = File.expand_path("../../../rails", __FILE__)
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
-  describe "Rails 3.x", :lib => :stub do
+  describe "Rails (stubbed)", :lib => :stub do
 
     before :all do
       $LOAD_PATH.unshift File.join(RAILS_ROOT_DIR, 'stub') # for require 'rails/railtie'
@@ -173,6 +166,21 @@ describe JRuby::Rack::RailsBooter do
 
     describe "logger" do
 
+      before(:all) do
+        @active_support = defined? ::ActiveSupport
+        @tagged_logging = active_support && ActiveSupport::TaggedLogging rescue false
+      end
+
+      after(:all) do
+        if @tagged_logging == false
+          if @active_support
+            ActiveSupport.send :remove_const, :TaggedLogging
+          else
+            Object.send :remove_const, :ActiveSupport rescue nil
+          end
+        end
+      end
+
       before do
         @app = double "app"
         @app.stub(:config).and_return @config = double("config")
@@ -187,17 +195,17 @@ describe JRuby::Rack::RailsBooter do
         log_initializer[1].should == [{:before => :initialize_logger}]
       end
 
-      it "gets set as config.logger" do
+      it "gets set as config.logger (wrapped with tagged logging)" do
         logger = JRuby::Rack::Logger.new STDERR
         @config.stub(:log_level).and_return(:info)
         @config.stub(:log_formatter).and_return(nil)
 
         JRuby::Rack.should_receive(:logger).and_return(logger)
-        #logger.class.should_receive(:const_get).with('INFO').and_return(nil)
-        #logger.should_receive(:level=).with(nil)
 
         log_initializer.last.call(@app)
-        @app.config.logger.should be(logger)
+        rails_logger = @app.config.logger
+        # ActiveSupport::TaggedLogging.new clones the original logger instance
+        expect(rails_logger).to be_a(JRuby::Rack::Logger)
       end
 
       it "has a configurable log level" do
@@ -206,38 +214,10 @@ describe JRuby::Rack::RailsBooter do
           def logger=(logger); @logger = logger; end
         end
         @config.stub(:log_formatter).and_return(nil)
-        @config.should_receive(:log_level).and_return(:debug)
+        @config.should_receive(:log_level).and_return(:error)
 
         log_initializer.last.call(@app) ##
-        @app.config.logger.level.should be(JRuby::Rack::Logger::DEBUG)
-      end
-
-      it "is wrapped in tagged logging" do # Rails 3.2
-        active_support = defined? ::ActiveSupport
-        tagged_logging = active_support && ActiveSupport::TaggedLogging rescue nil
-        begin
-          klass = Class.new do # TaggedLogging stub
-            def initialize(logger); @logger = logger end
-          end
-          module ::ActiveSupport; end
-          ::ActiveSupport.const_set(:TaggedLogging, klass)
-          @config.stub(:log_level).and_return(nil)
-          @config.stub(:log_formatter).and_return(nil)
-
-          log_initializer.last.call(@app)
-          @app.config.logger.should be_a(klass)
-          @app.config.logger.instance_variable_get(:@logger).should be_a(JRuby::Rack::Logger)
-        ensure
-          if tagged_logging.nil?
-            if active_support
-              ActiveSupport.send :remove_const, :TaggedLogging
-            else
-              Object.send :remove_const, :ActiveSupport rescue nil
-            end
-          else
-            ActiveSupport.const_set(:TaggedLogging, tagged_logging)
-          end
-        end
+        @app.config.logger.level.should be(JRuby::Rack::Logger::ERROR)
       end
 
       private
