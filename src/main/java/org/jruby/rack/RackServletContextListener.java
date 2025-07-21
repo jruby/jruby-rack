@@ -50,7 +50,7 @@ public class RackServletContextListener implements ServletContextListener {
         try {
             factory.init(rackContext);
         } 
-        catch (RuntimeException e) {
+        catch (Exception e) {
             handleInitializationException(e, factory, rackContext);
         }
     }
@@ -71,7 +71,7 @@ public class RackServletContextListener implements ServletContextListener {
 
         final RackApplicationFactory factory = new DefaultRackApplicationFactory();
         final Integer maxRuntimes = config.getMaximumRuntimes();
-        // for backwards compatibility when runtime mix/max values not specified
+        // for backwards compatibility when runtime min/max values not specified
         // we assume a single shared (threadsafe) runtime to be used :
         if ( maxRuntimes == null || maxRuntimes.intValue() == 1 ) {
             return new SharedRackApplicationFactory(factory);
@@ -87,7 +87,6 @@ public class RackServletContextListener implements ServletContextListener {
             final Exception e,
             final RackApplicationFactory factory,
             final ServletRackContext rackContext) {
-        // TODO for backwards compat we do not throw (by default) but should :
         if ( isThrowInitException(rackContext.getConfig()) ) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
