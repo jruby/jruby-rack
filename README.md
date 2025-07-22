@@ -15,6 +15,10 @@ current stable 1.1.x releases.**
 
 ## Compatibility
 
+JRuby-Rack 1.4.x
+- aims to be compatible with JRuby 9.4 -> 10.0 and Java 17+
+- supports any container compatible with Jakarta Servlet 5.0 API (JEE 9)
+
 JRuby-Rack 1.3.x
 - aims to be compatible with JRuby 9.4 -> 10.0 and Java 11+
 - supports any container compatible with Java Servlet 4.0 API
@@ -292,7 +296,7 @@ Or the equivalent of doing `bundle exec rackup ...` if you're using Bundler :
 ## Logging
 
 JRuby-Rack sets up a delegate logger for Rails that sends logging output to
-`javax.servlet.ServletContext#log` by default. If you wish to use a different
+`jakarta.servlet.ServletContext#log` by default. If you wish to use a different
 logging system, configure `jruby.rack.logging` as follows:
 
 - `servlet_context` (default): Sends log messages to the servlet context.

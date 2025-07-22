@@ -11,17 +11,17 @@ import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackLogger;
 
-import javax.servlet.Filter;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.Filter;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 // 3.0
-import javax.servlet.FilterRegistration;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -150,21 +150,6 @@ public class DefaultServletRackContext implements ServletRackContext {
         return context.getNamedDispatcher(name);
     }
 
-    @Override @Deprecated
-    public Servlet getServlet(String name) throws ServletException {
-        return context.getServlet(name);
-    }
-
-    @Override @Deprecated
-    public Enumeration<Servlet> getServlets() {
-        return context.getServlets();
-    }
-
-    @Override @Deprecated
-    public Enumeration<String> getServletNames() {
-        return context.getServletNames();
-    }
-
     @Override
     public String getServerInfo() {
         return context.getServerInfo();
@@ -198,11 +183,6 @@ public class DefaultServletRackContext implements ServletRackContext {
     @Override
     public String getServletContextName() {
         return context.getServletContextName();
-    }
-
-    @Override @Deprecated
-    public void log(Exception e, String msg) {
-        logger.log(msg, e);
     }
 
     // RackLogger
