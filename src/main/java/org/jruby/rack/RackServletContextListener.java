@@ -69,11 +69,8 @@ public class RackServletContextListener implements ServletContextListener {
     protected RackApplicationFactory newApplicationFactory(RackConfig config) {
         if (factory != null) return factory; // only != null while testing
 
-        final RackApplicationFactory factory = new DefaultRackApplicationFactory();
-        final Integer maxRuntimes = config.getMaximumRuntimes();
-        // for backwards compatibility when runtime min/max values not specified
-        // we assume a single shared (threadsafe) runtime to be used :
-        if ( maxRuntimes == null || maxRuntimes.intValue() == 1 ) {
+        final RackApplicationFactory factory = getRealRackApplicationFactoryImpl();
+        if (useSharedApplication((config))) {
             return new SharedRackApplicationFactory(factory);
         } 
         else {
@@ -82,7 +79,16 @@ public class RackServletContextListener implements ServletContextListener {
                     new PoolingRackApplicationFactory(factory) ;
         }
     }
-    
+
+    private static boolean useSharedApplication(final RackConfig config) {
+        final Integer maxRuntimes = config.getMaximumRuntimes();
+        return maxRuntimes == null || maxRuntimes == 1;
+    }
+
+    protected RackApplicationFactory getRealRackApplicationFactoryImpl() {
+        return new DefaultRackApplicationFactory();
+    }
+
     protected void handleInitializationException(
             final Exception e,
             final RackApplicationFactory factory,
@@ -96,5 +102,5 @@ public class RackServletContextListener implements ServletContextListener {
         // NOTE: factory should have already logged the error ...
         rackContext.log(ERROR, "initialization failed", e);
     }
-    
+
 }

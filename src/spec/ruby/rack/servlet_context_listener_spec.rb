@@ -113,13 +113,20 @@ describe org.jruby.rack.rails.RailsServletContextListener do
     lambda { RailsServletContextListener.new }.should_not raise_error
   end
 
-  it "pools runtimes by default" do
+  it "shares a runtime by default" do
+    factory = RailsServletContextListener.new.
+      send(:newApplicationFactory, @rack_config)
+    factory.should be_a(org.jruby.rack.SharedRackApplicationFactory)
+  end
+
+  it "pools runtimes when max > 1" do
+    @rack_config.stub(:getMaximumRuntimes).and_return(2)
     factory = RailsServletContextListener.new.
       send(:newApplicationFactory, @rack_config)
     factory.should be_a(org.jruby.rack.PoolingRackApplicationFactory)
   end
 
-  it "pools runtimes when max > 1" do
+  it "pools runtimes when max > 1 and serial initialization" do
     @rack_config.stub(:getMaximumRuntimes).and_return(3)
     @rack_config.stub(:isSerialInitialization).and_return(true)
     factory = RailsServletContextListener.new.
