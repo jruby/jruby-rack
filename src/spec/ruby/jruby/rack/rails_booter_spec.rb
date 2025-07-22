@@ -169,11 +169,12 @@ describe JRuby::Rack::RailsBooter do
       before(:all) do
         @active_support = defined? ::ActiveSupport
         @active_support = ::ActiveSupport.constants if @active_support
+        require 'active_support/logger'
       end
 
       after(:all) do
         if @active_support
-          [:TaggedLogging, :LoggerSilence, :LoggerThreadSafeLevel].each do |name| # stubbed bits we might end up loading
+          [:Logger, :TaggedLogging, :LoggerSilence, :LoggerThreadSafeLevel].each do |name| # stubbed bits we might end up loading
             ActiveSupport.send :remove_const, name unless @active_support.include?(name)
           end
         else
