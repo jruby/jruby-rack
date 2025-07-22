@@ -1,6 +1,9 @@
 ## 1.3.0 (UNRELEASED) 
 
+- Require Java 11 or later
+- Support Javax Servlet API 4.0 (JEE 8)
 - Adds basic compatibility with JRuby 10.0
+- Drop support for JRuby 9.3
 - Drop unnecessary jruby.compat.version and RackConfig.getCompatVersion() API
 - Drop JMS support
 - update (bundled) rack to 2.2.17
