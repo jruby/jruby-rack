@@ -6,9 +6,9 @@ JRuby-Rack supports Rails as well as any Rack-compatible Ruby web framework.
 
 For more information on Rack, visit http://rack.github.io/.
 
-**This README (master) targets JRuby-Rack 1.3. Please use the
-[1.1-stable](https://github.com/jruby/jruby-rack/tree/1.1-stable) branch for
-current stable 1.1.x releases.**
+**This README (master) targets JRuby-Rack 1.3. Please use the [1.2-stable](https://github.com/jruby/jruby-rack/tree/1.2-stable) or 
+[1.1-stable](https://github.com/jruby/jruby-rack/tree/1.1-stable) branchee for
+current stable releases.**
 
 [![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][8]
 [![Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)][9]
