@@ -7,14 +7,16 @@
 - Drop unnecessary jruby.compat.version and RackConfig.getCompatVersion() API
 - Drop JMS support
 - update (bundled) rack to 2.2.17
+- Fix Rails 7.1 CSRF protection when working with `JavaServletStore` sessions
 
 ## 1.2.4 (UNRELEASED)
 
-- update (bundled) rack to 2.2.16
+- update (bundled) rack to 2.2.17
+- Fix Rails 7.1 CSRF protection when working with `JavaServletStore` sessions
 
 ## 1.2.3
 
-- avoid warnings due usage of `File.exists?`
+- avoid warnings due to usage of `File.exists?`
 - Fix Rails 7.1 compatibility by ensuring active_support is required before railtie
 - Workaround logger require issues with concurrent-ruby 1.3.5 and older Rails versions
 - Workaround NameError frozen string literal issues with JRuby 9.3 and Rails 5.2/6.0

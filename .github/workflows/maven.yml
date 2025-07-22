@@ -2,9 +2,9 @@ name: Java CI
 
 on:
   push:
-    branches: [ "master", "*release*", "*stable*" ]
+    branches: [ "master", "*-stable" ]
   pull_request:
-    branches: [ "master", "*release*", "*stable*" ]
+    branches: [ "master", "*-stable" ]
 
 env:
   # Default versions for canonical release build
