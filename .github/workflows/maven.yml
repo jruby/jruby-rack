@@ -79,7 +79,7 @@ jobs:
           cache: maven
 
       - name: Setup JRuby
-        uses: ruby/setup-ruby@a4effe49ee8ee5b8b5091268c473a4628afb5651 # v1.245.0
+        uses: ruby/setup-ruby@472790540115ce5bd69d399a020189a8c87d641f # v1.247.0
         with:
           ruby-version: jruby-${{ matrix.jruby_version }}
           bundler-cache: 'false' # Need to install later so we can vary from Gemfile.lock as required for JRuby version compatibility
