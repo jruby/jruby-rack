@@ -10,11 +10,11 @@ describe org.jruby.rack.embed.Filter do
   let(:chain) { double "filter chain" }
 
   let(:request) do
-    jakarta.servlet.http.HttpServletRequest.impl {}.tap do |request|
+    Java::JakartaServletHttp::HttpServletRequest.impl {}.tap do |request|
       request.stub(:getInputStream).and_return(StubServletInputStream.new)
     end
   end
-  let(:response) { jakarta.servlet.http.HttpServletResponse.impl {} }
+  let(:response) { Java::JakartaServletHttp::HttpServletResponse.impl {} }
 
   it "serves all requests using the given rack application" do
     rack_response = double "rack response"

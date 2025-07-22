@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 
-import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
 
 /**
  * Originally inspired by Kirk's RewindableInputStream ...
@@ -215,21 +215,6 @@ public class RewindableInputStream extends ServletInputStream {
         buffer = null;
     }
     
-    @Override
-    public void setReadListener(ReadListener readListener) throws IllegalStateException, NullPointerException {
- 
-    }
-
-    @Override
-    public boolean isReady(){
-        return true;
-    }
-
-    @Override
-    public boolean isFinished(){
-        return true;
-    }
-    
     /**
      * Rewind this stream (kindly) to the start.
      * @throws IOException if there's an IO exception
@@ -417,5 +402,27 @@ public class RewindableInputStream extends ServletInputStream {
     public int getMaximumBufferSize() {
         return bufferMax;
     }
-    
+
+    @Override
+    public boolean isFinished() {
+        try {
+            return input.available() <= 0;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean isReady() {
+        try {
+            return input.available() >= 0;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void setReadListener(ReadListener readListener) {
+        throw new UnsupportedOperationException("readListener not supported");
+    }
 }

@@ -83,7 +83,7 @@ describe 'servlet-ext' do
   describe Java::JakartaServlet::ServletContext do
 
     let(:subject) do 
-      context = org.jruby.rack.mock.MockServletContext.new
+      context = org.springframework.mock.web.MockServletContext.new
       context.removeAttribute("jakarta.servlet.context.tempdir")
       context
     end
@@ -119,7 +119,7 @@ describe 'servlet-ext' do
       @request.keys.should == names
     end
 
-    let(:subject) { org.jruby.rack.mock.MockHttpServletRequest.new }
+    let(:subject) { org.springframework.mock.web.MockHttpServletRequest.new }
 
     it_behaves_like "hash"
     
@@ -152,7 +152,7 @@ describe 'servlet-ext' do
       @session.keys.should == names
     end
     
-    let(:subject) { org.jruby.rack.mock.MockHttpSession.new }
+    let(:subject) { org.springframework.mock.web.MockHttpSession.new }
 
     it_behaves_like "hash"
     

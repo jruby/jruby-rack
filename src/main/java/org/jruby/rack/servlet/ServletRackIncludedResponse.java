@@ -16,9 +16,9 @@ import java.io.UnsupportedEncodingException;
 
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
-import jakarta.servlet.WriteListener;
 
 /**
  * Response wrapper used to buffer the output of a server-side include. 
@@ -159,7 +159,7 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 	 */
 	private static class ByteArrayServletOutputStream extends ServletOutputStream {
 		
-		private final static String LINE_SEPARATOR = System.getProperty("line.separator");
+		private final static String LINE_SEPARATOR = System.lineSeparator();
 		private final DataOutputStream dataOutputStream;
 		private final String charSet;
 		
@@ -167,87 +167,6 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 			super();
 			this.dataOutputStream = new DataOutputStream(byteOutputStream);
 			this.charSet = charSet;
-		}
-
-		@Override
-		public void print(boolean b) throws IOException {
-			dataOutputStream.writeBoolean(b);
-		}
-
-		@Override
-		public void print(char c) throws IOException {
-			dataOutputStream.writeChar(c);
-		}
-
-		@Override
-		public void print(double d) throws IOException {
-			dataOutputStream.writeDouble(d);
-		}
-
-		@Override
-		public void print(float f) throws IOException {
-			dataOutputStream.writeFloat(f);
-		}
-
-		@Override
-		public void print(int i) throws IOException {
-			dataOutputStream.write(i);
-		}
-
-		@Override
-		public void print(long l) throws IOException {
-			dataOutputStream.writeLong(l);
-		}
-
-		@Override
-		public void print(String s) throws IOException {
-			dataOutputStream.write(s.getBytes(charSet));
-		}
-
-		@Override
-		public void println() throws IOException {
-			dataOutputStream.write(LINE_SEPARATOR.getBytes(charSet));
-		}
-
-		@Override
-		public void println(boolean b) throws IOException {
-			print(b);
-			println();
-		}
-
-		@Override
-		public void println(char c) throws IOException {
-			print(c);
-			println();
-		}
-
-		@Override
-		public void println(double d) throws IOException {
-			print(d);
-			println();
-		}
-
-		@Override
-		public void println(float f) throws IOException {
-			print(f);
-			println();
-		}
-
-		@Override
-		public void println(int i) throws IOException {
-			print(i);
-			println();
-		}
-
-		@Override
-		public void println(long l) throws IOException {
-			print(l);
-			println();
-		}
-
-		@Override
-		public void println(String s) throws IOException {
-			print(s);
 		}
 
 		@Override
@@ -266,12 +185,94 @@ public class ServletRackIncludedResponse extends HttpServletResponseWrapper {
 		}
 
 		@Override
-		public void setWriteListener(WriteListener writeListener){
+		public void print(String s) throws IOException {
+			dataOutputStream.write(s.getBytes(charSet));
 		}
-		
+
 		@Override
-		public boolean isReady(){
+		public void print(boolean b) throws IOException {
+			dataOutputStream.writeBoolean(b);
+		}
+
+		@Override
+		public void print(char c) throws IOException {
+			dataOutputStream.writeChar(c);
+		}
+
+		@Override
+		public void print(int i) throws IOException {
+			dataOutputStream.write(i);
+		}
+
+		@Override
+		public void print(long l) throws IOException {
+			dataOutputStream.writeLong(l);
+		}
+
+		@Override
+		public void print(float f) throws IOException {
+			dataOutputStream.writeFloat(f);
+		}
+
+		@Override
+		public void print(double d) throws IOException {
+			dataOutputStream.writeDouble(d);
+		}
+
+		@Override
+		public void println() throws IOException {
+			dataOutputStream.write(LINE_SEPARATOR.getBytes(charSet));
+		}
+
+		@Override
+		public void println(String s) throws IOException {
+			print(s);
+		}
+
+		@Override
+		public void println(boolean b) throws IOException {
+			print(b);
+			println();
+		}
+
+		@Override
+		public void println(char c) throws IOException {
+			print(c);
+			println();
+		}
+
+		@Override
+		public void println(int i) throws IOException {
+			print(i);
+			println();
+		}
+
+		@Override
+		public void println(long l) throws IOException {
+			print(l);
+			println();
+		}
+
+		@Override
+		public void println(float f) throws IOException {
+			print(f);
+			println();
+		}
+
+		@Override
+		public void println(double d) throws IOException {
+			print(d);
+			println();
+		}
+
+		@Override
+		public boolean isReady() {
 			return true;
+		}
+
+		@Override
+		public void setWriteListener(WriteListener writeListener) {
+			throw new UnsupportedOperationException("writeListener not supported");
 		}
 	}
 }

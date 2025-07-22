@@ -162,16 +162,6 @@ public class FakePageContext extends PageContext {
     }
 
     @Override
-    public ExpressionFactory getExpressionFactory() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public ELResolver getELResolver() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public ELContext getELContext() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

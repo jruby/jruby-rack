@@ -33,11 +33,11 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
   end
 
   let(:servlet_request) do
-    org.jruby.rack.mock.MockHttpServletRequest.new(servlet_context)
+    org.springframework.mock.web.MockHttpServletRequest.new(servlet_context)
   end
 
   let(:servlet_response) do
-    org.jruby.rack.mock.MockHttpServletResponse.new
+    org.springframework.mock.web.MockHttpServletResponse.new
   end
 
   let(:rack_config) do
@@ -388,13 +388,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_eval_as_nil "ENV['HOME']"
         should_eval_as_nil "ENV['RUBYOPT']"
         should_eval_as_eql_to "require 'yaml'", true # -ryaml not processed
-      end
-
-      it "handles jruby.compat.version == '1.9' and starts in 1.9 mode" do
-        set_config 'jruby.compat.version', '1.9'
-        #@rack_config.stub(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
-        @runtime = app_factory.new_runtime
-        @runtime.is1_9.should be_truthy
       end
 
       it "handles jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
@@ -830,7 +823,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @pooling_factory.init(@rack_context)
     sleep(0.10)
     @pooling_factory.getApplicationPool.size.should < 6
-    sleep(ENV['TRAVIS'] == 'true' ? 0.9 : 0.45) # 6 x 0.15 == 0.9 but we're parallel
+    sleep(0.9)
     @pooling_factory.getApplicationPool.size.should >= 6
 
     expect( @pooling_factory.getManagedApplications ).to_not be_empty

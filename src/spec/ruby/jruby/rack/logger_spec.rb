@@ -7,7 +7,7 @@ describe JRuby::Rack::Logger do
   end
 
   let(:servlet_context) do
-    servlet_context = org.jruby.rack.mock.MockServletContext.new
+    servlet_context = org.jruby.rack.mock.RackLoggingMockServletContext.new
     servlet_context.logger = real_logger
     servlet_context
   end
@@ -116,17 +116,18 @@ describe JRuby::Rack::Logger do
   end
 
   describe JRuby::Rack::ServletLog do
-
-    it "writes messages to the servlet context" do
-      JRuby::Rack.context = rack_context = double('context')
-      servlet_log = JRuby::Rack.send(:servlet_log)
-      rack_context.should_receive(:log).with(/hello/)
-      servlet_log.write "hello"
-      rack_context.should_receive(:log).with(/hoja!/)
-      servlet_log.puts "hoja!hoj"
-      servlet_log.close
+    let(:servlet_context_logger) do
+      org.jruby.rack.logging.ServletContextLogger.new(servlet_context)
     end
 
+    it "writes messages to the servlet context" do
+      JRuby::Rack.context = servlet_context_logger
+      servlet_log = JRuby::Rack.send(:servlet_log)
+      servlet_log.write "hello"
+      expect(real_logger.logged_content).to match(/hello/)
+      servlet_log.puts "hoja!hoj"
+      expect(real_logger.logged_content).to match(/hoja!/)
+      servlet_log.close
+    end
   end
-
 end

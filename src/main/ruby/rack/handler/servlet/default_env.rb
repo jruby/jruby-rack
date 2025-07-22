@@ -20,9 +20,9 @@ module Rack
       class DefaultEnv < Hash # The environment must be an instance of Hash !
 
         BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme
-          rack.multithread rack.multiprocess rack.run_once
+          rack.multithread rack.multiprocess rack.run_once rack.hijack?
           java.servlet_request java.servlet_response java.servlet_context
-          jruby.rack.version jruby.rack.jruby.version jruby.rack.rack.release).
+          jruby.rack.version).
           map!(&:freeze)
 
         VARIABLES = %w(CONTENT_TYPE CONTENT_LENGTH PATH_INFO QUERY_STRING
@@ -235,6 +235,7 @@ module Rack
           when 'rack.multithread'     then env[key] = true
           when 'rack.multiprocess'    then env[key] = false
           when 'rack.run_once'        then env[key] = false
+          when 'rack.hijack?'         then env[key] = false
           when 'rack.input'           then
             env[key] = @servlet_env ? JRuby::Rack::Input.new(@servlet_env) : nil
           when 'rack.errors'          then context = rack_context
@@ -248,8 +249,6 @@ module Rack
           when 'java.servlet_context' then env[key] = servlet_context
           when 'jruby.rack.context'   then env[key] = rack_context
           when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
-          when 'jruby.rack.jruby.version' then env[key] = JRUBY_VERSION
-          when 'jruby.rack.rack.release'  then env[key] = ::Rack.release
           else
             nil
           end

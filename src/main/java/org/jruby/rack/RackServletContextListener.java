@@ -16,6 +16,7 @@ import org.jruby.rack.servlet.ServletRackConfig;
 import org.jruby.rack.servlet.ServletRackContext;
 
 import static org.jruby.rack.DefaultRackConfig.isThrowInitException;
+import static org.jruby.rack.RackLogger.Level.*;
 
 /**
  * Web application lifecycle listener.
@@ -49,7 +50,7 @@ public class RackServletContextListener implements ServletContextListener {
         try {
             factory.init(rackContext);
         } 
-        catch (RuntimeException e) {
+        catch (Exception e) {
             handleInitializationException(e, factory, rackContext);
         }
     }
@@ -68,11 +69,8 @@ public class RackServletContextListener implements ServletContextListener {
     protected RackApplicationFactory newApplicationFactory(RackConfig config) {
         if (factory != null) return factory; // only != null while testing
 
-        final RackApplicationFactory factory = new DefaultRackApplicationFactory();
-        final Integer maxRuntimes = config.getMaximumRuntimes();
-        // for backwards compatibility when runtime mix/max values not specified
-        // we assume a single shared (threadsafe) runtime to be used :
-        if ( maxRuntimes == null || maxRuntimes.intValue() == 1 ) {
+        final RackApplicationFactory factory = getRealRackApplicationFactoryImpl();
+        if (useSharedApplication((config))) {
             return new SharedRackApplicationFactory(factory);
         } 
         else {
@@ -81,12 +79,20 @@ public class RackServletContextListener implements ServletContextListener {
                     new PoolingRackApplicationFactory(factory) ;
         }
     }
-    
+
+    private static boolean useSharedApplication(final RackConfig config) {
+        final Integer maxRuntimes = config.getMaximumRuntimes();
+        return maxRuntimes == null || maxRuntimes == 1;
+    }
+
+    protected RackApplicationFactory getRealRackApplicationFactoryImpl() {
+        return new DefaultRackApplicationFactory();
+    }
+
     protected void handleInitializationException(
             final Exception e,
             final RackApplicationFactory factory,
             final ServletRackContext rackContext) {
-        // TODO for backwards compat we do not throw (by default) but should :
         if ( isThrowInitException(rackContext.getConfig()) ) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
@@ -94,7 +100,7 @@ public class RackServletContextListener implements ServletContextListener {
             throw RackInitializationException.wrap(e);
         }
         // NOTE: factory should have already logged the error ...
-        rackContext.log(RackLogger.ERROR, "initialization failed", e);
+        rackContext.log(ERROR, "initialization failed", e);
     }
-    
+
 }

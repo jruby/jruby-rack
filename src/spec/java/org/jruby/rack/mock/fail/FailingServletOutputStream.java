@@ -23,9 +23,11 @@
  */
 package org.jruby.rack.mock.fail;
 
+import org.springframework.mock.web.DelegatingServletOutputStream;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import org.jruby.rack.mock.DelegatingServletOutputStream;
 
 /**
  * @author kares
@@ -35,7 +37,7 @@ public class FailingServletOutputStream extends DelegatingServletOutputStream {
     private IOException failure;
 
     public FailingServletOutputStream(final IOException failure) {
-        super(null);
+        super(new ByteArrayOutputStream());
         this.failure = failure;
     }
 

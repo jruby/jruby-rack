@@ -35,7 +35,6 @@ import java.util.Set;
  *
  * @author nicksieger
  */
-@SuppressWarnings("rawtypes")
 public class DefaultServletRackContext implements ServletRackContext {
 
     private final RackConfig config;
@@ -151,21 +150,6 @@ public class DefaultServletRackContext implements ServletRackContext {
         return context.getNamedDispatcher(name);
     }
 
-    @Override @Deprecated
-    public Servlet getServlet(String name) throws ServletException {
-        return context.getServlet(name);
-    }
-
-    @Override @Deprecated
-    public Enumeration<Servlet> getServlets() {
-        return context.getServlets();
-    }
-
-    @Override @Deprecated
-    public Enumeration<String> getServletNames() {
-        return context.getServletNames();
-    }
-
     @Override
     public String getServerInfo() {
         return context.getServerInfo();
@@ -199,11 +183,6 @@ public class DefaultServletRackContext implements ServletRackContext {
     @Override
     public String getServletContextName() {
         return context.getServletContextName();
-    }
-
-    @Override @Deprecated
-    public void log(Exception e, String msg) {
-        logger.log(msg, e);
     }
 
     // RackLogger
@@ -271,56 +250,96 @@ public class DefaultServletRackContext implements ServletRackContext {
     }
 
     @Override
+    public String getVirtualServerName() {
+        return context.getVirtualServerName();
+    }
+
+    @Override
+    public int getSessionTimeout() {
+        return context.getSessionTimeout();
+    }
+
+    @Override
+    public void setSessionTimeout(int sessionTimeout) {
+        context.setSessionTimeout(sessionTimeout);
+    }
+
+    @Override
+    public String getRequestCharacterEncoding() {
+        return context.getRequestCharacterEncoding();
+    }
+
+    @Override
+    public void setRequestCharacterEncoding(String encoding) {
+        context.setRequestCharacterEncoding(encoding);
+    }
+
+    @Override
+    public String getResponseCharacterEncoding() {
+        return context.getResponseCharacterEncoding();
+    }
+
+    @Override
+    public void setResponseCharacterEncoding(String encoding) {
+        context.setResponseCharacterEncoding(encoding);
+    }
+
+    @Override
     public <T extends Servlet> T createServlet(Class<T> type) throws ServletException {
         return context.createServlet(type);
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public ServletRegistration.Dynamic addServlet(String servletName, String className) throws IllegalArgumentException, IllegalStateException {
         return context.addServlet(servletName, className);
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public ServletRegistration.Dynamic addServlet(String servletName, Servlet servlet) throws IllegalArgumentException, IllegalStateException {
         return context.addServlet(servletName, servlet);
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public ServletRegistration.Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass) throws IllegalArgumentException, IllegalStateException {
         return context.addServlet(servletName, servletClass);
     }
 
-    @Override // 3.0 in method signature
+    @Override
+    public ServletRegistration.Dynamic addJspFile(String servletName, String jspFile) {
+        return context.addJspFile(servletName, jspFile);
+    }
+
+    @Override
     public ServletRegistration getServletRegistration(String servletName) {
         return context.getServletRegistration(servletName);
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public Map<String, ? extends ServletRegistration> getServletRegistrations() {
         return context.getServletRegistrations();
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public <T extends Filter> T createFilter(Class<T> type) throws ServletException {
         return context.createFilter(type);
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public FilterRegistration.Dynamic addFilter(String filterName, String className) throws IllegalArgumentException, IllegalStateException {
         return context.addFilter(filterName, className);
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public FilterRegistration.Dynamic addFilter(String filterName, Filter filter) throws IllegalArgumentException, IllegalStateException {
         return context.addFilter(filterName, filter);
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public FilterRegistration.Dynamic addFilter(String filterName, Class<? extends Filter> filterClass) throws IllegalArgumentException, IllegalStateException {
         return context.addFilter(filterName, filterClass);
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public FilterRegistration getFilterRegistration(String filterName) {
         return context.getFilterRegistration(filterName);
     }
@@ -350,7 +369,7 @@ public class DefaultServletRackContext implements ServletRackContext {
         return context.createListener(listenerClass);
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public SessionCookieConfig getSessionCookieConfig() {
         return context.getSessionCookieConfig();
     }
@@ -370,50 +389,9 @@ public class DefaultServletRackContext implements ServletRackContext {
         return context.getEffectiveSessionTrackingModes();
     }
 
-    @Override // 3.0 in method signature
+    @Override
     public JspConfigDescriptor getJspConfigDescriptor() {
         return context.getJspConfigDescriptor();
     }
 
-    @Override
-    public void setResponseCharacterEncoding(String encoding) {
-        
-    }
-
-    @Override
-    public String getResponseCharacterEncoding() {
-        return null;
-    }
-
-
-    @Override
-    public void setRequestCharacterEncoding(String encoding) {
-        
-    }
-
-    @Override
-    public String getRequestCharacterEncoding() {
-        return null;
-    }
-
-    @Override
-    public void setSessionTimeout(int sessionTimeout) {
-
-    }
-
-    @Override
-    public int getSessionTimeout() throws UnsupportedOperationException {
-        return 30;
-    }
-
-    @Override
-    public String getVirtualServerName() throws UnsupportedOperationException {
-        return null;
-    }
-
-    @Override
-    public ServletRegistration.Dynamic addJspFile(String servletName, String jspFile) 
-        throws IllegalStateException, IllegalArgumentException, UnsupportedOperationException {
-        return null;
-    }
 }

@@ -109,11 +109,8 @@ public class Logger extends RubyObject { // implements RackLogger
         if ( context instanceof RackLogger ) {
             this.logger = (RackLogger) context;
         }
-        else if ( context instanceof RackContext ) {
-            this.logger = ((RackContext) context).getConfig().getLogger();
-        }
         else {
-            this.logger = (RackLogger) context.toJava(RackLogger.class);
+            this.logger = context.toJava(RackLogger.class);
         }
     }
 
@@ -285,8 +282,7 @@ public class Logger extends RubyObject { // implements RackLogger
     // See #add.
     //
     @JRubyMethod(name = "info")
-    public IRubyObject info(final ThreadContext context,
-        final IRubyObject msg, final Block block) {
+    public IRubyObject info(final ThreadContext context, final IRubyObject msg, final Block block) {
         return context.runtime.newBoolean( add(INFO, context, msg, block) );
     }
 
@@ -299,8 +295,7 @@ public class Logger extends RubyObject { // implements RackLogger
     // Log a +WARN+ message.
     //
     @JRubyMethod(name = "warn")
-    public IRubyObject warn(final ThreadContext context,
-        final IRubyObject msg, final Block block) {
+    public IRubyObject warn(final ThreadContext context, final IRubyObject msg, final Block block) {
         return context.runtime.newBoolean( add(WARN, context, msg, block) );
     }
 
@@ -313,8 +308,7 @@ public class Logger extends RubyObject { // implements RackLogger
     // Log a +ERROR+ message.
     //
     @JRubyMethod(name = "error")
-    public IRubyObject error(final ThreadContext context,
-        final IRubyObject msg, final Block block) {
+    public IRubyObject error(final ThreadContext context, final IRubyObject msg, final Block block) {
         return context.runtime.newBoolean( add(ERROR, context, msg, block) );
     }
 
@@ -327,8 +321,7 @@ public class Logger extends RubyObject { // implements RackLogger
     // Log a +FATAL+ message.
     //
     @JRubyMethod(name = "fatal")
-    public IRubyObject fatal(final ThreadContext context,
-        final IRubyObject msg, final Block block) {
+    public IRubyObject fatal(final ThreadContext context, final IRubyObject msg, final Block block) {
         return context.runtime.newBoolean( add(FATAL, context, msg, block) );
     }
 
@@ -342,9 +335,7 @@ public class Logger extends RubyObject { // implements RackLogger
     // This will be printed no matter what the logger's level is.
     //
     @JRubyMethod(name = "unknown")
-    public IRubyObject unknown(final ThreadContext context,
-        final IRubyObject msg, final Block block) {
-        // NOTE possibly - "somehow" support UNKNOWN in RackLogger ?!
+    public IRubyObject unknown(final ThreadContext context, final IRubyObject msg, final Block block) {
         return context.runtime.newBoolean( add(UNKNOWN, context, msg, block) );
     }
 
@@ -375,10 +366,8 @@ public class Logger extends RubyObject { // implements RackLogger
 
     // def add(severity, message = nil, progname = nil, &block)
     @JRubyMethod(name = "add")
-    public IRubyObject add(final ThreadContext context,
-        final IRubyObject severity, final IRubyObject msg,
-        final IRubyObject progname, final Block block) {
-        // NOTE possibly - "somehow" support UNKNOWN in RackLogger ?!
+    public IRubyObject add(final ThreadContext context, final IRubyObject severity,
+                           final IRubyObject msg, final IRubyObject progname, final Block block) {
         return context.runtime.newBoolean( add(UNKNOWN, context, msg, block) );
     }
 
@@ -431,8 +420,7 @@ public class Logger extends RubyObject { // implements RackLogger
     // private
 
     @JRubyMethod(visibility = Visibility.PRIVATE, required = 4)
-    public IRubyObject format_message(final ThreadContext context,
-        final IRubyObject[] args) {
+    public IRubyObject format_message(final ThreadContext context, final IRubyObject[] args) {
         if ( formatter instanceof RubyProc ) {
             return ((RubyProc) formatter).call(context, args);
         }
@@ -440,8 +428,8 @@ public class Logger extends RubyObject { // implements RackLogger
     }
 
     private IRubyObject format_message(final ThreadContext context,
-        final int severityVal, final long datetimeMillis,
-        final IRubyObject progname, final IRubyObject msg) {
+                                       final int severityVal, final long datetimeMillis,
+                                       final IRubyObject progname, final IRubyObject msg) {
         final IRubyObject severity =
             RubyString.newStringShared(context.runtime, formatSeverity(severityVal));
         final RubyTime datetime = RubyTime.newTime(context.runtime, datetimeMillis);
@@ -493,9 +481,9 @@ public class Logger extends RubyObject { // implements RackLogger
     // RackLogger
 
     @Override
-    public Object toJava(Class target) {
+    public <T> T toJava(Class<T> target) {
         // NOTE: maybe this is not a good idea ?!
-        if ( RackLogger.class == target ) return logger;
+        if ( RackLogger.class == target ) return (T) logger;
         return super.toJava(target);
     }
 
@@ -563,14 +551,12 @@ public class Logger extends RubyObject { // implements RackLogger
     }
 
     @JRubyMethod(name = "silence", required = 1)
-    public IRubyObject silence(final ThreadContext context,
-        final IRubyObject temp_level, final Block block) {
+    public IRubyObject silence(final ThreadContext context, final IRubyObject temp_level, final Block block) {
         final int tempLevel = (int) temp_level.convertToInteger("to_i").getLongValue();
         return doSilence(tempLevel, context, block);
     }
 
-    private IRubyObject doSilence(final int tempLevel,
-        final ThreadContext context, final Block block) {
+    private IRubyObject doSilence(final int tempLevel, final ThreadContext context, final Block block) {
         if ( silencer ) {
             try { // not implemented - on purpose!
                 return block.yield(context, this);
@@ -607,7 +593,7 @@ public class Logger extends RubyObject { // implements RackLogger
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(required = 0, optional = 1)
+        @JRubyMethod(optional = 1)
         public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
             final IRubyObject rackContext;
             if ( args != null && args.length > 0 ) rackContext = args[0];
@@ -623,17 +609,16 @@ public class Logger extends RubyObject { // implements RackLogger
             }
             else {
                 try {
-                    RackLogger logger = (RackLogger) rackContext.toJava(RackLogger.class);
-                    this.context = logger;
+                    this.context = rackContext.toJava(RackLogger.class);
                 }
                 catch (RaiseException e) { // TypeError
                     final IRubyObject error = e.getException();
-                    if ( error == null && ! context.runtime.getTypeError().isInstance(error) ) {
+                    if ( error == null || ! context.runtime.getTypeError().isInstance(error) ) {
                         throw e;
                     }
                     // support passing in a ServletContext instance (for convenience) :
                     try {
-                        ServletContext servletContext = (ServletContext) rackContext.toJava(ServletContext.class);
+                        ServletContext servletContext = rackContext.toJava(ServletContext.class);
                         this.context = new ServletContextLogger(servletContext);
                     }
                     catch (RaiseException fail) {

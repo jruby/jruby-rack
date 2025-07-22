@@ -26,17 +26,22 @@ module JRuby::Rack
       super
       ENV['RAILS_ROOT'] = app_path
       ENV['RAILS_ENV'] = rails_env
-
-      if rails2?
-        require 'jruby/rack/rails/environment2'
-        extend Rails2Environment
-      else
-        require 'jruby/rack/rails/environment3'
-        extend Rails3Environment
-      end
-
-      set_public_root
       self
+    end
+
+    # @return [Rails::Application] the (loaded) application instance
+    def to_app
+      # backward "compatibility" calling #to_app without a #load_environment
+      load_environment
+      ::Rails.application
+    end
+
+    # Loads the Rails environment (*config/environment.rb*).
+    def load_environment
+      require expand_path('config/boot.rb')
+      require 'jruby/rack/rails/railtie'
+      require expand_path('config/environment.rb')
+      require 'jruby/rack/rails/extensions'
     end
 
     protected
@@ -45,12 +50,6 @@ module JRuby::Rack
       if rails_relative_url_root = relative_url_root('rails.relative_url_append')
         ENV['RAILS_RELATIVE_URL_ROOT'] = rails_relative_url_root
       end
-    end
-
-    # @see JRuby::Rack::RailsBooter::Rails2Environment#set_public_root
-    # @see JRuby::Rack::RailsBooter::Rails3Environment#set_public_root
-    def set_public_root
-      # no-op by default - leave as it is
     end
 
     # @deprecated no longer used, replaced with {#run_boot_hooks}
@@ -70,11 +69,6 @@ module JRuby::Rack
     end
 
     private
-
-    def rails2?
-      app_path = real_path File.join(layout.app_uri, 'config/application.rb')
-      ! ( app_path && File.exist?(app_path) )
-    end
 
     class << self
 
@@ -96,6 +90,5 @@ module JRuby::Rack
       end
 
     end
-
   end
 end

@@ -23,21 +23,20 @@
  */
 package org.jruby.rack.mock.fail;
 
+import org.springframework.mock.web.MockHttpServletResponse;
+
+import jakarta.servlet.ServletOutputStream;
 import java.io.IOException;
-import org.jruby.rack.mock.MockHttpServletResponse;
 
 /**
  * @author kares
  */
 public class FailingHttpServletResponse extends MockHttpServletResponse {
 
-    private FailingServletOutputStream outputStream;
+    private FailingServletOutputStream outputStream = new FailingServletOutputStream(new IOException("Broken pipe"));
 
     @Override
-    public FailingServletOutputStream getOutputStream() {
-        if (outputStream == null) {
-            outputStream = new FailingServletOutputStream(new IOException("Broken pipe"));
-        }
+    public ServletOutputStream getOutputStream() {
         return outputStream;
     }
 
@@ -46,7 +45,7 @@ public class FailingHttpServletResponse extends MockHttpServletResponse {
     }
 
     public void setFailure(IOException failure) {
-        getOutputStream().setFailure(failure);
+        outputStream.setFailure(failure);
     }
 
 }

@@ -33,6 +33,8 @@ import java.util.Set;
 
 import org.jruby.Ruby;
 
+import static org.jruby.rack.RackLogger.Level.*;
+
 /**
  * Default error application if the Rack error application can not be setup or
  * "jruby.rack.error" handling is turned off (set to false).
@@ -117,7 +119,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
                     body = buildErrorBody();
                 }
                 catch (Exception e) {
-                    log(RackLogger.INFO, "failed building error body", e);
+                    log(INFO, "failed building error body", e);
                     body = getError() == null ? "" : getError().toString();
                 }
             }
@@ -149,11 +151,11 @@ public class DefaultErrorApplication extends DefaultRackApplication
                 defaultRespond(this, response);
             }
             catch (IOException e) {
-                log(RackLogger.WARN, "could not write response body", e);
+                log(WARN, "could not write response body", e);
             }
         }
 
-        private void log(String level, String message, Throwable e) {
+        private void log(RackLogger.Level level, String message, Throwable e) {
             if ( context != null ) context.log(level, message, e);
         }
 

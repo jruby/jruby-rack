@@ -36,7 +36,6 @@ import org.jruby.runtime.load.Library;
  */
 public class RackLibrary implements Library, BasicLibraryService {
 
-    @SuppressWarnings("deprecation")
     public static void load(final Ruby runtime) {
         final RubyModule _JRuby = runtime.getOrCreateModule("JRuby");
         final RubyModule _JRuby_Rack = _JRuby.defineModuleUnder("Rack");
