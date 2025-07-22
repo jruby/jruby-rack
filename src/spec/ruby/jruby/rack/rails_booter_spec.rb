@@ -168,16 +168,16 @@ describe JRuby::Rack::RailsBooter do
 
       before(:all) do
         @active_support = defined? ::ActiveSupport
-        @tagged_logging = active_support && ActiveSupport::TaggedLogging rescue false
+        @active_support = ::ActiveSupport.constants if @active_support
       end
 
       after(:all) do
-        if @tagged_logging == false
-          if @active_support
-            ActiveSupport.send :remove_const, :TaggedLogging
-          else
-            Object.send :remove_const, :ActiveSupport rescue nil
+        if @active_support
+          [:TaggedLogging, :LoggerSilence, :LoggerThreadSafeLevel].each do |name| # stubbed bits we might end up loading
+            ActiveSupport.send :remove_const, name unless @active_support.include?(name)
           end
+        else
+          Object.send :remove_const, :ActiveSupport rescue nil
         end
       end
 
@@ -195,7 +195,7 @@ describe JRuby::Rack::RailsBooter do
         log_initializer[1].should == [{:before => :initialize_logger}]
       end
 
-      it "gets set as config.logger (wrapped with tagged logging)" do
+      it "gets set as config.logger (wrapped with tagged logging and logger_silence)" do
         logger = JRuby::Rack::Logger.new STDERR
         @config.stub(:log_level).and_return(:info)
         @config.stub(:log_formatter).and_return(nil)
@@ -206,6 +206,13 @@ describe JRuby::Rack::RailsBooter do
         rails_logger = @app.config.logger
         # ActiveSupport::TaggedLogging.new clones the original logger instance
         expect(rails_logger).to be_a(JRuby::Rack::Logger)
+        expect(rails_logger).to be_a(ActiveSupport::TaggedLogging)
+        if defined? ActiveSupport::LoggerSilence
+          expect(rails_logger).to be_a(ActiveSupport::LoggerSilence)
+          # sanity check silence works:
+          value_returned = rails_logger.silence(Logger::WARN) { |logger| logger.class.name }
+          expect(value_returned).to eql('JRuby::Rack::Logger')
+        end
       end
 
       it "has a configurable log level" do
