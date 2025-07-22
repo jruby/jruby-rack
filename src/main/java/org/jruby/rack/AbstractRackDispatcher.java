@@ -9,6 +9,8 @@ package org.jruby.rack;
 
 import java.io.IOException;
 
+import static org.jruby.rack.RackLogger.Level.*;
+
 /**
  *
  * @author nicksieger
@@ -46,10 +48,10 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
             final RackResponseEnvironment response) throws IOException {
         
         if ( response.isCommitted() ) {
-            context.log(RackLogger.ERROR, "couldn't handle exception (response is committed)", e);
+            context.log(ERROR, "couldn't handle exception (response is committed)", e);
             return;
         }
-        context.log(RackLogger.INFO, "resetting rack response due exception: " + e);
+        context.log(INFO, "resetting rack response due exception: " + e);
         response.reset();
 
         afterException(request, e, response);

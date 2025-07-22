@@ -13,7 +13,6 @@ import org.jruby.exceptions.RaiseException;
  * 
  * @author kares
  */
-@SuppressWarnings("serial")
 public class RackException extends RuntimeException {
 
     public RackException(String message) {
@@ -57,9 +56,7 @@ public class RackException extends RuntimeException {
             st.append(b.toString());
             return st.toString();
         }
-        else {
-            return null;
-        }
+        return null;
     }
     
 }

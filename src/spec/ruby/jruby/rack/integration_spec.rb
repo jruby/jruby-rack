@@ -87,14 +87,16 @@ describe "integration" do
 
     let(:servlet_context) { new_servlet_context(base_path) }
 
-    it "initializes (pooling by default)" do
+    it "initializes pooling when min/max set" do
+      servlet_context.addInitParameter('jruby.min.runtimes', '1')
+      servlet_context.addInitParameter('jruby.max.runtimes', '2')
+
       listener = org.jruby.rack.rails.RailsServletContextListener.new
       listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
 
       rack_factory = servlet_context.getAttribute("rack.factory")
       rack_factory.should be_a(RackApplicationFactory)
       rack_factory.should be_a(PoolingRackApplicationFactory)
-      rack_factory.should respond_to(:realFactory)
       rack_factory.realFactory.should be_a(RailsRackApplicationFactory)
 
       servlet_context.getAttribute("rack.context").should be_a(RackContext)
@@ -103,7 +105,19 @@ describe "integration" do
       rack_factory.getApplication.should be_a(DefaultRackApplication)
     end
 
-    it "initializes threadsafe!" do
+    it "initializes shared (thread-safe) by default" do
+      listener = org.jruby.rack.rails.RailsServletContextListener.new
+      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+
+      rack_factory = servlet_context.getAttribute("rack.factory")
+      rack_factory.should be_a(RackApplicationFactory)
+      rack_factory.should be_a(SharedRackApplicationFactory)
+      rack_factory.realFactory.should be_a(RailsRackApplicationFactory)
+
+      rack_factory.getApplication.should be_a(DefaultRackApplication)
+    end
+
+    it "initializes shared (thread-safe) whem max runtimes is 1" do
       servlet_context.addInitParameter('jruby.max.runtimes', '1')
 
       listener = org.jruby.rack.rails.RailsServletContextListener.new

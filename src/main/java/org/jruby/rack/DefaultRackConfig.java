@@ -253,18 +253,11 @@ public class DefaultRackConfig implements RackConfig {
         if ( env == null ) env = getProperty("jruby.runtime.environment");
         final Object envFlag = toStrictBoolean(env, null);
         if ( envFlag != null ) {
-            boolean keep = ((Boolean) envFlag).booleanValue();
             // jruby.runtime.env = true keep as is (return null)
             // jruby.runtime.env = false clear env (return empty)
-            //return keep ? null : new HashMap<String, String>();
-            if ( keep ) {
-                return new HashMap<String, String>(System.getenv());
-            }
-            else {
-                return new HashMap<String, String>();
-            }
+            return (Boolean) envFlag ? new HashMap<>(System.getenv()) : new HashMap<>();
         }
-        if ( isIgnoreEnvironment() ) return new HashMap<String, String>();
+        if ( isIgnoreEnvironment() ) return new HashMap<>();
         // TODO maybe support custom value 'servlet' to use init params ?
         return toStringMap(env);
     }
@@ -289,14 +282,14 @@ public class DefaultRackConfig implements RackConfig {
 
     static boolean isThrowInitException(RackConfig config) {
         Boolean error = config.getBooleanProperty("jruby.rack.error");
-        if ( error != null && ! error.booleanValue() ) {
-            return true; // jruby.rack.error = false
+        if ( error != null && error.booleanValue() ) {
+            return false; // jruby.rack.error = true
         }
-        error = config.getBooleanProperty("jruby.rack.exception");
-        if ( error != null && ! error.booleanValue() ) {
-            return true; // jruby.rack.exception = false
+        error = config.getBooleanProperty(RackEnvironment.EXCEPTION);
+        if ( error != null && error.booleanValue() ) {
+            return false; // jruby.rack.exception = true
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -421,7 +414,7 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     private static Map<String,String> getLoggerTypes() {
-        final Map<String,String> loggerTypes = new HashMap<String, String>(8);
+        final Map<String,String> loggerTypes = new HashMap<>(8);
         loggerTypes.put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
