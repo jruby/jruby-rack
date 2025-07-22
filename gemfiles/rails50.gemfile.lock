@@ -148,6 +148,3 @@ DEPENDENCIES
   rails (~> 5.0.0)
   rake (~> 13.3)
   rspec
-
-BUNDLED WITH
-   2.6.3
