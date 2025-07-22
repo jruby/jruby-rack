@@ -3,21 +3,10 @@ require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 describe "ActionController::Session::JavaServletStore" do
 
   before :all do
-
     require 'active_support'
     require 'action_controller'
-    begin # help Rails 3.0 up
-      require 'action_dispatch/middleware/session/abstract_store'
-    rescue LoadError
-    end
-    begin # a Rails 2.3 require
-      require 'action_controller/session/abstract_store'
-    rescue LoadError
-    end
-
-    require 'jruby/rack/session_store'
-
     require 'action_controller/session/java_servlet_store'
+    require 'jruby/rack/session_store'
   end
 
   before :each do
@@ -281,6 +270,22 @@ describe "ActionController::Session::JavaServletStore" do
 
     expect( new_session.isInvalid ).to be false
     expect( new_session.send(:getAttribute, "_csrf_token") ).to_not be nil
+  end
+
+  it "propagates rails csrf token to session during commit" do
+    skip "Only runs on Rails 7.1+" unless defined? ::ActionController::RequestForgeryProtection::CSRF_TOKEN
+    session = double_http_session
+    @request.should_receive(:getSession).and_return(session)
+
+    @app.should_receive(:call) do |env|
+      env['rack.session']['foo'] = 'bar'
+      env[::ActionController::RequestForgeryProtection::CSRF_TOKEN] = 'some_token'
+    end
+    @session_store.call(@env)
+
+    # CSRF token propagated from env to underlying session
+    expect( session.send(:getAttribute, '_csrf_token') ).to eq 'some_token'
+    expect( session.send(:getAttribute, 'foo') ).to eq 'bar'
   end
 
   it "handles the skip session option" do

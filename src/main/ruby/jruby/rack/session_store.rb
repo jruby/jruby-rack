@@ -5,7 +5,7 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'rack/session/abstract/id' unless defined?(::Rack::Session::Abstract::ID)
+require 'rack/session/abstract/id' unless defined?(::Rack::Session::Abstract::Persisted)
 
 module JRuby::Rack
   module Session
@@ -28,20 +28,13 @@ module JRuby::Rack
     end
 
     # Rack based SessionStore implementation but compatible with (older) AbstractStore.
-    class SessionStore < ::Rack::Session::Abstract::ID
+    class SessionStore < ::Rack::Session::Abstract::Persisted
 
       ENV_SERVLET_SESSION_KEY = 'java.servlet_session'.freeze
       RAILS_SESSION_KEY = "__current_rails_session".freeze
 
       def initialize(app, options={})
         super(app, options.merge!(:cookie_only => false, :defer => true))
-      end
-
-      def context(env, app = @app)
-        req = make_request env
-        prepare_session(req)
-        status, headers, body = app.call(req.env)
-        commit_session(req, status, headers, body)
       end
 
       # (public) servlet specific methods :
@@ -69,7 +62,7 @@ module JRuby::Rack
         servlet_session
       end
 
-      private # Rack::Session::Abstract::ID overrides :
+      private # Rack::Session::Abstract::Persisted overrides :
 
         def session_class
           ::JRuby::Rack::Session::SessionHash
@@ -83,6 +76,7 @@ module JRuby::Rack
           nil # dummy method - no session id generation with servlet API
         end
 
+        # Alternative to overriding find_session(req)
         def load_session(req) # session_id arg for get_session alias
           session_id, session = false, {}
           if servlet_session = get_servlet_session(req.env)
@@ -122,40 +116,49 @@ module JRuby::Rack
           ! session.is_a?(::JRuby::Rack::Session::SessionHash) || session.loaded?
         end
 
-        def commit_session(req, status, headers, body)
-          session = req.env[::Rack::RACK_SESSION]
-          options = req.env[::Rack::RACK_SESSION_OPTIONS]
+        # Overridden from Rack, removing support for deferral and unnecessary cookie support when using Java Servlet sessions.
+        def commit_session(req, _res)
+          session = req.get_header ::Rack::RACK_SESSION
+          options = session.options
 
           if options[:drop] || options[:renew]
-            destroy_session(req.env, options[:id], options)
+            delete_session(req, session.id, options)
           end
 
-          return [status, headers, body] if options[:drop] || options[:skip]
+          return if options[:drop] || options[:skip]
 
           if loaded_session?(session)
-            session_id = session.respond_to?(:id=) ? session.id : options[:id]
-            session_data = session.to_hash.delete_if { |_,v| v.nil? }
-            unless set_session(req.env, session_id, session_data, options)
-              req.env["rack.errors"].puts("WARNING #{self.class.name} failed to save session. Content dropped.")
+            # Mirror behaviour of Rails ActionDispatch::Session::AbstractStore#commit_session for Rails 7.1+ compatibility
+            commit_csrf_token(req, session)
+
+            session_id ||= session.id
+            session_data = session.to_hash.delete_if { |k, v| v.nil? }
+
+            unless write_session(req, session_id, session_data, options)
+              req.get_header(::Rack::RACK_ERRORS).puts("Warning! #{self.class.name} failed to save session. Content dropped.")
             end
           end
-
-          [status, headers, body]
         end
 
-        def set_session(env, session_id, hash, options)
-          if session_id.nil? && hash.empty?
-            destroy_session(env)
+        def commit_csrf_token(req, session_hash)
+          csrf_token = req.env[::ActionController::RequestForgeryProtection::CSRF_TOKEN] if defined?(::ActionController::RequestForgeryProtection::CSRF_TOKEN)
+          session_hash[:_csrf_token] = csrf_token if csrf_token
+        end
+
+        def write_session(req, session_id, session_hash, _options)
+          if session_id.nil? && session_hash.empty?
+            delete_session(req)
             return true
           end
-          if servlet_session = get_servlet_session(env, true)
+
+          if servlet_session = get_servlet_session(req.env, true)
             begin
               servlet_session.synchronized do
                 keys = servlet_session.getAttributeNames
-                keys.select { |key| ! hash.has_key?(key) }.each do |key|
+                keys.select { |key| ! session_hash.has_key?(key) }.each do |key|
                   servlet_session.removeAttribute(key)
                 end
-                hash.delete_if do |key,value|
+                session_hash.delete_if do |key,value|
                   if String === key
                     case value
                     when String, Numeric, true, false, nil
@@ -171,8 +174,8 @@ module JRuby::Rack
                     end
                   end
                 end
-                if ! hash.empty?
-                  marshalled_string = Marshal.dump(hash)
+                if ! session_hash.empty?
+                  marshalled_string = Marshal.dump(session_hash)
                   marshalled_bytes = marshalled_string.to_java_bytes
                   servlet_session.setAttribute(RAILS_SESSION_KEY, marshalled_bytes)
                 elsif servlet_session.getAttribute(RAILS_SESSION_KEY)
@@ -188,9 +191,9 @@ module JRuby::Rack
           end
         end
 
-        def destroy_session(env, session_id = nil, options = nil)
-          # session_id and options arg defaults for destory alias
-          (session = get_servlet_session(env)) && session.synchronized { session.invalidate }
+        def delete_session(req, _session_id = nil, _options = nil)
+          # session_id and options arg defaults for delete alias
+          (session = get_servlet_session(req.env)) && session.synchronized { session.invalidate }
         rescue java.lang.IllegalStateException # if session already invalid
           nil
         end
