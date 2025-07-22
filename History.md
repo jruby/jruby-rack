@@ -1,3 +1,49 @@
+## 1.3.0 (UNRELEASED) 
+
+- Require Java 11 or later
+- Support Javax Servlet API 4.0 (JEE 8)
+- Adds basic compatibility with JRuby 10.0
+- Drop support for JRuby 9.3
+- Drop unnecessary `jruby.compat.version` and `RackConfig.getCompatVersion()` API
+- Drop JMS support
+- Drop deprecated `RackLogger` string (level) constants
+- Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hhsh
+- Change context listener to throw, in case of an exception during initialization, by default
+- Change rails context listener to assume a thread-safe application by default
+- update (bundled) rack to 2.2.17
+- Fix Rails 7.1 CSRF protection when working with `JavaServletStore` sessions
+
+## 1.2.4 (UNRELEASED)
+
+- update (bundled) rack to 2.2.17
+- Fix Rails 7.1 CSRF protection when working with `JavaServletStore` sessions
+
+## 1.2.3
+
+- avoid warnings due to usage of `File.exists?`
+- Fix Rails 7.1 compatibility by ensuring active_support is required before railtie
+- Workaround logger require issues with concurrent-ruby 1.3.5 and older Rails versions
+- Workaround NameError frozen string literal issues with JRuby 9.3 and Rails 5.2/6.0
+- Use non-public lookup to avoid classloader issues (#268)
+- visibility changes to ensure they can be run on Java 17+ as well without using reflection hack
+- Fix ERB deprecation warning
+- Fix new loggers to avoid logging at multiple levels
+- update (bundled) rack to 2.2.15
+- Corrects Rack 2.x compatibility when used with modern Rails, and requires Rack 2.x going forward
+- forward ports all 1.1.x fixes to the 1.2.x stream which were omitted in 1.2.2 release (#262)
+- fixes regression NoMethodError undefined method get_header (#259)
+- correct use of session store with Rails 7.0+ (#244)
+- reinstate automated tests for Rails 5.0 - 7.2 (#271)
+
+## 1.2.2
+
+First release of the 1.2.x branch.
+- Requires Java 8 or later
+- Requires Java Servlet API 3.0 or later
+- Improved logger implementation
+- Fixes broken multipart data (#247)
+- update (bundled) rack to 2.2.9
+
 ## 1.1.22
 
 - compile using Java 6 source compat
@@ -216,7 +262,6 @@ Changes from 1.1.15 apply since the previous release got yanked due a regression
 - jruby runtime pooling for plain Rack applications (not just Rails)
 
 ## 1.1.7 (21/06/12)
->>>>>>> 1.1-stable:History.md
 
 - support for delegating logs to java.util.logging (jruby.rack.logging: JUL)
 - extend RackLogger with levels for better logging with underlying log impl

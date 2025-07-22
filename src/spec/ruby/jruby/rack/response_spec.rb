@@ -170,14 +170,8 @@ describe JRuby::Rack::Response do
       ]
 
       with_dechunk do
-        if defined? Rack::Chunked::Body # Rails 3.x
-          body = Rack::Chunked::Body.new body
-          response = JRuby::Rack::Response.new([ 200, headers, body ])
-        else # Rails 2.3 -> Rack 1.1
-          chunked = Rack::Chunked.new nil # nil application
-          response = JRuby::Rack::Response.new chunked.chunk(200, headers, body)
-        end
-
+        body = Rack::Chunked::Body.new body
+        response = JRuby::Rack::Response.new([ 200, headers, body ])
         response.write_headers(response_environment)
 
         times = 0

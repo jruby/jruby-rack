@@ -17,13 +17,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.jruby.CompatVersion;
 import org.jruby.rack.logging.OutputStreamLogger;
 import org.jruby.rack.logging.StandardOutLogger;
 import org.jruby.util.SafePropertyAccessor;
-import static org.jruby.rack.RackLogger.Level.*;
 
 /**
  * A base implementation of that retrieves settings from system properties.
@@ -75,28 +71,6 @@ public class DefaultRackConfig implements RackConfig {
 
     public void setQuiet(boolean quiet) {
         this.quiet = quiet;
-    }
-
-    @Override
-    public CompatVersion getCompatVersion() {
-        final String version = getProperty("jruby.compat.version");
-        if ( version != null ) {
-            // we handle 1.8, RUBY1_9, --2.0 1_9 2.1.0.dev etc :
-            final Pattern pattern = Pattern.compile("([123])[._]([8901234567])");
-            final Matcher matcher = pattern.matcher(version);
-            if ( matcher.find() ) {
-                final String name = "RUBY" +
-                    matcher.group(1) + '_' + matcher.group(2);
-                try {
-                    return Enum.valueOf(CompatVersion.class, name);
-                }
-                catch (IllegalArgumentException e) {
-                    getLogger().log(WARN,
-                        "could not resolve compat version from '"+ version +"' will use default", e);
-                }
-            }
-        }
-        return null;
     }
 
     @Override
@@ -234,16 +208,6 @@ public class DefaultRackConfig implements RackConfig {
         return getBooleanProperty("jruby.rack.filter.verifies.resource", false);
     }
 
-    @Override
-    public String getJmsConnectionFactory() {
-        return getProperty("jms.connection.factory");
-    }
-
-    @Override
-    public String getJmsJndiProperties() {
-        return getProperty("jms.jndi.properties");
-    }
-
     public String getLoggerName() {
         return getProperty("jruby.rack.logging.name", "jruby.rack");
     }
@@ -289,18 +253,11 @@ public class DefaultRackConfig implements RackConfig {
         if ( env == null ) env = getProperty("jruby.runtime.environment");
         final Object envFlag = toStrictBoolean(env, null);
         if ( envFlag != null ) {
-            boolean keep = ((Boolean) envFlag).booleanValue();
             // jruby.runtime.env = true keep as is (return null)
             // jruby.runtime.env = false clear env (return empty)
-            //return keep ? null : new HashMap<String, String>();
-            if ( keep ) {
-                return new HashMap<String, String>(System.getenv());
-            }
-            else {
-                return new HashMap<String, String>();
-            }
+            return (Boolean) envFlag ? new HashMap<>(System.getenv()) : new HashMap<>();
         }
-        if ( isIgnoreEnvironment() ) return new HashMap<String, String>();
+        if ( isIgnoreEnvironment() ) return new HashMap<>();
         // TODO maybe support custom value 'servlet' to use init params ?
         return toStringMap(env);
     }
@@ -325,14 +282,14 @@ public class DefaultRackConfig implements RackConfig {
 
     static boolean isThrowInitException(RackConfig config) {
         Boolean error = config.getBooleanProperty("jruby.rack.error");
-        if ( error != null && ! error.booleanValue() ) {
-            return true; // jruby.rack.error = false
+        if ( error != null && error.booleanValue() ) {
+            return false; // jruby.rack.error = true
         }
-        error = config.getBooleanProperty("jruby.rack.exception");
-        if ( error != null && ! error.booleanValue() ) {
-            return true; // jruby.rack.exception = false
+        error = config.getBooleanProperty(RackEnvironment.EXCEPTION);
+        if ( error != null && error.booleanValue() ) {
+            return false; // jruby.rack.exception = true
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -457,7 +414,7 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     private static Map<String,String> getLoggerTypes() {
-        final Map<String,String> loggerTypes = new HashMap<String, String>(8);
+        final Map<String,String> loggerTypes = new HashMap<>(8);
         loggerTypes.put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");

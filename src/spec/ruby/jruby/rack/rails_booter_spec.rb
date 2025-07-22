@@ -99,130 +99,10 @@ describe JRuby::Rack::RailsBooter do
     rails_booter.public_path.should == "."
   end
 
-  it "uses JRuby-Rack's logger by default" do
-    booter.boot!
-    expect( booter.logger ).to_not be nil
-    expect( booter.logger ).to be JRuby::Rack.logger
-    booter.logger.info 'hello-there'
-  end
-
-  it "detects 2.3" do
-    root = File.expand_path('../../../rails23', __FILE__)
-    @rack_context.should_receive(:getInitParameter).with("rails.root").and_return root
-    booter.layout_class = JRuby::Rack::FileSystemLayout
-    expect( booter.send(:rails2?) ).to be true
-  end
-
-  it "detects 3.x" do
-    root = File.expand_path('../../../rails3x', __FILE__)
-    @rack_context.should_receive(:getInitParameter).with("rails.root").and_return root
-    booter.layout_class = JRuby::Rack::FileSystemLayout
-    expect( booter.send(:rails2? ) ).to be false
-  end
-
-  describe "Rails 2.3", :lib => :stub do
-
-    RAILS23_ROOT_DIR = File.expand_path("../../../rails23", __FILE__)
-
-    before do
-      booter.stub(:rails2?).and_return true
-    end
-
-    it "sets up java servlet-based sessions if the session store is the default" do
-
-      booter.boot!
-      booter.should_receive(:rack_based_sessions?).and_return false
-
-      booter.session_options[:database_manager] = ::CGI::Session::PStore
-      booter.setup_sessions
-      booter.session_options[:database_manager].should == ::CGI::Session::JavaServletStore
-    end
-
-    it "turns off Ruby CGI cookies if the java servlet store is used" do
-
-      booter.boot!
-      booter.should_receive(:rack_based_sessions?).and_return false
-
-      booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
-      booter.setup_sessions
-      booter.session_options[:no_cookies].should == true
-    end
-
-    it "provides the servlet request in the session options if the java servlet store is used" do
-
-      booter.boot!
-      booter.should_receive(:rack_based_sessions?).twice.and_return false
-
-      booter.session_options[:database_manager] = ::CGI::Session::JavaServletStore
-      booter.setup_sessions
-      booter.instance_variable_set :@load_environment, true
-
-      ::Rack::Adapter::Rails.should_receive(:new).and_return app = double("rails adapter")
-      app.should_receive(:call)
-
-      env = { "java.servlet_request" => double("servlet request") }
-      booter.to_app.call(env)
-      env['rails.session_options'].should have_key(:java_servlet_request)
-      env['rails.session_options'][:java_servlet_request].should == env["java.servlet_request"]
-    end
-
-    it "should set the PUBLIC_ROOT constant to the location of the public root",
-      :lib => [ :rails23, :stub ] do
-
-      booter.app_path = RAILS23_ROOT_DIR
-      booter.boot!
-      expect( PUBLIC_ROOT ).to eql booter.public_path
-    end
-
-    after(:each) do
-      #Object.send :remove_const, :RAILS_ROOT if Object.const_defined? :RAILS_ROOT
-      Object.send :remove_const, :PUBLIC_ROOT if Object.const_defined? :PUBLIC_ROOT
-    end
-
-    context 'booted' do
-
-      before :each do
-        $servlet_context = @servlet_context
-        @rack_context.should_receive(:getContextPath).and_return "/foo"
-        booter.app_path = RAILS23_ROOT_DIR
-        booter.boot!
-        silence_warnings { booter.load_environment }
-      end
-
-      after(:all) { $servlet_context = nil }
-
-      it "should default the page cache directory to the public root" do
-        ActionController::Base.page_cache_directory.should == booter.public_path
-      end
-
-      it "should default the session store to the java servlet session store" do
-        ActionController::Base.session_store.should == CGI::Session::JavaServletStore
-      end
-
-      it "should set the ActionView ASSETS_DIR constant to the public root" do
-        ActionView::Helpers::AssetTagHelper::ASSETS_DIR.should == booter.public_path
-      end
-
-      it "should set the ActionView JAVASCRIPTS_DIR constant to the public root/javascripts" do
-        ActionView::Helpers::AssetTagHelper::JAVASCRIPTS_DIR.should == booter.public_path + "/javascripts"
-      end
-
-      it "should set the ActionView STYLESHEETS_DIR constant to the public root/stylesheets" do
-        ActionView::Helpers::AssetTagHelper::STYLESHEETS_DIR.should == booter.public_path + "/stylesheets"
-      end
-
-      it "should set the ActionController.relative_url_root to the servlet context path" do
-        ActionController::Base.relative_url_root.should == "/foo"
-      end
-
-    end
-
-  end if defined? Rails
-
-  RAILS_ROOT_DIR = File.expand_path("../../../rails3x", __FILE__)
+  RAILS_ROOT_DIR = File.expand_path("../../../rails", __FILE__)
 
   # NOTE: specs currently only test with a stubbed Rails::Railtie
-  describe "Rails 3.x", :lib => :stub do
+  describe "Rails (stubbed)", :lib => :stub do
 
     before :all do
       $LOAD_PATH.unshift File.join(RAILS_ROOT_DIR, 'stub') # for require 'rails/railtie'
@@ -284,11 +164,22 @@ describe JRuby::Rack::RailsBooter do
       paths['public/stylesheets'].should ==[ File.join(public_path, "stylesheets") ]
     end
 
-    it "should not set the PUBLIC_ROOT constant" do
-      expect( PUBLIC_ROOT ).to eql ""
-    end
-
     describe "logger" do
+
+      before(:all) do
+        @active_support = defined? ::ActiveSupport
+        @tagged_logging = active_support && ActiveSupport::TaggedLogging rescue false
+      end
+
+      after(:all) do
+        if @tagged_logging == false
+          if @active_support
+            ActiveSupport.send :remove_const, :TaggedLogging
+          else
+            Object.send :remove_const, :ActiveSupport rescue nil
+          end
+        end
+      end
 
       before do
         @app = double "app"
@@ -304,17 +195,17 @@ describe JRuby::Rack::RailsBooter do
         log_initializer[1].should == [{:before => :initialize_logger}]
       end
 
-      it "gets set as config.logger" do
+      it "gets set as config.logger (wrapped with tagged logging)" do
         logger = JRuby::Rack::Logger.new STDERR
         @config.stub(:log_level).and_return(:info)
         @config.stub(:log_formatter).and_return(nil)
 
         JRuby::Rack.should_receive(:logger).and_return(logger)
-        #logger.class.should_receive(:const_get).with('INFO').and_return(nil)
-        #logger.should_receive(:level=).with(nil)
 
         log_initializer.last.call(@app)
-        @app.config.logger.should be(logger)
+        rails_logger = @app.config.logger
+        # ActiveSupport::TaggedLogging.new clones the original logger instance
+        expect(rails_logger).to be_a(JRuby::Rack::Logger)
       end
 
       it "has a configurable log level" do
@@ -323,38 +214,10 @@ describe JRuby::Rack::RailsBooter do
           def logger=(logger); @logger = logger; end
         end
         @config.stub(:log_formatter).and_return(nil)
-        @config.should_receive(:log_level).and_return(:debug)
+        @config.should_receive(:log_level).and_return(:error)
 
         log_initializer.last.call(@app) ##
-        @app.config.logger.level.should be(JRuby::Rack::Logger::DEBUG)
-      end
-
-      it "is wrapped in tagged logging" do # Rails 3.2
-        active_support = defined? ::ActiveSupport
-        tagged_logging = active_support && ActiveSupport::TaggedLogging rescue nil
-        begin
-          klass = Class.new do # TaggedLogging stub
-            def initialize(logger); @logger = logger end
-          end
-          module ::ActiveSupport; end
-          ::ActiveSupport.const_set(:TaggedLogging, klass)
-          @config.stub(:log_level).and_return(nil)
-          @config.stub(:log_formatter).and_return(nil)
-
-          log_initializer.last.call(@app)
-          @app.config.logger.should be_a(klass)
-          @app.config.logger.instance_variable_get(:@logger).should be_a(JRuby::Rack::Logger)
-        ensure
-          if tagged_logging.nil?
-            if active_support
-              ActiveSupport.send :remove_const, :TaggedLogging
-            else
-              Object.send :remove_const, :ActiveSupport rescue nil
-            end
-          else
-            ActiveSupport.const_set(:TaggedLogging, tagged_logging)
-          end
-        end
+        @app.config.logger.level.should be(JRuby::Rack::Logger::ERROR)
       end
 
       private
@@ -446,8 +309,8 @@ describe JRuby::Rack, "Rails controller extensions" do
   let(:request) { double("request") }
   let(:response) { double("response") }
 
-  let(:servlet_request) { org.jruby.rack.mock.MockHttpServletRequest.new }
-  let(:servlet_response) { org.jruby.rack.mock.MockHttpServletResponse.new }
+  let(:servlet_request) { org.springframework.mock.web.MockHttpServletRequest.new }
+  let(:servlet_response) { org.springframework.mock.web.MockHttpServletResponse.new }
 
   before :each do
     request.stub(:env).and_return({

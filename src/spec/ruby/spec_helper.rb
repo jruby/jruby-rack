@@ -3,7 +3,7 @@ require 'java'
 
 target = File.expand_path('target', "#{File.dirname(__FILE__)}/../../..")
 jars = File.exist?(lib = "#{target}/lib") && ( Dir.entries(lib) - [ '.', '..' ] )
-raise "missing .jar dependencies please run `rake test_jars'" if ! jars || jars.empty?
+raise "missing .jar dependencies please run `rake test_prepare'" if ! jars || jars.empty?
 $CLASSPATH << File.expand_path('classes', target)
 $CLASSPATH << File.expand_path('test-classes', target)
 jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
@@ -21,8 +21,8 @@ java_import 'org.jruby.rack.servlet.RewindableInputStream'
 
 require 'rspec'
 
-require 'jruby'; ext_class = org.jruby.rack.ext.RackLibrary
-JRuby.runtime.loadExtension 'JRuby::Rack', ext_class.new, true
+require 'jruby' # we rely on JRuby.runtime in a few places
+JRuby::Util.load_ext('org.jruby.rack.ext.RackLibrary')
 
 module SharedHelpers
 
@@ -163,13 +163,14 @@ WD_START = Dir.getwd
 begin
   # NOTE: only if running with a `bundle exec` to better isolate
   if $LOAD_PATH.find { |path| path =~ /\/rails\-[\w\.]*\// }
+    require 'logger' # Workaround for concurrent-ruby problems on older rails versions
     require 'rails/version' # use Rails::VERSION to detect current env
     require 'rails' # attempt to load rails - for "real life" testing
   end
 rescue LoadError
 end
 
-# current 'library' environment (based on appraisals) e.g. :rails32
+# current 'library' environment (based on appraisals) e.g. :rails72
 CURRENT_LIB = defined?(Rails::VERSION) ?
   :"rails#{Rails::VERSION::MAJOR}#{Rails::VERSION::MINOR}" : :stub
 
@@ -203,10 +204,10 @@ RSpec.configure do |config|
 
 end
 
-java_import org.jruby.rack.mock.MockServletConfig
-java_import org.jruby.rack.mock.MockServletContext
-java_import org.jruby.rack.mock.MockHttpServletRequest
-java_import org.jruby.rack.mock.MockHttpServletResponse
+java_import org.springframework.mock.web.MockServletConfig
+java_import org.springframework.mock.web.MockServletContext
+java_import org.springframework.mock.web.MockHttpServletRequest
+java_import org.springframework.mock.web.MockHttpServletResponse
 
 class StubInputStream < java.io.InputStream
 

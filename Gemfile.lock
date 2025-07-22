@@ -1,37 +1,39 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    appraisal (0.5.2)
+    appraisal (2.5.0)
       bundler
       rake
-    diff-lcs (1.5.1)
-    rack (2.2.10)
-    rake (13.2.1)
-    rspec (3.13.0)
+      thor (>= 0.14.0)
+    diff-lcs (1.6.2)
+    rack (2.2.17)
+    rake (13.3.0)
+    rspec (3.13.1)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
       rspec-mocks (~> 3.13.0)
-    rspec-core (3.13.2)
+    rspec-core (3.13.5)
       rspec-support (~> 3.13.0)
-    rspec-expectations (3.13.3)
+    rspec-expectations (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-mocks (3.13.2)
+    rspec-mocks (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-support (3.13.1)
+    rspec-support (3.13.4)
+    thor (1.4.0)
 
 PLATFORMS
-  universal-java-1.8
   universal-java-11
   universal-java-17
   universal-java-21
+  x86_64-linux
 
 DEPENDENCIES
-  appraisal (< 1.0)
-  rack (< 3.0)
-  rake (~> 13.2)
+  appraisal
+  rack (~> 2.2)
+  rake (~> 13.3)
   rspec
 
 BUNDLED WITH
-   2.3.26
+   2.6.3

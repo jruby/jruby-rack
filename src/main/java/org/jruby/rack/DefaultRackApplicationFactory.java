@@ -11,8 +11,6 @@ package org.jruby.rack;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
@@ -76,7 +74,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Initialize this factory using the given context.
      *
-     * NOTE: exception handling is left to the outer factory.
+     * @implNote exception handling is left to the outer factory.
      * @param rackContext the RackContext
      */
     @Override
@@ -94,22 +92,18 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Creates a new application instance (without initializing it).
      *
-     * NOTE: exception handling is left to the outer factory.
+     * @implNote exception handling is left to the outer factory.
      * @return new application instance
      */
     @Override
     public RackApplication newApplication() {
-        return createApplication(new ApplicationObjectFactory() {
-            public IRubyObject create(Ruby runtime) {
-                return createApplicationObject(runtime);
-            }
-        });
+        return createApplication(this::createApplicationObject);
     }
 
     /**
      * Creates a new application and initializes it.
      *
-     * NOTE: exception handling is left to the outer factory.
+     * @implNote exception handling is left to the outer factory.
      * @return new, initialized application
      */
     @Override
@@ -122,7 +116,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Destroys the application (assumably) created by this factory.
      *
-     * NOTE: exception handling is left to the outer factory.
+     * @implNote exception handling is left to the outer factory.
      * @param app the application to "release"
      */
     @Override
@@ -209,13 +203,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             return new DefaultErrorApplication(rackContext);
         }
         try {
-            RackApplication app = createErrorApplication(
-                new ApplicationObjectFactory() {
-                    public IRubyObject create(Ruby runtime) {
-                        return createErrorApplicationObject(runtime);
-                    }
-                }
-            );
+            RackApplication app = createErrorApplication(this::createErrorApplicationObject);
             app.init();
             return app;
         }
@@ -250,7 +238,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         );
     }
 
-    static interface ApplicationObjectFactory {
+    interface ApplicationObjectFactory {
         IRubyObject create(Ruby runtime) ;
     }
 
@@ -267,21 +255,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         // Don't affect the container and sibling web apps when ENV changes are
         // made inside the Ruby app ...
         // There are quite a such things made in a typical Bundler based app.
-        try { // config.setUpdateNativeENVEnabled(false) using reflection :
-            final Method setUpdateNativeENVEnabled =
-                config.getClass().getMethod("setUpdateNativeENVEnabled", Boolean.TYPE);
-            setUpdateNativeENVEnabled.invoke(config, false);
-        }
-        catch (NoSuchMethodException e) { // ignore method has been added in JRuby 1.6.7
-            rackContext.log(DEBUG, "envronment changes made inside one app " +
-            "might affect another, consider updating JRuby if this is an issue");
-        }
-        catch (IllegalAccessException e) {
-            rackContext.log(WARN, "failed to disable updating native environment", e);
-        }
-        catch (InvocationTargetException e) {
-            throw new RackException(e.getTargetException());
-        }
+        config.setUpdateNativeENVEnabled(false);
 
         final Map<String, String> newEnv = rackConfig.getRuntimeEnvironment();
         if ( newEnv != null ) {
@@ -297,7 +271,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             else {
                 // allow to work (backwards) "compatibly" with previous `ENV.clear`
                 // RUBYOPT was processed since it happens on config.processArguments
-                @SuppressWarnings("unchecked")
                 final Map<String, String> env = config.getEnvironment();
                 if ( env != null && env.containsKey("RUBYOPT") ) {
                     newEnv.put( "RUBYOPT", env.get("RUBYOPT") );
@@ -308,10 +281,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
         // Process arguments, namely any that might be in RUBYOPT
         config.processArguments(rackConfig.getRuntimeArguments());
-
-        if ( rackConfig.getCompatVersion() != null ) {
-            config.setCompatVersion(rackConfig.getCompatVersion());
-        }
 
         try { // try to set jruby home to jar file path
             final URL resource = Ruby.class.getResource("/META-INF/jruby.home");
@@ -352,16 +321,14 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Initializes the runtime (exports the context, boots the Rack handler).
      *
-     * NOTE: visible due to specs
+     * @apiNote Internal API, only visible due tests.
      *
-     * @param runtime
+     * @param runtime the JRuby runtime
      */
     public void initRuntime(final Ruby runtime) {
         loadJRubyRack(runtime);
         // set $servlet_context :
-        runtime.getGlobalVariables().set(
-            "$servlet_context", JavaUtil.convertJavaToRuby(runtime, rackContext)
-        );
+        runtime.getGlobalVariables().set("$servlet_context", JavaUtil.convertJavaToRuby(runtime, rackContext));
         // load our (servlet) Rack handler :
         runtime.evalScriptlet("require 'rack/handler/servlet'");
 
@@ -399,11 +366,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Checks and sets the required Rack version (if specified as a magic comment).
      *
-     * e.g. # rack.version: ~>1.3.6
+     * e.g. # rack.version: =1.3.6
      *
-     * NOTE: (package) visible due specs
+     * @apiNote Internal API, only visible due tests.
      *
-     * @param runtime
+     * @param runtime the JRuby runtime
      * @return the rack version requirement
      */
     public String checkAndSetRackVersion(final Ruby runtime) {
@@ -415,9 +382,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             rackContext.log(DEBUG, "could not read 'rack.version' magic comment from rackup", e);
         }
 
-        if ( rackVersion == null ) {
-            // NOTE: try matching a `require 'bundler/setup'` line ... maybe not ?!
-        }
         if ( rackVersion != null ) {
             runtime.evalScriptlet("require 'rubygems'");
 
@@ -466,10 +430,22 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             runtime.tearDown(false);
         }
 
+        private void captureMessage(final RaiseException re) {
+            try {
+                IRubyObject rubyException = re.getException();
+                ThreadContext context = rubyException.getRuntime().getCurrentContext();
+                // JRuby-Rack internals (@see jruby/rack/capture.rb) :
+                rubyException.callMethod(context, "capture");
+                rubyException.callMethod(context, "store");
+            }
+            catch (Exception e) {
+                rackContext.log(INFO, "failed to capture exception message", e);
+                // won't be able to capture anything
+            }
+        }
     }
 
     private RackApplication createErrorApplication(final ApplicationObjectFactory appFactory) {
-        // final Ruby runtime = newRuntime();
         return new ErrorApplicationImpl(appFactory);
     }
 
@@ -486,29 +462,13 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     }
 
-    private void captureMessage(final RaiseException re) {
-        try {
-            IRubyObject rubyException = re.getException();
-            ThreadContext context = rubyException.getRuntime().getCurrentContext();
-            // JRuby-Rack internals (@see jruby/rack/capture.rb) :
-            rubyException.callMethod(context, "capture");
-            rubyException.callMethod(context, "store");
-        }
-        catch (Exception e) {
-            rackContext.log(INFO, "failed to capture exception message", e);
-            // won't be able to capture anything
-        }
-    }
-
     private String findConfigRuPathInSubDirectories(final String path, int level) {
-        @SuppressWarnings("unchecked")
         final Set<String> entries = rackContext.getResourcePaths(path);
         if (entries != null) {
             String config_ru = path + "config.ru";
             if ( entries.contains(config_ru) ) {
                 return config_ru;
             }
-
             if (level > 0) {
                 level--;
                 for ( String subpath : entries ) {
@@ -530,11 +490,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             InputStream is = contextLoader.getResourceAsStream(name);
             return IOHelpers.inputStreamToString(is);
         }
-        catch (IOException e) {
-            if ( silent ) return null; throw e;
-        }
-        catch (RuntimeException e) {
-            if ( silent ) return null; throw e;
+        catch (IOException|RuntimeException e) {
+            if ( silent ) return null;
+            throw e;
         }
     }
 
@@ -569,7 +527,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                     }
                     catch (IOException ex) { /* won't happen */ }
 
-                    rackContext.log(RackLogger.ERROR, "failed to read rackup from '"+ rackup + "' (" + e + ")");
+                    rackContext.log(ERROR, "failed to read rackup from '"+ rackup + "' (" + e + ")");
                     throw new RackInitializationException("failed to read rackup input", e);
                 }
             }

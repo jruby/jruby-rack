@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -166,7 +167,17 @@ public class ResponseCapture extends HttpServletResponseWrapper {
             // backwards compatibility with isError() :
             return new ServletOutputStream() {
                 @Override
-                public void write(int b) throws IOException {
+                public boolean isReady() {
+                    return true;
+                }
+
+                @Override
+                public void setWriteListener(WriteListener writeListener) {
+                    // swallow listeners, as we're also going to swallow output
+                }
+
+                @Override
+                public void write(int b) {
                     // swallow output, because we're going to discard it
                 }
             };
@@ -231,7 +242,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
 
             // consider HTTP OPTIONS with "Allow" header unhandled :
             if ( request != null && "OPTIONS".equals( request.getMethod() ) ) {
-                final Collection<String> headerNames = getHeaderNamesOrNull();
+                final Collection<String> headerNames = getHeaderNames();
                 if ( headerNames == null || headerNames.isEmpty() ) {
                     // not to happen but there's all kind of beasts out there
                     return false;
@@ -277,17 +288,4 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     public boolean isOutputAccessed() {
         return output != null;
     }
-
-    @SuppressWarnings("unchecked")
-    private Collection<String> getHeaderNamesOrNull() {
-        // NOTE: getHeaderNames since Servlet API 3.0 JRuby-Rack 1.1 still supports 2.5
-        try {
-            final Method getHeaderNames = getResponse().getClass().getMethod("getHeaderNames");
-            return (Collection<String>) getHeaderNames.invoke( getResponse() );
-        }
-        catch (NoSuchMethodException e) { return null; }
-        catch (IllegalAccessException e) { return null; }
-        catch (InvocationTargetException e) { return null; }
-    }
-
 }

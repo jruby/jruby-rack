@@ -1,0 +1,40 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    groups:
+      actions-deps:
+        patterns: [ "*" ]
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: monthly
+    groups:
+      maven-deps:
+        dependency-type: "production"
+      maven-dev-deps:
+        dependency-type: "development"
+    ignore:
+      - dependency-name: "org.jruby*"
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "jakarta*"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "javax*"
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "org.springframework*"
+        update-types: [ "version-update:semver-major" ]
+  - package-ecosystem: bundler
+    directories:
+      - "/"
+    schedule:
+      interval: monthly
+    allow:
+      - dependency-type: all
+    groups:
+      ruby-deps:
+        patterns: [ "*" ]
+    ignore:
+      - dependency-name: "rack"
+        update-types: [ "version-update:semver-major" ]

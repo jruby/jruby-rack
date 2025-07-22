@@ -134,7 +134,7 @@ module JRuby
             require underscore(camel_cased_name)
             retry
           rescue LoadError => le
-            e.message << " (#{le.message})"
+            e.message = "#{e.message} (#{le.message})"
           end unless required
           raise e
         end

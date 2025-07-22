@@ -33,20 +33,19 @@ describe org.jruby.rack.RackServletContextListener do
       @listener.contextInitialized servlet_context_event
     end
 
-    it "logs an error if initialization failed" do
-      @factory.should_receive(:init).and_raise org.jruby.rack.RackInitializationException, "help"
-      @servlet_context.should_receive(:log) do |level, message, error|
-        level == 'ERROR' && message =~ /initialization failed/ && error.message == 'help'
-      end
-      @listener.contextInitialized servlet_context_event
-    end
-
-    it "throws an error if initialization failed (and jruby.rack.error = false)" do
-      @servlet_context = org.jruby.rack.mock.MockServletContext.new
-      @servlet_context.add_init_parameter 'jruby.rack.error', 'false'
+    it "throws an error if initialization failed" do
+      @servlet_context = org.springframework.mock.web.MockServletContext.new
       @factory.should_receive(:init).and_raise org.jruby.rack.RackInitializationException.new("help")
 
-      expect { @listener.contextInitialized servlet_context_event }.to raise_error(org.jruby.rack.RackInitializationException)
+      expect { @listener.contextInitialized(servlet_context_event) }.to raise_error(org.jruby.rack.RackInitializationException)
+    end
+
+    it "does not throw if initialization failed (and jruby.rack.error = true)" do
+      @servlet_context = org.springframework.mock.web.MockServletContext.new
+      @servlet_context.addInitParameter 'jruby.rack.error', 'true'
+      @factory.should_receive(:init).and_raise org.jruby.rack.RackInitializationException.new("help")
+
+      expect { @listener.contextInitialized(servlet_context_event) }.to_not raise_error
     end
 
   end
@@ -114,13 +113,20 @@ describe org.jruby.rack.rails.RailsServletContextListener do
     lambda { RailsServletContextListener.new }.should_not raise_error
   end
 
-  it "pools runtimes by default" do
+  it "shares a runtime by default" do
+    factory = RailsServletContextListener.new.
+      send(:newApplicationFactory, @rack_config)
+    factory.should be_a(org.jruby.rack.SharedRackApplicationFactory)
+  end
+
+  it "pools runtimes when max > 1" do
+    @rack_config.stub(:getMaximumRuntimes).and_return(2)
     factory = RailsServletContextListener.new.
       send(:newApplicationFactory, @rack_config)
     factory.should be_a(org.jruby.rack.PoolingRackApplicationFactory)
   end
 
-  it "pools runtimes when max > 1" do
+  it "pools runtimes when max > 1 and serial initialization" do
     @rack_config.stub(:getMaximumRuntimes).and_return(3)
     @rack_config.stub(:isSerialInitialization).and_return(true)
     factory = RailsServletContextListener.new.
