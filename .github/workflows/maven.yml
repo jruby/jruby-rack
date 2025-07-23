@@ -38,7 +38,7 @@ jobs:
     # Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@b275d12641ac2d2108b2cbb7598b154ad2f2cee8 # v5.0.0
-      if: github.head_ref == 'refs/heads/master' && matrix.java_version == env.DEFAULT_JAVA_VERSION && matrix.jruby_version == env.DEFAULT_JRUBY_VERSION
+      if: github.ref == 'refs/heads/master' && matrix.java_version == env.DEFAULT_JAVA_VERSION && matrix.jruby_version == env.DEFAULT_JRUBY_VERSION
 
   appraisals:
     needs: build
