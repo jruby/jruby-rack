@@ -104,7 +104,7 @@ public abstract class ExceptionUtils {
         final ThreadContext context = error.getRuntime().getCurrentContext();
         final IRubyObject backtrace = error.callMethod(context, "backtrace");
         if ( ! backtrace.isNil() /* && backtrace instanceof RubyArray */ ) {
-            final RubyArray trace = backtrace.convertToArray();
+            final RubyArray<?> trace = backtrace.convertToArray();
             out.ensureCapacity(out.length() + 24 * trace.getLength());
             for ( int i = skip; i < trace.getLength(); i++ ) {
                 IRubyObject stackTraceLine = trace.eltInternal(i);

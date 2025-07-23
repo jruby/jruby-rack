@@ -50,13 +50,8 @@ public class DefaultRackApplication implements RackApplication {
         final IRubyObject app = getApplication();
         final Ruby runtime = getRuntime();
         final IRubyObject servlet_env = JavaEmbedUtils.javaToRuby(runtime, env);
-        //try { // app.call(env) :
         final IRubyObject response = app.callMethod(runtime.getCurrentContext(), "call", servlet_env);
-        return (RackResponse) response.toJava(RackResponse.class);
-        //}
-        //catch (RuntimeException e) {
-        //    throw ExceptionUtils.wrapException(runtime, e);
-        //}
+        return response.toJava(RackResponse.class);
     }
 
     @Override

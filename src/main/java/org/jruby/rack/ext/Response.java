@@ -50,12 +50,12 @@ import org.jruby.javasupport.JavaUtil;
 import org.jruby.rack.RackException;
 import org.jruby.rack.RackResponse;
 import org.jruby.rack.RackResponseEnvironment;
-import org.jruby.runtime.Arity;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.BlockBody;
 import org.jruby.runtime.Helpers;
 import org.jruby.runtime.JavaInternalBlockBody;
 import org.jruby.runtime.ObjectAllocator;
+import org.jruby.runtime.Signature;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -93,7 +93,7 @@ public class Response extends RubyObject implements RackResponse {
     @JRubyMethod(name = "swallow_client_abort=", meta = true, required = 1)
     public static IRubyObject set_swallow_client_abort(final IRubyObject self, final IRubyObject value) {
         if ( value instanceof RubyBoolean ) {
-            swallowClientAbort = ((RubyBoolean) value).isTrue();
+            swallowClientAbort = value.isTrue();
         }
         else {
             swallowClientAbort = ! value.isNil();
@@ -124,7 +124,7 @@ public class Response extends RubyObject implements RackResponse {
     @JRubyMethod(name = "dechunk=", meta = true, required = 1)
     public static IRubyObject set_dechunk(final IRubyObject self, final IRubyObject value) {
         if ( value instanceof RubyBoolean ) {
-            dechunk = ((RubyBoolean) value).isTrue();
+            dechunk = value.isTrue();
         }
         else {
             dechunk = ! value.isNil();
@@ -138,7 +138,7 @@ public class Response extends RubyObject implements RackResponse {
      * Returns the channel chunk size to be used e.g. when a (send) file
      * response is detected. By setting this value to nil you force an "explicit"
      * byte buffer to be used when copying between channels.
-     *
+     * <p>
      * Note: High values won't hurt when sending small files since most Java
      * (file) channel implementations handle this gracefully. However if you're
      * on Windows it is  recommended to not set this higher than the "magic"
@@ -169,7 +169,7 @@ public class Response extends RubyObject implements RackResponse {
         }
         else {
             final long val = value.convertToInteger("to_i").getLongValue();
-            channelChunkSize = Integer.valueOf((int) val);
+            channelChunkSize = (int) val;
         }
         return value;
     }
@@ -204,16 +204,12 @@ public class Response extends RubyObject implements RackResponse {
         }
         else {
             final long val = value.convertToInteger("to_i").getLongValue();
-            channelBufferSize = Integer.valueOf((int) val);
+            channelBufferSize = (int) val;
         }
         return value;
     }
 
-    static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-        public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-            return new Response(runtime, klass);
-        }
-    };
+    static final ObjectAllocator ALLOCATOR = Response::new;
 
     protected Response(Ruby runtime, RubyClass metaClass) {
         super(runtime, metaClass);
@@ -232,7 +228,7 @@ public class Response extends RubyObject implements RackResponse {
     @JRubyMethod(required = 1)
     public IRubyObject initialize(final ThreadContext context, final IRubyObject arg) {
         if ( arg instanceof RubyArray ) {
-            final RubyArray arr = (RubyArray) arg;
+            final RubyArray<?> arr = (RubyArray<?>) arg;
             if ( arr.size() < 3 ) {
                 throw context.runtime.newArgumentError("expected 3 array elements (rack-respose)");
             }
@@ -298,10 +294,10 @@ public class Response extends RubyObject implements RackResponse {
         try {
             final StringBuilder bodyParts = new StringBuilder();
             invoke(context, this.body, "each",
-                new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
+                new JavaInternalBlockBody(context.runtime, Signature.ONE_REQUIRED) {
                     @Override
                     public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
-                        return yield(context, args[0]);
+                        return this.yield(context, args[0]);
                     }
 
                     @Override
@@ -347,7 +343,7 @@ public class Response extends RubyObject implements RackResponse {
 
     @JRubyMethod(name = "write_status")
     public IRubyObject write_status(final ThreadContext context, final IRubyObject response) {
-        writeStatus( (RackResponseEnvironment) response.toJava(RackResponseEnvironment.class) );
+        writeStatus(response.toJava(RackResponseEnvironment.class));
         return context.nil;
     }
 
@@ -358,7 +354,7 @@ public class Response extends RubyObject implements RackResponse {
     @JRubyMethod(name = "write_headers")
     public IRubyObject write_headers(final ThreadContext context, final IRubyObject response)
         throws IOException {
-        writeHeaders( (RackResponseEnvironment) response.toJava(RackResponseEnvironment.class) );
+        writeHeaders(response.toJava(RackResponseEnvironment.class));
         return context.nil;
     }
 
@@ -394,10 +390,10 @@ public class Response extends RubyObject implements RackResponse {
                     final RubyString newLine = RubyString.newString(context.runtime, NEW_LINE);
                     // value.each_line { |val| response.addHeader(key.to_s, val.chomp("\n")) }
                     invoke(context, val, each_line ? "each_line" : "each",
-                        new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
+                        new JavaInternalBlockBody(context.runtime, Signature.ONE_REQUIRED) {
                             @Override
                             public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
-                                return yield(context, args[0]);
+                                return this.yield(context, args[0]);
                             }
 
                             @Override
@@ -430,7 +426,7 @@ public class Response extends RubyObject implements RackResponse {
     @JRubyMethod(name = "write_body")
     public IRubyObject write_body(final ThreadContext context, final IRubyObject response)
         throws IOException {
-        writeBody( (RackResponseEnvironment) response.toJava(RackResponseEnvironment.class) );
+        writeBody(response.toJava(RackResponseEnvironment.class));
         return context.nil;
     }
 
@@ -463,7 +459,7 @@ public class Response extends RubyObject implements RackResponse {
                 else {
                     final ThreadContext context = currentContext();
                     final IRubyObject channel = body.callMethod(context, "to_channel");
-                    bodyChannel = (Channel) channel.toJava(Channel.class);
+                    bodyChannel = channel.toJava(Channel.class);
                 }
                 if ( bodyChannel instanceof FileChannel ) {
                     transferChannel( (FileChannel) bodyChannel, response.getOutputStream() );
@@ -486,10 +482,10 @@ public class Response extends RubyObject implements RackResponse {
                 final String method = body.respondsTo("each_line") ? "each_line" : "each";
                 try {
                     invoke(context, body, method,
-                        new JavaInternalBlockBody(context.runtime, Arity.ONE_REQUIRED) {
+                        new JavaInternalBlockBody(context.runtime, Signature.ONE_REQUIRED) {
                         @Override
                         public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
-                            return yield(context, args[0]);
+                            return this.yield(context, args[0]);
                         }
 
                         @Override
@@ -508,8 +504,7 @@ public class Response extends RubyObject implements RackResponse {
                 catch (WrappedException e) { throw e.getIOCause(); }
             }
         }
-        catch (IOException e) { if ( ! handledAsClientAbort(e) ) throw e; }
-        catch (RuntimeException e) { if ( ! handledAsClientAbort(e) ) throw e; }
+        catch (IOException | RuntimeException e) { if ( ! handledAsClientAbort(e) ) throw e; }
         finally {
             if ( body.respondsTo("close") ) {
                 body.callMethod(currentContext(), "close");

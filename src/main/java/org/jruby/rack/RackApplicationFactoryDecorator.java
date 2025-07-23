@@ -204,7 +204,7 @@ public abstract class RackApplicationFactoryDecorator
     public static Collection<Ruby> getManagedRuntimes(RackApplicationFactoryDecorator factory) {
         final Collection<RackApplication> apps = factory.getManagedApplications();
         if ( apps == null ) return null;
-        final Set<Ruby> runtimes = new LinkedHashSet<Ruby>(apps.size());
+        final Set<Ruby> runtimes = new LinkedHashSet<>(apps.size());
         for ( RackApplication app : apps ) {
             runtimes.add( app.getRuntime() );
         }

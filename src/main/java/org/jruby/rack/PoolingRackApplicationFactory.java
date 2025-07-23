@@ -49,7 +49,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
     // 10 seconds seems still too much for a default, has been 30 previously :
     private static final float ACQUIRE_DEFAULT = 10.0f;
 
-    protected final Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
+    protected final Queue<RackApplication> applicationPool = new LinkedList<>();
     private Integer initialSize, maximumSize;
 
     private final AtomicInteger initedApplications = new AtomicInteger(0);
@@ -294,19 +294,15 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         if ( initThreads == null ) initThreads = 4; // quad-core baby
 
         for (int i = 0; i < initThreads; i++) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        final RackApplication app;
-                        synchronized (apps) {
-                            if ( apps.isEmpty() ) break;
-                            app = apps.remove();
-                        }
-                        if ( ! initAndPutApplicationToPool(app) ) break;
+            new Thread(() -> {
+                while (true) {
+                    final RackApplication app;
+                    synchronized (apps) {
+                        if ( apps.isEmpty() ) break;
+                        app = apps.remove();
                     }
+                    if ( ! initAndPutApplicationToPool(app) ) break;
                 }
-
             }, "JRuby-Rack-App-Init-" + i).start();
         }
     }
@@ -395,14 +391,14 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         if ( waitNum != null ) {
             int wait = waitNum.intValue();
             if (maximumSize != null && wait > maximumSize) {
-                wait = maximumSize.intValue();
+                wait = maximumSize;
             }
             return wait;
         }
         // otherwise we assume it to be a boolean true/false flag :
         Boolean waitFlag = getConfig().getBooleanProperty("jruby.runtime.init.wait");
         if ( waitFlag == null ) waitFlag = Boolean.TRUE;
-        return waitFlag ? ( initialSize == null ? 1 : initialSize.intValue() ) : 0;
+        return waitFlag ? ( initialSize == null ? 1 : initialSize) : 0;
         // NOTE: this slightly changes the behavior in 1.1.8, in previous
         // versions the initialization only waited for 1 application instance
         // to be available in the pool - here by default we wait till initial
@@ -411,14 +407,14 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
 
     @Override
     public Collection<RackApplication> getManagedApplications() {
-        int initSize = initialSize != null ? initialSize.intValue() : -1;
+        int initSize = initialSize != null ? initialSize : -1;
         synchronized (applicationPool) {
             if ( applicationPool.isEmpty() ) {
                 if ( initSize > 0 ) return null; // ~ init error
                 return Collections.emptySet();
             }
             Collection<RackApplication> snapshot =
-                    new ArrayList<RackApplication>(applicationPool);
+                    new ArrayList<>(applicationPool);
             return Collections.unmodifiableCollection(snapshot);
         }
     }

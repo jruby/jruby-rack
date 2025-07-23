@@ -10,8 +10,8 @@ package org.jruby.rack.servlet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -131,31 +131,28 @@ public class RequestCapture extends HttpServletRequestWrapper {
         catch (IOException e) { /* ignored */ }
         if (line == null) return false;
         
-        final Map<String,String[]> params = new HashMap<String,String[]>();
+        final Map<String,String[]> params = new HashMap<>();
         final String[] pairs = line.split("\\&");
-        for (int i = 0; i < pairs.length; i++) {
-            try {
-                String[] fields = pairs[i].split("=", 2);
-                String key = URLDecoder.decode(fields[0], "UTF-8");
-                String value = null;
-                if (fields.length == 2) {
-                    value = URLDecoder.decode(fields[1], "UTF-8");
+        for (String pair : pairs) {
+            String[] fields = pair.split("=", 2);
+            String key = URLDecoder.decode(fields[0], StandardCharsets.UTF_8);
+            String value = null;
+            if (fields.length == 2) {
+                value = URLDecoder.decode(fields[1], StandardCharsets.UTF_8);
+            }
+            if (value != null) {
+                String[] newValues;
+                if (params.containsKey(key)) {
+                    String[] values = params.get(key);
+                    newValues = new String[values.length + 1];
+                    System.arraycopy(values, 0, newValues, 0, values.length);
+                    newValues[values.length] = value;
+                } else {
+                    newValues = new String[1];
+                    newValues[0] = value;
                 }
-                if (value != null) {
-                    String[] newValues;
-                    if (params.containsKey(key)) {
-                        String[] values = params.get(key);
-                        newValues = new String[values.length + 1];
-                        System.arraycopy(values, 0, newValues, 0, values.length);
-                        newValues[values.length] = value;
-                    } else {
-                        newValues = new String[1];
-                        newValues[0] = value;
-                    }
-                    params.put(key, newValues);
-                }
-            } 
-            catch (UnsupportedEncodingException e) { /* UTF-8 should be fine */ }
+                params.put(key, newValues);
+            }
         }
         
         this.requestParams = params;
