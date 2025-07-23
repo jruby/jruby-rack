@@ -41,11 +41,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name="Rack::Handler::Servlet")
 public class Servlet extends RubyObject {
 
-    static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-        public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-            return new Servlet(runtime, klass);
-        }
-    };
+    static final ObjectAllocator ALLOCATOR = Servlet::new;
 
     protected Servlet(Ruby runtime, RubyClass metaClass) {
         super(runtime, metaClass);
@@ -63,10 +59,6 @@ public class Servlet extends RubyObject {
             throw getRuntime().newArgumentError(
                 "rack app not found, make sure the rackup file path is correct");
         }
-        //if ( ! app.respondsTo("call") ) {
-        //    throw getRuntime().newArgumentError(
-        //        "passed rack app does not respond to #call : " + app.toString());
-        //}
         this.app = app;
         return this;
     }

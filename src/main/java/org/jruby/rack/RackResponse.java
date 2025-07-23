@@ -32,7 +32,7 @@ public interface RackResponse {
     /**
      * @return the response headers (string key names)
      */
-    Map getHeaders() ;
+    Map<String, ?> getHeaders() ;
 
     /**
      * Note: Normally, this method won't be used at all as we stream the

@@ -62,11 +62,7 @@ public class Input extends RubyObject {
         CONCAT_WITH_CODERANGE = catWithCR;
     }
 
-    static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-        public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-            return new Input(runtime, klass);
-        }
-    };
+    static final ObjectAllocator ALLOCATOR = Input::new;
 
     static RubyClass getClass(final Ruby runtime) {
         final RubyModule _JRuby_Rack = (RubyModule)
@@ -268,8 +264,7 @@ public class Input extends RubyObject {
         try {
             return input.getClass().getMethod("rewind", (Class<?>[]) null);
         }
-        catch (NoSuchMethodException e) { /* NOOP */ }
-        catch (SecurityException e) { /* NOOP */ }
+        catch (NoSuchMethodException | SecurityException e) { /* NOOP */ }
         return null;
     }
 

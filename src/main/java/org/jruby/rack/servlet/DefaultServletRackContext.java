@@ -242,8 +242,6 @@ public class DefaultServletRackContext implements ServletRackContext {
         logger.log(level, message, e);
     }
 
-    // Servlet 3.0
-
     @Override
     public int getEffectiveMajorVersion() throws UnsupportedOperationException {
         return context.getEffectiveMajorVersion();

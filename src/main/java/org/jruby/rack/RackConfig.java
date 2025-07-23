@@ -135,12 +135,7 @@ public interface RackConfig {
      * @return the maximum size of the in-memory buffer
      */
     Integer getMaximumMemoryBufferSize();
-    
-    /**
-     * @return whether we allow the initialization exception to bubble up
-     */
-    //boolean isThrowInitException();
-    
+
     /** 
      * Create a logger to be used (based on this configuration).
      * @return a logger instance

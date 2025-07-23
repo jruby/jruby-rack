@@ -123,7 +123,7 @@ public class DefaultRackConfig implements RackConfig {
                 }
             }
         }
-        return serial.booleanValue();
+        return serial;
     }
 
     @Override
@@ -156,10 +156,7 @@ public class DefaultRackConfig implements RackConfig {
                 Constructor<?> ctor = klass.getConstructor(String.class);
                 return (RackLogger) ctor.newInstance( getLoggerName() );
             }
-            catch (NoSuchMethodException retry) {
-                return newLoggerInstance(klass, retry);
-            }
-            catch (IllegalAccessException retry) {
+            catch (NoSuchMethodException | IllegalAccessException retry) {
                 return newLoggerInstance(klass, retry);
             }
             catch (InstantiationException e) {
@@ -268,7 +265,7 @@ public class DefaultRackConfig implements RackConfig {
         // RUBYOPT ignored if jruby.runtime.env.rubyopt = false
         Boolean rubyopt = config.getBooleanProperty("jruby.runtime.env.rubyopt");
         if ( rubyopt == null ) return ! config.isIgnoreEnvironment();
-        return rubyopt != null && ! rubyopt.booleanValue();
+        return rubyopt != null && !rubyopt;
     }
 
     @Override
@@ -282,11 +279,11 @@ public class DefaultRackConfig implements RackConfig {
 
     static boolean isThrowInitException(RackConfig config) {
         Boolean error = config.getBooleanProperty("jruby.rack.error");
-        if ( error != null && error.booleanValue() ) {
+        if ( error != null && error) {
             return false; // jruby.rack.error = true
         }
         error = config.getBooleanProperty(RackEnvironment.EXCEPTION);
-        if ( error != null && error.booleanValue() ) {
+        if ( error != null && error) {
             return false; // jruby.rack.exception = true
         }
         return true;
@@ -335,7 +332,7 @@ public class DefaultRackConfig implements RackConfig {
         if (value == null) return null;
         try {
             int i = Integer.parseInt(value);
-            if (i > 0) return Integer.valueOf(i);
+            if (i > 0) return i;
         } catch (Exception e) { /* ignored */ }
         return null;
     }
@@ -367,12 +364,12 @@ public class DefaultRackConfig implements RackConfig {
             }
             if ( number == ((int) number) )
             if ( number > Integer.MAX_VALUE ) {
-                return Long.valueOf((long) number);
+                return (long) number;
             }
             else {
-                return Integer.valueOf((int) number);
+                return (int) number;
             }
-            return Float.valueOf(number);
+            return number;
         }
         catch (Exception e) { /* ignored */ }
         return defaultValue;
@@ -386,7 +383,7 @@ public class DefaultRackConfig implements RackConfig {
           GEM_HOME=/opt/local/rvm/gems/jruby-1.6.8@jruby-rack
          */
         LineNumberReader reader = new LineNumberReader(new StringReader(env.trim()));
-        Map<String, String> map = new LinkedHashMap<String, String>(); String line;
+        Map<String, String> map = new LinkedHashMap<>(); String line;
         try {
             while ( (line = reader.readLine()) != null ) {
                 final String[] entries = line.split(",");
@@ -419,7 +416,6 @@ public class DefaultRackConfig implements RackConfig {
         loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
         loggerTypes.put("jul", "org.jruby.rack.logging.JulLogger");
-        //loggerTypes.put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");
         return loggerTypes;
     }
 

@@ -14,7 +14,6 @@ import javax.servlet.ServletContext;
 public class ServletContextLogger extends RackLogger.Base {
 
     private final ServletContext context;
-    //private Level level; //= Level.DEBUG;
 
     public ServletContextLogger(ServletContext context) {
         this.context = context;
@@ -43,8 +42,6 @@ public class ServletContextLogger extends RackLogger.Base {
     @Override
     public boolean isEnabled(Level level) {
         return true;
-        //if ( level == null || this.level == null ) return true;
-        //return this.level.ordinal() <= level.ordinal();
     }
 
     @Override

@@ -55,11 +55,7 @@ import org.jruby.util.ByteList;
 @JRubyClass(name="JRuby::Rack::Logger")
 public class Logger extends RubyObject { // implements RackLogger
 
-    static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-        public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-            return new Logger(runtime, klass);
-        }
-    };
+    static final ObjectAllocator ALLOCATOR = Logger::new;
 
     // Logger::Severity :
 
@@ -81,7 +77,6 @@ public class Logger extends RubyObject { // implements RackLogger
     private int level = NOT_SET;
 
     private RackLogger logger; // the "real" logger
-    //private Boolean loggerFormatting;
     private IRubyObject formatter = null; // optional
     private IRubyObject progname;
 
@@ -224,11 +219,8 @@ public class Logger extends RubyObject { // implements RackLogger
     public IRubyObject set_formatter(final ThreadContext context, final IRubyObject formatter) {
         if ( logger instanceof RackLogger.Base ) {
             final RackLogger.Base logger = (RackLogger.Base) this.logger;
-            //if ( loggerFormatting == null ) loggerFormatting = logger.isFormatting();
             if ( formatter.isNil() ) {
-                //if ( loggerFormatting != null && loggerFormatting.booleanValue() ) {
-                    logger.setFormatting(true);
-                //}
+                logger.setFormatting(true);
             }
             else { // if formatter set disable 'potential' logger formatting
                 logger.setFormatting(false);
@@ -385,9 +377,6 @@ public class Logger extends RubyObject { // implements RackLogger
                 progname = msg;
                 msg = block.yieldSpecific(context);
             }
-            else {
-                //msg = progname;
-            }
         }
         if ( formatter != null ) { // formatter is optional and null by default
             if ( progname == null ) {
@@ -466,20 +455,6 @@ public class Logger extends RubyObject { // implements RackLogger
         return FORMATTED_ANY;
     }
 
-    /*
-    private static String formatSeverity(final int severity) {
-        switch ( severity) {
-            case DEBUG: return "DEBUG";
-            case INFO : return "INFO" ;
-            case WARN : return "WARN" ;
-            case ERROR: return "ERROR";
-            case FATAL: return "FATAL";
-        }
-        return "ANY";
-    } */
-
-    // RackLogger
-
     @Override
     public <T> T toJava(Class<T> target) {
         // NOTE: maybe this is not a good idea ?!
@@ -498,37 +473,6 @@ public class Logger extends RubyObject { // implements RackLogger
     private void doLog(RubyString message) {
         logger.log( message.toString() );
     }
-
-    /*
-    @Override
-    public void log(String message) {
-        logger.log(message);
-    }
-
-    @Override
-    public void log(String message, Throwable ex) {
-        logger.log(message, ex);
-    }
-
-    @Override
-    public void log(Level level, String message) {
-        logger.log(level, message);
-    }
-
-    @Override
-    public void log(Level level, String message, Throwable ex) {
-        logger.log(level, message, ex);
-    }
-
-    @Override @Deprecated
-    public void log(String level, String message) {
-        logger.log(level, message);
-    }
-
-    @Override @Deprecated
-    public void log(String level, String message, Throwable ex) {
-        logger.log(level, message, ex);
-    } */
 
     // LoggerSilence API :
 
@@ -558,10 +502,8 @@ public class Logger extends RubyObject { // implements RackLogger
 
     private IRubyObject doSilence(final int tempLevel, final ThreadContext context, final Block block) {
         if ( silencer ) {
-            try { // not implemented - on purpose!
-                return block.yield(context, this);
-            }
-            finally { /* noop */ }
+            // not implemented - on purpose!
+            return block.yield(context, this);
         }
         else {
             return block.yield(context, this);
@@ -581,11 +523,7 @@ public class Logger extends RubyObject { // implements RackLogger
     @JRubyClass(name="JRuby::Rack::ServletLog")
     public static class ServletLog extends RubyObject {
 
-        static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-            public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-                return new ServletLog(runtime, klass);
-            }
-        };
+        static final ObjectAllocator ALLOCATOR = ServletLog::new;
 
         private RackLogger context;
 

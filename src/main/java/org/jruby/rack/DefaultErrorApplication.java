@@ -86,8 +86,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
     private class Response implements RackResponse {
 
         private int status = 500;
-        @SuppressWarnings("rawtypes")
-        private Map headers = Collections.EMPTY_MAP;
+        private Map<String, ?> headers = Collections.emptyMap();
         private String body;
 
         protected final RackEnvironment env;
@@ -103,14 +102,13 @@ public class DefaultErrorApplication extends DefaultRackApplication
             this.status = status;
         }
 
-        @SuppressWarnings("rawtypes")
-        public Map getHeaders() {
+        public Map<String, ?> getHeaders() {
             return headers;
         }
 
         @SuppressWarnings("unused")
-        public void setHeaders(@SuppressWarnings("rawtypes") Map headers) {
-            this.headers = headers == null ? Collections.EMPTY_MAP : headers;
+        public void setHeaders(Map<String, ?> headers) {
+            this.headers = headers == null ? Collections.emptyMap() : headers;
         }
 
         public String getBody() {
@@ -161,15 +159,12 @@ public class DefaultErrorApplication extends DefaultRackApplication
 
     }
 
-    @SuppressWarnings("rawtypes")
     public static void defaultRespond(final RackResponse rackResponse,
         final RackResponseEnvironment responseEnv) throws IOException {
         responseEnv.setStatus( rackResponse.getStatus() );
-        @SuppressWarnings("unchecked")
-        final Set<Map.Entry> headers = rackResponse.getHeaders().entrySet();
-        for ( Iterator<Map.Entry> it = headers.iterator(); it.hasNext(); ) {
-            final Map.Entry entry = it.next();
-            final String key = entry.getKey().toString();
+        final Set<? extends Map.Entry<String, ?>> headers = rackResponse.getHeaders().entrySet();
+        for (final Map.Entry<String, ?> entry : headers) {
+            final String key = entry.getKey();
             final Object value = entry.getValue();
             responseEnv.addHeader(key, value != null ? value.toString() : null);
         }

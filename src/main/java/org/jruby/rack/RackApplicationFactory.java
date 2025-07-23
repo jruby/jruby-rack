@@ -68,7 +68,7 @@ public interface RackApplicationFactory {
      * 
      * @author kares
      */
-    public static interface Decorator {
+    interface Decorator {
         
         /**
          * @return the delegate factory this decorator wraps
