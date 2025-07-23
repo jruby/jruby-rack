@@ -61,12 +61,12 @@ public class OutputStreamLogger extends RackLogger.Base {
 
     @Override
     public void log(String message) {
-        doLog(message); // log(Level.INFO, message);
+        doLog(message);
     }
 
     @Override
     public void log(String message, Throwable ex) {
-        doLog(message, ex); // log(Level.ERROR, message, ex);
+        doLog(message, ex);
     }
 
     @Override

@@ -41,12 +41,6 @@ import org.jruby.runtime.builtin.IRubyObject;
  */
 public abstract class ExceptionUtils {
 
-    public static RaiseException wrapException(final Ruby runtime, final Exception cause) {
-        if ( cause instanceof RaiseException ) return (RaiseException) cause;
-        NativeException nativeException = new NativeException(runtime, runtime.getNativeException(), cause);
-        return new RaiseException(cause, nativeException); // getCause() != null
-    }
-
     public static RaiseException newRuntimeError(final Ruby runtime, final Throwable cause) {
         return newRaiseException(runtime, runtime.getRuntimeError(), cause);
     }
@@ -59,11 +53,6 @@ public abstract class ExceptionUtils {
         RaiseException raise = runtime.newIOErrorFromException(cause);
         raise.initCause(cause);
         return raise;
-    }
-
-    static RaiseException newRaiseException(final Ruby runtime,
-        final RubyClass errorClass, final String message) {
-        return new RaiseException(runtime, errorClass, message, true);
     }
 
     private static RaiseException newRaiseException(final Ruby runtime,
@@ -103,7 +92,7 @@ public abstract class ExceptionUtils {
         final StringBuilder out) {
         final ThreadContext context = error.getRuntime().getCurrentContext();
         final IRubyObject backtrace = error.callMethod(context, "backtrace");
-        if ( ! backtrace.isNil() /* && backtrace instanceof RubyArray */ ) {
+        if ( ! backtrace.isNil() ) {
             final RubyArray<?> trace = backtrace.convertToArray();
             out.ensureCapacity(out.length() + 24 * trace.getLength());
             for ( int i = skip; i < trace.getLength(); i++ ) {
@@ -113,7 +102,6 @@ public abstract class ExceptionUtils {
                 }
             }
         }
-        //return out;
     }
 
 }

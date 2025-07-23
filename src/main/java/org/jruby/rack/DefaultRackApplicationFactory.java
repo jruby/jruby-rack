@@ -25,6 +25,7 @@ import org.jruby.rack.servlet.RewindableInputStream;
 import org.jruby.rack.util.IOHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.cli.OutputStrings;
 
 import static org.jruby.rack.RackLogger.Level.*;
 import static org.jruby.rack.DefaultRackConfig.isIgnoreRUBYOPT;
@@ -85,7 +86,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         this.rackContext = (ServletRackContext) rackContext;
         if ( getRackupScript() == null ) resolveRackupScript();
         this.runtimeConfig = createRuntimeConfig();
-        rackContext.log(INFO, runtimeConfig.getVersionString());
+        rackContext.log(INFO, OutputStrings.getVersionString());
         configureDefaults();
     }
 

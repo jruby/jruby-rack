@@ -416,7 +416,6 @@ public class DefaultRackConfig implements RackConfig {
         loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
         loggerTypes.put("jul", "org.jruby.rack.logging.JulLogger");
-        //loggerTypes.put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");
         return loggerTypes;
     }
 

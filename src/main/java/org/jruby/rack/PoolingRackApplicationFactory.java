@@ -111,7 +111,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
 
     @Override
     protected void doInit() throws Exception {
-        super.doInit(); // delegate.init(rackContext);
+        super.doInit();
         final RackConfig config = getConfig();
         // TODO until config.getRuntimeTimeoutSeconds returns an integer :
         Number timeout = config.getNumberProperty("jruby.runtime.acquire.timeout");
@@ -253,16 +253,15 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         synchronized (applicationPool) {
             for (RackApplication app : applicationPool) {
                 getDelegate().finishedWithApplication(app);
-                // DefaultRackAppFactory: app.destroy();
             }
             applicationPool.clear();
         }
-        super.destroy(); // delegate.destroy();
+        super.destroy();
     }
 
     /**
      * Fills the initial pool with initialized application instances.
-     *
+     * <p>
      * Application objects are created in foreground threads to avoid
      * leakage when the web application is undeployed from the server.
      */

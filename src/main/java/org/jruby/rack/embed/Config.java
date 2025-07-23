@@ -147,37 +147,30 @@ public class Config implements RackConfig {
     // runtime pooling in embedded ENVs not implemented :
 
     public Integer getRuntimeTimeoutSeconds() {
-        //return delegate.getRuntimeTimeoutSeconds();
         throw new UnsupportedOperationException("getRuntimeTimeoutSeconds()");
     }
 
     public Integer getInitialRuntimes() {
-        //return delegate.getInitialRuntimes();
         throw new UnsupportedOperationException("getInitialRuntimes()");
     }
 
     public Integer getMaximumRuntimes() {
-        //return delegate.getMaximumRuntimes();
         throw new UnsupportedOperationException("getMaximumRuntimes()");
     }
 
     public String[] getRuntimeArguments() {
-        //return delegate.getRuntimeArguments();
         throw new UnsupportedOperationException("getRuntimeArguments()");
     }
 
     public Integer getNumInitializerThreads() {
-        //return delegate.getNumInitializerThreads();
         throw new UnsupportedOperationException("getNumInitializerThreads()");
     }
 
     public boolean isSerialInitialization() {
-        //return delegate.isSerialInitialization();
         throw new UnsupportedOperationException("isSerialInitialization()");
     }
 
     public boolean isIgnoreEnvironment() {
-        //return delegate.isIgnoreEnvironment();
         throw new UnsupportedOperationException("isIgnoreEnvironment()");
     }
 

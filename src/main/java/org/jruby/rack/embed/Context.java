@@ -28,7 +28,6 @@ public class Context implements RackContext, RackLogger {
      */
     public Context(final String serverInfo) {
         this(serverInfo, new Config());
-        //this.config.setLogger(this);
     }
 
     /**
@@ -114,7 +113,6 @@ public class Context implements RackContext, RackLogger {
             final PrintStream out = config.getOut();
             out.print(level); out.print(": ");
             printMessage(out, message);
-            // out.flush();
         }
 
         @Override
@@ -123,7 +121,6 @@ public class Context implements RackContext, RackLogger {
             err.print(level); err.print(": ");
             printMessage(err, message);
             ex.printStackTrace(err);
-            // err.flush();
         }
 
         @Override

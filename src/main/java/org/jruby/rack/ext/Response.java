@@ -490,10 +490,8 @@ public class Response extends RubyObject implements RackResponse {
 
                         @Override
                         public IRubyObject yield(ThreadContext context, IRubyObject line) {
-                            //final ByteList bytes = line.asString().getByteList();
                             try {
                                 output.write( line.asString().getBytes() );
-                                //output.write(bytes.unsafeBytes(), bytes.getBegin(), bytes.getRealSize());
                                 if ( doFlush() ) output.flush();
                             }
                             catch (IOException e) { throw new WrappedException(e); }
