@@ -19,11 +19,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.jruby.CompatVersion;
 import org.jruby.rack.logging.OutputStreamLogger;
 import org.jruby.rack.logging.StandardOutLogger;
 import org.jruby.util.SafePropertyAccessor;
-import static org.jruby.rack.RackLogger.Level.*;
+
+import static org.jruby.rack.RackLogger.Level.WARN;
 
 /**
  * A base implementation of that retrieves settings from system properties.
@@ -456,7 +458,6 @@ public class DefaultRackConfig implements RackConfig {
         loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
         loggerTypes.put("jul", "org.jruby.rack.logging.JulLogger");
-        //loggerTypes.put("servlet_context", "org.jruby.rack.logging.ServletContextLogger");
         return loggerTypes;
     }
 

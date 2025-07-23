@@ -24,7 +24,7 @@ public interface RackApplication {
      * @param env the RackEnvironment
      * @return the RackResponse
      */
-    public RackResponse call(RackEnvironment env);
+    RackResponse call(RackEnvironment env);
 
     /**
      * Get a reference to the underlying runtime that holds the application

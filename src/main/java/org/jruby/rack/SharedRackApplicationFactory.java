@@ -10,7 +10,7 @@ package org.jruby.rack;
 import java.util.Collection;
 import java.util.Collections;
 
-import static org.jruby.rack.RackLogger.Level.*;
+import static org.jruby.rack.RackLogger.Level.INFO;
 
 /**
  * Shared application factory that only creates a single application instance.
@@ -31,7 +31,7 @@ public class SharedRackApplicationFactory extends RackApplicationFactoryDecorato
 
     @Override
     protected void doInit() throws Exception {
-        super.doInit(); // delegate.init(rackContext);
+        super.doInit();
         log(INFO, "using a shared (thread-safe) runtime");
         application = getDelegate().getApplication();
     }
@@ -62,11 +62,10 @@ public class SharedRackApplicationFactory extends RackApplicationFactoryDecorato
             synchronized(this) {
                 if (application != null) {
                     getDelegate().finishedWithApplication(application);
-                    // DefaultRackAppFactory: application.destroy();
                 }
             }
         }
-        super.destroy(); // delegate.destroy();
+        super.destroy();
     }
 
     @Override
