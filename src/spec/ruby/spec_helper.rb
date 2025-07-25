@@ -1,14 +1,9 @@
-
-require 'java'
-
 target = File.expand_path('target', "#{File.dirname(__FILE__)}/../../..")
 jars = File.exist?(lib = "#{target}/lib") && ( Dir.entries(lib) - [ '.', '..' ] )
 raise "missing .jar dependencies please run `rake test_prepare'" if ! jars || jars.empty?
 $CLASSPATH << File.expand_path('classes', target)
 $CLASSPATH << File.expand_path('test-classes', target)
 jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
-
-puts "using JRuby #{JRUBY_VERSION} (#{RUBY_VERSION})"
 
 java_import 'javax.servlet.http.HttpServletRequest'
 java_import 'javax.servlet.http.HttpServletResponse'
@@ -171,30 +166,28 @@ rescue LoadError
 end
 
 # current 'library' environment (based on appraisals) e.g. :rails72
-CURRENT_LIB = defined?(Rails::VERSION) ?
-  :"rails#{Rails::VERSION::MAJOR}#{Rails::VERSION::MINOR}" : :stub
+CURRENT_LIB = defined?(Rails::VERSION) ? :"rails#{Rails::VERSION::MAJOR}#{Rails::VERSION::MINOR}" : :stub
+
+puts "using JRuby #{JRUBY_VERSION} (#{RUBY_VERSION}) CURRENT_LIB: #{CURRENT_LIB.inspect}"
 
 RSpec.configure do |config|
 
   config.include SharedHelpers
 
-  config.before :each do
+  config.before(:each) do
     @env_save = ENV.to_hash
     mock_servlet_context
   end
 
-  config.after :each do
+  config.after(:each) do
     (ENV.keys - @env_save.keys).each {|k| ENV.delete k}
     @env_save.each {|k,v| ENV[k] = v}
     Dir.chdir(WD_START) unless Dir.getwd == WD_START
     $servlet_context = nil if defined? $servlet_context
   end
 
-  config.filter_run_excluding :lib => lambda { |lib|
-    return false if lib.nil? # no :lib => specified run with all
-    lib = lib.is_a?(Array) ? lib : [ lib ]
-    return ! lib.include?(CURRENT_LIB)
-  }
+  # NOTE: only works when no other example filtering is in place: e.g. `rspec ... --example=logger` won't filter here
+  config.filter_run_excluding lib: lambda { |lib| lib.nil? ? false : !Array(lib).include?(CURRENT_LIB) }
 
   config.backtrace_exclusion_patterns = [
     /bin\//,
