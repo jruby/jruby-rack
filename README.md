@@ -1,3 +1,6 @@
+[![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][8]
+[![Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)][9]
+
 # JRuby-Rack
 
 JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows
@@ -6,23 +9,12 @@ JRuby-Rack supports Rails as well as any Rack-compatible Ruby web framework.
 
 For more information on Rack, visit http://rack.github.io/.
 
-**This README (master) targets JRuby-Rack 1.2. Please use the
-[1.1-stable](https://github.com/jruby/jruby-rack/tree/1.1-stable) branch for
-current stable 1.1.x releases.**
-
-[![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][8]
-[![Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)][9]
-
 ## Compatibility
 
-JRuby-Rack 1.2.x
-- aims to be compatible with JRuby >= 9.3 and its supported JDK versions
-- supports any container compatible with Java Servlet 3.0 API
-
-JRuby-Rack 1.1.x
-- aims to be compatible with JRuby >= 1.6.4 (used successfully through JRuby 9.4.x)
-- supports any container compatible with Java Servlet 2.5 API (JEE 5)
-
+| JRuby-Rack Version                                           | Status     | JRuby Compat   | Java Compat | Target Servlet API | Target Java EE | Notes                                             |
+|--------------------------------------------------------------|------------|----------------|-------------|--------------------|----------------|---------------------------------------------------|
+| [1.2.x](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained | 9.3 → 9.4      | Java 8+     | 3.0                | Java EE 6      | Servlet 3.1 → 4.0 tested OK with some containers. |
+| [1.1.x](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL        | ≥ 1.6.4 → 9.4  | Java 8+     | 2.5                | Java EE 5      | Servlet 3.0 → 4.0 tested OK with some containers. |
 
 ## Getting Started
 
