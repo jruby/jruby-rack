@@ -16,7 +16,6 @@ import org.jruby.rack.servlet.ServletRackConfig;
 import org.jruby.rack.servlet.ServletRackContext;
 
 import static org.jruby.rack.DefaultRackConfig.isThrowInitException;
-import static org.jruby.rack.RackLogger.Level.*;
 
 /**
  * Web application lifecycle listener.
@@ -100,7 +99,7 @@ public class RackServletContextListener implements ServletContextListener {
             throw RackInitializationException.wrap(e);
         }
         // NOTE: factory should have already logged the error ...
-        rackContext.log(ERROR, "initialization failed", e);
+        rackContext.log("initialization failed", e);
     }
 
 }
