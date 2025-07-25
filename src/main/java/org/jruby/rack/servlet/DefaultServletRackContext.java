@@ -213,32 +213,22 @@ public class DefaultServletRackContext implements ServletRackContext {
     }
 
     @Override
-    public void log(String message) {
+    public void log(CharSequence message) {
         logger.log(message);
     }
 
     @Override
-    public void log(String message, Throwable e) {
+    public void log(CharSequence message, Throwable e) {
         logger.log(message, e);
     }
 
-    @Override @Deprecated
-    public void log(String level, String message) {
-        logger.log(level, message);
-    }
-
-    @Override @Deprecated
-    public void log(String level, String message, Throwable e) {
-        logger.log(level, message, e);
-    }
-
     @Override
-    public void log(Level level, String message) {
+    public void log(Level level, CharSequence message) {
         logger.log(level, message);
     }
 
     @Override
-    public void log(Level level, String message, Throwable e) {
+    public void log(Level level, CharSequence message, Throwable e) {
         logger.log(level, message, e);
     }
 

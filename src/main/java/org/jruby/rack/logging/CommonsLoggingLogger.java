@@ -46,7 +46,7 @@ public class CommonsLoggingLogger extends RackLogger.Base {
     }
 
     @Override
-    public void log(Level level, String message) {
+    public void log(Level level, CharSequence message) {
         if ( level == null ) { logger.info(message); return; }
         switch ( level ) {
             case DEBUG: logger.debug(message); break;
@@ -58,7 +58,7 @@ public class CommonsLoggingLogger extends RackLogger.Base {
     }
 
     @Override
-    public void log(Level level, String message, Throwable ex) {
+    public void log(Level level, CharSequence message, Throwable ex) {
         if ( level == null ) { logger.error(message, ex); return; }
         switch ( level ) {
             case DEBUG: logger.debug(message, ex); break;
