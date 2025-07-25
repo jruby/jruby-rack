@@ -1,7 +1,7 @@
+# JRuby-Rack
+
 [![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][8]
 [![Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)][9]
-
-# JRuby-Rack
 
 JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows
 any (Ruby) Rack-based application to run unmodified in a Java Servlet container.
