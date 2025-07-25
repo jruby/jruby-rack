@@ -25,7 +25,6 @@ package org.jruby.rack.util;
 
 import java.io.IOException;
 
-import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -69,7 +68,7 @@ public abstract class ExceptionUtils {
     private static RaiseException newRaiseException(final Ruby runtime,
         final RubyClass errorClass, final Throwable cause) {
         final String message = cause.getMessage();
-        RaiseException raise = new RaiseException(runtime, errorClass, message, true);
+        RaiseException raise = RaiseException.from(runtime, errorClass, message);
         raise.initCause(cause);
         return raise;
     }
