@@ -388,11 +388,11 @@ public class Logger extends RubyObject { // implements RackLogger
         else if ( msg instanceof RubyException ) { // print backtrace for error
             final RubyException error = (RubyException) msg;
             error.prepareIntegratedBacktrace(context, null);
-            doLog( loggerLevel, ExceptionUtils.formatError(error).toString() );
+            doLog( loggerLevel, ExceptionUtils.formatError(error) );
             return true;
         }
         // @logdev.write(format_message(format_severity(severity), Time.now, progname, message))
-        if ( ! msg.isNil() ) doLog( loggerLevel, msg.asString() ); // TODO CharSequence ?!
+        if ( ! msg.isNil() ) doLog( loggerLevel, msg.asString() );
         return true;
     }
 
@@ -403,7 +403,8 @@ public class Logger extends RubyObject { // implements RackLogger
     @JRubyMethod(name = "<<")
     public IRubyObject append(final ThreadContext context, final IRubyObject msg) {
         final RubyString msgString = msg.asString();
-        doLog(msgString); return msgString.rubyLength(context);
+        doLog(msgString);
+        return msgString.rubyLength(context);
     }
 
     // private
@@ -462,16 +463,12 @@ public class Logger extends RubyObject { // implements RackLogger
         return super.toJava(target);
     }
 
-    private void doLog(RackLogger.Level level, String message) {
+    private void doLog(RackLogger.Level level, CharSequence message) {
         logger.log( level, message );
     }
 
-    private void doLog(RackLogger.Level level, RubyString message) {
-        logger.log( level, message.toString() );
-    }
-
     private void doLog(RubyString message) {
-        logger.log( message.toString() );
+        logger.log( message );
     }
 
     // LoggerSilence API :

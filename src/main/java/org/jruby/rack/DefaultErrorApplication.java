@@ -154,7 +154,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
         }
 
         private void log(RackLogger.Level level, String message, Throwable e) {
-            if ( context != null ) context.log(level, message, e);
+            if ( context != null ) context.log(level, (CharSequence) message, e);
         }
 
     }

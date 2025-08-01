@@ -15,5 +15,4 @@ package org.jruby.rack;
 public interface RackContext extends RackLogger {
     RackConfig getConfig(); /// NOTE: deprecate ?
     String getServerInfo();
-    // TODO more methods from ServletContext here ?!
 }

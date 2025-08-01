@@ -83,30 +83,33 @@ public class RaiseLogger extends RackLogger.Base {
     }
 
     @Override
-    public void log(Level level, String message) {
+    public void log(Level level, CharSequence message) {
         if ( isEnabled(level) ) {
-            out.println(level + " : " + message);
+            out.print(level + " : ");
+            out.println(message);
         }
         if ( isRaise(level) ) {
-            throw new RuntimeException(message);
+            throw new RuntimeException(message.toString());
         }
     }
 
     @Override
-    public void log(Level level, String message, Throwable ex) {
+    public void log(Level level, CharSequence message, Throwable ex) {
         if ( isEnabled(level) ) {
             if ( level.ordinal() >= Level.ERROR.ordinal() ) {
-               err.println(level + " : " + message);
+               err.print(level + " : ");
+               err.println(message);
                ex.printStackTrace(err);
             }
             else {
-               out.println(level + " : " + message);
+               out.print(level + " : ");
+               out.println(message);
                ex.printStackTrace(out);
             }
         }
         if ( isRaise(level) ) {
             if ( ex instanceof RuntimeException ) throw (RuntimeException) ex;
-            throw new RuntimeException(message, ex);
+            throw new RuntimeException(message.toString(), ex);
         }
     }
 
