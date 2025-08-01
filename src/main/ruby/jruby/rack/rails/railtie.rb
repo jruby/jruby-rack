@@ -9,6 +9,7 @@
 require 'active_support'
 require 'rails/railtie'
 require 'pathname'
+require 'jruby/rack/rails/rails_logger'
 
 module JRuby::Rack
   class Railtie < ::Rails::Railtie
@@ -30,7 +31,8 @@ module JRuby::Rack
 
     initializer 'set_servlet_logger', :before => :initialize_logger do |app|
       app.config.logger ||= begin
-        logger = JRuby::Rack.logger
+        logger = RailsLogger.new
+        JRuby::Rack.logger = logger
         config = app.config
         log_level = config.log_level || :info
         logger.level = logger.class.const_get(log_level.to_s.upcase)
