@@ -211,6 +211,7 @@ describe JRuby::Rack::RailsBooter do
         expect(rails_logger).to be_a(ActiveSupport::TaggedLogging)
         if defined? ActiveSupport::LoggerSilence
           expect(rails_logger).to be_a(ActiveSupport::LoggerSilence)
+          expect(rails_logger.silencer).to be true
           # sanity check silence works:
           value_returned = rails_logger.silence(Logger::WARN) { |logger| logger.class.name }
           expect(value_returned).to eql('JRuby::Rack::Logger')
