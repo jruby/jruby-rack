@@ -50,26 +50,26 @@ public class Slf4jLogger extends RackLogger.Base {
     }
 
     @Override
-    public void log(Level level, String message) {
-        if ( level == null ) { logger.info(message); return; }
+    public void log(Level level, CharSequence message) {
+        if ( level == null ) { logger.info(message.toString()); return; }
         switch ( level ) {
-            case DEBUG: logger.debug(message); break;
-            case INFO:  logger.info(message); break;
-            case WARN:  logger.warn(message); break;
-            case ERROR: logger.error(message); break;
-            case FATAL: logger.error(message); break;
+            case DEBUG: logger.debug(message.toString()); break;
+            case INFO:  logger.info(message.toString()); break;
+            case WARN:  logger.warn(message.toString()); break;
+            case ERROR: logger.error(message.toString()); break;
+            case FATAL: logger.error(message.toString()); break;
         }
     }
 
     @Override
-    public void log(Level level, String message, Throwable ex) {
-        if ( level == null ) { logger.error(message, ex); return; }
+    public void log(Level level, CharSequence message, Throwable ex) {
+        if ( level == null ) { logger.error(message.toString(), ex); return; }
         switch ( level ) {
-            case DEBUG: logger.debug(message, ex); break;
-            case INFO:  logger.info(message, ex); break;
-            case WARN:  logger.warn(message, ex); break;
-            case ERROR: logger.error(message, ex); break;
-            case FATAL: logger.error(message, ex); break;
+            case DEBUG: logger.debug(message.toString(), ex); break;
+            case INFO:  logger.info(message.toString(), ex); break;
+            case WARN:  logger.warn(message.toString(), ex); break;
+            case ERROR: logger.error(message.toString(), ex); break;
+            case FATAL: logger.error(message.toString(), ex); break;
         }
     }
 
