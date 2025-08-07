@@ -45,23 +45,6 @@ module JRuby::Rack
       end
     end
 
-    initializer 'set_relative_url_root', :after => 'action_controller.set_configs' do |app|
-      # NOTE: this is most likely handled by Rails 3.x itself :
-      # - *config.relative_url_root* since 3.2 defaults to _RAILS_RELATIVE_URL_ROOT_
-      # - *config.action_controller.relative_url_root* is set from *config.relative_url_root*
-      # - when a *config.relative_url_root* is set we should not interfere ...
-      if ( env_url_root = ENV['RAILS_RELATIVE_URL_ROOT'] ) &&
-        !( app.config.respond_to?(:relative_url_root) && app.config.relative_url_root )
-        if action_controller = app.config.action_controller
-          action_controller.relative_url_root = env_url_root
-        elsif defined?(ActionController::Base) &&
-          ActionController::Base.respond_to?(:relative_url_root=)
-          # setting the config affects *ActionController::Base.relative_url_root*
-          ActionController::Base.config.relative_url_root = env_url_root
-        end
-      end
-    end
-
     initializer 'action_dispatch.autoload_java_servlet_store', :after => 'action_dispatch.configure' do
       # if it's loaded up front with a require 'action_controller'/'action_dispatch' then
       # it might fire up before 'active_record' has been required causing sweeping issues
