@@ -38,14 +38,14 @@ directory 'target/classes'
 
 desc "Compile classes"
 task(:compile => 'target/classes') do
-  sh "mvn compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
+  sh "./mvnw compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
 end
 
 directory 'target/test-classes'
 
 desc "Compile test classes"
 task(:test_prepare => ['target/classes', 'target/test-classes']) do
-  sh "mvn test-compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
+  sh "./mvnw test-compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
 end
 
 desc "Unpack the rack gem"
@@ -98,7 +98,7 @@ task :test_resources => ["target/test-classes"]
 namespace :resources do
   desc "Copy (and generate) resources"
   task :copy => :resources do
-    sh 'mvn process-resources -Dmdep.skip=true'
+    sh './mvnw process-resources -Dmdep.skip=true'
   end
   desc "Generate test resources"
   task :test => :test_resources
@@ -208,7 +208,7 @@ task :release_checks do
       "  git push origin :#{GEM_VERSION}" if ok
   end
 
-  pom_version = `mvn help:evaluate -Dexpression=project.version`.
+  pom_version = `./mvnw help:evaluate -Dexpression=project.version`.
     split("\n").reject { |line| line =~ /[INFO]/ }.first.chomp
   if pom_version =~ /dev|SNAPSHOT/
     fail "Can't release a dev/snapshot version.\n" +
@@ -218,7 +218,7 @@ task :release_checks do
   unless pom_version.sub(/\-(\D+\w*)/, '.\1') == GEM_VERSION
     fail "Can't release because pom.xml version (#{pom_version}) is different than " +
       "jruby/rack/version.rb (#{GEM_VERSION}).\n" +
-      "Please run `mvn install' to bring the two files in sync."
+      "Please run `./mvnw install' to bring the two files in sync."
   end
 
   puts "release #{GEM_VERSION} looks ready to go ..."
@@ -229,7 +229,7 @@ task :release => [:release_checks, :clean] do
   args = ''
   args << "-Dgpg.keyname=#{ENV['GPG_KEYNAME']} " if ENV['GPG_KEYNAME']
 
-  sh "mvn -Prelease #{args} -DupdateReleaseInfo=true clean deploy"
+  sh "./mvnw -Prelease #{args} -DupdateReleaseInfo=true clean deploy"
 
   sh "git tag #{GEM_VERSION}"
 
