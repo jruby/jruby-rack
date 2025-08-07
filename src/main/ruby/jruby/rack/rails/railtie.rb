@@ -38,9 +38,7 @@ module JRuby::Rack
         logger.formatter = log_formatter if log_formatter && logger.respond_to?(:formatter=)
         require 'active_support/tagged_logging' unless defined?(ActiveSupport::TaggedLogging)
         logger = ActiveSupport::TaggedLogging.new(logger) # returns a logger.clone
-        logger.singleton_class.instance_eval do
-          include ActiveSupport::LoggerSilence if defined?(ActiveSupport::LoggerSilence)
-        end
+        logger.singleton_class.send(:include, ActiveSupport::LoggerSilence) if defined?(ActiveSupport::LoggerSilence)
         logger
       end
     end
