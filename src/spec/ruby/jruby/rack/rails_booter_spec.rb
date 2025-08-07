@@ -101,8 +101,7 @@ describe JRuby::Rack::RailsBooter do
 
   RAILS_ROOT_DIR = File.expand_path("../../../rails", __FILE__)
 
-  # NOTE: specs currently only test with a stubbed Rails::Railtie
-  describe "Rails (stubbed)", :lib => :stub do
+  describe "Rails (stubbed)", :lib => :stub do # NOTE: specs currently only test with a stubbed Rails::Railtie
 
     before :all do
       $LOAD_PATH.unshift File.join(RAILS_ROOT_DIR, 'stub') # for require 'rails/railtie'
@@ -126,6 +125,8 @@ describe JRuby::Rack::RailsBooter do
       $servlet_context = nil
     end
 
+    let(:railtie_class) { Class.new(Rails::Railtie) }
+
     it "should have loaded the railtie" do
       defined?(JRuby::Rack::Railtie).should_not be nil
     end
@@ -137,8 +138,8 @@ describe JRuby::Rack::RailsBooter do
       app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
       public_path = Pathname.new(booter.public_path)
 
-      Rails::Railtie.config.__before_configuration.size.should == 1
-      before_config = Rails::Railtie.config.__before_configuration.first
+      railtie_class.config.__before_configuration.size.should == 1
+      before_config = railtie_class.config.__before_configuration.first
       before_config.should_not be nil
 
       before_config.call(app)
@@ -155,7 +156,7 @@ describe JRuby::Rack::RailsBooter do
       app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
       JRuby::Rack.public_path = nil
 
-      before_config = Rails::Railtie.config.__before_configuration.first
+      before_config = railtie_class.config.__before_configuration.first
       before_config.should_not be nil
       before_config.call(app)
 
