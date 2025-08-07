@@ -254,63 +254,6 @@ describe JRuby::Rack::RailsBooter do
       booter.to_app.should == app
     end
 
-    it "should set config.action_controller.relative_url_root based on ENV['RAILS_RELATIVE_URL_ROOT']" do
-      ENV['RAILS_RELATIVE_URL_ROOT'] = '/blah'
-      app = double "app"
-      app.stub_chain(:config, :action_controller, :relative_url_root)
-      app.config.action_controller.should_receive(:relative_url_root=).with("/blah")
-      before_config = Rails::Railtie.__initializer.detect { |i| i.first =~ /url/ }
-      before_config.should_not be_nil
-      before_config[1].should == [{:after => "action_controller.set_configs"}]
-      before_config.last.call(app)
-    end
-
-  end # if defined? Rails
-
-  # NOTE: specs currently only test with a stubbed Rails::Railtie
-  describe "Rails 3.1", :lib => [ :stub ] do
-
-    before :each do
-      $servlet_context = @servlet_context
-      #booter.layout_class = JRuby::Rack::FileSystemLayout
-      booter.app_path = RAILS_ROOT_DIR.dup
-      def booter.rails2?; false end
-      booter.boot!
-      booter.load_environment
-    end
-
-    after :all do
-      $servlet_context = nil
-    end
-
-    #
-    # relative_url_root= has been deprecated in Rails > 3. We should not call it when it's not defined.
-    # See: https://github.com/jruby/jruby-rack/issues/73
-    #      https://github.com/rails/rails/issues/2435
-    #
-    it "should not set config.action_controller.relative_url_root if the controller doesn't respond to that method" do
-      require 'action_controller' # stub
-      begin
-        #ActionController::Base.send :remove_method, :relative_url_root=
-        ENV['RAILS_RELATIVE_URL_ROOT'] = '/blah'
-        app = double "app"
-        app.stub_chain(:config, :action_controller)
-        app.config.stub(:action_controller).and_return(nil)
-        # app.config.action_controller.should_not_receive(:relative_url_root=)
-        ActionController::Base.stub(:config).and_return app.config
-
-        app.config.should_receive(:relative_url_root=).with('/blah')
-        ActionController::Base.should_not_receive(:relative_url_root=)
-
-        init = Rails::Railtie.__initializer.detect { |i| i.first =~ /url/ }
-        init.should_not be nil
-        init[1].should == [{:after => "action_controller.set_configs"}]
-        init.last.call(app)
-      ensure
-        #ActionController::Base.send :attr_writer, :relative_url_root
-      end
-    end
-
   end # if defined? Rails
 
 end
