@@ -338,8 +338,7 @@ public class Logger extends RubyObject { // implements RackLogger
 
     // def add(severity, message = nil, progname = nil, &block)
     @JRubyMethod(name = "add", required = 1, optional = 2)
-    public IRubyObject add(final ThreadContext context,
-        final IRubyObject[] args, final Block block) {
+    public IRubyObject add(final ThreadContext context, final IRubyObject[] args, final Block block) {
         int severity = UNKNOWN;
         final IRubyObject sev = args[0];
         if ( ! sev.isNil() ) {
@@ -469,42 +468,6 @@ public class Logger extends RubyObject { // implements RackLogger
 
     private void doLog(RubyString message) {
         logger.log( message );
-    }
-
-    // LoggerSilence API :
-
-    private static boolean silencer = false; // we're NOT true by default!
-
-    @JRubyMethod(name= "silencer", meta = true)
-    public static IRubyObject get_silencer(final ThreadContext context, final IRubyObject self) {
-        return context.runtime.newBoolean(silencer);
-    }
-
-    @JRubyMethod(name = "silencer=", meta = true)
-    public static IRubyObject set_silencer(final ThreadContext context, final IRubyObject self,
-        final IRubyObject value) {
-        return context.runtime.newBoolean(silencer = value.isTrue());
-    }
-
-    @JRubyMethod(name = "silence")
-    public IRubyObject silence(final ThreadContext context, final Block block) {
-        return doSilence(ERROR, context, block); // temp_level = Logger::ERROR
-    }
-
-    @JRubyMethod(name = "silence", required = 1)
-    public IRubyObject silence(final ThreadContext context, final IRubyObject temp_level, final Block block) {
-        final int tempLevel = (int) temp_level.convertToInteger("to_i").getLongValue();
-        return doSilence(tempLevel, context, block);
-    }
-
-    private IRubyObject doSilence(final int tempLevel, final ThreadContext context, final Block block) {
-        if ( silencer ) {
-            // not implemented - on purpose!
-            return block.yield(context, this);
-        }
-        else {
-            return block.yield(context, this);
-        }
     }
 
     // (old) BufferedLogger API compatibility :

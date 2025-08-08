@@ -12,8 +12,10 @@ module ActiveSupport
       base.class_eval do
         # cattr_accessor :silencer, default: true
         @@silencer = true
-        def self.silencer; @@silencer end
-        def silencer; self.class.silencer end
+        module_eval do
+          def self.silencer; @@silencer end
+          def silencer; @@silencer end
+        end
 
         include ActiveSupport::LoggerThreadSafeLevel
       end
@@ -21,7 +23,7 @@ module ActiveSupport
 
     # Silences the logger for the duration of the block.
     def silence(severity = Logger::ERROR)
-      silencer ? log_at(severity) { yield self } : yield(self)
+      silencer ? log_at(severity) { yield(self) } : yield(self)
     end
   end
 end

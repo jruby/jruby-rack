@@ -10,14 +10,14 @@ require 'jruby/rack/rails_booter'
 
 describe JRuby::Rack::RailsBooter do
 
-  let(:booter) do
-    real_logger = org.jruby.rack.logging.BufferLogger.new
-    JRuby::Rack.logger = JRuby::Rack::Logger.new real_logger
-    JRuby::Rack::RailsBooter.new JRuby::Rack.context = @rack_context
+  let(:real_logger) do
+    org.jruby.rack.logging.BufferLogger.new
   end
 
-  let(:rails_booter) do
-    rails_booter = booter; def rails_booter.rails2?; nil end; rails_booter
+  let(:booter) do
+    JRuby::Rack.logger = JRuby::Rack::Logger.new(real_logger)
+    JRuby::Rack.context = @rack_context
+    JRuby::Rack::RailsBooter.new @rack_context
   end
 
   after { JRuby::Rack.context = nil; JRuby::Rack.logger = nil }
@@ -25,8 +25,8 @@ describe JRuby::Rack::RailsBooter do
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
-    rails_booter.boot!
-    rails_booter.app_path.should == "./WEB-INF"
+    booter.boot!
+    booter.app_path.should == "./WEB-INF"
   end
 
   before do
@@ -41,62 +41,62 @@ describe JRuby::Rack::RailsBooter do
 
   it "should default rails path to /WEB-INF" do
     @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/usr/apps/WEB-INF"
-    rails_booter.boot!
-    rails_booter.app_path.should == "/usr/apps/WEB-INF"
+    booter.boot!
+    booter.app_path.should == "/usr/apps/WEB-INF"
   end
 
   it "leaves ENV['RAILS_ENV'] as is if it was already set" do
     ENV['RAILS_ENV'] = 'staging'
-    rails_booter.boot!
+    booter.boot!
     ENV['RAILS_ENV'].should == 'staging'
-    rails_booter.rails_env.should == "staging"
+    booter.rails_env.should == "staging"
   end
 
   it "determines RAILS_ENV from the 'rails.env' init parameter" do
     ENV['RAILS_ENV'] = nil
     @rack_context.should_receive(:getInitParameter).with("rails.env").and_return "test"
-    rails_booter.boot!
-    rails_booter.rails_env.should == "test"
+    booter.boot!
+    booter.rails_env.should == "test"
   end
 
   it "gets rails environment from rack environmnent" do
     ENV.delete('RAILS_ENV')
     ENV['RACK_ENV'] = 'development'
     @rack_context.stub(:getInitParameter)
-    rails_booter.boot!
-    rails_booter.rails_env.should == 'development'
+    booter.boot!
+    booter.rails_env.should == 'development'
   end
 
   it "default RAILS_ENV to 'production'" do
     ENV.delete('RAILS_ENV'); ENV.delete('RACK_ENV')
-    rails_booter.boot!
-    rails_booter.rails_env.should == "production"
+    booter.boot!
+    booter.rails_env.should == "production"
   end
 
   it "should set RAILS_RELATIVE_URL_ROOT based on the servlet context path" do
     @rack_context.should_receive(:getContextPath).and_return '/myapp'
-    rails_booter.boot!
+    booter.boot!
     ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp'
   end
 
   it "should append to RAILS_RELATIVE_URL_ROOT if 'rails.relative_url_append' is set" do
     @rack_context.should_receive(:getContextPath).and_return '/myapp'
     @rack_context.should_receive(:getInitParameter).with("rails.relative_url_append").and_return "/blah"
-    rails_booter.boot!
+    booter.boot!
     ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp/blah'
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
     @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
     @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
-    rails_booter.boot!
-    rails_booter.public_path.should == "."
+    booter.boot!
+    booter.public_path.should == "."
   end
 
   it "should default public root to '/'" do
     @rack_context.should_receive(:getRealPath).with("/").and_return "."
-    rails_booter.boot!
-    rails_booter.public_path.should == "."
+    booter.boot!
+    booter.public_path.should == "."
   end
 
   RAILS_ROOT_DIR = File.expand_path("../../../rails", __FILE__)
@@ -211,6 +211,7 @@ describe JRuby::Rack::RailsBooter do
         expect(rails_logger).to be_a(ActiveSupport::TaggedLogging)
         if defined? ActiveSupport::LoggerSilence
           expect(rails_logger).to be_a(ActiveSupport::LoggerSilence)
+          expect(rails_logger.silencer).to be true
           # sanity check silence works:
           value_returned = rails_logger.silence(Logger::WARN) { |logger| logger.class.name }
           expect(value_returned).to eql('JRuby::Rack::Logger')
