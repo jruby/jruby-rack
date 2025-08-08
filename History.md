@@ -1,4 +1,4 @@
-## 1.2.4 (UNRELEASED)
+## 1.2.4
 
 - update (bundled) rack to 2.2.17
 - Fix Rails 7.1 CSRF protection when working with `JavaServletStore` sessions

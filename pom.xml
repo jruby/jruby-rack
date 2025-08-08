@@ -10,7 +10,7 @@
 
   <groupId>org.jruby.rack</groupId>
   <artifactId>jruby-rack</artifactId>
-  <version>1.2.4-SNAPSHOT</version>
+  <version>1.2.4</version>
   <name>JRuby-Rack</name>
   <url>https://github.com/jruby/jruby-rack/</url>
   <description>
