@@ -184,7 +184,7 @@ module Rack
         end
 
         def parse_query_string
-          Java::JakartaServletHttp::HttpUtils.parseQueryString(query_string)
+          Java::OrgJrubyRackServlet::HttpUtils.parseQueryString(query_string)
         end
 
         def mark_parameter_error(msg)
