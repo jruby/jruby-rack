@@ -7,7 +7,6 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.ext.Input;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;

@@ -40,7 +40,7 @@ public class SerialPoolingRackApplicationFactory extends PoolingRackApplicationF
 
     @Override
     protected void waitTillPoolReady() {
-        return; // waiting makes no sense here as we're initializing serialy
+        // waiting makes no sense here as we're initializing serialy
     }
 
 }

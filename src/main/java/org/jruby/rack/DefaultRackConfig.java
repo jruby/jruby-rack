@@ -265,7 +265,7 @@ public class DefaultRackConfig implements RackConfig {
         // RUBYOPT ignored if jruby.runtime.env.rubyopt = false
         Boolean rubyopt = config.getBooleanProperty("jruby.runtime.env.rubyopt");
         if ( rubyopt == null ) return ! config.isIgnoreEnvironment();
-        return rubyopt != null && !rubyopt;
+        return !rubyopt;
     }
 
     @Override
@@ -283,10 +283,7 @@ public class DefaultRackConfig implements RackConfig {
             return false; // jruby.rack.error = true
         }
         error = config.getBooleanProperty(RackEnvironment.EXCEPTION);
-        if ( error != null && error) {
-            return false; // jruby.rack.exception = true
-        }
-        return true;
+        return error == null || !error; // jruby.rack.exception != true
     }
 
     @Override
@@ -391,7 +388,7 @@ public class DefaultRackConfig implements RackConfig {
                 for ( final String entry : entries ) {
                     String[] pair = entry.split("=", 2);
                     if ( pair.length == 1 ) { // no = separator
-                        if ( entry.trim().length() == 0 ) continue;
+                        if ( entry.isBlank() ) continue;
                         if ( lastKey == null ) continue; // missing key
                         map.put( lastKey, lastVal = lastVal + ',' + entry );
                     }

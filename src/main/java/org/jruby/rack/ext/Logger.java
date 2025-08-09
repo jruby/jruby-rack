@@ -219,12 +219,8 @@ public class Logger extends RubyObject { // implements RackLogger
     public IRubyObject set_formatter(final ThreadContext context, final IRubyObject formatter) {
         if ( logger instanceof RackLogger.Base ) {
             final RackLogger.Base logger = (RackLogger.Base) this.logger;
-            if ( formatter.isNil() ) {
-                logger.setFormatting(true);
-            }
-            else { // if formatter set disable 'potential' logger formatting
-                logger.setFormatting(false);
-            }
+            // if formatter set disable 'potential' logger formatting
+            logger.setFormatting(formatter.isNil());
         }
         return this.formatter = formatter;
     }
@@ -455,6 +451,7 @@ public class Logger extends RubyObject { // implements RackLogger
         return FORMATTED_ANY;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> T toJava(Class<T> target) {
         // NOTE: maybe this is not a good idea ?!

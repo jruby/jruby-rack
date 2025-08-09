@@ -51,7 +51,7 @@ describe org.jruby.rack.DefaultRackApplication, "call" do
   context "with filter setup (using captures)" do
 
     let(:rack_env) do
-      request_capture = org.jruby.rack.servlet.RequestCapture.new(servlet_request, rack_config)
+      request_capture = org.jruby.rack.servlet.RequestCapture.new(servlet_request)
       response_capture = org.jruby.rack.servlet.ResponseCapture.new(servlet_response)
       org.jruby.rack.servlet.ServletRackEnvironment.new(request_capture, response_capture, rack_context)
     end
