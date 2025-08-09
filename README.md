@@ -288,12 +288,12 @@ logging system, configure `jruby.rack.logging` as follows:
 - `servlet_context` (default): Sends log messages to the servlet context.
 - `stdout`: Sends log messages to the standard output stream `System.out`.
 - `slf4j`: Sends log messages to SLF4J. SLF4J configuration is left up to you,
-  please refer to http://www.slf4j.org/docs.html .
-- `log4j`: Sends log messages to log4J. Again, Log4J configuration is
-  left up to you, consult http://logging.apache.org/log4j/ .
+  please refer to https://www.slf4j.org/manual.html .
+- `log4j`: Sends log messages through Log4j. Only Log4j 2.x is supported, for 
+- configuration please consult https://logging.apache.org/log4j/2.x/index.html .
 - `commons_logging`: Routes logs to commons-logging. You still need to configure
-  an underlying logging implementation with JCL. We recommend using the logger
-  library wrapper directly if possible, see http://commons.apache.org/logging/ .
+  an underlying logging implementation with JCL. 
+  We recommend rather using the logger library wrapper directly when possible.
 - `jul`: Directs log messages via Java's core logging facilities (util.logging).
 
 For those loggers that require a specific named logger, set it with the
