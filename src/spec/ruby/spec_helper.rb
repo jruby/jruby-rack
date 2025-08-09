@@ -5,8 +5,8 @@ $CLASSPATH << File.expand_path('classes', target)
 $CLASSPATH << File.expand_path('test-classes', target)
 jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
 
-java_import 'javax.servlet.http.HttpServletRequest'
-java_import 'javax.servlet.http.HttpServletResponse'
+java_import 'jakarta.servlet.http.HttpServletRequest'
+java_import 'jakarta.servlet.http.HttpServletResponse'
 
 java_import 'org.jruby.rack.RackApplicationFactory'
 java_import 'org.jruby.rack.DefaultRackApplicationFactory'
@@ -24,8 +24,8 @@ module SharedHelpers
   java_import 'org.jruby.rack.RackContext'
   java_import 'org.jruby.rack.RackConfig'
   java_import 'org.jruby.rack.servlet.ServletRackContext'
-  java_import 'javax.servlet.ServletContext'
-  java_import 'javax.servlet.ServletConfig'
+  java_import 'jakarta.servlet.ServletContext'
+  java_import 'jakarta.servlet.ServletConfig'
 
   def mock_servlet_context
     @servlet_context = ServletContext.impl {}
@@ -56,7 +56,7 @@ module SharedHelpers
 
   def servlet_30?
     return @@servlet_30 unless @@servlet_30.nil?
-    @@servlet_30 = !! ( Java::javax.servlet.AsyncContext rescue nil )
+    @@servlet_30 = !! ( Java::jakarta.servlet.AsyncContext rescue nil )
   end
   private :servlet_30?
 
@@ -197,10 +197,10 @@ RSpec.configure do |config|
 
 end
 
-java_import org.springframework.mock.web.MockServletConfig
-java_import org.springframework.mock.web.MockServletContext
-java_import org.springframework.mock.web.MockHttpServletRequest
-java_import org.springframework.mock.web.MockHttpServletResponse
+java_import 'org.springframework.mock.web.MockServletConfig'
+java_import 'org.springframework.mock.web.MockServletContext'
+java_import 'org.springframework.mock.web.MockHttpServletRequest'
+java_import 'org.springframework.mock.web.MockHttpServletResponse'
 
 class StubInputStream < java.io.InputStream
 
@@ -238,7 +238,7 @@ class StubOutputStream < java.io.OutputStream
 
 end
 
-class StubServletInputStream < javax.servlet.ServletInputStream
+class StubServletInputStream < Java::JakartaServlet::ServletInputStream
 
   def initialize(val = "")
     @delegate = StubInputStream.new(val)

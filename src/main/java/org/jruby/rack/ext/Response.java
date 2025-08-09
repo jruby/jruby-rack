@@ -227,8 +227,7 @@ public class Response extends RubyObject implements RackResponse {
      */
     @JRubyMethod(required = 1)
     public IRubyObject initialize(final ThreadContext context, final IRubyObject arg) {
-        if ( arg instanceof RubyArray ) {
-            final RubyArray<?> arr = (RubyArray<?>) arg;
+        if (arg instanceof RubyArray<?> arr) {
             if ( arr.size() < 3 ) {
                 throw context.runtime.newArgumentError("expected 3 array elements (rack-respose)");
             }

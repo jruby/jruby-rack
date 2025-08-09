@@ -10,30 +10,27 @@ package org.jruby.rack.fake;
 import java.io.IOException;
 import java.util.Enumeration;
 
-import javax.el.ELContext;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.jsp.JspWriter;
-import javax.servlet.jsp.PageContext;
-import javax.servlet.jsp.el.ExpressionEvaluator;
-import javax.servlet.jsp.el.VariableResolver;
+import jakarta.el.ELContext;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.PageContext;
 
 /**
  * Currently only used as a mock for testing.
  */
-@SuppressWarnings("deprecation")
 public class FakePageContext extends PageContext {
-    private ServletContext context;
-    private ServletRequest request;
-    private ServletResponse response;
-    private JspWriter out;
+    private final ServletContext context;
+    private final ServletRequest request;
+    private final ServletResponse response;
+    private final JspWriter out;
 
     public FakePageContext(ServletContext context, HttpServletRequest request, HttpServletResponse response, JspWriter out) {
         this.context = context;
@@ -158,16 +155,6 @@ public class FakePageContext extends PageContext {
 
     @Override
     public void include(String arg0, boolean arg1) throws ServletException, IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public ExpressionEvaluator getExpressionEvaluator() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public VariableResolver getVariableResolver() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

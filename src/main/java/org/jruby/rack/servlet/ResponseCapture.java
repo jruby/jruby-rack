@@ -13,11 +13,11 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 
 /**
  * Response wrapper passed to filter chain.
@@ -78,15 +78,6 @@ public class ResponseCapture extends HttpServletResponseWrapper {
         // if an error has been set previously the caller should deal with it
         if ( handleStatus(status, false) ) {
             super.setStatus(status);
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    @Deprecated
-    public void setStatus(int status, String message) {
-        if ( handleStatus(status, false) ) {
-            super.setStatus(status, message);
         }
     }
 

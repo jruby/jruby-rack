@@ -230,7 +230,7 @@ describe JRuby::Rack::Booter do
       before :each do
         # NOTE: this is obviously poor testing but it's easier to let the factory
         # setup the runtime for us than to hand copy/stub/mock all code involved
-        servlet_context = javax.servlet.ServletContext.impl do |name, *args|
+        servlet_context = Java::JakartaServlet::ServletContext.impl do |name, *args|
           case name.to_sym
             when :getRealPath then
               case args.first
@@ -277,7 +277,7 @@ describe JRuby::Rack::Booter do
       before :each do
         # NOTE: this is obviously poor testing but it's easier to let the factory
         # setup the runtime for us than to hand copy/stub/mock all code involved
-        servlet_context = javax.servlet.ServletContext.impl do |name, *args|
+        servlet_context = Java::JakartaServlet::ServletContext.impl do |name, *args|
           case name.to_sym
             when :getRealPath then
               case args.first
