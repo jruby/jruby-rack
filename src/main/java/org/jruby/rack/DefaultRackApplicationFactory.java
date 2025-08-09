@@ -190,9 +190,10 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
         }
         if (errorApp == null) {
-            errorApp = "require 'jruby/rack/error_app' \n" +
-            "use JRuby::Rack::ErrorApp::ShowStatus \n" +
-            "run JRuby::Rack::ErrorApp.new";
+            errorApp = """
+                    require 'jruby/rack/error_app'
+                    use JRuby::Rack::ErrorApp::ShowStatus
+                    run JRuby::Rack::ErrorApp.new""";
         }
         runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
         return createRackServletWrapper(runtime, errorApp, errorAppPath);

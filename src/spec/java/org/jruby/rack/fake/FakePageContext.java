@@ -22,18 +22,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.jsp.JspWriter;
 import jakarta.servlet.jsp.PageContext;
-import jakarta.el.ExpressionFactory;
-import jakarta.el.ELResolver;
 
 /**
  * Currently only used as a mock for testing.
  */
-@SuppressWarnings("deprecation")
 public class FakePageContext extends PageContext {
-    private ServletContext context;
-    private ServletRequest request;
-    private ServletResponse response;
-    private JspWriter out;
+    private final ServletContext context;
+    private final ServletRequest request;
+    private final ServletResponse response;
+    private final JspWriter out;
 
     public FakePageContext(ServletContext context, HttpServletRequest request, HttpServletResponse response, JspWriter out) {
         this.context = context;

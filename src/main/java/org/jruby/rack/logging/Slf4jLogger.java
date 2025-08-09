@@ -39,14 +39,12 @@ public class Slf4jLogger extends RackLogger.Base {
     @Override
     public boolean isEnabled(Level level) {
         if ( level == null ) return logger.isInfoEnabled(); // TODO ???!
-        switch ( level ) {
-            case DEBUG: return logger.isDebugEnabled();
-            case INFO:  return logger.isInfoEnabled();
-            case WARN:  return logger.isWarnEnabled();
-            case ERROR: return logger.isErrorEnabled();
-            case FATAL: return logger.isErrorEnabled();
-        }
-        return logger.isTraceEnabled();
+        return switch (level) {
+            case DEBUG -> logger.isDebugEnabled();
+            case INFO -> logger.isInfoEnabled();
+            case WARN -> logger.isWarnEnabled();
+            case ERROR, FATAL -> logger.isErrorEnabled();
+        };
     }
 
     @Override
@@ -56,8 +54,7 @@ public class Slf4jLogger extends RackLogger.Base {
             case DEBUG: logger.debug(message.toString()); break;
             case INFO:  logger.info(message.toString()); break;
             case WARN:  logger.warn(message.toString()); break;
-            case ERROR: logger.error(message.toString()); break;
-            case FATAL: logger.error(message.toString()); break;
+            case ERROR, FATAL: logger.error(message.toString()); break;
         }
     }
 
@@ -68,8 +65,7 @@ public class Slf4jLogger extends RackLogger.Base {
             case DEBUG: logger.debug(message.toString(), ex); break;
             case INFO:  logger.info(message.toString(), ex); break;
             case WARN:  logger.warn(message.toString(), ex); break;
-            case ERROR: logger.error(message.toString(), ex); break;
-            case FATAL: logger.error(message.toString(), ex); break;
+            case ERROR, FATAL: logger.error(message.toString(), ex); break;
         }
     }
 
