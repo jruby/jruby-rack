@@ -1,17 +1,48 @@
-GEM
-  remote: http://rubygems.org/
+GIT
+  remote: https://github.com/jruby/warbler.git
+  revision: f10ed60aefe3bf498917bfd18de780fb7d240f65
+  branch: master
   specs:
-    builder (3.0.0)
-    camping (2.1)
+    warbler (2.0.5)
+      jruby-jars (>= 9.0.0)
+      jruby-rack (>= 1.1.1, < 1.3)
+      ostruct (= 0.6.2)
+      rake (>= 13.0.3)
+      rexml (~> 3.0)
+      rubyzip (>= 1.0.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    builder (3.3.0)
+    camping (2.1.532)
+      mab (>= 0.0.3)
       rack (>= 1.0)
-    markaby (0.7.1)
-      builder (>= 2.0.0)
-    rack (1.2.1)
+    jruby-jars (9.4.13.0)
+    jruby-rack (1.2.3)
+    mab (0.0.3)
+    markaby (0.9.4)
+      builder
+    ostruct (0.6.2)
+    rack (2.2.17)
+    rackup (1.0.1)
+      rack (< 3)
+      webrick
+    rake (13.3.0)
+    rexml (3.4.1)
+    rubyzip (2.4.1)
+    webrick (1.9.1)
 
 PLATFORMS
   java
 
 DEPENDENCIES
-  camping
+  camping (< 3)
+  jruby-jars (< 10)
   markaby
-  rack
+  rack (~> 2.2)
+  rackup
+  warbler!
+
+BUNDLED WITH
+   2.6.9

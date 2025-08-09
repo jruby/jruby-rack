@@ -25,7 +25,6 @@ package org.jruby.rack.util;
 
 import java.io.IOException;
 
-import org.jruby.NativeException;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -41,12 +40,6 @@ import org.jruby.runtime.builtin.IRubyObject;
  */
 public abstract class ExceptionUtils {
 
-    public static RaiseException wrapException(final Ruby runtime, final Exception cause) {
-        if ( cause instanceof RaiseException ) return (RaiseException) cause;
-        NativeException nativeException = new NativeException(runtime, runtime.getNativeException(), cause);
-        return new RaiseException(cause, nativeException); // getCause() != null
-    }
-
     public static RaiseException newRuntimeError(final Ruby runtime, final Throwable cause) {
         return newRaiseException(runtime, runtime.getRuntimeError(), cause);
     }
@@ -61,15 +54,10 @@ public abstract class ExceptionUtils {
         return raise;
     }
 
-    static RaiseException newRaiseException(final Ruby runtime,
-        final RubyClass errorClass, final String message) {
-        return new RaiseException(runtime, errorClass, message, true);
-    }
-
     private static RaiseException newRaiseException(final Ruby runtime,
         final RubyClass errorClass, final Throwable cause) {
         final String message = cause.getMessage();
-        RaiseException raise = new RaiseException(runtime, errorClass, message, true);
+        RaiseException raise = RaiseException.from(runtime, errorClass, message);
         raise.initCause(cause);
         return raise;
     }
@@ -103,8 +91,8 @@ public abstract class ExceptionUtils {
         final StringBuilder out) {
         final ThreadContext context = error.getRuntime().getCurrentContext();
         final IRubyObject backtrace = error.callMethod(context, "backtrace");
-        if ( ! backtrace.isNil() /* && backtrace instanceof RubyArray */ ) {
-            final RubyArray trace = backtrace.convertToArray();
+        if ( ! backtrace.isNil() ) {
+            final RubyArray<?> trace = backtrace.convertToArray();
             out.ensureCapacity(out.length() + 24 * trace.getLength());
             for ( int i = skip; i < trace.getLength(); i++ ) {
                 IRubyObject stackTraceLine = trace.eltInternal(i);
@@ -113,7 +101,6 @@ public abstract class ExceptionUtils {
                 }
             }
         }
-        //return out;
     }
 
 }

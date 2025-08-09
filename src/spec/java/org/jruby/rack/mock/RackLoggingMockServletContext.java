@@ -31,21 +31,15 @@ public class RackLoggingMockServletContext extends org.springframework.mock.web.
     private static class NullLogger extends RackLogger.Base {
 
         @Override
-        public void log(String message) { /* NOOP */ }
-
-        @Override
-        public void log(String message, Throwable ex) { /* NOOP */ }
-
-        @Override
         public boolean isEnabled(Level level) {
             return false;
         }
 
         @Override
-        public void log(Level level, String message) { /* NOOP */ }
+        public void log(Level level, CharSequence message) { /* NOOP */ }
 
         @Override
-        public void log(Level level, String message, Throwable ex) { /* NOOP */ }
+        public void log(Level level, CharSequence message, Throwable ex) { /* NOOP */ }
 
         @Override
         public Level getLevel() {

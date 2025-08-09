@@ -108,7 +108,7 @@ public class RewindableInputStream extends ServletInputStream {
      * @param maxBufferSize maximum buffer size (when reached content gets written into a file)
      */
     public RewindableInputStream(InputStream input, int iniBufferSize, int maxBufferSize) {
-        this.input = input; // super(input);
+        this.input = input;
         this.buffer = ByteBuffer.allocate(iniBufferSize);
         this.buffer.limit(0); // empty
         this.bufferMax = maxBufferSize;
@@ -170,7 +170,6 @@ public class RewindableInputStream extends ServletInputStream {
         
         if (fillBuffer(1) == -1) return -1;  // EOF
         
-        //this.position++; // track stream position
         return this.buffer.get() & 0xFF;
     }
 
@@ -187,7 +186,6 @@ public class RewindableInputStream extends ServletInputStream {
             final int len = fillBuffer(length - count);
             if (len == -1) return count == 0 ? -1 : count; // EOF
 
-            //this.position += len; // track stream position
             this.buffer.get(buffer, offset + count, len);
             count += len;
         }
@@ -383,7 +381,6 @@ public class RewindableInputStream extends ServletInputStream {
         else {
             this.buffer.rewind().position((int) position);
         }
-        //this.position = position;
     }
     
     long getPosition() throws IOException {

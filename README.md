@@ -1,36 +1,22 @@
 # JRuby-Rack
 
+[![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][8]
+[![Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)][9]
+
 JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows
 any (Ruby) Rack-based application to run unmodified in a Java Servlet container.
 JRuby-Rack supports Rails as well as any Rack-compatible Ruby web framework.
 
 For more information on Rack, visit http://rack.github.io/.
 
-**This README (master) targets JRuby-Rack 1.3. Please use the
-[1.1-stable](https://github.com/jruby/jruby-rack/tree/1.1-stable) branch for
-current stable 1.1.x releases.**
-
-[![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][8]
-[![Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)][9]
-
 ## Compatibility
 
-JRuby-Rack 1.4.x
-- aims to be compatible with JRuby 9.4 -> 10.0 and Java 17+
-- supports any container compatible with Jakarta Servlet 5.0 API (JEE 9)
-
-JRuby-Rack 1.3.x
-- aims to be compatible with JRuby 9.4 -> 10.0 and Java 11+
-- supports any container compatible with Java Servlet 4.0 API
-
-JRuby-Rack 1.2.x
-- compatible with JRuby 9.3 -> 9.4 and their supported JDK versions
-- supports any container compatible with Java Servlet 3.0 API
-
-JRuby-Rack 1.1.x
-- aims to be compatible with JRuby >= 1.6.4 (used successfully through JRuby 9.4)
-- supports any container compatible with Java Servlet 2.5 API (JEE 5)
-
+| JRuby-Rack Version                                           | Status     | JRuby Compat | Java Compat | Target Servlet API | Target Java EE | Notes                                             |
+|--------------------------------------------------------------|------------|--------------|-------------|--------------------|----------------|---------------------------------------------------|
+| 1.4.x (_planned_)                                            | Dev        | 9.4 → 10.0   | Java 17+    | 5.0                | Jakarta EE 9   |                                                   |
+| 1.3.x (master, _unreleased_)                                 | Dev        | 9.4 → 10.0   | Java 11+    | 4.0                | Java EE 8      |                                                   |
+| [1.2.x](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained | 9.3 → 9.4    | Java 8+     | 3.0                | Java EE 6      | Servlet 3.1 → 4.0 tested OK with some containers. |
+| [1.1.x](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL        | 1.6 → 9.4    | Java 8+     | 2.5                | Java EE 5      | Servlet 3.0 → 4.0 tested OK with some containers. |
 
 ## Getting Started
 
@@ -59,44 +45,46 @@ min/max runtime parameters. For **multi-threaded** (a.k.a. `threadsafe!`)
 Rails with a single runtime, set min/max both to 1. Otherwise, define the size
 of the runtime pool as you wish.
 
-    <context-param>
-      <param-name>rails.env</param-name>
-      <param-value>production</param-value>
-    </context-param>
-    <context-param>
-      <param-name>jruby.min.runtimes</param-name>
-      <param-value>1</param-value>
-    </context-param>
-    <context-param>
-      <param-name>jruby.max.runtimes</param-name>
-      <param-value>1</param-value>
-    </context-param>
+```xml
+<context-param>
+  <param-name>rails.env</param-name>
+  <param-value>production</param-value>
+</context-param>
+<context-param>
+  <param-name>jruby.min.runtimes</param-name>
+  <param-value>1</param-value>
+</context-param>
+<context-param>
+  <param-name>jruby.max.runtimes</param-name>
+  <param-value>1</param-value>
+</context-param>
 
-    <filter>
-      <filter-name>RackFilter</filter-name>
-      <filter-class>org.jruby.rack.RackFilter</filter-class>
-      <!-- optional filter configuration init-params : -->
-      <init-param>
-        <param-name>resetUnhandledResponse</param-name>
-        <param-value>true</param-value> <!-- true (default), false or buffer -->
-      </init-param>
-      <init-param>
-        <param-name>addsHtmlToPathInfo</param-name>
-        <param-value>true</param-value> <!-- true (default), false -->
-      </init-param>
-      <init-param>
-        <param-name>verifiesHtmlResource</param-name>
-        <param-value>false</param-value> <!-- true, false (default) -->
-      </init-param>
-    </filter>
-    <filter-mapping>
-      <filter-name>RackFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-    </filter-mapping>
+<filter>
+  <filter-name>RackFilter</filter-name>
+  <filter-class>org.jruby.rack.RackFilter</filter-class>
+  <!-- optional filter configuration init-params : -->
+  <init-param>
+    <param-name>resetUnhandledResponse</param-name>
+    <param-value>true</param-value> <!-- true (default), false or buffer -->
+  </init-param>
+  <init-param>
+    <param-name>addsHtmlToPathInfo</param-name>
+    <param-value>true</param-value> <!-- true (default), false -->
+  </init-param>
+  <init-param>
+    <param-name>verifiesHtmlResource</param-name>
+    <param-value>false</param-value> <!-- true, false (default) -->
+  </init-param>
+</filter>
+<filter-mapping>
+  <filter-name>RackFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
 
-    <listener>
-      <listener-class>org.jruby.rack.rails.RailsServletContextListener</listener-class>
-    </listener>
+<listener>
+  <listener-class>org.jruby.rack.rails.RailsServletContextListener</listener-class>
+</listener>
+```
 
 ### (Other) Rack Applications
 
@@ -104,34 +92,38 @@ The main difference when using a non-Rails Rack application is that JRuby-Rack
 looks for a "rackup" file named **config.ru** in  `WEB-INF/config.ru` or
 `WEB-INF/*/config.ru`. Here's a sample *web.xml* configuration :
 
-    <filter>
-      <filter-name>RackFilter</filter-name>
-      <filter-class>org.jruby.rack.RackFilter</filter-class>
-      <!-- optional filter configuration init-params (@see above) -->
-    </filter>
-    <filter-mapping>
-      <filter-name>RackFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-    </filter-mapping>
+```xml
+<filter>
+  <filter-name>RackFilter</filter-name>
+  <filter-class>org.jruby.rack.RackFilter</filter-class>
+  <!-- optional filter configuration init-params (@see above) -->
+</filter>
+<filter-mapping>
+  <filter-name>RackFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
 
-    <listener>
-      <listener-class>org.jruby.rack.RackServletContextListener</listener-class>
-    </listener>
+<listener>
+  <listener-class>org.jruby.rack.RackServletContextListener</listener-class>
+</listener>
+```
 
 If you don't have a *config.ru* or don't want to include it in your web app, you
 can embed it directly in the *web.xml* as follows (using Sinatra as an example):
 
-    <context-param>
-      <param-name>rackup</param-name>
-      <param-value>
-        require 'rubygems'
-        gem 'sinatra', '~&gt; 1.3'
-        require './lib/app'
-        set :run, false
-        set :environment, :production
-        run Sinatra::Application
-      </param-value>
-    </context-param>
+```xml
+<context-param>
+  <param-name>rackup</param-name>
+  <param-value>
+    require 'rubygems'
+    gem 'sinatra', '~&gt; 1.3'
+    require './lib/app'
+    set :run, false
+    set :environment, :production
+    run Sinatra::Application
+  </param-value>
+</context-param>
+```
 
 Be sure to escape angle-brackets for XML !
 
@@ -285,13 +277,16 @@ provided *config.ru* the bundled (latest) version of Rack will get loaded.
 
 Use **rack.version** to specify the Rack gem version to be loaded before rackup :
 
-    # encoding: UTF-8
-    # rack.version: ~>2.2.10 (before code is loaded gem '~>2.2.10' will be called)
+```ruby
+# encoding: UTF-8
+# rack.version: ~>2.2.10 (before code is loaded gem '~>2.2.10' will be called)
+```
 
 Or the equivalent of doing `bundle exec rackup ...` if you're using Bundler :
 
-    # rack.version: bundler (requires 'bundler/setup' before loading the script)
-
+```ruby
+# rack.version: bundler (requires 'bundler/setup' before loading the script)
+```
 
 ## Logging
 
@@ -318,21 +313,27 @@ For those loggers that require a specific named logger, set it with the
 
 Checkout the JRuby-Rack code using [git](http://git-scm.com/) :
 
-    git clone git://github.com/jruby/jruby-rack.git
-    cd jruby-rack
+```shell
+git clone git://github.com/jruby/jruby-rack.git
+cd jruby-rack
+```
 
 Ensure you have [Maven](http://maven.apache.org/) installed.
 It is required for downloading jar artifacts that JRuby-Rack depends on.
 
 Build the .jar using Maven :
 
-    mvn install
+```shell
+mvn install
+```
 
 the generated jar should be located at **target/jruby-rack-*.jar**
 
 Alternatively use Rake, e.g. to build the gem (skipping specs) :
 
-    jruby -S rake clean gem SKIP_SPECS=true
+```shell
+jruby -S rake clean gem SKIP_SPECS=true
+```
 
 You can **not** use JRuby-Rack with Bundler directly from the git (or http) URL
 (`gem 'jruby-rack', :github => 'jruby/jruby-rack'`) since the included .jar file
@@ -341,7 +342,7 @@ package and push the .jar every time a commit changes a source file).
 
 ## Releasing
 
-* Make sure auth is configured for "ossrh" repository ID in your .m2/settings.xml
+* Make sure auth is configured for "central" repository ID in your .m2/settings.xml
 * Update the version in src/main/ruby/jruby/rack/version.rb to the release version
 * mvn release:prepare
 * mvn release:perform (possibly with -DuseReleaseProfile=false due to Javadoc doclint failures for now)

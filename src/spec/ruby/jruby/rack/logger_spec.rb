@@ -102,19 +102,6 @@ describe JRuby::Rack::Logger do
     expect( logger.class::FATAL ).to eql 4
   end
 
-  it 'is not silencable (by default)' do
-    expect( JRuby::Rack::Logger.silencer ).to be false
-  end
-
-  it 'supports silence with block' do
-    called = nil
-    logger.silence do |logger|
-      called = true
-      expect( logger ).to be logger
-    end
-    expect( called ).to be true
-  end
-
   describe JRuby::Rack::ServletLog do
     let(:servlet_context_logger) do
       org.jruby.rack.logging.ServletContextLogger.new(servlet_context)

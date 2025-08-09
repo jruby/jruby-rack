@@ -64,13 +64,13 @@ public class JulLogger extends RackLogger.Base {
     }
 
     @Override
-    public void log(Level level, String message) {
-        logger.log( mapLevel(level, java.util.logging.Level.INFO), message );
+    public void log(Level level, CharSequence message) {
+        logger.log( mapLevel(level, java.util.logging.Level.INFO), message.toString() );
     }
 
     @Override
-    public void log(Level level, String message, Throwable e) {
-        logger.log( mapLevel(level, java.util.logging.Level.SEVERE), message, e );
+    public void log(Level level, CharSequence message, Throwable e) {
+        logger.log( mapLevel(level, java.util.logging.Level.SEVERE), message.toString(), e );
     }
 
     private static java.util.logging.Level mapLevel(

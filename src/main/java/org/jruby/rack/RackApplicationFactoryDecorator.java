@@ -169,12 +169,7 @@ public abstract class RackApplicationFactoryDecorator
      * @param level the logger level
      * @param message the log message
      */
-    protected void log(final RackLogger.Level level, final String message) {
-        getContextBang().log(level, message);
-    }
-
-    @Deprecated
-    protected void log(final String level, final String message) {
+    protected void log(final RackLogger.Level level, final CharSequence message) {
         getContextBang().log(level, message);
     }
 
@@ -184,12 +179,7 @@ public abstract class RackApplicationFactoryDecorator
      * @param message the log message
      * @param e the exception raised
      */
-    protected void log(final RackLogger.Level level, final String message, Exception e) {
-        getContextBang().log(level, message, e);
-    }
-
-    @Deprecated
-    protected void log(final String level, final String message, Exception e) {
+    protected void log(final RackLogger.Level level, final CharSequence message, Exception e) {
         getContextBang().log(level, message, e);
     }
 
@@ -204,7 +194,7 @@ public abstract class RackApplicationFactoryDecorator
     public static Collection<Ruby> getManagedRuntimes(RackApplicationFactoryDecorator factory) {
         final Collection<RackApplication> apps = factory.getManagedApplications();
         if ( apps == null ) return null;
-        final Set<Ruby> runtimes = new LinkedHashSet<Ruby>(apps.size());
+        final Set<Ruby> runtimes = new LinkedHashSet<>(apps.size());
         for ( RackApplication app : apps ) {
             runtimes.add( app.getRuntime() );
         }

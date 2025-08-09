@@ -60,17 +60,17 @@ public class OutputStreamLogger extends RackLogger.Base {
     }
 
     @Override
-    public void log(String message) {
-        doLog(message); // log(Level.INFO, message);
+    public void log(CharSequence message) {
+        doLog(message);
     }
 
     @Override
-    public void log(String message, Throwable ex) {
-        doLog(message, ex); // log(Level.ERROR, message, ex);
+    public void log(CharSequence message, Throwable ex) {
+        doLog(message, ex);
     }
 
     @Override
-    public void log(Level level, String message) {
+    public void log(Level level, CharSequence message) {
         if ( ! isEnabled(level) ) return;
         printLevel(this, level, out);
         doLog(message);
@@ -82,13 +82,13 @@ public class OutputStreamLogger extends RackLogger.Base {
     }
 
     @Override
-    public void log(Level level, String message, Throwable ex) {
+    public void log(Level level, CharSequence message, Throwable ex) {
         if ( ! isEnabled(level) ) return;
         printLevel(this, level, out);
         doLog(message, ex);
     }
 
-    private void doLog(final String message, final Throwable ex) {
+    private void doLog(final CharSequence message, final Throwable ex) {
         printMessage(out, message);
         ex.printStackTrace(out);
         out.flush();

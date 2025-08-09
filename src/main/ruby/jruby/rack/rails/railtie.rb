@@ -37,24 +37,9 @@ module JRuby::Rack
         log_formatter = config.log_formatter if config.respond_to?(:log_formatter)
         logger.formatter = log_formatter if log_formatter && logger.respond_to?(:formatter=)
         require 'active_support/tagged_logging' unless defined?(ActiveSupport::TaggedLogging)
-        ActiveSupport::TaggedLogging.new(logger) # returns a logger.clone
-      end
-    end
-
-    initializer 'set_relative_url_root', :after => 'action_controller.set_configs' do |app|
-      # NOTE: this is most likely handled by Rails 3.x itself :
-      # - *config.relative_url_root* since 3.2 defaults to _RAILS_RELATIVE_URL_ROOT_
-      # - *config.action_controller.relative_url_root* is set from *config.relative_url_root*
-      # - when a *config.relative_url_root* is set we should not interfere ...
-      if ( env_url_root = ENV['RAILS_RELATIVE_URL_ROOT'] ) &&
-        !( app.config.respond_to?(:relative_url_root) && app.config.relative_url_root )
-        if action_controller = app.config.action_controller
-          action_controller.relative_url_root = env_url_root
-        elsif defined?(ActionController::Base) &&
-          ActionController::Base.respond_to?(:relative_url_root=)
-          # setting the config affects *ActionController::Base.relative_url_root*
-          ActionController::Base.config.relative_url_root = env_url_root
-        end
+        logger = ActiveSupport::TaggedLogging.new(logger) # returns a logger.clone
+        logger.singleton_class.send(:include, ActiveSupport::LoggerSilence) if defined?(ActiveSupport::LoggerSilence)
+        logger
       end
     end
 

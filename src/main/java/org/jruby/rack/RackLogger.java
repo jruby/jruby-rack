@@ -12,41 +12,32 @@ package org.jruby.rack;
  * @author nicksieger
  */
 public interface RackLogger {
-    //void debug(String message) ;
-    //void debug(String message, Throwable e) ;
-
-    //void info(String message) ;
-    //void info(String message, Throwable e) ;
-
-    //void warn(String message) ;
-    //void warn(String message, Throwable e) ;
-
-    //void error(String message) ;
-    //void error(String message, Throwable e) ;
-
     enum Level {
         DEBUG, INFO, WARN, ERROR, FATAL
     }
 
     boolean isEnabled(final Level level) ;
 
-    void log(Level level, String message) ;
-    void log(Level level, String message, Throwable ex) ;
+    void log(Level level, CharSequence message) ;
 
-    default void log(String message) {
+    void log(Level level, CharSequence message, Throwable ex) ;
+
+    default void log(CharSequence message) {
         log(Level.INFO, message);
     }
 
-    default void log(String message, Throwable ex) {
+    default void log(CharSequence message, Throwable ex) {
         log(Level.ERROR, message, ex);
     }
 
-    default void log(String level, String message) {
-        log(Level.valueOf(level), message);
+    @Deprecated
+    default void log(Level level, String message) {
+        log(level, (CharSequence) message);
     }
 
-    default void log(String level, String message, Throwable ex) {
-        log(Level.valueOf(level), message, ex);
+    @Deprecated
+    default void log(Level level, String message, Throwable ex) {
+        log(level, (CharSequence) message, ex);
     }
 
     abstract class Base implements RackLogger {

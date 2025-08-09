@@ -14,37 +14,34 @@ import jakarta.servlet.ServletContext;
 public class ServletContextLogger extends RackLogger.Base {
 
     private final ServletContext context;
-    //private Level level; //= Level.DEBUG;
 
     public ServletContextLogger(ServletContext context) {
         this.context = context;
     }
 
     @Override
-    public void log(String message) {
-        context.log(message);
+    public void log(CharSequence message) {
+        context.log(message.toString());
     }
 
     @Override
-    public void log(String message, Throwable ex) {
-        context.log(message, ex);
+    public void log(CharSequence message, Throwable ex) {
+        context.log(message.toString(), ex);
     }
 
     @Override
-    public void log(Level level, String message) {
-        if ( isEnabled(level) ) context.log(message);
+    public void log(Level level, CharSequence message) {
+        if ( isEnabled(level) ) context.log(message.toString());
     }
 
     @Override
-    public void log(Level level, String message, Throwable ex) {
-        if ( isEnabled(level) ) context.log(message, ex);
+    public void log(Level level, CharSequence message, Throwable ex) {
+        if ( isEnabled(level) ) context.log(message.toString(), ex);
     }
 
     @Override
     public boolean isEnabled(Level level) {
         return true;
-        //if ( level == null || this.level == null ) return true;
-        //return this.level.ordinal() <= level.ordinal();
     }
 
     @Override

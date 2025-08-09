@@ -31,17 +31,6 @@
     <url>https://github.com/jruby/jruby-rack/issues</url>
   </issueManagement>
 
-  <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
-
   <scm>
     <connection>scm:git:git://github.com/jruby/jruby-rack.git</connection>
     <developerConnection>scm:git:git@github.com:jruby/jruby-rack.git</developerConnection>
@@ -268,7 +257,7 @@
             <phase>test</phase>
             <goals><goal>rake</goal></goals>
             <configuration>
-              <args>speconly SKIP_SPECS=${maven.test.skip}</args>
+              <args>speconly SKIP_SPECS=${skipTests}</args>
             </configuration>
           </execution>
           <execution>
@@ -284,14 +273,13 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.7.0</version>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.8.0</version>
         <extensions>true</extensions>
         <configuration>
-           <serverId>ossrh</serverId>
-           <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-           <autoReleaseAfterClose>false</autoReleaseAfterClose>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>true</autoPublish>
         </configuration>
       </plugin>
       <plugin>

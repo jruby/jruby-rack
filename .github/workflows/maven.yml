@@ -18,10 +18,10 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.4.13.0', '10.0.0.1' ]
+        jruby_version: [ '9.4.13.0', '10.0.1.0' ]
         java_version: [ '17', '21' ]
         exclude:
-          - jruby_version: '10.0.0.1'
+          - jruby_version: '10.0.1.0'
             java_version: '17' # JRuby 10 requires Java 21
       fail-fast: false
 
@@ -36,12 +36,12 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: mvn -B install -Djruby.version=${{ matrix.jruby_version }}
+      run: ./mvnw -B install -Djruby.version=${{ matrix.jruby_version }}
 
     # Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@b275d12641ac2d2108b2cbb7598b154ad2f2cee8 # v5.0.0
-      if: github.head_ref == 'refs/heads/master' && matrix.java_version == env.DEFAULT_JAVA_VERSION && matrix.jruby_version == env.DEFAULT_JRUBY_VERSION
+      if: github.ref == 'refs/heads/master' && matrix.java_version == env.DEFAULT_JAVA_VERSION && matrix.jruby_version == env.DEFAULT_JRUBY_VERSION
 
   appraisals:
     needs: build
@@ -50,13 +50,13 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.4.13.0', '10.0.0.1' ]
+        jruby_version: [ '9.4.13.0', '10.0.1.0' ]
         java_version: [ '17', '21' ]
         appraisal: [ 'rails50', 'rails52', 'rails60', 'rails61', 'rails70', 'rails71', 'rails72', 'rails80' ]
         exclude:
           - jruby_version: '9.4.13.0'
             appraisal: 'rails80' # Requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
-          - jruby_version: '10.0.0.1'
+          - jruby_version: '10.0.1.0'
             java_version: '17' # JRuby 10 requires Java 21
       fail-fast: false
 
@@ -75,7 +75,7 @@ jobs:
           cache: maven
 
       - name: Setup JRuby
-        uses: ruby/setup-ruby@472790540115ce5bd69d399a020189a8c87d641f # v1.247.0
+        uses: ruby/setup-ruby@2a7b30092b0caf9c046252510f9273b4875f3db9 # v1.254.0
         with:
           ruby-version: jruby-${{ matrix.jruby_version }}
           bundler-cache: 'false' # Need to install later so we can vary from Gemfile.lock as required for JRuby version compatibility

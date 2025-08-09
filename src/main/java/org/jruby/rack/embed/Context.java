@@ -28,7 +28,6 @@ public class Context implements RackContext, RackLogger {
      */
     public Context(final String serverInfo) {
         this(serverInfo, new Config());
-        //this.config.setLogger(this);
     }
 
     /**
@@ -70,33 +69,23 @@ public class Context implements RackContext, RackLogger {
     }
 
     @Override
-    public void log(String message) {
+    public void log(CharSequence message) {
         logger.log(message);
     }
 
     @Override
-    public void log(String message, Throwable ex) {
+    public void log(CharSequence message, Throwable ex) {
         logger.log(message, ex);
     }
 
     @Override
-    public void log(Level level, String message) {
+    public void log(Level level, CharSequence message) {
         if ( isEnabled(level) ) logger.log(level, message);
     }
 
     @Override
-    public void log(Level level, String message, Throwable ex) {
+    public void log(Level level, CharSequence message, Throwable ex) {
         if ( isEnabled(level) ) logger.log(level, message, ex);
-    }
-
-    @Override @Deprecated
-    public void log(String level, String message) {
-        log(Level.valueOf(level), message);
-    }
-
-    @Override @Deprecated
-    public void log(String level, String message, Throwable ex) {
-        log(Level.valueOf(level), message, ex);
     }
 
     @Override
@@ -105,25 +94,23 @@ public class Context implements RackContext, RackLogger {
         return this.level.ordinal() <= level.ordinal();
     }
 
-
-
     private class DefaultLogger extends RackLogger.Base {
 
         @Override
-        public void log(Level level, String message) {
+        public void log(Level level, CharSequence message) {
             final PrintStream out = config.getOut();
             out.print(level); out.print(": ");
             printMessage(out, message);
-            // out.flush();
+            out.flush();
         }
 
         @Override
-        public void log(Level level, String message, Throwable ex) {
+        public void log(Level level, CharSequence message, Throwable ex) {
             final PrintStream err = config.getErr();
             err.print(level); err.print(": ");
             printMessage(err, message);
             ex.printStackTrace(err);
-            // err.flush();
+            err.flush();
         }
 
         @Override
