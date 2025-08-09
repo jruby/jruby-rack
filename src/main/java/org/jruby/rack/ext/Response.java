@@ -690,9 +690,10 @@ public class Response extends RubyObject implements RackResponse {
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object toJava(Class target) {
-        if ( target == null || target == RackResponse.class ) return this;
+    public <T> T toJava(Class<T> target) {
+        if ( target == null || target == RackResponse.class ) return (T) this;
         return super.toJava(target);
     }
 

@@ -168,10 +168,9 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
                 // could only happen if the initialization threads are still
                 // running (and we've been configured to not wait till all
                 // 'initial' applications are put to the pool on #init())
-                while (true) { // thus we'll wait for another pool put ...
+                do { // thus we'll wait for another pool put ...
                     waitForApplication();
-                    if ( ! applicationPool.isEmpty() ) break;
-                }
+                } while (applicationPool.isEmpty());
                 app = applicationPool.remove();
             }
         }
@@ -197,7 +196,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
     protected boolean acquireApplicationPermit() throws AcquireTimeoutException {
         // NOTE: permits are only used if a pool maximum is specified !
         if (permits != null) {
-            boolean acquired = false;
+            boolean acquired;
             try {
                 final long timeout = (long) (acquireTimeout * 1000);
                 acquired = permits.tryAcquire(timeout, TimeUnit.MILLISECONDS);
@@ -328,7 +327,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
     }
 
     protected Queue<RackApplication> createApplications() throws RackInitializationException {
-        Queue<RackApplication> apps = new LinkedList<RackApplication>();
+        Queue<RackApplication> apps = new LinkedList<>();
         for (int i = 0; i < initialSize; i++) {
             apps.add( createApplication(false) );
         }
@@ -376,7 +375,6 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
                 applicationPool.wait(5 * 1000);
             }
             catch (InterruptedException ignore) {
-                return;
             }
         }
     }

@@ -24,18 +24,13 @@
 package org.jruby.rack.util;
 
 import java.io.BufferedReader;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jruby.Ruby;
-import org.jruby.util.ByteList;
 
 /**
  * Input - Output (stream) helpers.
@@ -52,10 +47,9 @@ public abstract class IOHelpers {
         String coding = "UTF-8";
         int c = stream.read();
         if ( c == '#' ) { // look for a coding: pragma
-            str.append((char) c);
-            while ( (c = stream.read()) != -1 && c != 10 ) {
+            do {
                 str.append((char) c);
-            }
+            } while ((c = stream.read()) != -1 && c != 10);
             Pattern pattern = Pattern.compile("coding:\\s*(\\S+)");
             Matcher matcher = pattern.matcher(str.toString());
             if (matcher.find()) {
@@ -73,24 +67,6 @@ public abstract class IOHelpers {
         return str.toString();
     }
 
-    public static ByteList readURL(final Ruby runtime, final URL url)
-        throws IOException {
-        if ( url == null ) return null;
-
-        final int chunk = 256;
-
-        final InputStream stream = url.openStream();
-        final ByteList bytes = new ByteList(chunk);
-
-        try {
-            while ( true ) bytes.append(stream, chunk);
-        }
-        catch (EOFException e) { /* read whole stream */ }
-        finally { stream.close(); }
-
-        return bytes;
-    }
-
     public static String rubyMagicCommentValue(final String script, final String prefix)
         throws IOException {
         if ( script == null ) return null;
@@ -100,7 +76,7 @@ public abstract class IOHelpers {
         String line, comment = null; Pattern pattern = null;
         while ( (line = reader.readLine()) != null ) {
             // we only support (magic) comments at the beginning :
-            if ( line.length() == 0 || line.charAt(0) != '#' ) break;
+            if (line.isEmpty() || line.charAt(0) != '#' ) break;
 
             if (pattern == null) {
                 pattern = Pattern.compile(prefix + "\\s*(\\S+)");

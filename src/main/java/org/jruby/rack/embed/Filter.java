@@ -7,9 +7,6 @@
  */
 package org.jruby.rack.embed;
 
-import jakarta.servlet.FilterConfig;
-import jakarta.servlet.ServletException;
-
 import org.jruby.rack.AbstractFilter;
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackDispatcher;
@@ -39,10 +36,4 @@ public class Filter extends AbstractFilter {
     protected RackDispatcher getDispatcher() {
         return this.dispatcher;
     }
-
-    @Override
-    public void init(FilterConfig config) throws ServletException {
-        // NOOP
-    }
-
 }

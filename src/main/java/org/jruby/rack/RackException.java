@@ -53,7 +53,7 @@ public class RackException extends RuntimeException {
             st.append(e.getException().toString()).append('\n');
             ByteArrayOutputStream b = new ByteArrayOutputStream();
             e.getException().printBacktrace(new PrintStream(b));
-            st.append(b.toString());
+            st.append(b);
             return st.toString();
         }
         return null;

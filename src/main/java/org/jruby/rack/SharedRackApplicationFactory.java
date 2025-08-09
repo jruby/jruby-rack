@@ -23,7 +23,7 @@ import static org.jruby.rack.RackLogger.Level.*;
  */
 public class SharedRackApplicationFactory extends RackApplicationFactoryDecorator {
 
-    private RackApplication application;
+    private volatile RackApplication application;
 
     public SharedRackApplicationFactory(RackApplicationFactory delegate) {
         super(delegate);

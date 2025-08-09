@@ -45,7 +45,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     private String rackupScript, rackupLocation;
     private ServletRackContext rackContext;
     private RubyInstanceConfig runtimeConfig;
-    private RackApplication errorApplication;
+    private volatile RackApplication errorApplication;
 
     /**
      * Convenience helper for unwrapping a {@link RackApplicationFactoryDecorator}.
@@ -351,7 +351,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         String dechunk = rackContext.getConfig().getProperty("jruby.rack.response.dechunk");
         Boolean dechunkFlag = (Boolean) DefaultRackConfig.toStrictBoolean(dechunk, null);
         if ( dechunkFlag != null ) {
-            runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunkFlag + "");
+            runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunkFlag);
         }
         else { // dechunk null (default) or not a true/false value ... we're patch :
             runtime.evalScriptlet("JRuby::Rack::Booter.on_boot { require 'jruby/rack/chunked' }");
@@ -360,7 +360,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         String swallowAbort = rackContext.getConfig().getProperty("jruby.rack.response.swallow_client_abort");
         Boolean swallowAbortFlag = (Boolean) DefaultRackConfig.toStrictBoolean(swallowAbort, null);
         if ( swallowAbortFlag != null ) {
-            runtime.evalScriptlet("JRuby::Rack::Response.swallow_client_abort = " + swallowAbortFlag + "");
+            runtime.evalScriptlet("JRuby::Rack::Response.swallow_client_abort = " + swallowAbortFlag);
         }
     }
 

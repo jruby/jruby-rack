@@ -21,15 +21,12 @@ import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 
-import org.jruby.rack.RackConfig;
-
 /**
  * Request wrapper passed to filter chain.
  */
-@SuppressWarnings("rawtypes")
 public class RequestCapture extends HttpServletRequestWrapper {
 
-    private Map<String,String[]> requestParams;
+    private Map<String, String[]> requestParams;
     private RewindableInputStream inputStream;
 
     /**
@@ -38,16 +35,6 @@ public class RequestCapture extends HttpServletRequestWrapper {
      */
     public RequestCapture(HttpServletRequest request) {
         super(request);
-    }
-    
-    /**
-     * @deprecated use {@link #RequestCapture(HttpServletRequest)}
-     * @param request the request
-     * @param config will be ignored
-     */
-    @Deprecated
-    public RequestCapture(HttpServletRequest request, RackConfig config) {
-        this(request);
     }
 
     @Override 
@@ -81,7 +68,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
     }
 
     @Override
-    public Map getParameterMap() {
+    public Map<String, String[]> getParameterMap() {
         if ( requestParametersParsed() ) {
             return requestParams;
         } else {
@@ -90,15 +77,15 @@ public class RequestCapture extends HttpServletRequestWrapper {
     }
 
     @Override
-    public Enumeration getParameterNames() {
+    public Enumeration<String> getParameterNames() {
         if ( requestParametersParsed() ) {
-            return new Enumeration() {
-                Iterator keys = requestParams.keySet().iterator();
+            return new Enumeration<>() {
+                final Iterator<String> keys = requestParams.keySet().iterator();
                 public boolean hasMoreElements() {
                     return keys.hasNext();
                 }
 
-                public Object nextElement() {
+                public String nextElement() {
                     return keys.next();
                 }
             };

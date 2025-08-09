@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,14 +59,6 @@ public class DefaultErrorApplication extends DefaultRackApplication
     @Override
     public Ruby getRuntime() {
         throw new UnsupportedOperationException("getRuntime() not supported");
-    }
-
-    public void init() {
-        // NOOP
-    }
-
-    public void destroy() {
-        // NOOP
     }
 
     @Override
