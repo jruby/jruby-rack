@@ -43,44 +43,46 @@ min/max runtime parameters. For **multi-threaded** (a.k.a. `threadsafe!`)
 Rails with a single runtime, set min/max both to 1. Otherwise, define the size
 of the runtime pool as you wish.
 
-    <context-param>
-      <param-name>rails.env</param-name>
-      <param-value>production</param-value>
-    </context-param>
-    <context-param>
-      <param-name>jruby.min.runtimes</param-name>
-      <param-value>1</param-value>
-    </context-param>
-    <context-param>
-      <param-name>jruby.max.runtimes</param-name>
-      <param-value>1</param-value>
-    </context-param>
+```xml
+<context-param>
+  <param-name>rails.env</param-name>
+  <param-value>production</param-value>
+</context-param>
+<context-param>
+  <param-name>jruby.min.runtimes</param-name>
+  <param-value>1</param-value>
+</context-param>
+<context-param>
+  <param-name>jruby.max.runtimes</param-name>
+  <param-value>1</param-value>
+</context-param>
 
-    <filter>
-      <filter-name>RackFilter</filter-name>
-      <filter-class>org.jruby.rack.RackFilter</filter-class>
-      <!-- optional filter configuration init-params : -->
-      <init-param>
-        <param-name>resetUnhandledResponse</param-name>
-        <param-value>true</param-value> <!-- true (default), false or buffer -->
-      </init-param>
-      <init-param>
-        <param-name>addsHtmlToPathInfo</param-name>
-        <param-value>true</param-value> <!-- true (default), false -->
-      </init-param>
-      <init-param>
-        <param-name>verifiesHtmlResource</param-name>
-        <param-value>false</param-value> <!-- true, false (default) -->
-      </init-param>
-    </filter>
-    <filter-mapping>
-      <filter-name>RackFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-    </filter-mapping>
+<filter>
+  <filter-name>RackFilter</filter-name>
+  <filter-class>org.jruby.rack.RackFilter</filter-class>
+  <!-- optional filter configuration init-params : -->
+  <init-param>
+    <param-name>resetUnhandledResponse</param-name>
+    <param-value>true</param-value> <!-- true (default), false or buffer -->
+  </init-param>
+  <init-param>
+    <param-name>addsHtmlToPathInfo</param-name>
+    <param-value>true</param-value> <!-- true (default), false -->
+  </init-param>
+  <init-param>
+    <param-name>verifiesHtmlResource</param-name>
+    <param-value>false</param-value> <!-- true, false (default) -->
+  </init-param>
+</filter>
+<filter-mapping>
+  <filter-name>RackFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
 
-    <listener>
-      <listener-class>org.jruby.rack.rails.RailsServletContextListener</listener-class>
-    </listener>
+<listener>
+  <listener-class>org.jruby.rack.rails.RailsServletContextListener</listener-class>
+</listener>
+```
 
 ### (Other) Rack Applications
 
@@ -88,34 +90,38 @@ The main difference when using a non-Rails Rack application is that JRuby-Rack
 looks for a "rackup" file named **config.ru** in  `WEB-INF/config.ru` or
 `WEB-INF/*/config.ru`. Here's a sample *web.xml* configuration :
 
-    <filter>
-      <filter-name>RackFilter</filter-name>
-      <filter-class>org.jruby.rack.RackFilter</filter-class>
-      <!-- optional filter configuration init-params (@see above) -->
-    </filter>
-    <filter-mapping>
-      <filter-name>RackFilter</filter-name>
-      <url-pattern>/*</url-pattern>
-    </filter-mapping>
+```xml
+<filter>
+  <filter-name>RackFilter</filter-name>
+  <filter-class>org.jruby.rack.RackFilter</filter-class>
+  <!-- optional filter configuration init-params (@see above) -->
+</filter>
+<filter-mapping>
+  <filter-name>RackFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
 
-    <listener>
-      <listener-class>org.jruby.rack.RackServletContextListener</listener-class>
-    </listener>
+<listener>
+  <listener-class>org.jruby.rack.RackServletContextListener</listener-class>
+</listener>
+```
 
 If you don't have a *config.ru* or don't want to include it in your web app, you
 can embed it directly in the *web.xml* as follows (using Sinatra as an example):
 
-    <context-param>
-      <param-name>rackup</param-name>
-      <param-value>
-        require 'rubygems'
-        gem 'sinatra', '~&gt; 1.3'
-        require './lib/app'
-        set :run, false
-        set :environment, :production
-        run Sinatra::Application
-      </param-value>
-    </context-param>
+```xml
+<context-param>
+  <param-name>rackup</param-name>
+  <param-value>
+    require 'rubygems'
+    gem 'sinatra', '~&gt; 1.3'
+    require './lib/app'
+    set :run, false
+    set :environment, :production
+    run Sinatra::Application
+  </param-value>
+</context-param>
+```
 
 Be sure to escape angle-brackets for XML !
 
@@ -271,13 +277,16 @@ provided *config.ru* the bundled (latest) version of Rack will get loaded.
 
 Use **rack.version** to specify the Rack gem version to be loaded before rackup :
 
-    # encoding: UTF-8
-    # rack.version: ~>2.2.10 (before code is loaded gem '~>2.2.10' will be called)
+```ruby
+# encoding: UTF-8
+# rack.version: ~>2.2.10 (before code is loaded gem '~>2.2.10' will be called)
+```
 
 Or the equivalent of doing `bundle exec rackup ...` if you're using Bundler :
 
-    # rack.version: bundler (requires 'bundler/setup' before loading the script)
-
+```ruby
+# rack.version: bundler (requires 'bundler/setup' before loading the script)
+```
 
 ## Logging
 
@@ -304,21 +313,27 @@ For those loggers that require a specific named logger, set it with the
 
 Checkout the JRuby-Rack code using [git](http://git-scm.com/) :
 
-    git clone git://github.com/jruby/jruby-rack.git
-    cd jruby-rack
+```shell
+git clone git://github.com/jruby/jruby-rack.git
+cd jruby-rack
+```
 
 Ensure you have [Maven](http://maven.apache.org/) installed.
 It is required for downloading jar artifacts that JRuby-Rack depends on.
 
 Build the .jar using Maven :
 
-    mvn install
+```shell
+mvn install
+```
 
 the generated jar should be located at **target/jruby-rack-*.jar**
 
 Alternatively use Rake, e.g. to build the gem (skipping specs) :
 
-    jruby -S rake clean gem SKIP_SPECS=true
+```shell
+jruby -S rake clean gem SKIP_SPECS=true
+```
 
 You can **not** use JRuby-Rack with Bundler directly from the git (or http) URL
 (`gem 'jruby-rack', :github => 'jruby/jruby-rack'`) since the included .jar file
