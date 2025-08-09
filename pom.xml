@@ -263,7 +263,7 @@
             <phase>test</phase>
             <goals><goal>rake</goal></goals>
             <configuration>
-              <args>speconly SKIP_SPECS=${maven.test.skip}</args>
+              <args>speconly SKIP_SPECS=${skipTests}</args>
             </configuration>
           </execution>
           <execution>
