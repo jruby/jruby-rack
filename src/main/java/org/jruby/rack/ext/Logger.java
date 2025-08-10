@@ -467,13 +467,6 @@ public class Logger extends RubyObject { // implements RackLogger
         logger.log( message );
     }
 
-    // (old) BufferedLogger API compatibility :
-
-    @JRubyMethod(name = "flush", alias = { "auto_flushing", "auto_flushing=" })
-    public IRubyObject stub(final ThreadContext context) {
-        return context.nil;
-    }
-
     /**
      * @deprecated Likely, no longer used at all, mostly for 1.1 compatibility.
      */
