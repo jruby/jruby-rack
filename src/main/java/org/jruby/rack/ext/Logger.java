@@ -59,6 +59,8 @@ public class Logger extends RubyObject { // implements RackLogger
 
     // Logger::Severity :
 
+    private static final int LEVEL_NOT_SET = -1;
+
     // Low-level information, mostly for developers.
     static final int DEBUG = 0;
     // Generic (useful) information about system operation.
@@ -72,9 +74,7 @@ public class Logger extends RubyObject { // implements RackLogger
     // An unknown message that should always be logged.
     static final int UNKNOWN = 5;
 
-    private static final int NOT_SET = -1;
-
-    private int level = NOT_SET;
+    private int level = LEVEL_NOT_SET;
 
     private RackLogger logger; // the "real" logger
     private IRubyObject formatter = null; // optional
@@ -132,14 +132,16 @@ public class Logger extends RubyObject { // implements RackLogger
 
     @JRubyMethod(name = "level", alias = "sev_threshold")
     public IRubyObject get_level(final ThreadContext context) {
-        if ( this.level == NOT_SET ) return context.nil;
-        return context.runtime.newFixnum(this.level);
+        return this.level == LEVEL_NOT_SET ? context.nil : context.runtime.newFixnum(this.level);
     }
 
     @JRubyMethod(name = "level=", alias = "sev_threshold=")
     public IRubyObject set_level(final ThreadContext context, final IRubyObject level) {
-        if ( level.isNil() ) { this.level = NOT_SET; return level; }
-        this.level = (int) level.convertToInteger("to_i").getLongValue();
+        if ( level.isNil() ) {
+            this.level = LEVEL_NOT_SET;
+            return level;
+        }
+        this.level = toInt(level);
         return get_level(context);
     }
 
@@ -182,10 +184,9 @@ public class Logger extends RubyObject { // implements RackLogger
         return isEnabledFor(severity, mapLevel(severity));
     }
 
-    private boolean isEnabledFor(final int severity,
-        final RackLogger.Level loggerLevel) {
+    private boolean isEnabledFor(final int severity, final RackLogger.Level loggerLevel) {
         if ( loggerLevel == null ) return level <= severity;
-        if ( level == NOT_SET ) return logger.isEnabled(loggerLevel);
+        if ( level == LEVEL_NOT_SET) return logger.isEnabled(loggerLevel);
         return level <= severity && logger.isEnabled(loggerLevel);
     }
 
@@ -337,9 +338,7 @@ public class Logger extends RubyObject { // implements RackLogger
     public IRubyObject add(final ThreadContext context, final IRubyObject[] args, final Block block) {
         int severity = UNKNOWN;
         final IRubyObject sev = args[0];
-        if ( ! sev.isNil() ) {
-            severity = (int) sev.convertToInteger("to_i").getLongValue();
-        }
+        if ( !sev.isNil() ) severity = toInt(sev);
         IRubyObject msg;
         if ( args.length > 1 ) {
             msg = args[1];
@@ -415,16 +414,14 @@ public class Logger extends RubyObject { // implements RackLogger
     private IRubyObject format_message(final ThreadContext context,
                                        final int severityVal, final long datetimeMillis,
                                        final IRubyObject progname, final IRubyObject msg) {
-        final IRubyObject severity =
-            RubyString.newStringShared(context.runtime, formatSeverity(severityVal));
+        final IRubyObject severity = RubyString.newStringShared(context.runtime, formatSeverity(severityVal));
         final RubyTime datetime = RubyTime.newTime(context.runtime, datetimeMillis);
         return format_message(context, new IRubyObject[] { severity, datetime, progname, msg });
     }
 
     @JRubyMethod(visibility = Visibility.PRIVATE)
     public IRubyObject format_severity(final ThreadContext context, final IRubyObject sev) {
-        final int severity = (int) sev.convertToInteger("to_i").getLongValue();
-        return RubyString.newStringShared(context.runtime, formatSeverity(severity));
+        return RubyString.newStringShared(context.runtime, formatSeverity(toInt(sev)));
     }
 
     private static final ByteList FORMATTED_DEBUG =
@@ -451,10 +448,13 @@ public class Logger extends RubyObject { // implements RackLogger
         return FORMATTED_ANY;
     }
 
+    private static int toInt(final IRubyObject level) {
+        return level.convertToInteger("to_i").getIntValue();
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> T toJava(Class<T> target) {
-        // NOTE: maybe this is not a good idea ?!
         if ( RackLogger.class == target ) return (T) logger;
         return super.toJava(target);
     }
