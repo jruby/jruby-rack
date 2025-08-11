@@ -39,6 +39,7 @@ public class RackServletContextListener implements ServletContextListener {
         this.factory = factory;
     }
 
+    @Override
     public void contextInitialized(final ServletContextEvent event) {
         final ServletContext context = event.getServletContext();
         final ServletRackConfig config = new ServletRackConfig(context);
@@ -54,6 +55,7 @@ public class RackServletContextListener implements ServletContextListener {
         }
     }
 
+    @Override
     public void contextDestroyed(final ServletContextEvent event) {
         final ServletContext context = event.getServletContext();
         final RackApplicationFactory factory =
