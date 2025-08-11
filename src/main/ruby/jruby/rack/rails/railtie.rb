@@ -20,7 +20,9 @@ module JRuby::Rack
         old_public  = Pathname.new(paths['public'].to_a.first)
         javascripts = Pathname.new(paths['public/javascripts'].to_a.first)
         stylesheets = Pathname.new(paths['public/stylesheets'].to_a.first)
-        paths['public'] = public.to_s; public = Pathname.new(public)
+        paths['public'] = public.to_s
+
+        public = Pathname.new(public)
         paths['public/javascripts'] = public.join(javascripts.relative_path_from(old_public)).to_s
         paths['public/stylesheets'] = public.join(stylesheets.relative_path_from(old_public)).to_s
       end
