@@ -88,7 +88,9 @@ describe "integration" do
 
   shared_examples_for 'a rails app', :shared => true do
 
-    let(:servlet_context) { new_servlet_context(base_path) }
+    let(:servlet_context) do
+      new_servlet_context(base_path).tap { |servlet_context| prepare_servlet_context(servlet_context) }
+    end
 
     it "initializes (pooling by default)" do
       listener = org.jruby.rack.rails.RailsServletContextListener.new
@@ -119,7 +121,64 @@ describe "integration" do
 
       expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
     end
+  end
 
+  describe 'rails 7.2', lib: :rails72 do
+
+    before(:all) do name = :rails72 # copy_gemfile :
+      FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/Gemfile")
+      FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/Gemfile.lock")
+      Dir.chdir File.join(STUB_DIR, name.to_s)
+    end
+
+    def base_path; "#{STUB_DIR}/rails72" end
+
+    it_should_behave_like 'a rails app'
+
+    context "initialized" do
+
+      before(:all) do
+        initialize_rails('production', "file://#{base_path}") do |servlet_context, _|
+          prepare_servlet_context(servlet_context)
+        end
+      end
+      after(:all)  { restore_rails }
+
+      it "loaded rack ~> 2.2" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rack.release)"
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '2.2'
+      end
+
+      it "booted with a servlet logger" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rails)"
+        should_eval_as_not_nil "Rails.logger"
+
+        # Rails 7.x wraps the default in a ActiveSupport::BroadcastLogger
+        should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::BroadcastLogger", true
+        should_eval_as_eql_to "Rails.logger.broadcasts.size", 1
+        should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? JRuby::Rack::Logger", true
+        # NOTE: TaggedLogging is a module that extends the logger instance:
+        should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? ActiveSupport::TaggedLogging", true
+
+        # production.rb: config.log_level = 'info'
+        should_eval_as_eql_to "Rails.logger.level", Logger::INFO
+        should_eval_as_eql_to "Rails.logger.broadcasts.first.level", Logger::INFO
+
+        unwrap_logger = "logger = Rails.logger.broadcasts.first;"
+        # sanity check logger-silence works:
+        should_eval_as_eql_to "#{unwrap_logger} logger.silence { logger.warn('from-integration-spec') }", true
+
+        should_eval_as_eql_to "#{unwrap_logger} logger.real_logger.is_a?(Java::OrgJrubyRackServlet::DefaultServletRackContext)", true
+      end
+
+      it "sets up public_path" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_eql_to "Rails.public_path.to_s", "#{base_path}/public"
+      end
+
+    end
   end
 
   def expect_to_have_monkey_patched_chunked
@@ -135,8 +194,6 @@ describe "integration" do
     should_eval_as_eql_to script, "1\nsecond"
   end
 
-  ENV_COPY = ENV.to_h
-
   def initialize_rails(env = nil, servlet_context = @servlet_context)
     if !servlet_context || servlet_context.is_a?(String)
       base = servlet_context.is_a?(String) ? servlet_context : nil
@@ -149,26 +206,23 @@ describe "integration" do
     servlet_context.addInitParameter("jruby.runtime.env", the_env)
 
     yield(servlet_context, listener) if block_given?
+
     listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
     @rack_context = servlet_context.getAttribute("rack.context")
     @rack_factory = servlet_context.getAttribute("rack.factory")
-    @servlet_context ||= servlet_context
-  end
-
-  def restore_rails
-    #ENV['RACK_ENV'] = ENV_COPY['RACK_ENV'] if ENV.key?('RACK_ENV')
-    #ENV['RAILS_ENV'] = ENV_COPY['RAILS_ENV'] if ENV.key?('RAILS_ENV')
+    @servlet_context = servlet_context
   end
 
   def new_servlet_context(base_path = nil)
     servlet_context = org.jruby.rack.mock.RackLoggingMockServletContext.new base_path
-    servlet_context.logger = raise_logger
-    prepare_servlet_context servlet_context
+    servlet_context.logger = raise_logger(:WARN).tap { |logger| logger.setEnabled(false) }
     servlet_context
   end
 
   def prepare_servlet_context(servlet_context)
     set_compat_version servlet_context
+    servlet_context.addInitParameter('rails.root', base_path)
+    servlet_context.addInitParameter('jruby.rack.layout_class', 'FileSystemLayout')
   end
 
   def set_compat_version(servlet_context = @servlet_context); require 'jruby'
@@ -176,14 +230,19 @@ describe "integration" do
     servlet_context.addInitParameter("jruby.compat.version", compat_version.to_s)
   end
 
-  private
-
   GEMFILES_DIR = File.expand_path('../../../gemfiles', STUB_DIR)
 
   def copy_gemfile(name)
     # e.g. 'rails30'
     FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile")
     FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile.lock")
+  end
+
+  ENV_COPY = ENV.to_h
+
+  def restore_rails
+    ENV['RACK_ENV'] = ENV_COPY['RACK_ENV'] if ENV.key?('RACK_ENV')
+    ENV['RAILS_ENV'] = ENV_COPY['RAILS_ENV'] if ENV.key?('RAILS_ENV')
   end
 
 end
