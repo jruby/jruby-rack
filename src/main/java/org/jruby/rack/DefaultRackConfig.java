@@ -195,12 +195,6 @@ public class DefaultRackConfig implements RackConfig {
                 throw new RackException("could not create logger: '" + loggerClass + "'", e.getTargetException());
             }
         }
-        //catch (ClassNotFoundException e) {
-        //    if ( ! isQuiet() ) {
-        //        err.println("failed creating logger: '" + loggerClass + "'");
-        //        e.printStackTrace(err);
-        //    }
-        //}
         catch (Exception e) {
             if ( ! isQuiet() ) {
                 err.println("failed creating logger: '" + loggerClass + "'");
