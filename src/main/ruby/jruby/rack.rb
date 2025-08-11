@@ -10,12 +10,7 @@ require 'java'
 module JRuby
   module Rack
 
-    # @deprecated use {JRuby::Rack::Helpers#silence_warnings} instead
-    def self.silence_warnings(&block)
-      Helpers.silence_warnings(&block)
-    end
-
-    def self.booter; @booter; end # :nodoc TODO do we need to keep after boot! ?!
+    def self.booter; @booter end # :nodoc TODO do we need to keep after boot! ?!
 
     class << self
 
