@@ -9,10 +9,9 @@ require 'java'
 
 module JRuby
   module Rack
-
-    def self.booter; @booter end # :nodoc TODO do we need to keep after boot! ?!
-
     class << self
+      # @private the (last) `JRuby::Rack::Booter` that performed `boot!` (used with tests)
+      attr_reader :booter
 
       # @return [String] the application (root) path.
       # @see JRuby::Rack::Booter#export_global_settings
@@ -44,24 +43,23 @@ module JRuby
 
       # Sets the ("global") context for `JRuby::Rack`.
       def context=(context)
-        @context = context; @@logger = nil # reset the logger
+        @context = context
+        @@logger = nil # reset the logger
       end
 
       @@logger = nil
       # Returns a {Logger} instance that uses the {#context} as a logger.
-      def logger; @@logger ||= Logger.new(context!) end
-      # @private
+      def logger; @@logger ||= Logger.new(context) end
+      # @private only used with tests
       def logger=(logger); @@logger = logger end
 
       private
 
       # @deprecated Mostly for compatibility - not used anymore.
-      def logdev; ServletLog.new(context!) end; alias servlet_log logdev
-
-      def context!; context || raise('no context available') end
+      def logdev; ServletLog.new(context) end
+      alias servlet_log logdev
 
     end
-
   end
 end
 
