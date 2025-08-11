@@ -34,8 +34,8 @@ module JRuby::Rack
       app.config.logger ||= begin
         logger = JRuby::Rack.logger
         config = app.config
-        log_level = config.log_level || :info
-        logger.level = logger.class.const_get(log_level.to_s.upcase)
+        log_level = config.log_level
+        logger.level = logger.class.const_get(log_level.to_s.upcase) if log_level
         log_formatter = config.log_formatter if config.respond_to?(:log_formatter)
         logger.formatter = log_formatter if log_formatter && logger.respond_to?(:formatter=)
         require 'active_support/tagged_logging' unless defined?(ActiveSupport::TaggedLogging)
