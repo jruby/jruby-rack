@@ -123,6 +123,10 @@ public class Logger extends RubyObject { // implements RackLogger
 
     @JRubyMethod
     public IRubyObject real_logger(final ThreadContext context) {
+        RackLogger logger = this.logger;
+        if (logger instanceof RackLogger.DelegatingLogger) {
+            logger = ((RackLogger.DelegatingLogger) logger).unwrapLogger();
+        }
         return JavaEmbedUtils.javaToRuby(context.runtime, logger);
     }
 
@@ -357,8 +361,7 @@ public class Logger extends RubyObject { // implements RackLogger
         return context.runtime.newBoolean( add(UNKNOWN, context, msg, block) );
     }
 
-    private boolean add(final int severity, final ThreadContext context,
-        IRubyObject msg, final Block block) {
+    private boolean add(final int severity, final ThreadContext context, IRubyObject msg, final Block block) {
         // severity ||= UNKNOWN
         final RackLogger.Level loggerLevel = mapLevel(severity);
 
@@ -455,7 +458,7 @@ public class Logger extends RubyObject { // implements RackLogger
     @SuppressWarnings("unchecked")
     @Override
     public <T> T toJava(Class<T> target) {
-        if ( RackLogger.class == target ) return (T) logger;
+        if ( RackLogger.class.isAssignableFrom(target) && target.isInstance(logger) ) return (T) logger;
         return super.toJava(target);
     }
 

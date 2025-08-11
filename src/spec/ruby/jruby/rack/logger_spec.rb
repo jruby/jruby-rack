@@ -54,7 +54,7 @@ describe JRuby::Rack::Logger do
     logger = JRuby::Rack::Logger.new
     logger.debug?
     logger.debug 'hogy basza meg a zold tucsok!'
-    expect( logger.real_logger ).to be rack_context
+    expect( logger.to_java(org.jruby.rack.RackLogger) ).to be rack_context
   end
 
   it 'delegates level check (when level is not set)' do
