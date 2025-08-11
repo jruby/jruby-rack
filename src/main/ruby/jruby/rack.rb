@@ -16,10 +16,7 @@ module JRuby
       # @return [String] the application (root) path.
       # @see JRuby::Rack::Booter#export_global_settings
       def app_path
-        @app_path ||= begin
-          path = context.getRealPath('/') if context
-          path || Dir.pwd
-        end
+        @app_path ||= (context&.getRealPath('/') || Dir.pwd)
       end
       # Set the application (root) path.
       # @see JRuby::Rack::Booter
