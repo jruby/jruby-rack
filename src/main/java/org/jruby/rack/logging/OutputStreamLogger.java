@@ -113,12 +113,7 @@ public class OutputStreamLogger extends RackLogger.Base {
     }
 
     public static void printMessage(final PrintStream out, final CharSequence message) {
-        if ( message.charAt(message.length() - 1) == '\n' ) {
-            out.print(message);
-        }
-        else {
-            out.println(message);
-        }
+        out.println(message);
     }
 
 }

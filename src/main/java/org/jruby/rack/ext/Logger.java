@@ -39,7 +39,6 @@ import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackLogger;
 import org.jruby.rack.logging.ServletContextLogger;
-import org.jruby.rack.util.ExceptionUtils;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
@@ -382,10 +381,9 @@ public class Logger extends RubyObject { // implements RackLogger
             final long datetime = System.currentTimeMillis();
             msg = format_message(context, severity, datetime, progname, msg);
         }
-        else if ( msg instanceof RubyException ) { // print backtrace for error
-            final RubyException error = (RubyException) msg;
-            error.prepareIntegratedBacktrace(context, null);
-            doLog( loggerLevel, ExceptionUtils.formatError(error) );
+        else if ( msg instanceof RubyException ) {
+            final RubyException ex = (RubyException) msg;
+            doLog( loggerLevel, ex.toThrowable() );
             return true;
         }
         // @logdev.write(format_message(format_severity(severity), Time.now, progname, message))
@@ -462,12 +460,16 @@ public class Logger extends RubyObject { // implements RackLogger
         return super.toJava(target);
     }
 
+    private void doLog(RackLogger.Level level, Throwable ex) {
+        logger.log(level, "", ex);
+    }
+
     private void doLog(RackLogger.Level level, CharSequence message) {
-        logger.log( level, message );
+        logger.log(level, message);
     }
 
     private void doLog(RubyString message) {
-        logger.log( message );
+        logger.log(message);
     }
 
     /**

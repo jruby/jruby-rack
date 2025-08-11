@@ -97,6 +97,15 @@ describe JRuby::Rack::Logger do
     expect( real_logger.formatting? ).to be false
   end
 
+  it 'logs exception with trace when passed as argument' do
+    begin
+      raise IndexError.new('TEST')
+    rescue => e
+      logger.debug(e)
+    end
+    expect( real_logger.logged_content ).to match /^DEBUG.*?IndexError.*?TEST.*?at.*?logger_spec.rb.*/m
+  end
+
   it 'handles constant resolution (for Rails compatibility)' do
     expect( logger.class::DEBUG ).to eql 0
     expect( logger.class::FATAL ).to eql 4
