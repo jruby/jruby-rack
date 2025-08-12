@@ -279,7 +279,7 @@ module Rack
             @servlet_env.servlet_context # ServletRequest#getServletContext()
           else
             if @servlet_env.respond_to?(:context) &&
-                @servlet_env.context.is_a?(jakarta.servlet.ServletContext)
+                @servlet_env.context.is_a?(Java::JakartaServlet::ServletContext)
               @servlet_env.context
             else
               JRuby::Rack.context ||

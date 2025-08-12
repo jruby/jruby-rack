@@ -56,7 +56,7 @@ module SharedHelpers
 
   def servlet_30?
     return @@servlet_30 unless @@servlet_30.nil?
-    @@servlet_30 = !! ( Java::jakarta.servlet.AsyncContext rescue nil )
+    @@servlet_30 = !! ( Java::JakartaServlet::AsyncContext rescue nil )
   end
   private :servlet_30?
 
