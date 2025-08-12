@@ -42,18 +42,24 @@ public class UnmappedRackFilter extends AbstractFilter {
 
     private boolean responseHandledByDefault = true;
 
-    private static final Collection<Integer> RESPONSE_NOT_HANDLED_STATUSES = Set.of(
-            404,
-            403, // 403 due to containers not supporting PUT/DELETE correctly (Tomcat 6)
-            405, // 405 returned by Jetty 7/8 on PUT/DELETE requests by default
-            501  // 501 is returned for non standard http verbs like PATCH
-    );
+    private static final Collection<Integer> RESPONSE_NOT_HANDLED_STATUSES;
+    static {
+        final Set<Integer> statuses = new HashSet<>(8, 1);
+        statuses.add(404);
+        // 403 due containers not supporting PUT/DELETE correctly (Tomcat 6)
+        statuses.add(403);
+        // 405 returned by Jetty 7/8 on PUT/DELETE requests by default
+        statuses.add(405);
+        // 501 is returned for non standard http verbs like PATCH
+        statuses.add(501);
+        RESPONSE_NOT_HANDLED_STATUSES = Collections.unmodifiableSet(statuses);
+    }
 
     private Collection<Integer> responseNotHandledStatuses = RESPONSE_NOT_HANDLED_STATUSES;
     private RackContext context;
     private RackDispatcher dispatcher;
 
-    public UnmappedRackFilter() { /** constructor used by container */ }
+    public UnmappedRackFilter() { /* constructor used by container */ }
 
     /**
      * Dependency-injected constructor for testing
@@ -85,7 +91,7 @@ public class UnmappedRackFilter extends AbstractFilter {
                     map(String::trim)
                     .filter(status -> !status.isEmpty())
                     .map(Integer::parseInt)
-                    .collect(Collectors.toUnmodifiableSet());
+                    .collect(Collectors.toSet());
         }
         // ResponseCapture.handledByDefault true/false (true by default)
         value = config.getInitParameter("responseHandledByDefault");
