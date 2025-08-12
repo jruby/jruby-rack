@@ -60,12 +60,11 @@ module SharedHelpers
   end
   private :servlet_30?
 
-  def rack_release(at_least = nil)
-    require 'rack'; release = Rack.release
-    release = '1.6' if Gem.loaded_specs['rack'].version.to_s == '1.6.0'
-    at_least.nil? ? release : release >= at_least
+  def rack_release_at_least?(at_least = nil)
+    require 'rack';
+    at_least ? Rack.release >= at_least : true
   end
-  private :rack_release
+  private :rack_release_at_least?
 
   def raise_logger(level = 'WARN')
     org.jruby.rack.logging.RaiseLogger.new(level, JRuby.runtime.out)
