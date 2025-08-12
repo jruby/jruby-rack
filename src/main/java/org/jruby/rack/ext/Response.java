@@ -23,43 +23,23 @@
  */
 package org.jruby.rack.ext;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.util.Map;
-
-import org.jruby.Ruby;
-import org.jruby.RubyArray;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyClass;
-import org.jruby.RubyHash;
-import org.jruby.RubyIO;
-import org.jruby.RubyNumeric;
-import org.jruby.RubyObject;
-import org.jruby.RubyString;
-import org.jruby.RubyTime;
+import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.rack.RackException;
 import org.jruby.rack.RackResponse;
 import org.jruby.rack.RackResponseEnvironment;
-import org.jruby.runtime.Block;
-import org.jruby.runtime.BlockBody;
-import org.jruby.runtime.Helpers;
-import org.jruby.runtime.JavaInternalBlockBody;
-import org.jruby.runtime.ObjectAllocator;
-import org.jruby.runtime.Signature;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.Visibility;
+import org.jruby.runtime.*;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.*;
+import java.util.Map;
 
 /**
  * JRuby::Rack::Response - the bridge from a Rack response into a (Java)
@@ -227,7 +207,8 @@ public class Response extends RubyObject implements RackResponse {
      */
     @JRubyMethod(required = 1)
     public IRubyObject initialize(final ThreadContext context, final IRubyObject arg) {
-        if (arg instanceof RubyArray<?> arr) {
+        if ( arg instanceof RubyArray ) {
+            final RubyArray<?> arr = (RubyArray<?>) arg;
             if ( arr.size() < 3 ) {
                 throw context.runtime.newArgumentError("expected 3 array elements (rack-respose)");
             }

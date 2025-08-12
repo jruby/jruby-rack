@@ -7,21 +7,11 @@
  */
 package org.jruby.rack.servlet;
 
+import jakarta.servlet.*;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackLogger;
-
-import jakarta.servlet.Filter;
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.Servlet;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-// 3.0
-import jakarta.servlet.FilterRegistration;
-import jakarta.servlet.ServletRegistration;
-import jakarta.servlet.SessionCookieConfig;
-import jakarta.servlet.SessionTrackingMode;
-import jakarta.servlet.descriptor.JspConfigDescriptor;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -150,6 +140,21 @@ public class DefaultServletRackContext implements ServletRackContext, RackLogger
         return context.getNamedDispatcher(name);
     }
 
+    @Override @Deprecated
+    public Servlet getServlet(String name) throws ServletException {
+        return context.getServlet(name);
+    }
+
+    @Override @Deprecated
+    public Enumeration<Servlet> getServlets() {
+        return context.getServlets();
+    }
+
+    @Override @Deprecated
+    public Enumeration<String> getServletNames() {
+        return context.getServletNames();
+    }
+
     @Override
     public String getServerInfo() {
         return context.getServerInfo();
@@ -186,6 +191,10 @@ public class DefaultServletRackContext implements ServletRackContext, RackLogger
     }
 
     // RackLogger
+    @Override @Deprecated
+    public void log(Exception e, String msg) {
+        logger.log(msg, e);
+    }
 
     @Override
     public boolean isEnabled(Level level) {

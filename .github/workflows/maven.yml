@@ -8,7 +8,7 @@ on:
 
 env:
   # Default versions for canonical release build
-  DEFAULT_JAVA_VERSION: '17'
+  DEFAULT_JAVA_VERSION: '8'
   DEFAULT_JRUBY_VERSION: '9.4.13.0' # Should match pom.xml <jruby.version> property (AND a version inside the test matrix)
 
 jobs:
@@ -19,8 +19,12 @@ jobs:
     strategy:
       matrix:
         jruby_version: [ '9.4.13.0', '10.0.2.0' ]
-        java_version: [ '17', '21' ]
+        java_version: [ '8', '11', '17', '21' ]
         exclude:
+          - jruby_version: '10.0.2.0'
+            java_version: '8'  # JRuby 10 requires Java 21
+          - jruby_version: '10.0.2.0'
+            java_version: '11' # JRuby 10 requires Java 21
           - jruby_version: '10.0.2.0'
             java_version: '17' # JRuby 10 requires Java 21
       fail-fast: false
@@ -51,11 +55,15 @@ jobs:
     strategy:
       matrix:
         jruby_version: [ '9.4.13.0', '10.0.2.0' ]
-        java_version: [ '17', '21' ]
+        java_version: [ '8', '11', '17', '21' ]
         appraisal: [ 'rails50', 'rails52', 'rails60', 'rails61', 'rails70', 'rails71', 'rails72', 'rails80' ]
         exclude:
           - jruby_version: '9.4.13.0'
             appraisal: 'rails80' # Requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
+          - jruby_version: '10.0.2.0'
+            java_version: '8'  # JRuby 10 requires Java 21
+          - jruby_version: '10.0.2.0'
+            java_version: '11' # JRuby 10 requires Java 21
           - jruby_version: '10.0.2.0'
             java_version: '17' # JRuby 10 requires Java 21
       fail-fast: false

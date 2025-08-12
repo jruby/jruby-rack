@@ -23,9 +23,9 @@
  */
 package org.jruby.rack.logging;
 
-import java.util.logging.Logger;
-
 import org.jruby.rack.RackLogger;
+
+import java.util.logging.Logger;
 
 /**
  * java.util.logging based logger implementation
@@ -76,12 +76,14 @@ public class JulLogger extends RackLogger.Base {
     private static java.util.logging.Level mapLevel(
         final Level level, java.util.logging.Level defaultLevel) {
         if ( level == null ) { return defaultLevel; }
-        return switch (level) {
-            case DEBUG -> java.util.logging.Level.FINE;
-            case INFO -> java.util.logging.Level.INFO;
-            case WARN -> java.util.logging.Level.WARNING;
-            case ERROR, FATAL -> java.util.logging.Level.SEVERE;
-        };
+        switch ( level ) {
+            case DEBUG: return java.util.logging.Level.FINE;
+            case INFO:  return java.util.logging.Level.INFO;
+            case WARN:  return java.util.logging.Level.WARNING;
+            case ERROR: return java.util.logging.Level.SEVERE;
+            case FATAL: return java.util.logging.Level.SEVERE;
+        }
+        return defaultLevel;
     }
 
     @Override

@@ -8,6 +8,17 @@
 package org.jruby.rack;
 
 
+import org.jruby.Ruby;
+import org.jruby.RubyInstanceConfig;
+import org.jruby.exceptions.RaiseException;
+import org.jruby.javasupport.JavaUtil;
+import org.jruby.rack.servlet.RewindableInputStream;
+import org.jruby.rack.servlet.ServletRackContext;
+import org.jruby.rack.util.IOHelpers;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.cli.OutputStrings;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,19 +27,8 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
-import org.jruby.Ruby;
-import org.jruby.RubyInstanceConfig;
-import org.jruby.exceptions.RaiseException;
-import org.jruby.javasupport.JavaUtil;
-import org.jruby.rack.servlet.ServletRackContext;
-import org.jruby.rack.servlet.RewindableInputStream;
-import org.jruby.rack.util.IOHelpers;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.util.cli.OutputStrings;
-
-import static org.jruby.rack.RackLogger.Level.*;
 import static org.jruby.rack.DefaultRackConfig.isIgnoreRUBYOPT;
+import static org.jruby.rack.RackLogger.Level.*;
 
 /**
  * Default application factory creates a new application instance on each
@@ -190,10 +190,9 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
         }
         if (errorApp == null) {
-            errorApp = """
-                    require 'jruby/rack/error_app'
-                    use JRuby::Rack::ErrorApp::ShowStatus
-                    run JRuby::Rack::ErrorApp.new""";
+            errorApp = "require 'jruby/rack/error_app' \n" +
+            "use JRuby::Rack::ErrorApp::ShowStatus \n" +
+            "run JRuby::Rack::ErrorApp.new";
         }
         runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
         return createRackServletWrapper(runtime, errorApp, errorAppPath);

@@ -7,21 +7,18 @@
 
 package org.jruby.rack.fake;
 
-import java.io.IOException;
-import java.util.Enumeration;
-
 import jakarta.el.ELContext;
-import jakarta.servlet.Servlet;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.jsp.JspWriter;
 import jakarta.servlet.jsp.PageContext;
+import jakarta.servlet.jsp.el.ExpressionEvaluator;
+import jakarta.servlet.jsp.el.VariableResolver;
+
+import java.io.IOException;
+import java.util.Enumeration;
 
 /**
  * Currently only used as a mock for testing.
@@ -155,6 +152,16 @@ public class FakePageContext extends PageContext {
 
     @Override
     public void include(String arg0, boolean arg1) throws ServletException, IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override @Deprecated
+    public ExpressionEvaluator getExpressionEvaluator() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override @Deprecated
+    public VariableResolver getVariableResolver() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
