@@ -1,6 +1,9 @@
+## 2.0.0 (UNRELEASED)
+
+- Support Jakarta Servlet API 5.0 (JEE 9)
+
 ## 1.3.0 (UNRELEASED) 
 
-- Require Java 11 or later
 - Support Javax Servlet API 4.0 (JEE 8)
 - Adds basic compatibility with JRuby 10.0
 - Drop support for JRuby 9.3
