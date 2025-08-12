@@ -20,7 +20,9 @@ module JRuby::Rack
         old_public  = Pathname.new(paths['public'].to_a.first)
         javascripts = Pathname.new(paths['public/javascripts'].to_a.first)
         stylesheets = Pathname.new(paths['public/stylesheets'].to_a.first)
-        paths['public'] = public.to_s; public = Pathname.new(public)
+        paths['public'] = public.to_s
+
+        public = Pathname.new(public)
         paths['public/javascripts'] = public.join(javascripts.relative_path_from(old_public)).to_s
         paths['public/stylesheets'] = public.join(stylesheets.relative_path_from(old_public)).to_s
       end
@@ -30,16 +32,21 @@ module JRuby::Rack
 
     initializer 'set_servlet_logger', :before => :initialize_logger do |app|
       app.config.logger ||= begin
-        logger = JRuby::Rack.logger
+        require 'jruby/rack/rails/rails_logger'
+        logger = JRuby::Rack::RailsLogger.new(JRuby::Rack.context)
         config = app.config
-        log_level = config.log_level || :info
-        logger.level = logger.class.const_get(log_level.to_s.upcase)
+        log_level = config.log_level
+        # NOTE: not much sense to set the level to a default (e.g. :info), esp. with Java logging backends
+        # one could also argue we should disable silencing
+        #
+        #   JRuby::Rack::RailsLogger.silencer = false
+        #
+        # although that would potentially only make sense when Java (jruby.rack.logging) backend is used.
+        logger.level = logger.class.const_get(log_level.to_s.upcase) if log_level
         log_formatter = config.log_formatter if config.respond_to?(:log_formatter)
         logger.formatter = log_formatter if log_formatter && logger.respond_to?(:formatter=)
         require 'active_support/tagged_logging' unless defined?(ActiveSupport::TaggedLogging)
-        logger = ActiveSupport::TaggedLogging.new(logger) # returns a logger.clone
-        logger.singleton_class.send(:include, ActiveSupport::LoggerSilence) if defined?(ActiveSupport::LoggerSilence)
-        logger
+        ActiveSupport::TaggedLogging.new(logger) # returns a logger.clone
       end
     end
 

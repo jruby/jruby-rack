@@ -221,10 +221,6 @@ module JRuby::Rack
 
     private
 
-    def silence_warnings(&block)
-      Helpers.silence_warnings(&block)
-    end
-
     def path_to_file(url)
       url.toURI.toString
     rescue Java::JavaNet::URISyntaxException

@@ -54,7 +54,7 @@ describe JRuby::Rack::Logger do
     logger = JRuby::Rack::Logger.new
     logger.debug?
     logger.debug 'hogy basza meg a zold tucsok!'
-    expect( logger.real_logger ).to be rack_context
+    expect( logger.to_java(org.jruby.rack.RackLogger) ).to be rack_context
   end
 
   it 'delegates level check (when level is not set)' do
@@ -95,6 +95,15 @@ describe JRuby::Rack::Logger do
     expect( real_logger.logged_content ).to eql "W hogy basza meg a zold tucsok!\n"
 
     expect( real_logger.formatting? ).to be false
+  end
+
+  it 'logs exception with trace when passed as argument' do
+    begin
+      raise IndexError.new('TEST')
+    rescue => e
+      logger.debug(e)
+    end
+    expect( real_logger.logged_content ).to match /^DEBUG.*?IndexError.*?TEST.*?at.*?logger_spec.rb.*/m
   end
 
   it 'handles constant resolution (for Rails compatibility)' do

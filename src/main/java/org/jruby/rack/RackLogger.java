@@ -47,4 +47,8 @@ public interface RackLogger {
         public boolean isFormatting() { return false; }
         public void setFormatting(boolean flag) { /* noop */ }
     }
+
+    interface DelegatingLogger extends RackLogger {
+        RackLogger unwrapLogger();
+    }
 }

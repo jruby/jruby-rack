@@ -198,11 +198,8 @@ describe JRuby::Rack::RailsBooter do
       end
 
       it "gets set as config.logger (wrapped with tagged logging and logger_silence)" do
-        logger = JRuby::Rack::Logger.new STDERR
-        @config.stub(:log_level).and_return(:info)
+        @config.stub(:log_level).and_return(nil)
         @config.stub(:log_formatter).and_return(nil)
-
-        JRuby::Rack.should_receive(:logger).and_return(logger)
 
         log_initializer.last.call(@app)
         rails_logger = @app.config.logger
@@ -214,20 +211,22 @@ describe JRuby::Rack::RailsBooter do
           expect(rails_logger.silencer).to be true
           # sanity check silence works:
           value_returned = rails_logger.silence(Logger::WARN) { |logger| logger.class.name }
-          expect(value_returned).to eql('JRuby::Rack::Logger')
+          expect(value_returned).to eql('JRuby::Rack::RailsLogger')
         end
+        expect(rails_logger.level).to be(nil) # should not be set unless user configured `config.log_level`
       end
 
       it "has a configurable log level" do
-        @config.instance_eval do
-          def logger; @logger; end
-          def logger=(logger); @logger = logger; end
-        end
+        # @config.instance_eval do
+        #   def logger; @logger; end
+        #   def logger=(logger); @logger = logger; end
+        # end
         @config.stub(:log_formatter).and_return(nil)
         @config.should_receive(:log_level).and_return(:error)
 
-        log_initializer.last.call(@app) ##
-        @app.config.logger.level.should be(JRuby::Rack::Logger::ERROR)
+        log_initializer.last.call(@app)
+        rails_logger = @app.config.logger
+        expect(rails_logger.level).to be(JRuby::Rack::Logger::ERROR)
       end
 
       private

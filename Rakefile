@@ -108,7 +108,7 @@ task :speconly => [ :resources, :test_resources ] do
   if ENV['SKIP_SPECS'].to_s == 'true'
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
-    opts = ENV['SPEC_OPTS'] ? ENV['SPEC_OPTS'] : %q{ --format documentation --color }
+    opts = ENV['SPEC_OPTS'] ? ENV['SPEC_OPTS'] : %q{ --format documentation --force-color }
     spec = ENV['SPEC'] || File.join(Dir.getwd, "src/spec/ruby/**/*_spec.rb")
     opts = opts.split(' ').push *FileList[spec].to_a
     ruby = ENV['RUBY'] || 'jruby'
@@ -165,7 +165,7 @@ end
 
 desc "Build the jruby-rack-#{GEM_VERSION}.gem"
 task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do
-  Rake::Task['spec'].invoke unless ENV['SKIP_SPEC'] == 'true'
+  Rake::Task['spec'].invoke unless ENV['SKIP_SPECS'] == 'true'
   cp FileList["History.md", "LICENSE.txt", "README.md"], "target/gem"
   cp target_jar, "target/gem/lib"
   if (jars = FileList["target/gem/lib/*.jar"].to_a).size > 1

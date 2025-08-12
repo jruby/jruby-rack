@@ -35,7 +35,7 @@ import java.util.Set;
  *
  * @author nicksieger
  */
-public class DefaultServletRackContext implements ServletRackContext {
+public class DefaultServletRackContext implements ServletRackContext, RackLogger.DelegatingLogger {
 
     private final RackConfig config;
     private final ServletContext context;
@@ -210,6 +210,11 @@ public class DefaultServletRackContext implements ServletRackContext {
     @Override
     public void log(Level level, CharSequence message, Throwable e) {
         logger.log(level, message, e);
+    }
+
+    @Override
+    public RackLogger unwrapLogger() {
+        return logger;
     }
 
     @Override

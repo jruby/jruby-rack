@@ -26,13 +26,8 @@ package org.jruby.rack.util;
 import java.io.IOException;
 
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyClass;
-import org.jruby.RubyException;
-import org.jruby.RubyString;
 import org.jruby.exceptions.RaiseException;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  *
@@ -54,53 +49,10 @@ public abstract class ExceptionUtils {
         return raise;
     }
 
-    private static RaiseException newRaiseException(final Ruby runtime,
-        final RubyClass errorClass, final Throwable cause) {
+    private static RaiseException newRaiseException(final Ruby runtime, final RubyClass errorClass, final Throwable cause) {
         final String message = cause.getMessage();
         RaiseException raise = RaiseException.from(runtime, errorClass, message);
         raise.initCause(cause);
         return raise;
     }
-
-    public static CharSequence formatError(final RubyException error) {
-        final StringBuilder out = new StringBuilder(128);
-        appendError(error, out); return out;
-    }
-
-    private static void appendInspect(final RubyException error, final StringBuilder out) {
-        final RubyClass errorClass = error.getMetaClass().getRealClass();
-        if ( error.getMessage() != null && ! error.getMessage().isNil() ) {
-            out.append("#<").append( errorClass.getName() ).append(": ");
-            out.append( error.getMessage().asString() ).append('>');
-        }
-        else {
-            out.append( errorClass.getName() );
-        }
-    }
-
-    public static void appendError(final RubyException error, final StringBuilder out) {
-        appendInspect(error, out);
-        appendBacktrace(error, out.append('\n'));
-    }
-
-    public static void appendBacktrace(final RubyException error, final StringBuilder out) {
-        appendBacktrace(error, 0, out);
-    }
-
-    public static void appendBacktrace(final RubyException error, final int skip,
-        final StringBuilder out) {
-        final ThreadContext context = error.getRuntime().getCurrentContext();
-        final IRubyObject backtrace = error.callMethod(context, "backtrace");
-        if ( ! backtrace.isNil() ) {
-            final RubyArray<?> trace = backtrace.convertToArray();
-            out.ensureCapacity(out.length() + 24 * trace.getLength());
-            for ( int i = skip; i < trace.getLength(); i++ ) {
-                IRubyObject stackTraceLine = trace.eltInternal(i);
-                if ( stackTraceLine instanceof RubyString ) {
-                    out.append("\tfrom ").append(stackTraceLine).append('\n');
-                }
-            }
-        }
-    }
-
 }

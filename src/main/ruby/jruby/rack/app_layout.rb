@@ -56,7 +56,8 @@ module JRuby
 
       def initialize(context)
         super
-        $0 = File.join(app_path, 'web.xml')
+        path = app_path
+        $0 = path ? File.join(path, 'web.xml') : 'web.xml'
       end
 
       # Checks the **app.root** (and **rails.root**) init parameter.

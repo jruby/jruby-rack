@@ -166,12 +166,6 @@ public class DefaultRackConfig implements RackConfig {
                 throw new RackException("could not create logger: '" + loggerClass + "'", e.getTargetException());
             }
         }
-        //catch (ClassNotFoundException e) {
-        //    if ( ! isQuiet() ) {
-        //        err.println("failed creating logger: '" + loggerClass + "'");
-        //        e.printStackTrace(err);
-        //    }
-        //}
         catch (Exception e) {
             if ( ! isQuiet() ) {
                 err.println("failed creating logger: '" + loggerClass + "'");
@@ -411,6 +405,7 @@ public class DefaultRackConfig implements RackConfig {
         final Map<String,String> loggerTypes = new HashMap<>(8);
         loggerTypes.put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
+        loggerTypes.put("log4j", "org.jruby.rack.logging.Log4jLogger");
         loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");
         loggerTypes.put("jul", "org.jruby.rack.logging.JulLogger");
         return loggerTypes;
