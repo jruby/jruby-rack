@@ -14,7 +14,7 @@ For more information on Rack, visit http://rack.github.io/.
 | JRuby-Rack Version                                           | Status     | JRuby Compat | Java Compat | Target Servlet API | Target Java EE | Notes                                             |
 |--------------------------------------------------------------|------------|--------------|-------------|--------------------|----------------|---------------------------------------------------|
 | 2.0.x (_planned_)                                            | Dev        | 9.4 → 10.0   | Java 17+    | 5.0                | Jakarta EE 9   |                                                   |
-| 1.3.x (master, _unreleased_)                                 | Dev        | 9.4 → 10.0   | Java 11+    | 4.0                | Java EE 8      |                                                   |
+| 1.3.x (master, _unreleased_)                                 | Dev        | 9.4 → 10.0   | Java 8+     | 4.0                | Java EE 8      |                                                   |
 | [1.2.x](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained | 9.3 → 9.4    | Java 8+     | 3.0                | Java EE 6      | Servlet 3.1 → 4.0 tested OK with some containers. |
 | [1.1.x](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL        | 1.6 → 9.4    | Java 8+     | 2.5                | Java EE 5      | Servlet 3.0 → 4.0 tested OK with some containers. |
 

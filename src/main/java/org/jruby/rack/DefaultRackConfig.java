@@ -382,7 +382,7 @@ public class DefaultRackConfig implements RackConfig {
                 for ( final String entry : entries ) {
                     String[] pair = entry.split("=", 2);
                     if ( pair.length == 1 ) { // no = separator
-                        if ( entry.isBlank() ) continue;
+                        if ( entry.trim().isEmpty() ) continue;
                         if ( lastKey == null ) continue; // missing key
                         map.put( lastKey, lastVal = lastVal + ',' + entry );
                     }
