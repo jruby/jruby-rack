@@ -24,10 +24,11 @@ import java.util.StringTokenizer;
 
 /**
  * @deprecated As of Java(tm) Servlet API 2.3. These methods were only useful with the default encoding and have been
- *             moved to the request interfaces. Propagated to jruby-racl from old Javax Servlet API <= 4.0.
+ *             moved to the request interfaces.
+ * @implNote   Propagated to jruby-rack from old Javax Servlet API <= 4.0.
  *
  */
-@Deprecated()
+@Deprecated
 public class HttpUtils {
 
     private HttpUtils() {}
