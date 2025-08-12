@@ -325,14 +325,6 @@ describe Rack::Handler::Servlet do
     it "exposes the servlet context xxxx" do
       env = servlet.create_env @servlet_env
       expect( env['java.servlet_context'] ).to be_a Java::JakartaServlet::ServletContext
-      # Failure/Error: env['java.servlet_context'].should == @servlet_context
-      # NoMethodError:
-      #  private method `pretty_print' called for #<RSpec::Mocks::ErrorGenerator:0x1e9d469>
-      #begin
-      #  env['java.servlet_context'].should == @servlet_context
-      #rescue NoMethodError
-      #  ( env['java.servlet_context'] == @servlet_context ).should be true
-      #end
     end
 
     it "exposes the rack context" do
@@ -371,7 +363,7 @@ describe Rack::Handler::Servlet do
     it "sets attributes with false/null values" do
       @servlet_request.addHeader "Content-Type", "text/plain"
       @servlet_request.setContentType 'text/html'
-      @servlet_request.setContent ('0' * 100).to_java_bytes rescue nil # 1.6.8 BUG
+      @servlet_request.setContent ('0' * 100).to_java_bytes
       @servlet_request.setAttribute 'org.false', false
       @servlet_request.setAttribute 'null.attr', nil
       @servlet_request.setAttribute 'the.truth', java.lang.Boolean::TRUE
@@ -419,19 +411,10 @@ describe Rack::Handler::Servlet do
       env = servlet.create_env(@servlet_env)
       rack_request = Rack::Request.new(env)
 
-      # Rack (1.5.2) does it as :
-      # { "foo" => "0", "bar" => nil, "baz_" => "2", "meh" => "3" }
-      # 1.6.0 :
       # { "foo" => "0", "bar[" => "1", "baz_" => "2", "meh" => "3" }
 
       expect( rack_request.GET['foo'] ).to eql('0')
       expect( rack_request.GET['baz_'] ).to eql('2')
-
-      if rack_release('1.6')
-        # expect( rack_request.GET['bar['] ).to eql('1')
-      else
-        expect( rack_request.GET.key?('bar') ).to be true
-      end
       expect( rack_request.GET['meh'] ).to eql('3')
 
       expect( rack_request.query_string ).to eql 'foo]=0&bar[=1&baz_=2&[meh=3'
@@ -491,7 +474,7 @@ describe Rack::Handler::Servlet do
 
       expect { rack_request.GET }.to raise_error(error, "expected Hash (got Array) for param `foo'")
       rack_request.POST.should == {}
-      expect { rack_request.params }.to raise_error(error, "expected Hash (got Array) for param `foo'") if rack_release('1.6')
+      expect { rack_request.params }.to raise_error(error, "expected Hash (got Array) for param `foo'")
 
       rack_request.query_string.should == 'foo[]=0&foo[bar]=1'
     end
