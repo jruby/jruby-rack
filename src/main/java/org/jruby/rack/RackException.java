@@ -6,6 +6,7 @@ package org.jruby.rack;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+
 import org.jruby.exceptions.RaiseException;
 
 /**

@@ -11,7 +11,7 @@ import java.io.IOException;
 
 import org.jruby.rack.servlet.ServletRackContext;
 
-import static org.jruby.rack.RackLogger.Level.*;
+import static org.jruby.rack.RackLogger.Level.ERROR;
 
 /**
  * Dispatcher suited for use in a servlet container

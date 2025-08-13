@@ -29,7 +29,7 @@ import java.util.Set;
 
 import org.jruby.Ruby;
 
-import static org.jruby.rack.RackLogger.Level.*;
+import static org.jruby.rack.RackLogger.Level.DEBUG;
 
 /**
  * An abstract base class for decorating factories.
