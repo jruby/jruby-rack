@@ -52,16 +52,8 @@ module SharedHelpers
     JRuby::Rack::Helpers.silence_warnings(&block)
   end
 
-  @@servlet_30 = nil
-
-  def servlet_30?
-    return @@servlet_30 unless @@servlet_30.nil?
-    @@servlet_30 = !! ( Java::JakartaServlet::AsyncContext rescue nil )
-  end
-  private :servlet_30?
-
   def rack_release_at_least?(at_least = nil)
-    require 'rack';
+    require 'rack'
     at_least ? Rack.release >= at_least : true
   end
   private :rack_release_at_least?

@@ -881,24 +881,7 @@ describe Rack::Handler::Servlet do
 
     it "returns the servlet context when queried with java.servlet_context" do
       env = servlet.create_env @servlet_env
-
-      expect( env['java.servlet_context'] ).to_not be nil
-      if servlet_30?
-        expect( env['java.servlet_context'] ).to be @servlet_context
-      else
-        expect( env['java.servlet_context'] ).to be @rack_context
-
-        # HACK to emulate Servlet API 3.0 MockHttpServletRequest has getServletContext :
-        env = Rack::Handler::Servlet::DefaultEnv.new(@servlet_request).to_hash
-
-        expect( env['java.servlet_context'] ).to_not be nil
-        expect( env['java.servlet_context'] ).to be @servlet_context
-        begin
-          env['java.servlet_context'].should == @servlet_context
-        rescue NoMethodError
-          (env['java.servlet_context'] == @servlet_context).should == true
-        end
-      end
+      expect( env['java.servlet_context'] ).to be @servlet_context
     end
 
     it "returns the servlet request when queried with java.servlet_request" do

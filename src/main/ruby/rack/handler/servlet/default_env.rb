@@ -231,14 +231,14 @@ module Rack
 
         def load_builtin(env, key)
           case key
-          when 'rack.version'         then env[key] = ::Rack::VERSION
-          when 'rack.multithread'     then env[key] = true
-          when 'rack.multiprocess'    then env[key] = false
-          when 'rack.run_once'        then env[key] = false
-          when 'rack.hijack?'         then env[key] = false
-          when 'rack.input'           then
+          when 'rack.version'          then env[key] = ::Rack::VERSION
+          when 'rack.multithread'      then env[key] = true
+          when 'rack.multiprocess'     then env[key] = false
+          when 'rack.run_once'         then env[key] = false
+          when 'rack.hijack?'          then env[key] = false
+          when 'rack.input'            then
             env[key] = @servlet_env ? JRuby::Rack::Input.new(@servlet_env) : nil
-          when 'rack.errors'          then context = rack_context
+          when 'rack.errors'           then context = rack_context
             env[key] = context ? JRuby::Rack::ServletLog.new(context) : nil
           when 'rack.url_scheme'
             env[key] = scheme = @servlet_env ? @servlet_env.getScheme : nil
@@ -246,9 +246,9 @@ module Rack
             scheme
           when 'java.servlet_request'  then env[key] = servlet_request
           when 'java.servlet_response' then env[key] = servlet_response
-          when 'java.servlet_context' then env[key] = servlet_context
-          when 'jruby.rack.context'   then env[key] = rack_context
-          when 'jruby.rack.version'   then env[key] = JRuby::Rack::VERSION
+          when 'java.servlet_context'  then env[key] = @servlet_env.servlet_context
+          when 'jruby.rack.context'    then env[key] = rack_context
+          when 'jruby.rack.version'    then env[key] = JRuby::Rack::VERSION
           else
             nil
           end
@@ -272,20 +272,6 @@ module Rack
 
         def servlet_response
           @servlet_env.respond_to?(:response) ? @servlet_env.response : @servlet_env
-        end
-
-        def servlet_context
-          if @servlet_env.respond_to?(:servlet_context) # @since Servlet 3.0
-            @servlet_env.servlet_context # ServletRequest#getServletContext()
-          else
-            if @servlet_env.respond_to?(:context) &&
-                @servlet_env.context.is_a?(Java::JakartaServlet::ServletContext)
-              @servlet_env.context
-            else
-              JRuby::Rack.context ||
-                ( servlet_request ? servlet_request.servlet_context : nil )
-            end
-          end
         end
 
         TRANSIENT_KEYS = [ 'rack.input', 'rack.errors',
