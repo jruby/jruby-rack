@@ -27,6 +27,8 @@ import org.springframework.lang.Nullable;
  * @author Rod Johnson
  * @author Juergen Hoeller
  * @author Sebastien Deleuze
+ * @implNote Source copied into jruby-rack from Spring Test 5.3.39 and minimally changed to support Jakarta Servlet API 5,
+ *           while still compiling to Java 8, which is not supported by Spring's support in 6.0+ (targets only Java 17+).
  */
 public abstract class WebUtils {
 

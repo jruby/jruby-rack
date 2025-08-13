@@ -32,6 +32,8 @@ import java.io.OutputStream;
  * @author Juergen Hoeller
  * @since 1.0.2
  * @see MockHttpServletResponse
+ * @implNote Source copied into jruby-rack from Spring Test 5.3.39 and minimally changed to support Jakarta Servlet API 5, 
+ *           while still compiling to Java 8, which is not supported by Spring's support in 6.0+ (targets only Java 17+).
  */
 public class DelegatingServletOutputStream extends ServletOutputStream {
 

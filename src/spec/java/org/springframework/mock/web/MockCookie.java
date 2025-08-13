@@ -34,6 +34,8 @@ import java.time.format.DateTimeFormatter;
  * @author Juergen Hoeller
  * @author Sam Brannen
  * @since 5.1
+ * @implNote Source copied into jruby-rack from Spring Test 5.3.39 and minimally changed to support Jakarta Servlet API 5, 
+ *           while still compiling to Java 8, which is not supported by Spring's support in 6.0+ (targets only Java 17+).
  */
 public class MockCookie extends Cookie {
 
