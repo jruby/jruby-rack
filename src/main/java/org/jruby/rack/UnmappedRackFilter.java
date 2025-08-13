@@ -6,13 +6,6 @@
  */
 package org.jruby.rack;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletResponse;
-import org.jruby.rack.servlet.RequestCapture;
-import org.jruby.rack.servlet.ResponseCapture;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,6 +14,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletResponse;
+import org.jruby.rack.servlet.RequestCapture;
+import org.jruby.rack.servlet.ResponseCapture;
 
 /**
  * UnappedRackFilter does dispatching to Ruby but does not alter the request

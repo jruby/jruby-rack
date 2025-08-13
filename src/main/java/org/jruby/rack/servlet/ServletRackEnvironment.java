@@ -13,7 +13,6 @@ import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.ext.Input;

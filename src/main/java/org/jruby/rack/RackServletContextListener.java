@@ -10,7 +10,6 @@ package org.jruby.rack;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-
 import org.jruby.rack.servlet.DefaultServletRackContext;
 import org.jruby.rack.servlet.ServletRackConfig;
 import org.jruby.rack.servlet.ServletRackContext;

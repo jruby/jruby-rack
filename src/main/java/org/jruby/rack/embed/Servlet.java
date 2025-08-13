@@ -8,7 +8,6 @@
 package org.jruby.rack.embed;
 
 import jakarta.servlet.ServletConfig;
-
 import org.jruby.rack.AbstractServlet;
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackDispatcher;

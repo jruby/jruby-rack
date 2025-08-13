@@ -15,7 +15,6 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.jruby.rack.servlet.ServletRackEnvironment;
 import org.jruby.rack.servlet.ServletRackResponseEnvironment;
 

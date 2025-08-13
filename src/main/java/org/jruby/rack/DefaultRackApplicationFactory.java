@@ -8,6 +8,14 @@
 package org.jruby.rack;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Map;
+import java.util.Set;
+
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
 import org.jruby.exceptions.RaiseException;
@@ -18,14 +26,6 @@ import org.jruby.rack.util.IOHelpers;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.cli.OutputStrings;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Map;
-import java.util.Set;
 
 import static org.jruby.rack.DefaultRackConfig.isIgnoreRUBYOPT;
 import static org.jruby.rack.RackLogger.Level.*;

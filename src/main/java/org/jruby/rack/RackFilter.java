@@ -9,13 +9,13 @@ package org.jruby.rack;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
-
 import org.jruby.rack.servlet.RequestCapture;
 import org.jruby.rack.servlet.ResponseCapture;
 import org.jruby.rack.servlet.ServletRackContext;

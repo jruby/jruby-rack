@@ -7,9 +7,8 @@
  */
 package org.jruby.rack.logging;
 
-import org.jruby.rack.RackLogger;
-
 import jakarta.servlet.ServletContext;
+import org.jruby.rack.RackLogger;
 
 public class ServletContextLogger extends RackLogger.Base {
 

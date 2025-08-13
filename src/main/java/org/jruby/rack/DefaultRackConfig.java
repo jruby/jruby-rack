@@ -7,16 +7,20 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.logging.OutputStreamLogger;
-import org.jruby.rack.logging.StandardOutLogger;
-import org.jruby.util.SafePropertyAccessor;
-
-import java.io.*;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.jruby.rack.logging.OutputStreamLogger;
+import org.jruby.rack.logging.StandardOutLogger;
+import org.jruby.util.SafePropertyAccessor;
 
 /**
  * A base implementation of that retrieves settings from system properties.

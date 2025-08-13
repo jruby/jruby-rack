@@ -8,7 +8,6 @@
 package org.jruby.rack.servlet;
 
 import jakarta.servlet.ServletContext;
-
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackContext;
 

@@ -7,12 +7,6 @@
  */
 package org.jruby.rack.servlet;
 
-import jakarta.servlet.*;
-import jakarta.servlet.descriptor.JspConfigDescriptor;
-import org.jruby.rack.RackApplicationFactory;
-import org.jruby.rack.RackConfig;
-import org.jruby.rack.RackLogger;
-
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,6 +14,20 @@ import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Map;
 import java.util.Set;
+
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
+import org.jruby.rack.RackApplicationFactory;
+import org.jruby.rack.RackConfig;
+import org.jruby.rack.RackLogger;
 
 /**
  *

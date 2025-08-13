@@ -23,9 +23,9 @@
  */
 package org.jruby.rack.logging;
 
-import org.jruby.rack.RackLogger;
-
 import java.util.logging.Logger;
+
+import org.jruby.rack.RackLogger;
 
 /**
  * java.util.logging based logger implementation

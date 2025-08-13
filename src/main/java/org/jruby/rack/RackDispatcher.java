@@ -7,8 +7,9 @@
 
 package org.jruby.rack;
 
-import jakarta.servlet.ServletException;
 import java.io.IOException;
+
+import jakarta.servlet.ServletException;
 
 /**
  *

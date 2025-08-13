@@ -24,7 +24,13 @@
 package org.jruby.rack.ext;
 
 import jakarta.servlet.ServletContext;
-import org.jruby.*;
+import org.jruby.Ruby;
+import org.jruby.RubyClass;
+import org.jruby.RubyException;
+import org.jruby.RubyObject;
+import org.jruby.RubyProc;
+import org.jruby.RubyString;
+import org.jruby.RubyTime;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
