@@ -11,10 +11,10 @@ For more information on Rack, visit http://rack.github.io/.
 
 ## Compatibility
 
-| JRuby-Rack Version                                           | Status     | JRuby Compat | Java Compat | Target Servlet API | Target Java EE | Notes                                             |
-|--------------------------------------------------------------|------------|--------------|-------------|--------------------|----------------|---------------------------------------------------|
-| [1.2.x](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained | 9.3 → 9.4    | Java 8+     | 3.0                | Java EE 6      | Servlet 3.1 → 4.0 tested OK with some containers. |
-| [1.1.x](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL        | 1.6 → 9.4    | Java 8+     | 2.5                | Java EE 5      | Servlet 3.0 → 4.0 tested OK with some containers. |
+| JRuby-Rack Version                                           | Status     | Rack      | JRuby      | Java    | Target Servlet API | Target Java EE | Notes                                      |
+|--------------------------------------------------------------|------------|-----------|------------|---------|--------------------|----------------|--------------------------------------------|
+| [1.2.x](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained | 2.2       | 9.3 → 9.4  | Java 8+ | 3.0                | Java EE 6      | Servlet 3.1 → 4.0 OK with some containers. |
+| [1.1.x](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL        | 1.x → 2.2 | 1.6 → 9.4  | Java 8+ | 2.5                | Java EE 5      | Servlet 3.0 → 4.0 OK with some containers. |
 
 ## Getting Started
 
@@ -297,12 +297,12 @@ logging system, configure `jruby.rack.logging` as follows:
 - `servlet_context` (default): Sends log messages to the servlet context.
 - `stdout`: Sends log messages to the standard output stream `System.out`.
 - `slf4j`: Sends log messages to SLF4J. SLF4J configuration is left up to you,
-  please refer to http://www.slf4j.org/docs.html .
-- `log4j`: Sends log messages to log4J. Again, Log4J configuration is
-  left up to you, consult http://logging.apache.org/log4j/ .
+  please refer to https://www.slf4j.org/manual.html .
+- `log4j`: Sends log messages through Log4j. Only Log4j 2.x is supported, for 
+- configuration please consult https://logging.apache.org/log4j/2.x/index.html .
 - `commons_logging`: Routes logs to commons-logging. You still need to configure
-  an underlying logging implementation with JCL. We recommend using the logger
-  library wrapper directly if possible, see http://commons.apache.org/logging/ .
+  an underlying logging implementation with JCL. 
+  We recommend rather using the logger library wrapper directly when possible.
 - `jul`: Directs log messages via Java's core logging facilities (util.logging).
 
 For those loggers that require a specific named logger, set it with the
