@@ -24,7 +24,6 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -41,12 +40,6 @@ import java.util.*;
  */
 @SuppressWarnings("deprecation")
 public class MockHttpSession implements HttpSession {
-
-	/**
-	 * The session cookie name.
-	 */
-	public static final String SESSION_COOKIE_NAME = "JSESSION";
-
 
 	private static int nextId = 1;
 
@@ -258,42 +251,4 @@ public class MockHttpSession implements HttpSession {
 		assertIsValid();
 		return this.isNew;
 	}
-
-	/**
-	 * Serialize the attributes of this session into an object that can be
-	 * turned into a byte array with standard Java serialization.
-	 * @return a representation of this session's serialized state
-	 */
-	public Serializable serializeState() {
-		HashMap<String, Serializable> state = new HashMap<>();
-		for (Iterator<Map.Entry<String, Object>> it = this.attributes.entrySet().iterator(); it.hasNext();) {
-			Map.Entry<String, Object> entry = it.next();
-			String name = entry.getKey();
-			Object value = entry.getValue();
-			it.remove();
-			if (value instanceof Serializable) {
-				state.put(name, (Serializable) value);
-			}
-			else {
-				// Not serializable... Servlet containers usually automatically
-				// unbind the attribute in this case.
-				if (value instanceof HttpSessionBindingListener) {
-					((HttpSessionBindingListener) value).valueUnbound(new HttpSessionBindingEvent(this, name, value));
-				}
-			}
-		}
-		return state;
-	}
-
-	/**
-	 * Deserialize the attributes of this session from a state object created by
-	 * {@link #serializeState()}.
-	 * @param state a representation of this session's serialized state
-	 */
-	@SuppressWarnings("unchecked")
-	public void deserializeState(Serializable state) {
-		Assert.isTrue(state instanceof Map, "Serialized state needs to be of type [java.util.Map]");
-		this.attributes.putAll((Map<String, Object>) state);
-	}
-
 }
