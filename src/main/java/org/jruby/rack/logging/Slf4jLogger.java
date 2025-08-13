@@ -8,7 +8,6 @@
 package org.jruby.rack.logging;
 
 import org.jruby.rack.RackLogger;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

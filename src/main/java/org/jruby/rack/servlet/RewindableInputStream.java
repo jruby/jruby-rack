@@ -8,11 +8,10 @@
 package org.jruby.rack.servlet;
 
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 

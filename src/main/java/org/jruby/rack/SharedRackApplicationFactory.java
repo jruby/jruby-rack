@@ -10,7 +10,7 @@ package org.jruby.rack;
 import java.util.Collection;
 import java.util.Collections;
 
-import static org.jruby.rack.RackLogger.Level.*;
+import static org.jruby.rack.RackLogger.Level.INFO;
 
 /**
  * Shared application factory that only creates a single application instance.

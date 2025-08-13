@@ -7,14 +7,13 @@
 
 package org.jruby.rack.servlet;
 
-import org.jruby.rack.RackResponse;
-import org.jruby.rack.RackResponseEnvironment;
-import org.jruby.rack.DefaultErrorApplication;
-
 import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
+
+import org.jruby.rack.DefaultErrorApplication;
+import org.jruby.rack.RackResponse;
+import org.jruby.rack.RackResponseEnvironment;
 
 /**
  * The default (servlet) {@link RackResponseEnvironment} implementation.
