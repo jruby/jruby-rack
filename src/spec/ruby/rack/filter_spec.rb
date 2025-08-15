@@ -15,85 +15,85 @@ describe org.jruby.rack.RackFilter do
 
   def stub_request(path_info)
     @request = Java::JakartaServletHttp::HttpServletRequest.impl {}
-    @request.stub(:setAttribute)
+    allow(@request).to receive(:setAttribute)
     if block_given?
       yield @request, path_info
     else
-      @request.stub(:getPathInfo).and_return nil
-      @request.stub(:getServletPath).and_return "/some/uri#{path_info}"
+      allow(@request).to receive(:getPathInfo).and_return nil
+      allow(@request).to receive(:getServletPath).and_return "/some/uri#{path_info}"
     end
-    @request.stub(:getRequestURI).and_return "/some/uri#{path_info}"
+    allow(@request).to receive(:getRequestURI).and_return "/some/uri#{path_info}"
   end
 
   before :each do
     stub_request("/index")
     @response = Java::JakartaServletHttp::HttpServletResponse.impl {}
-    @rack_context.stub(:getResource).and_return nil
-    @rack_config.stub(:getProperty) do |key, default|
-      ( key || raise("missing key") ) && default
+    allow(@rack_context).to receive(:getResource).and_return nil
+    allow(@rack_config).to receive(:getProperty) do |key, default|
+      (key || raise("missing key")) && default
     end
-    @rack_config.stub(:getBooleanProperty) do |key, default|
-      ( key || raise("missing key") ) && default
+    allow(@rack_config).to receive(:getBooleanProperty) do |key, default|
+      (key || raise("missing key")) && default
     end
     filter.setAddsHtmlToPathInfo(true)
   end
 
   it "should dispatch the filter chain and finish if the chain resulted in a successful response" do
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.setStatus(200)
     end
-    @response.should_receive(:setStatus).ordered.with(200)
+    expect(@response).to receive(:setStatus).ordered.with(200)
     filter.doFilter(@request, @response, chain)
   end
 
   it "should finish if the chain resulted in a redirect" do
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendRedirect("/some/url")
     end
-    @response.should_receive(:sendRedirect).ordered.with("/some/url")
+    expect(@response).to receive(:sendRedirect).ordered.with("/some/url")
     filter.doFilter(@request, @response, chain)
   end
 
   it "dispatches to the rack dispatcher if the chain resulted in a 404" do
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(404)
     end
-    @response.should_receive(:reset).ordered
-    @request.should_receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
-    dispatcher.should_receive(:process).ordered
+    expect(@response).to receive(:reset).ordered
+    expect(@request).to receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
+    expect(dispatcher).to receive(:process).ordered
     filter.doFilter(@request, @response, chain)
   end
 
   it "dispatches to the rack dispatcher if the chain resulted in a 403" do
     # sending a PUT up the chain results in a 403 on Tomcat
     # @see https://github.com/jruby/jruby-rack/issues/105
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(403)
     end
-    @response.should_receive(:reset).ordered
-    dispatcher.should_receive(:process).ordered
+    expect(@response).to receive(:reset).ordered
+    expect(dispatcher).to receive(:process).ordered
     filter.doFilter(@request, @response, chain)
   end
 
   it "dispatches to the rack dispatcher if the chain resulted in a 405" do
     # PUT/DELETE up the chain end up as HTTP 405 on Jetty
     # @see https://github.com/jruby/jruby-rack/issues/109
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(405)
     end
-    @response.should_receive(:reset).ordered
-    dispatcher.should_receive(:process).ordered
+    expect(@response).to receive(:reset).ordered
+    expect(dispatcher).to receive(:process).ordered
     filter.doFilter(@request, @response, chain)
   end
-  
+
   it "dispatches to the rack dispatcher if the chain resulted in a 501" do
     # non standard verbs like PATCH produce HTTP 501
     # see also http://httpstatus.es/501 and http://tools.ietf.org/html/rfc5789
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(501)
     end
-    @response.should_receive(:reset)
-    dispatcher.should_receive(:process)
+    expect(@response).to receive(:reset)
+    expect(dispatcher).to receive(:process)
     filter.doFilter(@request, @response, chain)
   end
 
@@ -101,63 +101,63 @@ describe org.jruby.rack.RackFilter do
     filter = Class.new(org.jruby.rack.RackFilter) do
       def wrapResponse(response)
         capture = super
-        capture.setNotHandledStatuses [ 442 ]
+        capture.setNotHandledStatuses [442]
         capture
       end
     end.new(dispatcher, @rack_context)
 
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(442)
     end
-    @response.should_receive(:reset).ordered
-    dispatcher.should_receive(:process).ordered
+    expect(@response).to receive(:reset).ordered
+    expect(dispatcher).to receive(:process).ordered
     filter.doFilter(@request, @response, chain)
   end
 
   it "allows downstream entities to flush the buffer in the case of a successful response" do
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.setStatus(200)
       resp.flushBuffer
     end
-    @response.should_receive(:setStatus).ordered.with(200)
-    @response.should_receive(:flushBuffer).ordered
-    dispatcher.should_not_receive(:process)
+    expect(@response).to receive(:setStatus).ordered.with(200)
+    expect(@response).to receive(:flushBuffer).ordered
+    expect(dispatcher).not_to receive(:process)
     filter.doFilter(@request, @response, chain)
   end
 
   it "does not allow downstream entities in the chain to flush the buffer in the case of an 404" do
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(404)
       resp.flushBuffer
     end
-    @response.should_not_receive(:flushBuffer)
-    @response.should_receive(:reset)
-    dispatcher.should_receive(:process)
+    expect(@response).not_to receive(:flushBuffer)
+    expect(@response).to receive(:reset)
+    expect(dispatcher).to receive(:process)
     filter.doFilter(@request, @response, chain)
   end
 
   it "only resets the buffer for a 404 if configured so" do
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(404)
       resp.flushBuffer
     end
-    @response.should_not_receive(:flushBuffer)
-    @response.should_receive(:resetBuffer)
-    @response.should_not_receive(:reset)
-    dispatcher.should_receive(:process)
+    expect(@response).not_to receive(:flushBuffer)
+    expect(@response).to receive(:resetBuffer)
+    expect(@response).not_to receive(:reset)
+    expect(dispatcher).to receive(:process)
     filter.setResetUnhandledResponseBuffer(true)
     filter.doFilter(@request, @response, chain)
   end
 
   it "allows an error response from the filter chain (and flushes the buffer)" do
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(401)
       resp.flushBuffer
     end
-    @response.should_receive(:sendError).with(401).ordered
-    @response.should_receive(:flushBuffer).ordered
-    @response.should_not_receive(:reset)
-    dispatcher.should_not_receive(:process)
+    expect(@response).to receive(:sendError).with(401).ordered
+    expect(@response).to receive(:flushBuffer).ordered
+    expect(@response).not_to receive(:reset)
+    expect(dispatcher).not_to receive(:process)
     filter.doFilter(@request, @response, chain)
   end
 
@@ -165,46 +165,48 @@ describe org.jruby.rack.RackFilter do
     filter = Class.new(org.jruby.rack.RackFilter) do
       def wrapResponse(response)
         Class.new(org.jruby.rack.servlet.ResponseCapture) do
-          def isHandled(arg); getStatus < 400; end
+          def isHandled(arg)
+            ; getStatus < 400;
+          end
         end.new(response)
       end
     end.new(dispatcher, @rack_context)
 
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(401)
       resp.flushBuffer
     end
-    @response.should_not_receive(:flushBuffer)
-    @response.should_receive(:reset)
-    dispatcher.should_receive(:process)
+    expect(@response).not_to receive(:flushBuffer)
+    expect(@response).to receive(:reset)
+    expect(dispatcher).to receive(:process)
     filter.doFilter(@request, @response, chain)
   end
 
   it "should only add to path info if it already was non-null" do
-    stub_request("/index") do |request,path_info|
-      request.stub(:getPathInfo).and_return path_info
-      request.stub(:getServletPath).and_return "/some/uri"
+    stub_request("/index") do |request, path_info|
+      allow(request).to receive(:getPathInfo).and_return path_info
+      allow(request).to receive(:getServletPath).and_return "/some/uri"
     end
-    chain.should_receive(:doFilter).ordered do |req,resp|
-      req.getPathInfo.should == "/index.html"
-      req.getServletPath.should == "/some/uri"
-      req.getRequestURI.should == "/some/uri/index.html"
+    expect(chain).to receive(:doFilter).ordered do |req, resp|
+      expect(req.getPathInfo).to eq "/index.html"
+      expect(req.getServletPath).to eq "/some/uri"
+      expect(req.getRequestURI).to eq "/some/uri/index.html"
       resp.setStatus(200)
     end
-    @response.should_receive(:setStatus).ordered.with(200)
+    expect(@response).to receive(:setStatus).ordered.with(200)
     filter.doFilter(@request, @response, chain)
   end
 
   it "should set status to 404 when dispatcher's status is not found" do
-    chain.should_receive(:doFilter).ordered do |_, resp|
+    expect(chain).to receive(:doFilter).ordered do |_, resp|
       resp.sendError(404) # 404 status is irrelevant here !
     end
-    @response.should_receive(:reset).ordered
-    @request.should_receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
-    dispatcher.should_receive(:process).ordered do |_, resp|
+    expect(@response).to receive(:reset).ordered
+    expect(@request).to receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
+    expect(dispatcher).to receive(:process).ordered do |_, resp|
       resp.setStatus(404)
     end
-    @response.should_receive(:setStatus).ordered.with(404)
+    expect(@response).to receive(:setStatus).ordered.with(404)
     filter.doFilter(@request, @response, chain)
   end
 
@@ -216,55 +218,55 @@ describe org.jruby.rack.RackFilter do
 
     it "should dispatch /some/uri/index.html unchanged" do
       stub_request("/index.html")
-      chain.should_receive(:doFilter).ordered do |req,resp|
-        req.getRequestURI.should == "/some/uri/index.html"
+      expect(chain).to receive(:doFilter).ordered do |req, resp|
+        expect(req.getRequestURI).to eq "/some/uri/index.html"
         resp.setStatus(200)
       end
-      @response.should_receive(:setStatus).ordered.with(200)
+      expect(@response).to receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
 
     it "should convert / to /index.html" do
       stub_request("/")
-      chain.should_receive(:doFilter).ordered do |req,resp|
-        req.getServletPath.should == "/some/uri/index.html"
+      expect(chain).to receive(:doFilter).ordered do |req, resp|
+        expect(req.getServletPath).to eq "/some/uri/index.html"
         resp.setStatus(200)
       end
-      @response.should_receive(:setStatus).ordered.with(200)
+      expect(@response).to receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
 
     it "should dispatch the request unwrapped if servlet path already contains the welcome filename" do
       stub_request("/") do |request, path_info|
-        request.stub(:getPathInfo).and_return nil
-        request.stub(:getServletPath).and_return "/some/uri/index.html"
+        allow(request).to receive(:getPathInfo).and_return nil
+        allow(request).to receive(:getServletPath).and_return "/some/uri/index.html"
       end
-      chain.should_receive(:doFilter).ordered do |req,resp|
-        req.getPathInfo.should == nil
-        req.getServletPath.should == "/some/uri/index.html"
-        req.getRequestURI.should == "/some/uri/"
+      expect(chain).to receive(:doFilter).ordered do |req, resp|
+        expect(req.getPathInfo).to eq nil
+        expect(req.getServletPath).to eq "/some/uri/index.html"
+        expect(req.getRequestURI).to eq "/some/uri/"
         resp.setStatus(200)
       end
-      @response.should_receive(:setStatus).ordered.with(200)
+      expect(@response).to receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
 
     it "should add .html to the path" do
       stub_request("")
-      chain.should_receive(:doFilter).ordered do |req,resp|
-        req.getServletPath.should == "/some/uri.html"
+      expect(chain).to receive(:doFilter).ordered do |req, resp|
+        expect(req.getServletPath).to eq "/some/uri.html"
         resp.setStatus(200)
       end
-      @response.should_receive(:setStatus).ordered.with(200)
+      expect(@response).to receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
 
     it "should process dispatching when chain throws a FileNotFoundException (WAS 8.0 behavior)" do
       stub_request("/foo")
-      chain.should_receive(:doFilter).ordered do
+      expect(chain).to receive(:doFilter).ordered do
         raise java.io.FileNotFoundException.new("/foo.html")
       end
-      dispatcher.should_receive(:process)
+      expect(dispatcher).to receive(:process)
       filter.doFilter(@request, @response, chain)
     end
 
@@ -277,12 +279,12 @@ describe org.jruby.rack.RackFilter do
     end
 
     it "dispatches /some/uri/index unchanged" do
-      chain.should_receive(:doFilter).ordered do |req,resp|
-        req.getServletPath.should == "/some/uri/index"
-        req.getRequestURI.should == "/some/uri/index"
+      expect(chain).to receive(:doFilter).ordered do |req, resp|
+        expect(req.getServletPath).to eq "/some/uri/index"
+        expect(req.getRequestURI).to eq "/some/uri/index"
         resp.setStatus(200)
       end
-      @response.should_receive(:setStatus).ordered.with(200)
+      expect(@response).to receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
   end
@@ -295,43 +297,43 @@ describe org.jruby.rack.RackFilter do
     end
 
     it "dispatches /some/uri/index unchanged if the resource does not exist" do
-      chain.should_receive(:doFilter).ordered do |req,resp|
-        req.getRequestURI.should == "/some/uri/index"
+      expect(chain).to receive(:doFilter).ordered do |req, resp|
+        expect(req.getRequestURI).to eq "/some/uri/index"
         resp.setStatus(200)
       end
-      @response.should_receive(:setStatus).ordered.with(200)
+      expect(@response).to receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
 
     it "should dispatch /some/uri/index to the filter chain as /some/uri/index.html if the resource exists" do
-      @rack_context.should_receive(:getResource).with("/some/uri/index.html").and_return java.net.URL.new("file://some/uri/index.html")
-      chain.should_receive(:doFilter).ordered do |req,resp|
-        req.getRequestURI.should == "/some/uri/index.html"
+      expect(@rack_context).to receive(:getResource).with("/some/uri/index.html").and_return java.net.URL.new("file://some/uri/index.html")
+      expect(chain).to receive(:doFilter).ordered do |req, resp|
+        expect(req.getRequestURI).to eq "/some/uri/index.html"
         resp.setStatus(200)
       end
-      @response.should_receive(:setStatus).ordered.with(200)
+      expect(@response).to receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
 
     it "should dispatch /some/uri/ to /some/uri/index.html if the resource exists" do
-      @rack_context.should_receive(:getResource).with("/some/uri/index.html").and_return java.net.URL.new("file://some/uri/index.html")
+      expect(@rack_context).to receive(:getResource).with("/some/uri/index.html").and_return java.net.URL.new("file://some/uri/index.html")
       stub_request("/")
-      chain.should_receive(:doFilter).ordered do |req,resp|
-        req.getRequestURI.should == "/some/uri/index.html"
+      expect(chain).to receive(:doFilter).ordered do |req, resp|
+        expect(req.getRequestURI).to eq "/some/uri/index.html"
         resp.setStatus(200)
       end
-      @response.should_receive(:setStatus).ordered.with(200)
+      expect(@response).to receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
 
     it "should dispatch to /some/uri.html if the resource exists and there is no path info" do
-      @rack_context.should_receive(:getResource).with("/some/uri.html").and_return java.net.URL.new("file://some/uri.html")
+      expect(@rack_context).to receive(:getResource).with("/some/uri.html").and_return java.net.URL.new("file://some/uri.html")
       stub_request("")
-      chain.should_receive(:doFilter).ordered do |req,resp|
-        req.getServletPath.should == "/some/uri.html"
+      expect(chain).to receive(:doFilter).ordered do |req, resp|
+        expect(req.getServletPath).to eq "/some/uri.html"
         resp.setStatus(200)
       end
-      @response.should_receive(:setStatus).ordered.with(200)
+      expect(@response).to receive(:setStatus).ordered.with(200)
       filter.doFilter(@request, @response, chain)
     end
   end
@@ -361,24 +363,24 @@ describe org.jruby.rack.RackFilter do
     filter.init(config)
     response_capture = filter.wrapResponse(@response)
     response_capture.setStatus(403)
-    response_capture.isHandled.should be false
+    expect(response_capture.isHandled).to be false
     response_capture.setStatus(404)
-    response_capture.isHandled.should be false
+    expect(response_capture.isHandled).to be false
     response_capture.setStatus(501)
-    response_capture.isHandled.should be false
+    expect(response_capture.isHandled).to be false
     response_capture.setStatus(504)
-    response_capture.isHandled.should be false
+    expect(response_capture.isHandled).to be false
     response_capture.setStatus(505)
-    response_capture.isHandled.should be true
+    expect(response_capture.isHandled).to be true
   end
 
   it "should destroy dispatcher on destroy" do
-    dispatcher.should_receive(:destroy)
+    expect(dispatcher).to receive(:destroy)
     filter.destroy
   end
 
   it "should have default constructor (for servlet container)" do
-    lambda { org.jruby.rack.RackFilter.new }.should_not raise_error
+    expect { org.jruby.rack.RackFilter.new }.not_to raise_error
   end
 
 end

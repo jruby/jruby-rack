@@ -17,19 +17,19 @@ describe org.jruby.rack.RackTag do
 
   before :each do
     @result = double("Rack Result")
-    @result.stub(:getBody).and_return("Hello World!")
+    allow(@result).to receive(:getBody).and_return("Hello World!")
 
     @application = double("application")
-    @application.stub(:call).and_return @result
+    allow(@application).to receive(:call).and_return @result
 
     @rack_factory = org.jruby.rack.RackApplicationFactory.impl {}
-    @rack_factory.stub(:getApplication).and_return @application
-    @rack_factory.stub(:finishedWithApplication)
+    allow(@rack_factory).to receive(:getApplication).and_return @application
+    allow(@rack_factory).to receive(:finishedWithApplication)
 
-    @servlet_context.stub(:getAttribute).with('rack.factory').and_return @rack_factory
-    @servlet_context.stub(:getAttribute).with('rack.context').and_return @rack_context
+    allow(@servlet_context).to receive(:getAttribute).with('rack.factory').and_return @rack_factory
+    allow(@servlet_context).to receive(:getAttribute).with('rack.context').and_return @rack_context
     @servlet_request = double("Servlet Request")
-    @servlet_request.stub(:getContextPath).and_return ""
+    allow(@servlet_request).to receive(:getContextPath).and_return ""
     @servlet_response = double("Servlet Response")
 
     @writable = org.jruby.rack.fake.FakeJspWriter.new
@@ -46,35 +46,35 @@ describe org.jruby.rack.RackTag do
   end
 
   it 'should get an application and return it to the pool' do
-    @rack_factory.should_receive(:getApplication).and_return @application
-    @rack_factory.should_receive(:finishedWithApplication)
+    expect(@rack_factory).to receive(:getApplication).and_return @application
+    expect(@rack_factory).to receive(:finishedWithApplication)
 
     @tag.doEndTag
   end
 
   it 'should return the application to the pool even when an exception is thrown' do
-    @rack_factory.should_receive(:getApplication).and_return ExceptionThrower.new
-    @rack_factory.should_receive(:finishedWithApplication)
+    expect(@rack_factory).to receive(:getApplication).and_return ExceptionThrower.new
+    expect(@rack_factory).to receive(:finishedWithApplication)
 
     begin
       @tag.doEndTag
     rescue Java::JakartaServletJsp::JspException
-      #noop
+      # noop
     end
   end
 
   it 'should create a request wrapper and invoke the application' do
-    @application.should_receive(:call).and_return @result
+    expect(@application).to receive(:call).and_return @result
     @tag.doEndTag
   end
 
   it 'should override the path, query params, and http method of the request' do
-    @application.should_receive(:call) do |wrapped_request|
-      wrapped_request.servlet_path.should == ""
-      wrapped_request.path_info.should == '/controller/action/id'
-      wrapped_request.query_string.should == 'fruit=apple&horse_before=cart'
-      wrapped_request.request_uri.should == '/controller/action/id?fruit=apple&horse_before=cart'
-      wrapped_request.method.should == 'GET'
+    expect(@application).to receive(:call) do |wrapped_request|
+      expect(wrapped_request.servlet_path).to eq ""
+      expect(wrapped_request.path_info).to eq '/controller/action/id'
+      expect(wrapped_request.query_string).to eq 'fruit=apple&horse_before=cart'
+      expect(wrapped_request.request_uri).to eq '/controller/action/id?fruit=apple&horse_before=cart'
+      expect(wrapped_request.method).to eq 'GET'
       @result
     end
 
@@ -83,6 +83,6 @@ describe org.jruby.rack.RackTag do
 
   it 'should write the response back to the page' do
     @tag.doEndTag
-    @writable.to_s.should == 'Hello World!'
+    expect(@writable.to_s).to eq 'Hello World!'
   end
 end

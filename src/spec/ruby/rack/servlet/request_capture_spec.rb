@@ -17,10 +17,10 @@ describe org.jruby.rack.servlet.RequestCapture do
   # See: https://github.com/jruby/jruby-rack/issues/44
   it "falls back to requestMap when the reader body has been pre-parsed" do
     servlet_request.content_type = "application/x-www-form-urlencoded"
-    servlet_request.parameters = {'foo' => 'bar'}
+    servlet_request.parameters = { 'foo' => 'bar' }
     servlet_request.content = ''.to_java_bytes
 
-    request_capture.get_parameter('foo').should == 'bar'
+    expect(request_capture.get_parameter('foo')).to eq 'bar'
   end
 
   it "reports if input-stream has been accessed" do
@@ -28,10 +28,10 @@ describe org.jruby.rack.servlet.RequestCapture do
     servlet_request.content = '42'.to_java_bytes
 
     request_capture = RequestCapture.new(servlet_request)
-    request_capture.isInputAccessed.should == false
+    expect(request_capture.isInputAccessed).to eq false
 
     request_capture.getInputStream
-    request_capture.isInputAccessed.should == true
+    expect(request_capture.isInputAccessed).to eq true
   end
 
   it "reports if reader has been accessed" do
@@ -39,10 +39,10 @@ describe org.jruby.rack.servlet.RequestCapture do
     servlet_request.content = '42'.to_java_bytes
 
     request_capture = RequestCapture.new(servlet_request)
-    request_capture.isInputAccessed.should == false
+    expect(request_capture.isInputAccessed).to eq false
 
     request_capture.getReader
-    request_capture.isInputAccessed.should == true
+    expect(request_capture.isInputAccessed).to eq true
   end
 
 end
