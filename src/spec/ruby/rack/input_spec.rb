@@ -18,49 +18,49 @@ module InputSpec
     def it_should_behave_like_rack_input
 
       it "should respond to gets and return a line" do
-        input.gets.should == "hello\r\n"
-        input.gets.should == "goodbye"
+        expect(input.gets).to eq "hello\r\n"
+        expect(input.gets).to eq "goodbye"
       end
 
       it "should return nil for gets at EOF" do
         2.times { input.gets }
-        input.gets.should == nil
+        expect(input.gets).to eq nil
       end
 
       it "should respond to read" do
-        input.read.should == "hello\r\ngoodbye"
+        expect(input.read).to eq "hello\r\ngoodbye"
       end
 
       it "should read a specified length" do
-        input.read(5).should == "hello"
+        expect(input.read(5)).to eq "hello"
       end
 
       it "should read its full lenght" do
-        input.read(16).should == "hello\r\ngoodbye"
+        expect(input.read(16)).to eq "hello\r\ngoodbye"
       end
 
       it "should read into a provided buffer" do
         buf = ""
         input.read(nil, buf)
-        buf.should == "hello\r\ngoodbye"
+        expect(buf).to eq "hello\r\ngoodbye"
       end
 
       it "should read a specified amount into a provided buffer" do
         buf = ""
         input.read(5, buf)
-        buf.should == "hello"
+        expect(buf).to eq "hello"
       end
 
       it "should replace contents of buffer" do
         buf = "cruft"
         input.read(5, buf)
-        buf.should == "hello"
+        expect(buf).to eq "hello"
       end
 
       it "should respond to each and yield lines" do
         lines = []
-        input.each {|l| lines << l}
-        lines.should == ["hello\r\n", "goodbye"]
+        input.each { |l| lines << l }
+        expect(lines).to eq ["hello\r\n", "goodbye"]
       end
 
     end
@@ -71,9 +71,9 @@ module InputSpec
 
       it "should respond to rewind" do
         input.read
-        input.read.should == ""
+        expect(input.read).to eq ""
         input.rewind
-        input.read.should == "hello\r\ngoodbye"
+        expect(input.read).to eq "hello\r\ngoodbye"
       end
 
     end
@@ -114,36 +114,36 @@ describe JRuby::Rack::Input do
 
       buf = ""
       input.read(nil, buf)
-      buf.size.should == file.length
+      expect(buf.size).to eq file.length
 
       file.seek(0)
-      buf.each_byte { |b| b.should == file.read }
+      buf.each_byte { |b| expect(b).to eq file.read }
 
       input.rewind
 
       file.seek(0)
       buf = input.read(1000)
-      buf.size.should == 1000
-      buf.each_byte { |b| b.should == file.read }
+      expect(buf.size).to eq 1000
+      buf.each_byte { |b| expect(b).to eq file.read }
 
       buf = input.read(2000)
-      buf.size.should == 2000
-      buf.each_byte { |b| b.should == file.read }
+      expect(buf.size).to eq 2000
+      buf.each_byte { |b| expect(b).to eq file.read }
 
       buf = input.read(2000)
-      buf.size.should == 1278
-      buf.each_byte { |b| b.should == file.read }
+      expect(buf.size).to eq 1278
+      buf.each_byte { |b| expect(b).to eq file.read }
 
-      10.times { input.read(2000).should be nil }
+      10.times { expect(input.read(2000)).to be nil }
 
       input.rewind
 
       file.seek(0)
       buf = input.read
-      buf.size.should == 4278
-      buf.each_byte { |b| b.should == file.read }
+      expect(buf.size).to eq 4278
+      buf.each_byte { |b| expect(b).to eq file.read }
 
-      10.times { input.read.should == '' }
+      10.times { expect(input.read).to eq '' }
     end
 
     it "fully reads an image" do
@@ -154,8 +154,8 @@ describe JRuby::Rack::Input do
       input = self.input
 
       buf = input.read(file.length)
-      buf.size.should == 4278
-      buf.each_byte { |b| b.should == file.read }
+      expect(buf.size).to eq 4278
+      buf.each_byte { |b| expect(b).to eq file.read }
     end
   end
 
@@ -177,26 +177,26 @@ describe JRuby::Rack::Input do
     let(:input) { JRuby::Rack::Input.new(rewindable_input(4, 16)) }
 
     it "should be kind and rewind" do
-      input.read.should == @content
-      input.read.should == ""
+      expect(input.read).to eq @content
+      expect(input.read).to eq ""
       input.rewind
-      input.read.should == @content
+      expect(input.read).to eq @content
     end
 
     it "should be kind and rewind before read" do
       input.rewind
-      input.read.should == @content
+      expect(input.read).to eq @content
     end
 
     it "should be kind and rewind when gets some" do
-      input.gets.should == "1\n"
-      input.gets.should == " 2\n"
+      expect(input.gets).to eq "1\n"
+      expect(input.gets).to eq " 2\n"
       input.rewind
-      input.gets.should == "1\n"
-      input.gets.should == " 2\n"
-      input.gets.should == "  3\n"
-      input.gets.should == "   4\n"
-      input.read.should == "    5\r\t\n     6\n      7\n       8\n        9\n"
+      expect(input.gets).to eq "1\n"
+      expect(input.gets).to eq " 2\n"
+      expect(input.gets).to eq "  3\n"
+      expect(input.gets).to eq "   4\n"
+      expect(input.read).to eq "    5\r\t\n     6\n      7\n       8\n        9\n"
     end
 
   end
@@ -210,7 +210,7 @@ describe JRuby::Rack::Input do
   end
 
   it "is exposed as JRuby::RackInput (backwards compat)" do
-    expect( JRuby::RackInput ).to be JRuby::Rack::Input
+    expect(JRuby::RackInput).to be JRuby::Rack::Input
   end
 
 end

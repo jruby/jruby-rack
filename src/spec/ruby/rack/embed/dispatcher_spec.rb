@@ -9,7 +9,7 @@ describe org.jruby.rack.embed.Dispatcher do
 
   it "initializes $servlet_context", :deprecated => true do
     org.jruby.rack.embed.Dispatcher.new context, application
-    $servlet_context.should be context
+    expect($servlet_context).to be(context)
   end
 
   it "initializes JRuby::Rack.context" do
@@ -17,7 +17,7 @@ describe org.jruby.rack.embed.Dispatcher do
     JRuby::Rack.context = nil
     begin
       org.jruby.rack.embed.Dispatcher.new context, application
-      expect( JRuby::Rack.context ).to be context
+      expect(JRuby::Rack.context).to be context
     ensure
       JRuby::Rack.context = prev_context
     end
@@ -28,9 +28,9 @@ describe org.jruby.rack.embed.Dispatcher do
     err = java.io.ByteArrayOutputStream.new
     config = org.jruby.RubyInstanceConfig.new
     config.output = java.io.PrintStream.new(out)
-    config.error  = java.io.PrintStream.new(err)
+    config.error = java.io.PrintStream.new(err)
     runtime = org.jruby.Ruby.newInstance(config)
-    application.stub(:getRuntime).and_return runtime
+    allow(application).to receive(:getRuntime).and_return runtime
 
     $stdout = StringIO.new 'out'
     $stderr = StringIO.new 'err'
@@ -39,8 +39,8 @@ describe org.jruby.rack.embed.Dispatcher do
     runtime.evalScriptlet "$stdout.puts 'out from out there!'"
     runtime.evalScriptlet "STDERR.puts 'error it is not ...'"
 
-    expect(out.toString).to include  "out from out there!\n"
-    expect(err.toString).to include  "error it is not ...\n"
+    expect(out.toString).to include "out from out there!\n"
+    expect(err.toString).to include "error it is not ...\n"
   end
 
 end

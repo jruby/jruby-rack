@@ -1,4 +1,3 @@
-
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 
 java_import org.jruby.rack.RackContext
@@ -24,26 +23,26 @@ describe "integration" do
 
     it "initializes" do
       @servlet_context.addInitParameter('rackup',
-          "run lambda { |env| [ 200, {'Content-Type' => 'text/plain'}, 'OK' ] }"
+                                        "run lambda { |env| [ 200, {'Content-Type' => 'text/plain'}, 'OK' ] }"
       )
 
       listener = org.jruby.rack.RackServletContextListener.new
       listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
 
       rack_factory = @servlet_context.getAttribute("rack.factory")
-      rack_factory.should be_a(RackApplicationFactory)
-      rack_factory.should be_a(SharedRackApplicationFactory)
-      rack_factory.realFactory.should be_a(DefaultRackApplicationFactory)
+      expect(rack_factory).to be_a(RackApplicationFactory)
+      expect(rack_factory).to be_a(SharedRackApplicationFactory)
+      expect(rack_factory.realFactory).to be_a(DefaultRackApplicationFactory)
 
-      @servlet_context.getAttribute("rack.context").should be_a(RackContext)
-      @servlet_context.getAttribute("rack.context").should be_a(ServletRackContext)
+      expect(@servlet_context.getAttribute("rack.context")).to be_a(RackContext)
+      expect(@servlet_context.getAttribute("rack.context")).to be_a(ServletRackContext)
     end
 
     context "initialized" do
 
       before :each do
         @servlet_context.addInitParameter('rackup',
-            "run lambda { |env| [ 200, {'Via' => 'JRuby-Rack', 'Content-Type' => 'text/plain'}, 'OK' ] }"
+                                          "run lambda { |env| [ 200, {'Via' => 'JRuby-Rack', 'Content-Type' => 'text/plain'}, 'OK' ] }"
         )
         listener = org.jruby.rack.RackServletContextListener.new
         listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
@@ -56,8 +55,8 @@ describe "integration" do
 
         servlet = org.jruby.rack.RackServlet.new
         servlet.init(servlet_config)
-        expect( servlet.getContext ).to_not be nil
-        expect( servlet.getDispatcher ).to_not be nil
+        expect(servlet.getContext).to_not be nil
+        expect(servlet.getDispatcher).to_not be nil
       end
 
       it "serves (servlet)" do
@@ -73,10 +72,10 @@ describe "integration" do
 
         servlet.service(request, response)
 
-        expect( response.getStatus ).to eql 200
-        expect( response.getContentType ).to eql 'text/plain'
-        expect( response.getContentAsString ).to eql 'OK'
-        expect( response.getHeader("Via") ).to eql 'JRuby-Rack'
+        expect(response.getStatus).to eql 200
+        expect(response.getContentType).to eql 'text/plain'
+        expect(response.getContentAsString).to eql 'OK'
+        expect(response.getHeader("Via")).to eql 'JRuby-Rack'
       end
 
     end
@@ -97,14 +96,14 @@ describe "integration" do
       listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
 
       rack_factory = servlet_context.getAttribute("rack.factory")
-      rack_factory.should be_a(RackApplicationFactory)
-      rack_factory.should be_a(PoolingRackApplicationFactory)
-      rack_factory.realFactory.should be_a(RailsRackApplicationFactory)
+      expect(rack_factory).to be_a(RackApplicationFactory)
+      expect(rack_factory).to be_a(PoolingRackApplicationFactory)
+      expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
 
-      servlet_context.getAttribute("rack.context").should be_a(RackContext)
-      servlet_context.getAttribute("rack.context").should be_a(ServletRackContext)
+      expect(servlet_context.getAttribute("rack.context")).to be_a(RackContext)
+      expect(servlet_context.getAttribute("rack.context")).to be_a(ServletRackContext)
 
-      rack_factory.getApplication.should be_a(DefaultRackApplication)
+      expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
     end
 
     it "initializes shared (thread-safe) by default" do
@@ -112,11 +111,11 @@ describe "integration" do
       listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
 
       rack_factory = servlet_context.getAttribute("rack.factory")
-      rack_factory.should be_a(RackApplicationFactory)
-      rack_factory.should be_a(SharedRackApplicationFactory)
-      rack_factory.realFactory.should be_a(RailsRackApplicationFactory)
+      expect(rack_factory).to be_a(RackApplicationFactory)
+      expect(rack_factory).to be_a(SharedRackApplicationFactory)
+      expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
 
-      rack_factory.getApplication.should be_a(DefaultRackApplication)
+      expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
     end
 
     it "initializes shared (thread-safe) whem max runtimes is 1" do
@@ -126,22 +125,25 @@ describe "integration" do
       listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
 
       rack_factory = servlet_context.getAttribute("rack.factory")
-      rack_factory.should be_a(RackApplicationFactory)
-      rack_factory.should be_a(SharedRackApplicationFactory)
-      rack_factory.realFactory.should be_a(RailsRackApplicationFactory)
+      expect(rack_factory).to be_a(RackApplicationFactory)
+      expect(rack_factory).to be_a(SharedRackApplicationFactory)
+      expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
     end
 
   end
 
   describe 'rails 7.2', lib: :rails72 do
 
-    before(:all) do name = :rails72 # copy_gemfile :
+    before(:all) do
+      name = :rails72 # copy_gemfile :
       FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/Gemfile")
       FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/Gemfile.lock")
       Dir.chdir File.join(STUB_DIR, name.to_s)
     end
 
-    def base_path; "#{STUB_DIR}/rails72" end
+    def base_path
+      "#{STUB_DIR}/rails72"
+    end
 
     it_should_behave_like 'a rails app'
 
@@ -152,7 +154,7 @@ describe "integration" do
           prepare_servlet_context(servlet_context)
         end
       end
-      after(:all)  { restore_rails }
+      after(:all) { restore_rails }
 
       it "loaded rack ~> 2.2" do
         @runtime = @rack_factory.getApplication.getRuntime
@@ -205,7 +207,7 @@ describe "integration" do
   end
 
   def initialize_rails(env = nil, servlet_context = @servlet_context)
-    if ! servlet_context || servlet_context.is_a?(String)
+    if !servlet_context || servlet_context.is_a?(String)
       base = servlet_context.is_a?(String) ? servlet_context : nil
       servlet_context = new_servlet_context(base)
     end
@@ -236,7 +238,8 @@ describe "integration" do
 
   GEMFILES_DIR = File.expand_path('../../../gemfiles', STUB_DIR)
 
-  def copy_gemfile(name) # e.g. 'rails30'
+  def copy_gemfile(name)
+    # e.g. 'rails30'
     FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile")
     FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile.lock")
   end
