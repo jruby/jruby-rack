@@ -30,71 +30,71 @@ describe JRuby::Rack::Logger do
   it 'works with a servlet context' do
     logger.debug?
     logger.debug 'hogy basza meg a zold tucsok!'
-    expect( real_logger.logged_content ).to match /^DEBUG.*hogy .* a zold tucsok!$/
+    expect(real_logger.logged_content).to match /^DEBUG.*hogy .* a zold tucsok!$/
   end
 
   it 'delegates to passed logger instance' do
     logger.debug 'debugging'
-    expect( real_logger.logged_content ).to match /^DEBUG.*debugging$/
+    expect(real_logger.logged_content).to match /^DEBUG.*debugging$/
     real_logger.reset
     logger.info 'infooo'
-    expect( real_logger.logged_content ).to match /^INFO.*infooo$/
+    expect(real_logger.logged_content).to match /^INFO.*infooo$/
     real_logger.reset
     logger.warn 'warning'
-    expect( real_logger.logged_content ).to match /^WARN.*warning$/
+    expect(real_logger.logged_content).to match /^WARN.*warning$/
     real_logger.reset
     logger.error 'errored'
-    expect( real_logger.logged_content ).to match /^ERROR.*errored$/
+    expect(real_logger.logged_content).to match /^ERROR.*errored$/
     real_logger.reset
     logger.fatal 'totaal!'
-    expect( real_logger.logged_content ).to match /^FATAL.*totaal!$/
+    expect(real_logger.logged_content).to match /^FATAL.*totaal!$/
   end
 
   it 'uses JRuby::Rack.context when no initialize argument' do
     logger = JRuby::Rack::Logger.new
     logger.debug?
     logger.debug 'hogy basza meg a zold tucsok!'
-    expect( logger.to_java(org.jruby.rack.RackLogger) ).to be rack_context
+    expect(logger.to_java(org.jruby.rack.RackLogger)).to be rack_context
   end
 
   it 'delegates level check (when level is not set)' do
     real_logger.level = level::INFO
-    expect( logger.debug? ).to be false
-    expect( logger.info? ).to be true
+    expect(logger.debug?).to be false
+    expect(logger.info?).to be true
     real_logger.level = level::WARN
-    expect( logger.info? ).to be false
+    expect(logger.info?).to be false
   end
 
   it 'uses level check when level is explicitly set' do
     real_logger.level = level::INFO
     logger.level = 2 # Logger.::WARN
-    expect( logger.info? ).to be false
-    expect( logger.warn? ).to be true
+    expect(logger.info?).to be false
+    expect(logger.warn?).to be true
     logger.level = nil
-    expect( logger.info? ).to be true
+    expect(logger.info?).to be true
   end
 
   it "combines level check with delegate's level" do
     real_logger.level = level::WARN
     logger.level = 1 # Logger.::INFO
-    expect( logger.debug? ).to be false
-    expect( logger.info? ).to be false
-    expect( logger.warn? ).to be true
+    expect(logger.debug?).to be false
+    expect(logger.info?).to be false
+    expect(logger.warn?).to be true
     logger.level = nil
-    expect( logger.info? ).to be false
-    expect( logger.debug? ).to be false
-    expect( logger.warn? ).to be true
+    expect(logger.info?).to be false
+    expect(logger.debug?).to be false
+    expect(logger.warn?).to be true
   end
 
   it "disables real logger's formatting when formatter is set" do
     real_logger.formatting = true
-    expect( real_logger.formatting? ).to be true
+    expect(real_logger.formatting?).to be true
 
     logger.formatter = Proc.new { |severity, timestamp, progname, msg| "#{severity[0, 1]} #{msg}" }
     logger.warn 'hogy basza meg a zold tucsok!'
-    expect( real_logger.logged_content ).to eql "W hogy basza meg a zold tucsok!\n"
+    expect(real_logger.logged_content).to eql "W hogy basza meg a zold tucsok!\n"
 
-    expect( real_logger.formatting? ).to be false
+    expect(real_logger.formatting?).to be false
   end
 
   it 'logs exception with trace when passed as argument' do
@@ -103,12 +103,12 @@ describe JRuby::Rack::Logger do
     rescue => e
       logger.debug(e)
     end
-    expect( real_logger.logged_content ).to match /^DEBUG.*?IndexError.*?TEST.*?at.*?logger_spec.rb.*/m
+    expect(real_logger.logged_content).to match /^DEBUG.*?IndexError.*?TEST.*?at.*?logger_spec.rb.*/m
   end
 
   it 'handles constant resolution (for Rails compatibility)' do
-    expect( logger.class::DEBUG ).to eql 0
-    expect( logger.class::FATAL ).to eql 4
+    expect(logger.class::DEBUG).to eql 0
+    expect(logger.class::FATAL).to eql 4
   end
 
   describe JRuby::Rack::ServletLog do

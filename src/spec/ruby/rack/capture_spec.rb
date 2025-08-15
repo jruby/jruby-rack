@@ -13,15 +13,15 @@ describe JRuby::Rack::Capture do
   before :each do
     JRuby::Rack.context = nil
     $servlet_context = @servlet_context
-    @servlet_context.stub(:init_parameter_names).and_return []
+    allow(@servlet_context).to receive(:init_parameter_names).and_return []
   end
 
   it "captures environment information" do
-    @servlet_context.should_receive(:log)
+    expect(@servlet_context).to receive(:log)
     error = StandardError.new
     error.capture
     error.store
-    expect( error.output ).to be_a StringIO
+    expect(error.output).to be_a StringIO
   end
 
   it "captures exception backtrace" do
@@ -29,8 +29,8 @@ describe JRuby::Rack::Capture do
       raise ZeroDivisionError.new
     rescue ZeroDivisionError => e
       e.capture
-      expect( e.output.string ).to match /--- Backtrace/
-      expect( e.output.string ).to match /ZeroDivisionError/
+      expect(e.output.string).to match /--- Backtrace/
+      expect(e.output.string).to match /ZeroDivisionError/
     end
   end
 

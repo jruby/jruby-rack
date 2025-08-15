@@ -19,23 +19,22 @@ describe Rack::Request do
   end
 
   it "should forward to servlet request dispatcher" do
-    @servlet_request.should_receive(:getRequestDispatcher).
+    expect(@servlet_request).to receive(:getRequestDispatcher).
       with('/foo').and_return dispatcher = double('dispatcher')
-    dispatcher.should_receive(:forward).
+    expect(dispatcher).to receive(:forward).
       with(@servlet_request, @servlet_response)
-    @rack_request.should respond_to(:forward_to)
+    expect(@rack_request).to respond_to(:forward_to)
     @rack_request.forward_to('/foo')
   end
 
   it "should include servlet response on render" do
-    @servlet_request.should_receive(:getRequestDispatcher).
+    expect(@servlet_request).to receive(:getRequestDispatcher).
       with('/foo').and_return dispatcher = double('dispatcher')
-    org.jruby.rack.servlet.ServletRackIncludedResponse.
-      should_receive(:new).with(@servlet_response).
-      and_return included_response = double('included_response')
-    included_response.should_receive(:getOutput).and_return 'foo output'
-    dispatcher.should_receive(:include).with(@servlet_request, included_response)
-    @rack_request.should respond_to(:render)
-    @rack_request.render('/foo').should == 'foo output'
+    expect(org.jruby.rack.servlet.ServletRackIncludedResponse).to receive(:new).
+      with(@servlet_response).and_return included_response = double('included_response')
+    expect(included_response).to receive(:getOutput).and_return 'foo output'
+    expect(dispatcher).to receive(:include).with(@servlet_request, included_response)
+    expect(@rack_request).to respond_to(:render)
+    expect(@rack_request.render('/foo')).to eq 'foo output'
   end
 end
