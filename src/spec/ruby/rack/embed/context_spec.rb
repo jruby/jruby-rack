@@ -13,32 +13,35 @@ describe org.jruby.rack.embed.Context do
 
   it "outputs log messages out to stdout" do
     context.log "does this string appear?"
-    captured["does this string appear?"].should_not be nil
+    expect(captured["does this string appear?"]).not_to be nil
   end
 
   it "outputs log messages with level and new line to stdout" do
     info = org.jruby.rack.embed.Context::INFO
     context.log info, "this is logging at its best"
-    captured.should == "INFO: this is logging at its best\n"
+    expect(captured).to eq "INFO: this is logging at its best\n"
   end
 
   it "outputs error log messages to stderr" do
-    my_error = begin
-      raise java.lang.RuntimeException.new "shizzle sticks"
-    rescue java.lang.RuntimeException; $! ; end
+    my_error =
+      begin
+        raise java.lang.RuntimeException.new "shizzle sticks"
+      rescue java.lang.RuntimeException;
+        $!;
+      end
 
     context.log("an error, gosh", my_error)
 
-    captured["an error, gosh"].should_not be nil
-    captured["shizzle sticks"].should_not be nil
-    captured["RuntimeException"].should_not be nil
+    expect(captured["an error, gosh"]).not_to be nil
+    expect(captured["shizzle sticks"]).not_to be nil
+    expect(captured["RuntimeException"]).not_to be nil
   end
 
   context "with specific info" do
     let(:server_info) { "awesome power server" }
 
     it "returns the server info given to it as a constructor argument" do
-      context.get_server_info.should == "awesome power server"
+      expect(context.get_server_info).to eq "awesome power server"
     end
   end
 end

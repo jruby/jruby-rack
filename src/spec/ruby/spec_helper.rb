@@ -1,6 +1,6 @@
 target = File.expand_path('target', "#{File.dirname(__FILE__)}/../../..")
-jars = File.exist?(lib = "#{target}/lib") && ( Dir.entries(lib) - [ '.', '..' ] )
-raise "missing .jar dependencies please run `rake test_prepare'" if ! jars || jars.empty?
+jars = File.exist?(lib = "#{target}/lib") && (Dir.entries(lib) - ['.', '..'])
+raise "missing .jar dependencies please run `rake test_prepare'" if !jars || jars.empty?
 $CLASSPATH << File.expand_path('classes', target)
 $CLASSPATH << File.expand_path('test-classes', target)
 jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
@@ -31,22 +31,24 @@ module SharedHelpers
     @servlet_context = ServletContext.impl {}
     @rack_config ||= RackConfig.impl {}
     @rack_context ||= ServletRackContext.impl {}
-    [ @rack_context, @servlet_context ].each do |context|
-      context.stub(:log)
-      context.stub(:isEnabled).and_return nil
-      context.stub(:getInitParameter).and_return nil
-      context.stub(:getRealPath).and_return "/"
-      context.stub(:getResource).and_return nil
-      context.stub(:getContextPath).and_return "/"
+    [@rack_context, @servlet_context].each do |context|
+      allow(context).to receive(:log)
+      allow(context).to receive(:isEnabled).and_return nil
+      allow(context).to receive(:getInitParameter).and_return nil
+      allow(context).to receive(:getRealPath).and_return "/"
+      allow(context).to receive(:getResource).and_return nil
+      allow(context).to receive(:getContextPath).and_return "/"
     end
-    @rack_context.stub(:getConfig).and_return @rack_config
+    allow(@rack_context).to receive(:getConfig).and_return @rack_config
     @servlet_config ||= ServletConfig.impl {}
-    @servlet_config.stub(:getServletName).and_return "a Servlet"
-    @servlet_config.stub(:getServletContext).and_return @servlet_context
+    allow(@servlet_config).to receive(:getServletName).and_return "a Servlet"
+    allow(@servlet_config).to receive(:getServletContext).and_return @servlet_context
     @servlet_context
   end
 
-  def servlet_context; mock_servlet_context end
+  def servlet_context
+    mock_servlet_context
+  end
 
   def silence_warnings(&block)
     JRuby::Rack::Helpers.silence_warnings(&block)
@@ -56,8 +58,9 @@ module SharedHelpers
 
   def servlet_30?
     return @@servlet_30 unless @@servlet_30.nil?
-    @@servlet_30 = !! ( Java::javax.servlet.AsyncContext rescue nil )
+    @@servlet_30 = !!(Java::javax.servlet.AsyncContext rescue nil)
   end
+
   private :servlet_30?
 
   def rack_release(at_least = nil)
@@ -65,6 +68,7 @@ module SharedHelpers
     release = '1.6' if Gem.loaded_specs['rack'].version.to_s == '1.6.0'
     at_least.nil? ? release : release >= at_least
   end
+
   private :rack_release
 
   def raise_logger(level = 'WARN')
@@ -105,7 +109,7 @@ module SharedHelpers
       if expected[i] != actual[i]
         raise ExpectationNotMetError, "byte[] arrays differ at #{i}"
       end
-      break if ( i += 1 ) >= expected.length
+      break if (i += 1) >= expected.length
     end
   end
 
@@ -122,26 +126,28 @@ module SharedHelpers
 
     expected = expected.inspect.to_java
     actual = runtime.evalScriptlet(code).inspect.to_java
-    actual.equals(expected).should be_flag, message.gsub('$expected', expected.to_s).gsub('$actual', actual.to_s)
+    expect(actual.equals(expected)).to be_flag, message.gsub('$expected', expected.to_s).gsub('$actual', actual.to_s)
   end
 
   def should_eval_as_not_eql_to(code, expected, options = {})
-    should_eval_as_eql_to(code, expected, options.merge(:should => be_falsy,
-        :message => options[:message] || "expected eval #{code.inspect} to be != $expected but was not")
+    should_eval_as_eql_to(code, expected, options.merge(
+      :should => be_falsy,
+      :message => options[:message] || "expected eval #{code.inspect} to be != $expected but was not")
     )
   end
 
   def should_eval_as_nil(code, runtime = @runtime)
     should_eval_as_eql_to code, nil, :runtime => runtime,
-      :message => "expected eval #{code.inspect} to be nil but was $actual"
+                          :message => "expected eval #{code.inspect} to be nil but was $actual"
   end
 
   def should_eval_as_not_nil(code, runtime = @runtime)
     should_eval_as_eql_to code, nil, :should => be_falsy, :runtime => runtime,
-      :message => "expected eval #{code.inspect} to not be nil but was"
+                          :message => "expected eval #{code.inspect} to not be nil but was"
   end
 
-  def should_not_eval_as_nil(code, runtime = @runtime) # alias
+  def should_not_eval_as_nil(code, runtime = @runtime)
+    # alias
     should_eval_as_not_nil(code, runtime)
   end
 
@@ -180,8 +186,8 @@ RSpec.configure do |config|
   end
 
   config.after(:each) do
-    (ENV.keys - @env_save.keys).each {|k| ENV.delete k}
-    @env_save.each {|k,v| ENV[k] = v}
+    (ENV.keys - @env_save.keys).each { |k| ENV.delete k }
+    @env_save.each { |k, v| ENV[k] = v }
     Dir.chdir(WD_START) unless Dir.getwd == WD_START
     $servlet_context = nil if defined? $servlet_context
   end

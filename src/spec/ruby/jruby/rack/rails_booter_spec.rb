@@ -23,10 +23,10 @@ describe JRuby::Rack::RailsBooter do
   after { JRuby::Rack.context = nil; JRuby::Rack.logger = nil }
 
   it "should determine RAILS_ROOT from the 'rails.root' init parameter" do
-    @rack_context.should_receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
+    expect(@rack_context).to receive(:getInitParameter).with("rails.root").and_return "/WEB-INF"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF").and_return "./WEB-INF"
     rails_booter.boot!
-    rails_booter.app_path.should == "./WEB-INF"
+    expect(rails_booter.app_path).to eq "./WEB-INF"
   end
 
   before do
@@ -40,63 +40,63 @@ describe JRuby::Rack::RailsBooter do
   end
 
   it "should default rails path to /WEB-INF" do
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/usr/apps/WEB-INF"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF").and_return "/usr/apps/WEB-INF"
     rails_booter.boot!
-    rails_booter.app_path.should == "/usr/apps/WEB-INF"
+    expect(rails_booter.app_path).to eq "/usr/apps/WEB-INF"
   end
 
   it "leaves ENV['RAILS_ENV'] as is if it was already set" do
     ENV['RAILS_ENV'] = 'staging'
     rails_booter.boot!
-    ENV['RAILS_ENV'].should == 'staging'
-    rails_booter.rails_env.should == "staging"
+    expect(ENV['RAILS_ENV']).to eq 'staging'
+    expect(rails_booter.rails_env).to eq "staging"
   end
 
   it "determines RAILS_ENV from the 'rails.env' init parameter" do
     ENV['RAILS_ENV'] = nil
-    @rack_context.should_receive(:getInitParameter).with("rails.env").and_return "test"
+    expect(@rack_context).to receive(:getInitParameter).with("rails.env").and_return "test"
     rails_booter.boot!
-    rails_booter.rails_env.should == "test"
+    expect(rails_booter.rails_env).to eq "test"
   end
 
   it "gets rails environment from rack environmnent" do
     ENV.delete('RAILS_ENV')
     ENV['RACK_ENV'] = 'development'
-    @rack_context.stub(:getInitParameter)
+    allow(@rack_context).to receive(:getInitParameter)
     rails_booter.boot!
-    rails_booter.rails_env.should == 'development'
+    expect(rails_booter.rails_env).to eq 'development'
   end
 
   it "default RAILS_ENV to 'production'" do
     ENV.delete('RAILS_ENV'); ENV.delete('RACK_ENV')
     rails_booter.boot!
-    rails_booter.rails_env.should == "production"
+    expect(rails_booter.rails_env).to eq "production"
   end
 
   it "should set RAILS_RELATIVE_URL_ROOT based on the servlet context path" do
-    @rack_context.should_receive(:getContextPath).and_return '/myapp'
+    expect(@rack_context).to receive(:getContextPath).and_return '/myapp'
     rails_booter.boot!
-    ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp'
+    expect(ENV['RAILS_RELATIVE_URL_ROOT']).to eq '/myapp'
   end
 
   it "should append to RAILS_RELATIVE_URL_ROOT if 'rails.relative_url_append' is set" do
-    @rack_context.should_receive(:getContextPath).and_return '/myapp'
-    @rack_context.should_receive(:getInitParameter).with("rails.relative_url_append").and_return "/blah"
+    expect(@rack_context).to receive(:getContextPath).and_return '/myapp'
+    expect(@rack_context).to receive(:getInitParameter).with("rails.relative_url_append").and_return "/blah"
     rails_booter.boot!
-    ENV['RAILS_RELATIVE_URL_ROOT'].should == '/myapp/blah'
+    expect(ENV['RAILS_RELATIVE_URL_ROOT']).to eq '/myapp/blah'
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
-    @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
-    @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
+    expect(@rack_context).to receive(:getInitParameter).with("public.root").and_return "/blah"
+    expect(@rack_context).to receive(:getRealPath).with("/blah").and_return "."
     rails_booter.boot!
-    rails_booter.public_path.should == "."
+    expect(rails_booter.public_path).to eq "."
   end
 
   it "should default public root to '/'" do
-    @rack_context.should_receive(:getRealPath).with("/").and_return "."
+    expect(@rack_context).to receive(:getRealPath).with("/").and_return "."
     rails_booter.boot!
-    rails_booter.public_path.should == "."
+    expect(rails_booter.public_path).to eq "."
   end
 
   it "uses JRuby-Rack's logger by default" do
@@ -124,7 +124,7 @@ describe JRuby::Rack::RailsBooter do
     end
 
     after :each do
-      [ :app_path, :public_path, :context ].each do |name|
+      [:app_path, :public_path, :context].each do |name|
         JRuby::Rack.send :remove_instance_variable, :"@#{name}"
       end
     end
@@ -134,70 +134,79 @@ describe JRuby::Rack::RailsBooter do
     end
 
     it "should have loaded the railtie" do
-      defined?(JRuby::Rack::Railtie).should_not be nil
+      expect(defined?(JRuby::Rack::Railtie)).not_to be nil
     end
 
     it "should set the application configuration's public path" do
       paths = %w( public public/javascripts public/stylesheets ).inject({}) do
-        |hash, path| hash[ path ] = [ File.join(RAILS_ROOT_DIR, path) ]; hash
+      |hash, path|
+        hash[path] = [File.join(RAILS_ROOT_DIR, path)]; hash
       end
-      app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
+      app = double("app")
+      allow(app).to receive_message_chain(:config, :paths).and_return(paths)
       public_path = Pathname.new(booter.public_path)
 
-      Rails::Railtie.config.__before_configuration.size.should == 1
+      expect(Rails::Railtie.config.__before_configuration.size).to eq 1
       before_config = Rails::Railtie.config.__before_configuration.first
-      before_config.should_not be nil
+      expect(before_config).not_to be nil
 
       before_config.call(app)
 
-      paths['public'].should == public_path.to_s
-      paths['public/javascripts'].should == public_path.join("javascripts").to_s
-      paths['public/stylesheets'].should == public_path.join("stylesheets").to_s
+      expect(paths['public']).to eq public_path.to_s
+      expect(paths['public/javascripts']).to eq public_path.join("javascripts").to_s
+      expect(paths['public/stylesheets']).to eq public_path.join("stylesheets").to_s
     end
 
     it "works when JRuby::Rack.public_path is nil (public does not exist)" do
       paths = %w( public public/javascripts public/stylesheets ).inject({}) do
-        |hash, path| hash[ path ] = [ path.sub('public', 'NO-SUCH-DiR') ]; hash
+      |hash, path|
+        hash[path] = [path.sub('public', 'NO-SUCH-DiR')]; hash
       end
-      app = double("app"); app.stub_chain(:config, :paths).and_return(paths)
+      app = double("app")
+      allow(app).to receive_message_chain(:config, :paths).and_return(paths)
       JRuby::Rack.public_path = nil
 
       before_config = Rails::Railtie.config.__before_configuration.first
-      before_config.should_not be nil
+      expect(before_config).not_to be nil
       before_config.call(app)
 
-      paths['public'].should == [ public_path = "NO-SUCH-DiR" ]
-      paths['public/javascripts'].should == [ File.join(public_path, "javascripts") ]
-      paths['public/stylesheets'].should ==[ File.join(public_path, "stylesheets") ]
+      expect(paths['public']).to eq [public_path = "NO-SUCH-DiR"]
+      expect(paths['public/javascripts']).to eq [File.join(public_path, "javascripts")]
+      expect(paths['public/stylesheets']).to eq [File.join(public_path, "stylesheets")]
     end
 
     describe "logger" do
 
       before do
         @app = double "app"
-        @app.stub(:config).and_return @config = double("config")
+        allow(@app).to receive(:config).and_return @config = double("config")
         @config.instance_eval do
-          def logger; @logger; end
-          def logger=(logger); @logger = logger; end
+          def logger
+            @logger;
+          end
+
+          def logger=(logger)
+            ; @logger = logger;
+          end
         end
       end
 
       it "has an initializer" do
-        log_initializer.should_not be_nil
-        log_initializer[1].should == [{:before => :initialize_logger}]
+        expect(log_initializer).not_to be_nil
+        expect(log_initializer[1]).to eq [{ :before => :initialize_logger }]
       end
 
       it "gets set as config.logger" do
         logger = JRuby::Rack::Logger.new STDERR
-        @config.stub(:log_level).and_return(:info)
-        @config.stub(:log_formatter).and_return(nil)
+        allow(@config).to receive(:log_level).and_return(:info)
+        allow(@config).to receive(:log_formatter).and_return(nil)
 
-        JRuby::Rack.should_receive(:logger).and_return(logger)
+        expect(JRuby::Rack).to receive(:logger).and_return(logger)
         #logger.class.should_receive(:const_get).with('INFO').and_return(nil)
         #logger.should_receive(:level=).with(nil)
 
         log_initializer.last.call(@app)
-        @app.config.logger.should be(logger)
+        expect(@app.config.logger).to be(logger)
       end
 
       it "has a configurable log level" do
@@ -205,11 +214,11 @@ describe JRuby::Rack::RailsBooter do
           def logger; @logger; end
           def logger=(logger); @logger = logger; end
         end
-        @config.stub(:log_formatter).and_return(nil)
-        @config.should_receive(:log_level).and_return(:debug)
+        allow(@config).to receive(:log_formatter).and_return(nil)
+        expect(@config).to receive(:log_level).and_return(:debug)
 
         log_initializer.last.call(@app) ##
-        @app.config.logger.level.should be(JRuby::Rack::Logger::DEBUG)
+        expect(@app.config.logger.level).to be(JRuby::Rack::Logger::DEBUG)
       end
 
       it "is wrapped in tagged logging" do # Rails 3.2
@@ -221,12 +230,12 @@ describe JRuby::Rack::RailsBooter do
           end
           module ::ActiveSupport; end
           ::ActiveSupport.const_set(:TaggedLogging, klass)
-          @config.stub(:log_level).and_return(nil)
-          @config.stub(:log_formatter).and_return(nil)
+          allow(@config).to receive(:log_level).and_return(nil)
+          allow(@config).to receive(:log_formatter).and_return(nil)
 
           log_initializer.last.call(@app)
-          @app.config.logger.should be_a(klass)
-          @app.config.logger.instance_variable_get(:@logger).should be_a(JRuby::Rack::Logger)
+          expect(@app.config.logger).to be_a(klass)
+          expect(@app.config.logger.instance_variable_get(:@logger)).to be_a(JRuby::Rack::Logger)
         ensure
           if tagged_logging.nil?
             if active_support
@@ -251,7 +260,7 @@ describe JRuby::Rack::RailsBooter do
     it "should return the Rails.application instance" do
       app = double "app"
       Rails.application = app
-      booter.to_app.should == app
+      expect(booter.to_app).to eq app
     end
 
   end # if defined? Rails
@@ -264,8 +273,8 @@ describe JRuby::Rack, "Rails controller extensions" do
 
   let(:controller) do
     controller = ActionController::Base.new
-    controller.stub(:request).and_return request
-    controller.stub(:response).and_return response
+    allow(controller).to receive(:request).and_return request
+    allow(controller).to receive(:response).and_return response
     controller
   end
 
@@ -276,26 +285,26 @@ describe JRuby::Rack, "Rails controller extensions" do
   let(:servlet_response) { org.springframework.mock.web.MockHttpServletResponse.new }
 
   before :each do
-    request.stub(:env).and_return({
-        'java.servlet_request' => servlet_request,
-        'java.servlet_response' => servlet_response
-    })
-    response.stub(:headers).and_return @headers = {}
+    allow(request).to receive(:env).and_return({
+                                                 'java.servlet_request' => servlet_request,
+                                                 'java.servlet_response' => servlet_response
+                                               })
+    allow(response).to receive(:headers).and_return @headers = {}
   end
 
   it "should add a #servlet_request method to ActionController::Base" do
-    controller.should respond_to(:servlet_request)
-    controller.servlet_request.should == servlet_request
+    expect(controller).to respond_to(:servlet_request)
+    expect(controller.servlet_request).to eq servlet_request
   end
 
   it "should add a #servlet_response method to ActionController::Base" do
-    controller.should respond_to(:servlet_response)
-    controller.servlet_response.should == servlet_response
+    expect(controller).to respond_to(:servlet_response)
+    expect(controller.servlet_response).to eq servlet_response
   end
 
   it "should add a #forward_to method for forwarding to another servlet" do
     #@servlet_response = double "servlet response"
-    controller.request.should_receive(:forward_to).with("/forward.jsp")
+    expect(controller.request).to receive(:forward_to).with("/forward.jsp")
     controller.forward_to '/forward.jsp'
   end
 

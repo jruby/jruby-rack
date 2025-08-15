@@ -20,23 +20,23 @@ describe QueueContextListener do
   end
 
   it "should create a new QueueManager, initialize it and store it in the application context" do
-    @qmf.should_receive(:newQueueManager).ordered.and_return @qm
-    @qm.should_receive(:init).ordered
-    @servlet_context.should_receive(:setAttribute).with(QueueManager::MGR_KEY, @qm).ordered
+    expect(@qmf).to receive(:newQueueManager).ordered.and_return @qm
+    expect(@qm).to receive(:init).ordered
+    expect(@servlet_context).to receive(:setAttribute).with(QueueManager::MGR_KEY, @qm).ordered
     @listener.contextInitialized(@listener_event)
   end
 
   it "should capture exceptions during initialization and log them to the servlet context" do
-    @qmf.should_receive(:newQueueManager).and_return @qm
-    @qm.should_receive(:init).and_raise StandardError.new("something happened!")
+    expect(@qmf).to receive(:newQueueManager).and_return @qm
+    expect(@qm).to receive(:init).and_raise StandardError.new("something happened!")
     @listener.contextInitialized(@listener_event)
   end
 
   it "should remove the QueueManager and destroy it" do
     qm = QueueManager.impl {}
-    @servlet_context.should_receive(:getAttribute).with(QueueManager::MGR_KEY).and_return qm
-    @servlet_context.should_receive(:removeAttribute).with(QueueManager::MGR_KEY)
-    qm.should_receive(:destroy)
+    expect(@servlet_context).to receive(:getAttribute).with(QueueManager::MGR_KEY).and_return qm
+    expect(@servlet_context).to receive(:removeAttribute).with(QueueManager::MGR_KEY)
+    expect(qm).to receive(:destroy)
     @listener.contextDestroyed(@listener_event)
   end
 end
@@ -51,36 +51,36 @@ describe DefaultQueueManager do
 
   it "should set up a connection with a message listener" do
     app_factory = Java::OrgJRubyRack::RackApplicationFactory.impl {}
-    @rack_context.should_receive(:getRackFactory).and_return app_factory
+    expect(@rack_context).to receive(:getRackFactory).and_return app_factory
     conn = double "connection"
-    @connection_factory.should_receive(:createConnection).and_return conn
+    expect(@connection_factory).to receive(:createConnection).and_return conn
     session = double "session"
-    conn.should_receive(:createSession).and_return session
+    expect(conn).to receive(:createSession).and_return session
     dest = javax.jms.Destination.impl {}
-    @context.should_receive(:lookup).with("myqueue").and_return dest
+    expect(@context).to receive(:lookup).with("myqueue").and_return dest
     consumer = double "consumer"
-    session.should_receive(:createConsumer).and_return consumer
-    consumer.should_receive(:setMessageListener)
-    conn.should_receive(:start)
+    expect(session).to receive(:createConsumer).and_return consumer
+    expect(consumer).to receive(:setMessageListener)
+    expect(conn).to receive(:start)
     @queue_manager.listen("myqueue")
   end
 
   it "should shutdown a connection when closed" do
     app_factory = Java::OrgJRubyRack::RackApplicationFactory.impl {}
-    @rack_context.stub(:getRackFactory).and_return app_factory
+    allow(@rack_context).to receive(:getRackFactory).and_return app_factory
     conn = double "connection"
-    @connection_factory.stub(:createConnection).and_return conn
+    allow(@connection_factory).to receive(:createConnection).and_return conn
     session = double "session"
-    conn.stub(:createSession).and_return session
+    allow(conn).to receive(:createSession).and_return session
     dest = javax.jms.Destination.impl {}
-    @context.stub(:lookup).with("myqueue").and_return dest
+    allow(@context).to receive(:lookup).with("myqueue").and_return dest
     consumer = double "consumer"
-    session.stub(:createConsumer).and_return consumer
-    consumer.stub(:setMessageListener)
-    conn.should_receive(:start)
+    allow(session).to receive(:createConsumer).and_return consumer
+    allow(consumer).to receive(:setMessageListener)
+    expect(conn).to receive(:start)
     @queue_manager.listen("myqueue")
 
-    conn.should_receive(:close)
+    expect(conn).to receive(:close)
     @queue_manager.close("myqueue")
   end
 end

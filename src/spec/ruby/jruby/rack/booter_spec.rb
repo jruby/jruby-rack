@@ -29,111 +29,111 @@ describe JRuby::Rack::Booter do
   end
 
   it "should determine the public html root from the 'public.root' init parameter" do
-    @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah"
-    @rack_context.should_receive(:getRealPath).with("/blah").and_return "."
+    expect(@rack_context).to receive(:getInitParameter).with("public.root").and_return "/blah"
+    expect(@rack_context).to receive(:getRealPath).with("/blah").and_return "."
     booter.boot!
-    booter.public_path.should == "."
+    expect(booter.public_path).to eq "."
   end
 
   it "should convert public.root to not have any trailing slashes" do
-    @rack_context.should_receive(:getInitParameter).with("public.root").and_return "/blah/"
-    @rack_context.should_receive(:getRealPath).with("/blah").and_return "/blah/blah"
+    expect(@rack_context).to receive(:getInitParameter).with("public.root").and_return "/blah/"
+    expect(@rack_context).to receive(:getRealPath).with("/blah").and_return "/blah/blah"
     booter.boot!
-    booter.public_path.should == "/blah/blah"
+    expect(booter.public_path).to eq "/blah/blah"
   end
 
   it "should default public root to '/'" do
-    @rack_context.should_receive(:getRealPath).with("/").and_return "."
+    expect(@rack_context).to receive(:getRealPath).with("/").and_return "."
     booter.boot!
-    booter.public_path.should == "."
+    expect(booter.public_path).to eq "."
   end
 
   it "should chomp trailing slashes from paths" do
-    @rack_context.should_receive(:getRealPath).with("/").and_return "/hello/there/"
+    expect(@rack_context).to receive(:getRealPath).with("/").and_return "/hello/there/"
     booter.boot!
-    booter.public_path.should == "/hello/there"
+    expect(booter.public_path).to eq "/hello/there"
   end
 
   it "should determine the gem path from the gem.path init parameter" do
-    @rack_context.should_receive(:getInitParameter).with("gem.path").and_return "/blah"
-    @rack_context.should_receive(:getRealPath).with("/blah").and_return "./blah"
+    expect(@rack_context).to receive(:getInitParameter).with("gem.path").and_return "/blah"
+    expect(@rack_context).to receive(:getRealPath).with("/blah").and_return "./blah"
     booter.boot!
-    booter.gem_path.should == "./blah"
+    expect(booter.gem_path).to eq "./blah"
   end
 
   it "should also be able to determine the gem path from the gem.home init parameter" do
-    @rack_context.should_receive(:getInitParameter).with("gem.home").and_return "/blah"
-    @rack_context.should_receive(:getRealPath).with("/blah").and_return "/home/kares/blah"
+    expect(@rack_context).to receive(:getInitParameter).with("gem.home").and_return "/blah"
+    expect(@rack_context).to receive(:getRealPath).with("/blah").and_return "/home/kares/blah"
     booter.boot!
-    booter.gem_path.should == "/home/kares/blah"
+    expect(booter.gem_path).to eq "/home/kares/blah"
   end
 
   it "defaults gem path to '/WEB-INF/gems'" do
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "file:/home/kares/WEB-INF"
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "file:/home/kares/WEB-INF/gems"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF").and_return "file:/home/kares/WEB-INF"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF/gems").and_return "file:/home/kares/WEB-INF/gems"
     booter.boot!
-    booter.gem_path.should == "file:/home/kares/WEB-INF/gems"
+    expect(booter.gem_path).to eq "file:/home/kares/WEB-INF/gems"
   end
 
   it "gets rack environment from rack.env" do
     ENV.delete('RACK_ENV')
-    @rack_context.should_receive(:getInitParameter).with("rack.env").and_return "staging"
+    expect(@rack_context).to receive(:getInitParameter).with("rack.env").and_return "staging"
     booter.boot!
-    booter.rack_env.should == 'staging'
+    expect(booter.rack_env).to eq 'staging'
   end
 
   it "gets rack environment from ENV" do
     ENV['RACK_ENV'] = 'production'
-    @rack_context.stub(:getInitParameter)
+    allow(@rack_context).to receive(:getInitParameter)
     booter.boot!
-    booter.rack_env.should == 'production'
+    expect(booter.rack_env).to eq 'production'
   end
 
   it "prepends gem_path to Gem.path (when configured to not mangle with ENV)" do
-    @rack_context.should_receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'false'
-    Gem.path.replace [ '/opt/gems' ]
+    expect(@rack_context).to receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'false'
+    Gem.path.replace ['/opt/gems']
     booter.gem_path = "wsjar:file:/opt/deploy/sample.war!/WEB-INF/gems"
     booter.boot!
 
-    expect( Gem.path ).to eql [ 'wsjar:file:/opt/deploy/sample.war!/WEB-INF/gems', '/opt/gems' ]
+    expect(Gem.path).to eql ['wsjar:file:/opt/deploy/sample.war!/WEB-INF/gems', '/opt/gems']
   end
 
   it "prepends gem_path to Gem.path if not already present" do
-    Gem.path.replace [ "file:/home/gems", "/usr/local/gems" ]
+    Gem.path.replace ["file:/home/gems", "/usr/local/gems"]
     booter.gem_path = '/usr/local/gems'
     booter.boot!
 
-    expect( Gem.path ).to eql [ "file:/home/gems", "/usr/local/gems" ]
+    expect(Gem.path).to eql ["file:/home/gems", "/usr/local/gems"]
   end
 
   it "does not change Gem.path if gem_path empty" do
-    Gem.path.replace [ '/opt/gems' ]
+    Gem.path.replace ['/opt/gems']
     booter.gem_path = ""
     booter.boot!
 
-    expect( Gem.path ).to eql [ '/opt/gems' ]
+    expect(Gem.path).to eql ['/opt/gems']
   end
 
   it "prepends gem_path to ENV['GEM_PATH'] if jruby.rack.gem_path set to true" do
-    @rack_context.should_receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'true'
+    expect(@rack_context).to receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'true'
     ENV['GEM_PATH'] = '/opt/gems'
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
 
     booter.boot!
 
-    ENV['GEM_PATH'].should == "/opt/deploy/sample.war!/WEB-INF/gems#{File::PATH_SEPARATOR}/opt/gems"
+    expect(ENV['GEM_PATH']).to eq "/opt/deploy/sample.war!/WEB-INF/gems#{File::PATH_SEPARATOR}/opt/gems"
   end
 
   it "does not prepend gem_path to ENV['GEM_PATH'] if jruby.rack.gem_path set not set" do
-    @rack_context.should_receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return ''
+    expect(@rack_context).to receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return ''
     ENV['GEM_PATH'] = '/opt/gems'
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
 
     booter.boot!
 
-    ENV['GEM_PATH'].should == "/opt/gems"
+    expect(ENV['GEM_PATH']).to eq "/opt/gems"
   end
 
   it "prepends gem_path to ENV['GEM_PATH'] if not already present" do
@@ -141,66 +141,66 @@ describe JRuby::Rack::Booter do
     booter.gem_path = '/usr/local/gems'
     booter.boot!
 
-    ENV['GEM_PATH'].should == "/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
+    expect(ENV['GEM_PATH']).to eq "/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
   end
 
   it "sets ENV['GEM_PATH'] to the value of gem_path if ENV['GEM_PATH'] is not present" do
-    @rack_context.should_receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'true'
+    expect(@rack_context).to receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'true'
     ENV.delete('GEM_PATH')
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF").and_return "/blah"
-    @rack_context.should_receive(:getRealPath).with("/WEB-INF/gems").and_return "/blah/gems"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF").and_return "/blah"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF/gems").and_return "/blah/gems"
 
     booter.boot!
 
-    ENV['GEM_PATH'].should == "/blah/gems"
+    expect(ENV['GEM_PATH']).to eq "/blah/gems"
   end
 
   it "creates a logger that writes messages to the servlet context (by default)" do
     booter.boot!
-    @rack_context.stub(:isEnabled).and_return true
+    allow(@rack_context).to receive(:isEnabled).and_return true
     level = org.jruby.rack.RackLogger::Level::DEBUG
-    @rack_context.should_receive(:log).with(level, 'Hello-JRuby!')
+    expect(@rack_context).to receive(:log).with(level, 'Hello-JRuby!')
     booter.logger.debug 'Hello-JRuby!'
   end
 
   before { $loaded_init_rb = nil }
 
   it "loads and executes ruby code in META-INF/init.rb if it exists" do
-    @rack_context.should_receive(:getResource).with("/META-INF/init.rb").
+    expect(@rack_context).to receive(:getResource).with("/META-INF/init.rb").
       and_return java.net.URL.new("file:#{File.expand_path('init.rb', STUB_DIR)}")
     silence_warnings { booter.boot! }
-    $loaded_init_rb.should == true
-    defined?(::SOME_TOPLEVEL_CONSTANT).should == "constant"
+    expect($loaded_init_rb).to eq true
+    expect(defined?(::SOME_TOPLEVEL_CONSTANT)).to eq "constant"
   end
 
   it "loads and executes ruby code in WEB-INF/init.rb if it exists" do
-    @rack_context.should_receive(:getResource).with("/WEB-INF/init.rb").
+    expect(@rack_context).to receive(:getResource).with("/WEB-INF/init.rb").
       and_return java.net.URL.new("file://#{File.expand_path('init.rb', STUB_DIR)}")
     silence_warnings { booter.boot! }
-    $loaded_init_rb.should == true
+    expect($loaded_init_rb).to eq true
   end
 
   it "delegates _path methods to layout" do
-    booter.should_receive(:layout).at_least(:once).and_return layout = double('layout')
-    layout.should_receive(:app_path).and_return 'app/path'
-    layout.should_receive(:gem_path).and_return 'gem/path'
-    layout.should_receive(:public_path).and_return 'public/path'
+    expect(booter).to receive(:layout).at_least(:once).and_return layout = double('layout')
+    expect(layout).to receive(:app_path).and_return 'app/path'
+    expect(layout).to receive(:gem_path).and_return 'gem/path'
+    expect(layout).to receive(:public_path).and_return 'public/path'
 
-    expect( booter.app_path ).to eq 'app/path'
-    expect( booter.gem_path ).to eq 'gem/path'
-    expect( booter.public_path ).to eq 'public/path'
+    expect(booter.app_path).to eq 'app/path'
+    expect(booter.gem_path).to eq 'gem/path'
+    expect(booter.public_path).to eq 'public/path'
   end
 
   it "changes working directory to app path on boot" do
     wd = Dir.pwd
     begin
-      booter.stub(:layout).and_return layout = double('layout')
-      layout.stub(:app_path).and_return parent = File.expand_path('..')
-      layout.stub(:gem_path)
-      layout.stub(:public_path)
+      allow(booter).to receive(:layout).and_return layout = double('layout')
+      allow(layout).to receive(:app_path).and_return parent = File.expand_path('..')
+      allow(layout).to receive(:gem_path)
+      allow(layout).to receive(:public_path)
 
       booter.boot!
-      expect( Dir.pwd ).to eq parent
+      expect(Dir.pwd).to eq parent
     ensure
       Dir.chdir(wd)
     end
@@ -219,11 +219,11 @@ describe JRuby::Rack::Booter do
       app_dir = File.expand_path Dir.pwd
     end
     app_dir = "#{app_dir}/sample.war!/WEB-INF"
-    File.stub(:directory?).with(app_dir).and_return true
-    booter.stub(:layout).and_return layout = double('layout')
-    layout.stub(:app_path).and_return app_dir
-    layout.stub(:gem_path)
-    layout.stub(:public_path)
+    allow(File).to receive(:directory?).with(app_dir).and_return true
+    allow(booter).to receive(:layout).and_return layout = double('layout')
+    allow(layout).to receive(:app_path).and_return app_dir
+    allow(layout).to receive(:gem_path)
+    allow(layout).to receive(:public_path)
 
     booter.boot! # expect to_not raise_error
   end
@@ -237,15 +237,15 @@ describe JRuby::Rack::Booter do
         # setup the runtime for us than to hand copy/stub/mock all code involved
         servlet_context = javax.servlet.ServletContext.impl do |name, *args|
           case name.to_sym
-            when :getRealPath then
-              case args.first
-                when '/WEB-INF' then File.expand_path('rack/WEB-INF', STUB_DIR)
-              end
-            when :getContextPath then
-              '/'
-            when :log then
-              raise_logger.log(*args)
-            else nil
+          when :getRealPath then
+            case args.first
+            when '/WEB-INF' then File.expand_path('rack/WEB-INF', STUB_DIR)
+            end
+          when :getContextPath then
+            '/'
+          when :log then
+            raise_logger.log(*args)
+          else nil
           end
         end
         rack_config = org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)
@@ -284,15 +284,15 @@ describe JRuby::Rack::Booter do
         # setup the runtime for us than to hand copy/stub/mock all code involved
         servlet_context = javax.servlet.ServletContext.impl do |name, *args|
           case name.to_sym
-            when :getRealPath then
-              case args.first
-                when '/WEB-INF' then File.expand_path('rails30/WEB-INF', STUB_DIR)
-              end
-            when :getContextPath then
-              '/'
-            when :log then
-              raise_logger.log(*args)
-            else nil
+          when :getRealPath then
+            case args.first
+            when '/WEB-INF' then File.expand_path('rails30/WEB-INF', STUB_DIR)
+            end
+          when :getContextPath then
+            '/'
+          when :log then
+            raise_logger.log(*args)
+          else nil
           end
         end
         rack_config = org.jruby.rack.servlet.ServletRackConfig.new(servlet_context)

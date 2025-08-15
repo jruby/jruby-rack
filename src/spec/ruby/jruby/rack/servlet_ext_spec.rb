@@ -8,154 +8,154 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 
 describe 'servlet-ext' do
-  
+
   before(:all) { require 'jruby/rack/servlet_ext' }
-  
+
   shared_examples_for "hash" do
-    
+
     it "returns attributes from []" do
       subject.setAttribute('foo', 'bar')
-      subject["foo"].should == "bar"
-      
+      expect(subject["foo"]).to eq("bar")
+
       subject.setAttribute('bar', 42)
-      subject[:bar].should == 42
+      expect(subject[:bar]).to eq(42)
     end
 
     it "sets attributes with []=" do
       subject["muu"] = hash = { :huu => 'HU!' }
-      subject.getAttribute('muu').should be hash
-      
+      expect(subject.getAttribute('muu')).to be(hash)
+
       subject[:num] = 12
-      subject.getAttribute('num').should == 12
+      expect(subject.getAttribute('num')).to eq(12)
     end
 
     it "deletes attributes" do
       subject.setAttribute('foo', 'bar')
       subject.setAttribute('xxx', 12345)
-      
-      subject.delete('foo')
-      subject.getAttribute('muu').should be nil
 
-      lambda { subject.delete('yyy') }.should_not raise_error
-      
-      subject.getAttributeNames.to_a.should include('xxx')
+      subject.delete('foo')
+      expect(subject.getAttribute('muu')).to be_nil
+
+      expect { subject.delete('yyy') }.not_to raise_error
+
+      expect(subject.getAttributeNames.to_a).to include('xxx')
       subject.delete(:xxx)
-      subject.getAttributeNames.to_a.should_not include('xxx')
+      expect(subject.getAttributeNames.to_a).not_to include('xxx')
     end
 
     it "reports (string) keys" do
-      subject.keys.should == []
+      expect(subject.keys).to eq([])
       subject.setAttribute('foo', 'muu')
       subject.setAttribute('bar', 12345)
-      
-      subject.keys.should == [ 'foo', 'bar' ]
+
+      expect(subject.keys).to eq(['foo', 'bar'])
     end
 
     it "reports values" do
-      subject.values.should == []
+      expect(subject.values).to eq([])
       subject.setAttribute('foo', 'muu')
       subject.setAttribute('bar', 12345)
-      
-      subject.values.should == [ 'muu', 12345 ]
+
+      expect(subject.values).to eq(['muu', 12345])
     end
 
     it "yields attribute pairs on each" do
       subject.setAttribute('foo', 'muu')
       subject.setAttribute('bar', 12345)
-      
+
       count = 0
       subject.each do |key, val|
         case count += 1
         when 1 then
-          key.should == 'foo'
-          val.should == 'muu'
+          expect(key).to eq('foo')
+          expect(val).to eq('muu')
         when 2 then
-          key.should == 'bar'
-          val.should == 12345
+          expect(key).to eq('bar')
+          expect(val).to eq(12345)
         else
           fail "unexpected #{count}. yield with (#{key.inspect}, #{val.inspect})"
         end
       end
     end
-    
+
   end
-  
+
   describe Java::JavaxServlet::ServletContext do
 
-    let(:subject) do 
+    let(:subject) do
       context = org.springframework.mock.web.MockServletContext.new
       context.removeAttribute("javax.servlet.context.tempdir")
       context
     end
 
     it_behaves_like "hash"
-    
+
   end
-  
+
   describe Java::JavaxServlet::ServletRequest do
-    
+
     before :each do
       @request = Java::JavaxServlet::ServletRequest.impl {}
     end
 
     it "should allow #[] to access request attributes" do
-      @request.should_receive(:getAttribute).with("HA!").and_return "NYAH!"
-      @request["HA!"].should == "NYAH!"
+      expect(@request).to receive(:getAttribute).with("HA!").and_return "NYAH!"
+      expect(@request["HA!"]).to eq("NYAH!")
     end
 
     it "should stringify the key, allowing symbols to be used as keys" do
-      @request.should_receive(:getAttribute).with("foo").and_return "bar"
-      @request[:foo].should == "bar"
+      expect(@request).to receive(:getAttribute).with("foo").and_return "bar"
+      expect(@request[:foo]).to eq("bar")
     end
 
     it "should allow #[]= to set request attributes" do
-      @request.should_receive(:setAttribute).with("HA!", "NYAH!")
+      expect(@request).to receive(:setAttribute).with("HA!", "NYAH!")
       @request["HA!"] = "NYAH!"
     end
 
     it "should give an array of keys from getAttributeNames" do
       names = %w(a b c)
-      @request.should_receive(:getAttributeNames).and_return names
-      @request.keys.should == names
+      expect(@request).to receive(:getAttributeNames).and_return names
+      expect(@request.keys).to eq(names)
     end
 
     let(:subject) { org.springframework.mock.web.MockHttpServletRequest.new }
 
     it_behaves_like "hash"
-    
+
   end
 
   describe Java::JavaxServletHttp::HttpSession do
-    
+
     before :each do
       @session = Java::JavaxServletHttp::HttpSession.impl {}
     end
 
     it "should allow #[] to access session attributes" do
-      @session.should_receive(:getAttribute).with("HA!").and_return "NYAH!"
-      @session["HA!"].should == "NYAH!"
+      expect(@session).to receive(:getAttribute).with("HA!").and_return "NYAH!"
+      expect(@session["HA!"]).to eq("NYAH!")
     end
 
     it "should stringify the key, allowing symbols to be used as keys" do
-      @session.should_receive(:getAttribute).with("foo").and_return "bar"
-      @session[:foo].should == "bar"
+      expect(@session).to receive(:getAttribute).with("foo").and_return "bar"
+      expect(@session[:foo]).to eq("bar")
     end
 
     it "should allow #[]= to set session attributes" do
-      @session.should_receive(:setAttribute).with("HA!", "NYAH!")
+      expect(@session).to receive(:setAttribute).with("HA!", "NYAH!")
       @session["HA!"] = "NYAH!"
     end
 
     it "should give an array of keys from getAttributeNames" do
       names = %w(a b c)
-      @session.should_receive(:getAttributeNames).and_return names
-      @session.keys.should == names
+      expect(@session).to receive(:getAttributeNames).and_return names
+      expect(@session.keys).to eq(names)
     end
-    
+
     let(:subject) { org.springframework.mock.web.MockHttpSession.new }
 
     it_behaves_like "hash"
-    
+
   end
-  
+
 end

@@ -8,42 +8,17 @@ describe org.jruby.rack.embed.Config do
       java.lang.System.set_property "truish", "true"
       java.lang.System.set_property "falsish", "false"
 
-      subject.get_property('foo').should == 'bar'
-      subject.get_property('foo', 'BAR').should == 'bar'
+      expect(subject.get_property('foo')).to eq 'bar'
+      expect(subject.get_property('foo', 'BAR')).to eq 'bar'
 
-      subject.get_boolean_property('truish').should == true
-      subject.get_boolean_property('falsish', true).should == false
+      expect(subject.get_boolean_property('truish')).to eq true
+      expect(subject.get_boolean_property('falsish', true)).to eq false
     ensure
       java.lang.System.clear_property "foo"
       java.lang.System.clear_property "truish"
       java.lang.System.clear_property "falsish"
     end
   end
-
-#  it "honors properties from provided config if available" do
-#    foo_config = org.jruby.rack.RackConfig.impl {}
-#    def foo_config.getProperty(name, default = nil)
-#      name == 'foo' ? 'bar' : default
-#    end
-#
-#    constructor = org.jruby.rack.embed.Config.java_class.to_java.
-#      getDeclaredConstructor([ org.jruby.rack.RackConfig.java_class ].to_java :'java.lang.Class')
-#    constructor.setAccessible(true)
-#    config = constructor.newInstance(foo_config) # org.jruby.rack.embed.Config.new(foo_config)
-#
-#    begin
-#      java.lang.System.set_property "foo", "BAR"
-#      java.lang.System.set_property "bar", "FOO"
-#
-#      config.getProperty('some').should be nil
-#
-#      config.getProperty('foo').should == 'bar'
-#      config.getProperty('bar').should == 'FOO'
-#    ensure
-#      java.lang.System.clear_property "foo"
-#      java.lang.System.clear_property "bar"
-#    end
-#  end
 
   context "initialized" do
 
@@ -58,11 +33,11 @@ describe org.jruby.rack.embed.Config do
         ENV['env_true'] = 'true'
         ENV['env_false'] = 'false'
 
-        @config.get_property('env_foo').should == 'env_bar'
-        @config.get_property('env_true').should == 'true'
+        expect(@config.get_property('env_foo')).to eq 'env_bar'
+        expect(@config.get_property('env_true')).to eq 'true'
 
-        @config.get_boolean_property('env_true').should == true
-        @config.get_boolean_property('env_false').should == false
+        expect(@config.get_boolean_property('env_true')).to eq true
+        expect(@config.get_boolean_property('env_false')).to eq false
       ensure
         ENV.delete('env_foo')
         ENV.delete('env_true')
@@ -75,8 +50,8 @@ describe org.jruby.rack.embed.Config do
         ENV["jruby.rack.request.size.initial.bytes"] = '1024'
         ENV["jruby.rack.request.size.maximum.bytes"] = '4096'
 
-        @config.getInitialMemoryBufferSize.should == 1024
-        @config.getMaximumMemoryBufferSize.should == 4096
+        expect(@config.getInitialMemoryBufferSize).to eq 1024
+        expect(@config.getMaximumMemoryBufferSize).to eq 4096
       ensure
         ENV.delete("jruby.rack.request.size.initial.bytes")
         ENV.delete("jruby.rack.request.size.treshold.bytes")
@@ -94,7 +69,7 @@ describe org.jruby.rack.embed.Config do
       err = java.io.ByteArrayOutputStream.new
       config = org.jruby.RubyInstanceConfig.new
       config.output = java.io.PrintStream.new(out)
-      config.error  = java.io.PrintStream.new(err)
+      config.error = java.io.PrintStream.new(err)
       @config.doInitialize org.jruby.Ruby.newInstance(config)
 
       @config.getOut.println "hello out!"
