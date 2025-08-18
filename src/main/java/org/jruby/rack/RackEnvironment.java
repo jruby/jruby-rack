@@ -157,4 +157,10 @@ public interface RackEnvironment {
      * @return the remote user
      */
     String getRemoteUser();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getProtocol()
+     * @return a String containing the name of the scheme used to make this request
+     */
+    String getProtocol();
 }
