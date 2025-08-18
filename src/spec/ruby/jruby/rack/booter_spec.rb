@@ -318,7 +318,7 @@ describe JRuby::Rack::Booter do
           case name.to_sym
           when :getRealPath then
             case args.first
-            when '/WEB-INF' then File.expand_path('rails30/WEB-INF', STUB_DIR)
+            when '/WEB-INF' then File.expand_path('rails30/WEB-INF', STUB_DIR) # FIXME: rails 3.0
             end
           when :getContextPath then
             '/'
