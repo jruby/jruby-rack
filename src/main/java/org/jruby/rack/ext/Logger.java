@@ -56,6 +56,7 @@ import org.jruby.util.ByteList;
 public class Logger extends RubyObject { // implements RackLogger
 
     static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
+        @Override
         public IRubyObject allocate(Ruby runtime, RubyClass klass) {
             return new Logger(runtime, klass);
         }
@@ -542,6 +543,7 @@ public class Logger extends RubyObject { // implements RackLogger
     public static class ServletLog extends RubyObject {
 
         static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
+            @Override
             public IRubyObject allocate(Ruby runtime, RubyClass klass) {
                 return new ServletLog(runtime, klass);
             }

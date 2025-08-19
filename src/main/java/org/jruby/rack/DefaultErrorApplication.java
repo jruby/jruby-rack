@@ -60,14 +60,6 @@ public class DefaultErrorApplication extends DefaultRackApplication
         throw new UnsupportedOperationException("getRuntime() not supported");
     }
 
-    public void init() {
-        // NOOP
-    }
-
-    public void destroy() {
-        // NOOP
-    }
-
     @Override
     public RackResponse call(RackEnvironment env) throws RackException {
         return new Response(env); // backwards compatibility
@@ -92,6 +84,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
 
         public Response(RackEnvironment env) { this.env = env; }
 
+        @Override
         public int getStatus() {
             return status;
         }
@@ -101,6 +94,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
             this.status = status;
         }
 
+        @Override
         @SuppressWarnings("rawtypes")
         public Map getHeaders() {
             return headers;
@@ -111,6 +105,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
             this.headers = headers == null ? Collections.EMPTY_MAP : headers;
         }
 
+        @Override
         public String getBody() {
             if ( body == null ) {
                 try {
@@ -144,6 +139,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
             return stringWriter.toString();
         }
 
+        @Override
         public void respond(RackResponseEnvironment response) {
             try {
                 defaultRespond(this, response);

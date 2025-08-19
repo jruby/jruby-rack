@@ -7,16 +7,10 @@
 
 package org.jruby.rack.jms;
 
-import org.jruby.Ruby;
-import org.jruby.RubyModule;
-import org.jruby.RubyObjectAdapter;
-import org.jruby.javasupport.JavaEmbedUtils;
-import org.jruby.rack.RackApplication;
-import org.jruby.rack.RackApplicationFactory;
-import org.jruby.rack.RackContext;
-import org.jruby.rack.servlet.ServletRackContext;
-import org.jruby.runtime.builtin.IRubyObject;
-
+import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -27,10 +21,16 @@ import javax.jms.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+
+import org.jruby.Ruby;
+import org.jruby.RubyModule;
+import org.jruby.RubyObjectAdapter;
+import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.rack.RackApplication;
+import org.jruby.rack.RackApplicationFactory;
+import org.jruby.rack.RackContext;
+import org.jruby.rack.servlet.ServletRackContext;
+import org.jruby.runtime.builtin.IRubyObject;
 
 /**
  *
@@ -51,6 +51,7 @@ public class DefaultQueueManager implements QueueManager {
         this.jndiContext = ctx;
     }
 
+    @Override
     public void init(RackContext context) throws Exception {
         this.context = (ServletRackContext) context;
         @SuppressWarnings("deprecation")
@@ -67,6 +68,7 @@ public class DefaultQueueManager implements QueueManager {
         }
     }
 
+    @Override
     public synchronized void listen(String queueName) {
         Connection conn = queues.get(queueName);
         if (conn == null) {
@@ -85,6 +87,7 @@ public class DefaultQueueManager implements QueueManager {
         }
     }
 
+    @Override
     public synchronized void close(String queueName) {
         Connection conn = queues.remove(queueName);
         if (conn != null) {
@@ -92,14 +95,17 @@ public class DefaultQueueManager implements QueueManager {
         }
     }
 
+    @Override
     public ConnectionFactory getConnectionFactory() {
         return connectionFactory;
     }
 
+    @Override
     public Object lookup(String name) throws NamingException {
         return jndiContext.lookup(name);
     }
 
+    @Override
     public void destroy() {
         for ( Map.Entry<String,Connection> entry : queues.entrySet() ) {
             closeConnection(entry.getValue());
@@ -124,6 +130,7 @@ public class DefaultQueueManager implements QueueManager {
             this.rackFactory = context.getRackFactory();
         }
 
+        @Override
         public void onMessage(Message message) {
             RackApplication app = null;
             try {

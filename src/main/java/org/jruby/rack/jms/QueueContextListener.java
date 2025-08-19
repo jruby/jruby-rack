@@ -7,12 +7,12 @@
 
 package org.jruby.rack.jms;
 
-import org.jruby.rack.RackApplicationFactory;
-import org.jruby.rack.RackContext;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
+import org.jruby.rack.RackApplicationFactory;
+import org.jruby.rack.RackContext;
 
 /**
  *
@@ -29,6 +29,7 @@ public class QueueContextListener implements ServletContextListener {
         this.factory = qmf;
     }
     
+    @Override
     public void contextInitialized(ServletContextEvent event) {
         final ServletContext servletContext = event.getServletContext();
         RackContext rackContext = (RackContext) servletContext.getAttribute(RackApplicationFactory.RACK_CONTEXT);
@@ -42,6 +43,7 @@ public class QueueContextListener implements ServletContextListener {
         }
     }
 
+    @Override
     public void contextDestroyed(ServletContextEvent event) {
         QueueManager qm = (QueueManager) event.getServletContext().getAttribute(QueueManager.MGR_KEY);
         if (qm != null) {
@@ -55,6 +57,7 @@ public class QueueContextListener implements ServletContextListener {
             return factory;
         }
         return new QueueManagerFactory() {
+            @Override
             public QueueManager newQueueManager() {
                 return new DefaultQueueManager();
             }

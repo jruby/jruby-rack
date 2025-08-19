@@ -8,7 +8,6 @@
 package org.jruby.rack;
 
 import java.io.IOException;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -48,6 +47,7 @@ public abstract class AbstractFilter implements Filter {
      * @throws IOException if there's an IO exception
      * @throws ServletException if there's a servlet exception
      */
+    @Override
     public final void doFilter(
             ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {

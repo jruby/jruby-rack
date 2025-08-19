@@ -101,6 +101,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     @Override
     public RackApplication newApplication() {
         return createApplication(new ApplicationObjectFactory() {
+            @Override
             public IRubyObject create(Ruby runtime) {
                 return createApplicationObject(runtime);
             }
@@ -212,6 +213,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         try {
             RackApplication app = createErrorApplication(
                 new ApplicationObjectFactory() {
+                    @Override
                     public IRubyObject create(Ruby runtime) {
                         return createErrorApplicationObject(runtime);
                     }

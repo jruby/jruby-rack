@@ -16,7 +16,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -39,7 +38,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
     public RequestCapture(HttpServletRequest request) {
         super(request);
     }
-    
+
     /**
      * @deprecated use {@link #RequestCapture(HttpServletRequest)}
      * @param request the request
@@ -50,7 +49,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
         this(request);
     }
 
-    @Override 
+    @Override
     public BufferedReader getReader() throws IOException {
         String enc = getCharacterEncoding();
         if (enc == null) {
@@ -94,10 +93,12 @@ public class RequestCapture extends HttpServletRequestWrapper {
         if ( requestParametersParsed() ) {
             return new Enumeration() {
                 Iterator keys = requestParams.keySet().iterator();
+                @Override
                 public boolean hasMoreElements() {
                     return keys.hasNext();
                 }
 
+                @Override
                 public Object nextElement() {
                     return keys.next();
                 }
@@ -154,7 +155,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
                     }
                     params.put(key, newValues);
                 }
-            } 
+            }
             catch (UnsupportedEncodingException e) { /* UTF-8 should be fine */ }
         }
         

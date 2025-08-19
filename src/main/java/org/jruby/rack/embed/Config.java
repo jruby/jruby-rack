@@ -61,25 +61,6 @@ public class Config implements RackConfig {
         };
     }
 
-    /*
-    Config(final RackConfig config) {
-        delegate = new DefaultRackConfig() {
-
-            @Override
-            public String getProperty(String key, String defaultValue) {
-                String value = config.getProperty(key, null);
-                if ( value != null ) return value;
-
-                value = Config.this.resolveProperty(key);
-                return value != null ? value : super.getProperty(key, defaultValue);
-            }
-
-            @Override
-            public RackLogger defaultLogger() { return null; }
-
-        };
-    } */
-
     @SuppressWarnings("unchecked")
     public void doInitialize(final Ruby runtime) {
         setOut( runtime.getOut() );
@@ -95,34 +76,42 @@ public class Config implements RackConfig {
         return value;
     }
 
+    @Override
     public final String getProperty(String key) {
         return delegate.getProperty(key);
     }
 
+    @Override
     public final String getProperty(String key, String defaultValue) {
         return delegate.getProperty(key, defaultValue);
     }
 
+    @Override
     public final Boolean getBooleanProperty(String key) {
         return delegate.getBooleanProperty(key);
     }
 
+    @Override
     public final Boolean getBooleanProperty(String key, Boolean defaultValue) {
         return delegate.getBooleanProperty(key, defaultValue);
     }
 
+    @Override
     public final Number getNumberProperty(String key) {
         return delegate.getNumberProperty(key);
     }
 
+    @Override
     public final Number getNumberProperty(String key, Number defaultValue) {
         return delegate.getNumberProperty(key, defaultValue);
     }
 
+    @Override
     public CompatVersion getCompatVersion() {
         return compatVersion;
     }
 
+    @Override
     public RackLogger getLogger() {
         if (logger == null) {
             logger = delegate.getLogger();
@@ -134,6 +123,7 @@ public class Config implements RackConfig {
         this.logger = logger;
     }
 
+    @Override
     public PrintStream getOut() {
         return delegate.getOut();
     }
@@ -142,6 +132,7 @@ public class Config implements RackConfig {
         delegate.setOut(out);
     }
 
+    @Override
     public PrintStream getErr() {
         return delegate.getErr();
     }
@@ -150,76 +141,93 @@ public class Config implements RackConfig {
         delegate.setErr(err);
     }
 
+    @Override
     public boolean isRewindable() {
         return delegate.isRewindable();
     }
 
+    @Override
     public Integer getInitialMemoryBufferSize() {
         return delegate.getInitialMemoryBufferSize();
     }
 
+    @Override
     public Integer getMaximumMemoryBufferSize() {
         return delegate.getMaximumMemoryBufferSize();
     }
 
+    @Override
     public String getRackup() {
         return delegate.getRackup();
     }
 
+    @Override
     public String getRackupPath() {
         return delegate.getRackupPath();
     }
 
     // runtime pooling in embedded ENVs not implemented :
 
+    @Override
     public Integer getRuntimeTimeoutSeconds() {
         throw new UnsupportedOperationException("getRuntimeTimeoutSeconds()");
     }
 
+    @Override
     public Integer getInitialRuntimes() {
         throw new UnsupportedOperationException("getInitialRuntimes()");
     }
 
+    @Override
     public Integer getMaximumRuntimes() {
         throw new UnsupportedOperationException("getMaximumRuntimes()");
     }
 
+    @Override
     public String[] getRuntimeArguments() {
         throw new UnsupportedOperationException("getRuntimeArguments()");
     }
 
+    @Override
     public Integer getNumInitializerThreads() {
         throw new UnsupportedOperationException("getNumInitializerThreads()");
     }
 
+    @Override
     public boolean isSerialInitialization() {
         throw new UnsupportedOperationException("isSerialInitialization()");
     }
 
+    @Override
     public boolean isIgnoreEnvironment() {
         throw new UnsupportedOperationException("isIgnoreEnvironment()");
     }
 
+    @Override
     public Map<String, String> getRuntimeEnvironment() {
         throw new UnsupportedOperationException("getRuntimeEnvironment()");
     }
 
     // RackFilter aint's used with embed :
 
+    @Override
     public boolean isFilterAddsHtml() {
         throw new UnsupportedOperationException("isFilterAddsHtml()");
     }
 
+    @Override
     public boolean isFilterVerifiesResource() {
         throw new UnsupportedOperationException("isFilterVerifiesResource()");
     }
 
     // JMS configuration not used with embed :
 
+    @Override
     public String getJmsConnectionFactory() {
         throw new UnsupportedOperationException("getJmsConnectionFactory()");
     }
 
+    @Override
     public String getJmsJndiProperties() {
         throw new UnsupportedOperationException("getJmsJndiProperties()");
     }

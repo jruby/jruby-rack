@@ -210,6 +210,7 @@ public class Response extends RubyObject implements RackResponse {
     }
 
     static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
+        @Override
         public IRubyObject allocate(Ruby runtime, RubyClass klass) {
             return new Response(runtime, klass);
         }
@@ -274,6 +275,7 @@ public class Response extends RubyObject implements RackResponse {
      * @return the response status
      * @see RackResponse#getStatus()
      */
+    @Override
     public int getStatus() {
         return this.status;
     }
@@ -282,6 +284,7 @@ public class Response extends RubyObject implements RackResponse {
      * @return the headers hash
      * @see RackResponse#getHeaders()
      */
+    @Override
     @SuppressWarnings("unchecked")
     public Map<String, ?> getHeaders() {
         return this.headers;
@@ -291,6 +294,7 @@ public class Response extends RubyObject implements RackResponse {
      * @return the response body (build up as a string)
      * @see RackResponse#getBody()
      */
+    @Override
     public String getBody() {
         if ( this.body instanceof RubyString ) return this.body.asJavaString();
         // body = ""; @body.each { |part| body << part }; body
@@ -324,6 +328,7 @@ public class Response extends RubyObject implements RackResponse {
      * Respond this response with the given (servlet) response environment.
      * @see RackResponse#respond(RackResponseEnvironment)
      */
+    @Override
     public void respond(final RackResponseEnvironment response) throws RackException {
         if ( ! response.isCommitted() ) {
             try { // NOTE: we're assuming possible overrides are out of our NS

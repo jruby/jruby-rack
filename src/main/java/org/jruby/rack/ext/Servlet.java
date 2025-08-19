@@ -42,6 +42,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class Servlet extends RubyObject {
 
     static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
+        @Override
         public IRubyObject allocate(Ruby runtime, RubyClass klass) {
             return new Servlet(runtime, klass);
         }

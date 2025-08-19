@@ -23,16 +23,15 @@ import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaEmbedUtils;
+import org.jruby.rack.RackEnvironment;
+import org.jruby.rack.servlet.RewindableInputStream;
+import org.jruby.rack.util.ExceptionUtils;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.Helpers;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
-
-import org.jruby.rack.RackEnvironment;
-import org.jruby.rack.servlet.RewindableInputStream;
-import org.jruby.rack.util.ExceptionUtils;
 import org.jruby.util.StringSupport;
 
 /**
@@ -63,6 +62,7 @@ public class Input extends RubyObject {
     }
 
     static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
+        @Override
         public IRubyObject allocate(Ruby runtime, RubyClass klass) {
             return new Input(runtime, klass);
         }
