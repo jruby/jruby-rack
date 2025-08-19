@@ -12,3 +12,4 @@ examples/*/nbproject
 nbproject
 .idea/
 .rvmrc
+gemfiles/*.lock
