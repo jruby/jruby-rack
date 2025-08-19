@@ -9,6 +9,7 @@
 - Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hash
 - Drop deprecated `Rack::Handler::Servlet::Env` and `Rack::Handler::Servlet::LazyEnv` types (replaced by `DefaultEnv`)
 - Drop undocumented and deprecated jruby-rack 1.0 backwards compat properties `jruby.runtime.timeout.sec`, `jruby.runtime.initializer.threads`, `jruby.init.serial`, `jruby.rack.request.size.threshold.bytes`
+- Drop deprecated `JRuby::Rack::RailsFileSystemLayout` alias for `JRuby::Rack::FileSystemLayout`
 - Change context listener to throw, in case of an exception during initialization, by default
 - Change rails context listener to assume a thread-safe application by default
 - update (bundled) rack to 2.2.17
