@@ -44,7 +44,7 @@ describe Rack::Handler::Servlet do
 
     it "creates a hash with the Rack variables in it" do
       hash = servlet.create_env(@servlet_env)
-      expect(hash['rack.version']).to eq Rack::VERSION
+      expect(hash['rack.version']).to eq Rack::RELEASE
       expect(hash['rack.multithread']).to eq true
       expect(hash['rack.multiprocess']).to eq false
       expect(hash['rack.run_once']).to eq false
@@ -204,7 +204,7 @@ describe Rack::Handler::Servlet do
       end
 
       env = servlet.create_env @servlet_env
-      expect(env["rack.version"]).to eq Rack::VERSION
+      expect(env["rack.version"]).to eq Rack::RELEASE
       expect(env["CONTENT_TYPE"]).to eq "text/html"
       expect(env["HTTP_HOST"]).to eq "serverhost"
       expect(env["HTTP_ACCEPT"]).to eq "text/*"

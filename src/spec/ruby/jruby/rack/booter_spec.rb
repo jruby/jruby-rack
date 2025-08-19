@@ -264,7 +264,7 @@ describe JRuby::Rack::Booter do
         # Booter.boot! run :
         should_not_eval_as_nil "ENV['RACK_ENV']"
         # rack got required :
-        should_not_eval_as_nil "defined?(Rack::VERSION)"
+        should_not_eval_as_nil "defined?(Rack::RELEASE)"
         should_not_eval_as_nil "defined?(Rack.release)"
         # check if it got loaded correctly :
         should_not_eval_as_nil "Rack::Request.new({}) rescue nil"
@@ -313,7 +313,7 @@ describe JRuby::Rack::Booter do
         should_not_eval_as_nil "ENV['RAILS_ENV']"
 
         # rack not yet required (let bundler decide which rack version to load) :
-        should_eval_as_nil "defined?(Rack::VERSION)"
+        should_eval_as_nil "defined?(Rack::RELEASE)"
         should_eval_as_nil "defined?(Rack.release)"
       end
 

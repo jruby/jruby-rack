@@ -310,7 +310,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
       it "does not require 'rack' (until booter is called)" do
         @runtime = app_factory.newRuntime
-        should_eval_as_nil "defined?(::Rack::VERSION)"
+        should_eval_as_nil "defined?(::Rack::RELEASE)"
       end
 
       it "loads specified version of rack via bundler", :lib => :stub do
