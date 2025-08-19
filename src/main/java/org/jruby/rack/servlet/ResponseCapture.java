@@ -80,8 +80,9 @@ public class ResponseCapture extends HttpServletResponseWrapper {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
+    @Deprecated // Deprecated in API parent
+    @SuppressWarnings("deprecation")
     public void setStatus(int status, String message) {
         if ( handleStatus(status, false) ) {
             super.setStatus(status, message);

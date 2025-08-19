@@ -149,17 +149,17 @@ public class DefaultServletRackContext implements ServletRackContext {
         return context.getNamedDispatcher(name);
     }
 
-    @Override @Deprecated
+    @Override @Deprecated // Deprecated in API parent
     public Servlet getServlet(String name) throws ServletException {
         return context.getServlet(name);
     }
 
-    @Override @Deprecated
+    @Override @Deprecated // Deprecated in API parent
     public Enumeration<Servlet> getServlets() {
         return context.getServlets();
     }
 
-    @Override @Deprecated
+    @Override @Deprecated // Deprecated in API parent
     public Enumeration<String> getServletNames() {
         return context.getServletNames();
     }
@@ -199,7 +199,7 @@ public class DefaultServletRackContext implements ServletRackContext {
         return context.getServletContextName();
     }
 
-    @Override @Deprecated
+    @Override @Deprecated // Deprecated in API parent
     public void log(Exception e, String msg) {
         logger.log(msg, e);
     }
