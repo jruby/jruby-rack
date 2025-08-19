@@ -6,7 +6,8 @@
 - Drop unnecessary `jruby.compat.version` and `RackConfig.getCompatVersion()` API
 - Drop JMS support
 - Drop deprecated `RackLogger` string (level) constants
-- Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hhsh
+- Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hash
+- Drop deprecated `Rack::Handler::Servlet::Env` and `Rack::Handler::Servlet::LazyEnv` types (replaced by `DefaultEnv`)
 - Change context listener to throw, in case of an exception during initialization, by default
 - Change rails context listener to assume a thread-safe application by default
 - update (bundled) rack to 2.2.17
