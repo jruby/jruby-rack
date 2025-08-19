@@ -7,6 +7,8 @@
 #++
 
 require 'rack/handler/servlet'
+require 'rack' # Rack.release is needed at class definition time - this file
+# is auto-loaded on first use, which is after the application boot loads rack
 
 module Rack
   module Handler

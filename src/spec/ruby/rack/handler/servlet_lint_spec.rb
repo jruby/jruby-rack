@@ -41,7 +41,11 @@ describe 'Rack::Handler::Servlet (Rack::Lint)' do
   let(:inner_app) do
     lambda do |env|
       env['rack.input'].read # exercises the Lint wrapped input contract
-      [ 200, { 'Content-Type' => 'text/plain', 'Content-Length' => '2' }, [ 'OK' ] ]
+      if Rack.release >= '3'
+        [ 200, { 'content-type' => 'text/plain' }, [ 'OK' ] ]
+      else
+        [ 200, { 'Content-Type' => 'text/plain', 'Content-Length' => '2' }, [ 'OK' ] ]
+      end
     end
   end
 

@@ -15,7 +15,6 @@ class JRuby::Rack::ErrorApp
 
     def call(env)
       status, headers, body = @app.call(env)
-      headers = ::Rack::Utils::HeaderHash.new(headers)
       empty = headers['Content-Length'].to_i <= 0
 
       detail = env['rack.showstatus.detail']

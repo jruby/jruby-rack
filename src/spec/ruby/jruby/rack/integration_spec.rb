@@ -155,10 +155,10 @@ describe "integration" do
       end
       after(:all) { restore_rails }
 
-      it "loaded rack ~> 2.2.0" do
+      it "loaded the expected (major.minor) rack version" do
         @runtime = @rack_factory.getApplication.getRuntime
         should_eval_as_not_nil "defined?(Rack.release)"
-        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '2.2'
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", expected_rack_major_minor
       end
 
       it "booted with a servlet logger" do
@@ -191,6 +191,7 @@ describe "integration" do
       end
 
       it "disables rack's chunked support (by default)" do
+        skip "Only runs on Rack < 3.0" unless Rack.release < '3'
         @runtime = @rack_factory.getApplication.getRuntime
         expect_to_have_monkey_patched_chunked
       end
@@ -202,6 +203,10 @@ describe "integration" do
   end
 
   describe 'rails 8.0', lib: :rails80 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 8.1', lib: :rails81 do
     it_should_behave_like 'a rails app'
   end
 
@@ -256,6 +261,19 @@ describe "integration" do
     FileUtils.cp ENV['BUNDLE_GEMFILE'], File.join(STUB_DIR, "#{name}/Gemfile")
     FileUtils.cp "#{ENV['BUNDLE_GEMFILE']}.lock", File.join(STUB_DIR, "#{name}/Gemfile.lock")
     Dir.chdir File.join(STUB_DIR, name)
+  end
+
+  # The Rack 'major.minor' the test environment was *told* to use, read from
+  # outside the Ruby process rather than from the loaded Rack - so the assertion
+  # actually catches the app booting a different Rack than intended. This
+  # Rails-gated test always runs under an appraisal gemfile whose name encodes
+  # the Rack version as a `rackMM` token (see Appraisals, which maps e.g.
+  # rack32 -> "~> 3.2.0"); the CI matrix selects it via BUNDLE_GEMFILE. We take
+  # that externally-chosen token, independent of the generated gemfile content.
+  def expected_rack_major_minor
+    token = ENV.fetch('BUNDLE_GEMFILE')[/rack(\d+)/, 1]
+    raise "no `rackMM` token in BUNDLE_GEMFILE=#{ENV['BUNDLE_GEMFILE'].inspect}" unless token
+    token.dup.insert(1, '.') # "32" -> "3.2"
   end
 
   ENV_COPY = ENV.to_h

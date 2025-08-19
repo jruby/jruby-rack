@@ -4,8 +4,9 @@ version_spec = ->(prefix, desc) { "~> #{major_minor.call(prefix, desc)}.0" }
 # Rails version -> rack versions in format
 # rails#{MAJOR}#{MINOR} => %w[ rack#{MAJOR}#{MINOR} ]
 {
-    "rails72" => {racks: %w[rack22]},
-    "rails80" => {racks: %w[rack22]}
+    "rails72" => {racks: %w[rack22 rack31]},
+    "rails80" => {racks: %w[rack22 rack31 rack32]},
+    "rails81" => {racks: %w[rack31 rack32]}
 }.each do |rails_desc, c|
   c[:racks].each do |rack_desc|
 
