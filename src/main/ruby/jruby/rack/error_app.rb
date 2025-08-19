@@ -83,9 +83,8 @@ module JRuby
         DEFAULT_HEADERS.each { |field, content| headers[field] = content }
         ext = File.extname(path)
         size = File.size?(path)
-        mime = ::Rack::Mime.mime_type(ext, DEFAULT_MIME) if defined?(::Rack::Mime)
-        mime = 'text/html' if ! mime && ( ext == '.html' || ext == '.htm' )
-        headers['Content-Type'] = mime if mime
+        mime = ::Rack::Mime.mime_type(ext, DEFAULT_MIME)
+        headers['Content-Type'] = mime
 
         body = env['REQUEST_METHOD'] == 'HEAD' ? [] : FileBody.new(path, size)
         response = [ code, headers, body ]
