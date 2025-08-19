@@ -10,16 +10,18 @@ env:
   # Default versions for canonical release build
   DEFAULT_JAVA_VERSION: '8'
   DEFAULT_JRUBY_VERSION: '9.4.13.0' # Should match pom.xml <jruby.version> property (AND a version inside the test matrix)
+  DEFAULT_RACK_VERSION: '~> 2.2' # Should match Gemfile (AND a version inside the test matrix)
 
 jobs:
   build:
-    name: JRuby ${{ matrix.jruby_version }} / Java ${{ matrix.java_version }}
+    name: Rack ${{ matrix.rack_version }} on JRuby ${{ matrix.jruby_version }} / Java ${{ matrix.java_version }}
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         jruby_version: [ '9.3.15.0', '9.4.13.0' ]
         java_version: [ '8', '11', '17', '21' ]
+        rack_version: [ '~> 2.2' ]
       fail-fast: false
 
     steps:
@@ -34,29 +36,39 @@ jobs:
 
     - name: Build with Maven
       run: ./mvnw -B install -Djruby.version=${{ matrix.jruby_version }}
+      env:
+        RACK_VERSION: ${{ matrix.rack_version }}
 
     # Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@b275d12641ac2d2108b2cbb7598b154ad2f2cee8 # v5.0.0
-      if: github.ref == 'refs/heads/master' && matrix.java_version == env.DEFAULT_JAVA_VERSION && matrix.jruby_version == env.DEFAULT_JRUBY_VERSION
+      if: github.ref == 'refs/heads/master' && matrix.java_version == env.DEFAULT_JAVA_VERSION && matrix.jruby_version == env.DEFAULT_JRUBY_VERSION && matrix.rack_version == env.DEFAULT_RACK_VERSION
 
   appraisals:
     needs: build
-    name: ${{ matrix.appraisal }} appraisal on ${{ matrix.jruby_version }} / Java ${{ matrix.java_version }}
+    name: ${{ matrix.appraisal }} on ${{ matrix.jruby_version }} / Java ${{ matrix.java_version }}
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
+        appraisal: [
+          'rails50_rack22',
+          'rails52_rack22',
+          'rails60_rack22',
+          'rails61_rack22',
+          'rails70_rack22',
+          'rails71_rack22',
+          'rails72_rack22',
+        ]
         jruby_version: [ '9.3.15.0', '9.4.13.0' ]
         java_version: [ '8', '11', '17', '21' ]
-        appraisal: [ 'rails50', 'rails52', 'rails60', 'rails61', 'rails70', 'rails71', 'rails72' ]
         exclude:
-          - jruby_version: '9.3.15.0'
-            appraisal: 'rails70' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            appraisal: 'rails71' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
-          - jruby_version: '9.3.15.0'
-            appraisal: 'rails72' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
+          - appraisal: 'rails70_rack22' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+            jruby_version: '9.3.15.0'
+          - appraisal: 'rails71_rack22' # Requires Ruby 2.7 compatibility, which JRuby 9.3 does not support
+            jruby_version: '9.3.15.0'
+          - appraisal: 'rails72_rack22' # Requires Ruby 3.1 compatibility, which JRuby 9.3 does not support
+            jruby_version: '9.3.15.0'
       fail-fast: false
 
     env:

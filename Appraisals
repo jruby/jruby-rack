@@ -1,27 +1,23 @@
-appraise "rails50" do
-  gem "rails", "~> 5.0.0"
-end
+version_spec = ->(prefix, desc) { "~> #{desc.split(prefix).last.insert(1, ".")}.0" }
 
-appraise "rails52" do
-  gem "rails", "~> 5.2.0"
-end
+# Rails version -> rack versions in format
+# rails#{MAJOR}#{MINOR} => %w[ rack#{MAJOR}#{MINOR} ]
+{
+    "rails50" => %w[rack22],
+    "rails52" => %w[rack22],
+    "rails60" => %w[rack22],
+    "rails61" => %w[rack22],
+    "rails70" => %w[rack22],
+    "rails71" => %w[rack22],
+    "rails72" => %w[rack22]
+}.each do |rails_desc, rack_descs|
+  rack_descs.each do |rack_desc|
 
-appraise "rails60" do
-  gem "rails", "~> 6.0.0"
-end
-
-appraise "rails61" do
-  gem "rails", "~> 6.1.0"
-end
-
-appraise "rails70" do
-  gem "rails", "~> 7.0.0"
-end
-
-appraise "rails71" do
-  gem "rails", "~> 7.1.0"
-end
-
-appraise "rails72" do
-  gem "rails", "~> 7.2.0"
+    appraise "#{rails_desc}_#{rack_desc}" do
+      group :default do
+        gem "rack", version_spec.call("rack", rack_desc)
+        gem "rails", version_spec.call("rails", rails_desc)
+      end
+    end
+  end
 end
