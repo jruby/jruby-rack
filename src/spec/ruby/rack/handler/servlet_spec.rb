@@ -490,16 +490,9 @@ describe Rack::Handler::Servlet do
       env = servlet.create_env(@servlet_env)
       rack_request = Rack::Request.new(env)
 
-      # Rack::Utils::ParameterTypeError (< TypeError) since 1.6.0
-      if Rack::Utils.const_defined? :ParameterTypeError
-        error = Rack::Utils::ParameterTypeError
-      else
-        error = TypeError
-      end
-
-      expect { rack_request.GET }.to raise_error(error, "expected Hash (got Array) for param `foo'")
+      expect { rack_request.GET }.to raise_error(Rack::Utils::ParameterTypeError, "expected Hash (got Array) for param `foo'")
       expect(rack_request.POST).to eq({})
-      expect { rack_request.params }.to raise_error(error, "expected Hash (got Array) for param `foo'")
+      expect { rack_request.params }.to raise_error(Rack::Utils::ParameterTypeError, "expected Hash (got Array) for param `foo'")
 
       expect(rack_request.query_string).to eq 'foo[]=0&foo[bar]=1'
     end
