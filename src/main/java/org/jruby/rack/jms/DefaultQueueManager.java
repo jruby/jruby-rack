@@ -40,7 +40,7 @@ public class DefaultQueueManager implements QueueManager {
     private ConnectionFactory connectionFactory = null;
     private ServletRackContext context;
     private Context jndiContext;
-    private Map<String, Connection> queues = new HashMap<String, Connection>();
+    private Map<String, Connection> queues = new HashMap<>();
     private RubyObjectAdapter rubyObjectAdapter = JavaEmbedUtils.newObjectAdapter();
 
     public DefaultQueueManager() {

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -161,8 +160,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
         responseEnv.setStatus( rackResponse.getStatus() );
         @SuppressWarnings("unchecked")
         final Set<Map.Entry> headers = rackResponse.getHeaders().entrySet();
-        for ( Iterator<Map.Entry> it = headers.iterator(); it.hasNext(); ) {
-            final Map.Entry entry = it.next();
+        for (final Map.Entry entry : headers) {
             final String key = entry.getKey().toString();
             final Object value = entry.getValue();
             responseEnv.addHeader(key, value != null ? value.toString() : null);

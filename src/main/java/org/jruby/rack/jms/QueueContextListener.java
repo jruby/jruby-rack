@@ -56,11 +56,6 @@ public class QueueContextListener implements ServletContextListener {
         if (factory != null) {
             return factory;
         }
-        return new QueueManagerFactory() {
-            @Override
-            public QueueManager newQueueManager() {
-                return new DefaultQueueManager();
-            }
-        };
+        return DefaultQueueManager::new;
     }
 }

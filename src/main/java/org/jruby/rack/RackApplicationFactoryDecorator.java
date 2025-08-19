@@ -29,7 +29,7 @@ import java.util.Set;
 
 import org.jruby.Ruby;
 
-import static org.jruby.rack.RackLogger.Level.*;
+import static org.jruby.rack.RackLogger.Level.DEBUG;
 
 /**
  * An abstract base class for decorating factories.
@@ -204,7 +204,7 @@ public abstract class RackApplicationFactoryDecorator
     public static Collection<Ruby> getManagedRuntimes(RackApplicationFactoryDecorator factory) {
         final Collection<RackApplication> apps = factory.getManagedApplications();
         if ( apps == null ) return null;
-        final Set<Ruby> runtimes = new LinkedHashSet<Ruby>(apps.size());
+        final Set<Ruby> runtimes = new LinkedHashSet<>(apps.size());
         for ( RackApplication app : apps ) {
             runtimes.add( app.getRuntime() );
         }

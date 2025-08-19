@@ -100,12 +100,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
      */
     @Override
     public RackApplication newApplication() {
-        return createApplication(new ApplicationObjectFactory() {
-            @Override
-            public IRubyObject create(Ruby runtime) {
-                return createApplicationObject(runtime);
-            }
-        });
+        return createApplication(this::createApplicationObject);
     }
 
     /**
@@ -212,12 +207,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         }
         try {
             RackApplication app = createErrorApplication(
-                new ApplicationObjectFactory() {
-                    @Override
-                    public IRubyObject create(Ruby runtime) {
-                        return createErrorApplicationObject(runtime);
-                    }
-                }
+                    this::createErrorApplicationObject
             );
             app.init();
             return app;
@@ -533,10 +523,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             InputStream is = contextLoader.getResourceAsStream(name);
             return IOHelpers.inputStreamToString(is);
         }
-        catch (IOException e) {
-            if ( silent ) return null; throw e;
-        }
-        catch (RuntimeException e) {
+        catch (IOException | RuntimeException e) {
             if ( silent ) return null; throw e;
         }
     }

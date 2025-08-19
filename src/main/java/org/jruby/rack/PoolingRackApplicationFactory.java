@@ -49,7 +49,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
     // 10 seconds seems still too much for a default, has been 30 previously :
     private static final float ACQUIRE_DEFAULT = 10.0f;
 
-    protected final Queue<RackApplication> applicationPool = new LinkedList<RackApplication>();
+    protected final Queue<RackApplication> applicationPool = new LinkedList<>();
     private Integer initialSize, maximumSize;
 
     private final AtomicInteger initedApplications = new AtomicInteger(0);
@@ -293,19 +293,15 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         if ( initThreads == null ) initThreads = 4; // quad-core baby
 
         for (int i = 0; i < initThreads; i++) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        final RackApplication app;
-                        synchronized (apps) {
-                            if ( apps.isEmpty() ) break;
-                            app = apps.remove();
-                        }
-                        if ( ! initAndPutApplicationToPool(app) ) break;
+            new Thread(() -> {
+                while (true) {
+                    final RackApplication app;
+                    synchronized (apps) {
+                        if ( apps.isEmpty() ) break;
+                        app = apps.remove();
                     }
+                    if ( ! initAndPutApplicationToPool(app) ) break;
                 }
-
             }, "JRuby-Rack-App-Init-" + i).start();
         }
     }
@@ -332,7 +328,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
     }
 
     protected Queue<RackApplication> createApplications() throws RackInitializationException {
-        Queue<RackApplication> apps = new LinkedList<RackApplication>();
+        Queue<RackApplication> apps = new LinkedList<>();
         for (int i = 0; i < initialSize; i++) {
             apps.add( createApplication(false) );
         }
@@ -417,7 +413,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
                 return Collections.emptySet();
             }
             Collection<RackApplication> snapshot =
-                    new ArrayList<RackApplication>(applicationPool);
+                    new ArrayList<>(applicationPool);
             return Collections.unmodifiableCollection(snapshot);
         }
     }

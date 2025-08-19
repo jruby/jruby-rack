@@ -184,10 +184,7 @@ public class DefaultRackConfig implements RackConfig {
                 Constructor<?> ctor = klass.getConstructor(String.class);
                 return (RackLogger) ctor.newInstance( getLoggerName() );
             }
-            catch (NoSuchMethodException retry) {
-                return newLoggerInstance(klass, retry);
-            }
-            catch (IllegalAccessException retry) {
+            catch (NoSuchMethodException | IllegalAccessException retry) {
                 return newLoggerInstance(klass, retry);
             }
             catch (InstantiationException e) {
@@ -290,13 +287,13 @@ public class DefaultRackConfig implements RackConfig {
             // jruby.runtime.env = false clear env (return empty)
             //return keep ? null : new HashMap<String, String>();
             if ( keep ) {
-                return new HashMap<String, String>(System.getenv());
+                return new HashMap<>(System.getenv());
             }
             else {
-                return new HashMap<String, String>();
+                return new HashMap<>();
             }
         }
-        if ( isIgnoreEnvironment() ) return new HashMap<String, String>();
+        if ( isIgnoreEnvironment() ) return new HashMap<>();
         // TODO maybe support custom value 'servlet' to use init params ?
         return toStringMap(env);
     }
@@ -425,7 +422,7 @@ public class DefaultRackConfig implements RackConfig {
           GEM_HOME=/opt/local/rvm/gems/jruby-1.6.8@jruby-rack
          */
         LineNumberReader reader = new LineNumberReader(new StringReader(env.trim()));
-        Map<String, String> map = new LinkedHashMap<String, String>(); String line;
+        Map<String, String> map = new LinkedHashMap<>(); String line;
         try {
             while ( (line = reader.readLine()) != null ) {
                 final String[] entries = line.split(",");
@@ -453,7 +450,7 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     private static Map<String,String> getLoggerTypes() {
-        final Map<String,String> loggerTypes = new HashMap<String, String>(8);
+        final Map<String,String> loggerTypes = new HashMap<>(8);
         loggerTypes.put("commons_logging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("clogging", "org.jruby.rack.logging.CommonsLoggingLogger");
         loggerTypes.put("slf4j", "org.jruby.rack.logging.Slf4jLogger");

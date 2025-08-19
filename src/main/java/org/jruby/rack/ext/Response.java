@@ -209,12 +209,7 @@ public class Response extends RubyObject implements RackResponse {
         return value;
     }
 
-    static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-        @Override
-        public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-            return new Response(runtime, klass);
-        }
-    };
+    static final ObjectAllocator ALLOCATOR = Response::new;
 
     protected Response(Ruby runtime, RubyClass metaClass) {
         super(runtime, metaClass);
@@ -511,8 +506,7 @@ public class Response extends RubyObject implements RackResponse {
                 catch (WrappedException e) { throw e.getIOCause(); }
             }
         }
-        catch (IOException e) { if ( ! handledAsClientAbort(e) ) throw e; }
-        catch (RuntimeException e) { if ( ! handledAsClientAbort(e) ) throw e; }
+        catch (IOException | RuntimeException e) { if ( ! handledAsClientAbort(e) ) throw e; }
         finally {
             if ( body.respondsTo("close") ) {
                 body.callMethod(currentContext(), "close");

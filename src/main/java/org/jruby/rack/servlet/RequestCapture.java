@@ -132,11 +132,11 @@ public class RequestCapture extends HttpServletRequestWrapper {
         catch (IOException e) { /* ignored */ }
         if (line == null) return false;
         
-        final Map<String,String[]> params = new HashMap<String,String[]>();
+        final Map<String,String[]> params = new HashMap<>();
         final String[] pairs = line.split("\\&");
-        for (int i = 0; i < pairs.length; i++) {
+        for (String pair : pairs) {
             try {
-                String[] fields = pairs[i].split("=", 2);
+                String[] fields = pair.split("=", 2);
                 String key = URLDecoder.decode(fields[0], "UTF-8");
                 String value = null;
                 if (fields.length == 2) {
@@ -155,8 +155,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
                     }
                     params.put(key, newValues);
                 }
-            }
-            catch (UnsupportedEncodingException e) { /* UTF-8 should be fine */ }
+            } catch (UnsupportedEncodingException e) { /* UTF-8 should be fine */ }
         }
         
         this.requestParams = params;

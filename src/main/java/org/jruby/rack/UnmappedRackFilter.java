@@ -46,7 +46,7 @@ public class UnmappedRackFilter extends AbstractFilter {
 
     private static final Collection<Integer> RESPONSE_NOT_HANDLED_STATUSES;
     static {
-        final HashSet<Integer> statuses = new HashSet<Integer>(8, 1);
+        final HashSet<Integer> statuses = new HashSet<>(8, 1);
         statuses.add( 404 );
         // 403 due containers not supporting PUT/DELETE correctly (Tomcat 6)
         statuses.add( 403 );
@@ -89,7 +89,7 @@ public class UnmappedRackFilter extends AbstractFilter {
         // ResponseCapture.notHandledStatuses e.g. "403,404,500"
         value = config.getInitParameter("responseNotHandledStatuses");
         if ( value != null ) {
-            final Set<Integer> statuses = new HashSet<Integer>();
+            final Set<Integer> statuses = new HashSet<>();
             for ( String status : value.split(",") ) {
                 status = status.trim();
                 if ( status.length() > 0 ) {

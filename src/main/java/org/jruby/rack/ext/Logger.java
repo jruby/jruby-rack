@@ -55,12 +55,7 @@ import org.jruby.util.ByteList;
 @JRubyClass(name="JRuby::Rack::Logger")
 public class Logger extends RubyObject { // implements RackLogger
 
-    static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-        @Override
-        public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-            return new Logger(runtime, klass);
-        }
-    };
+    static final ObjectAllocator ALLOCATOR = Logger::new;
 
     // Logger::Severity :
 
@@ -542,12 +537,7 @@ public class Logger extends RubyObject { // implements RackLogger
     @JRubyClass(name="JRuby::Rack::ServletLog")
     public static class ServletLog extends RubyObject {
 
-        static final ObjectAllocator ALLOCATOR = new ObjectAllocator() {
-            @Override
-            public IRubyObject allocate(Ruby runtime, RubyClass klass) {
-                return new ServletLog(runtime, klass);
-            }
-        };
+        static final ObjectAllocator ALLOCATOR = ServletLog::new;
 
         private RackLogger context;
 
