@@ -76,16 +76,7 @@ public interface RackConfig {
      * @return the <code>ENV</code> to be used in started Ruby runtimes
      */
     Map<String, String> getRuntimeEnvironment();
-    
-    /** 
-     * Returns true if the outer environment (variables) should not be used.
-     *
-     * @return whether to <code>ENV.clear</code> the Ruby runtime
-     * @deprecated replaced with {@link #getRuntimeEnvironment()}
-     */
-    @Deprecated
-    boolean isIgnoreEnvironment();
-    
+
     /**
      * Return the configured amount of time before runtime acquisition times out (in seconds).
      *
@@ -93,7 +84,7 @@ public interface RackConfig {
      */
     @Deprecated // TODO rename to Float getRuntimeAquireTimeout
     Integer getRuntimeTimeoutSeconds();
-    
+
     /**
      * Get the number of initializer threads, or null if unspecified.
      *

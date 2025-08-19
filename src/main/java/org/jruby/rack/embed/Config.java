@@ -191,11 +191,6 @@ public class Config implements RackConfig {
     }
 
     @Override
-    public boolean isIgnoreEnvironment() {
-        throw new UnsupportedOperationException("isIgnoreEnvironment()");
-    }
-
-    @Override
     public Map<String, String> getRuntimeEnvironment() {
         throw new UnsupportedOperationException("getRuntimeEnvironment()");
     }

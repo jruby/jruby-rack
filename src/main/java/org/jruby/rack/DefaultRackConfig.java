@@ -222,30 +222,21 @@ public class DefaultRackConfig implements RackConfig {
     @Override
     public Map<String, String> getRuntimeEnvironment() {
         String env = getProperty("jruby.runtime.env");
-        if ( env == null ) env = getProperty("jruby.runtime.environment");
         final Object envFlag = toStrictBoolean(env, null);
         if ( envFlag != null ) {
             // jruby.runtime.env = true keep as is (return null)
             // jruby.runtime.env = false clear env (return empty)
             return (Boolean) envFlag ? new HashMap<>(System.getenv()) : new HashMap<>();
         }
-        if ( isIgnoreEnvironment() ) return new HashMap<>();
         // TODO maybe support custom value 'servlet' to use init params ?
         return toStringMap(env);
     }
 
-    // NOTE: this is only here to be able to maintain previous behavior
-    // jruby.rack.ignore.env did ENV.clear but after RUBYOPT has been processed
+    // NOTE: this allows reinstating earlier behaviour where ENV was only cleared after RUBYOPT has been processed
     static boolean isIgnoreRUBYOPT(RackConfig config) {
-        // RUBYOPT ignored if jruby.runtime.env.rubyopt = false
-        Boolean rubyopt = config.getBooleanProperty("jruby.runtime.env.rubyopt");
-        if ( rubyopt == null ) return ! config.isIgnoreEnvironment();
-        return !rubyopt;
-    }
-
-    @Override
-    public boolean isIgnoreEnvironment() {
-        return getBooleanProperty("jruby.rack.ignore.env", false);
+        // RUBYOPT ignored if jruby.runtime.env.rubyopt = false or unset
+        Boolean retainRubyopt = config.getBooleanProperty("jruby.runtime.env.rubyopt");
+        return retainRubyopt == null || !retainRubyopt;
     }
 
     public boolean isThrowInitException() {

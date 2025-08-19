@@ -370,17 +370,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_eval_as_eql_to "ENV['RUBYOPT']", '-U'
       end
 
-      it "keeps RUBYOPT by default with empty ENV (backwards compat)" do
-        set_config 'jruby.rack.ignore.env', 'true'
-
-        app_factory = app_factory_with_RUBYOPT '-ryaml'
-        @runtime = app_factory.newRuntime
-        should_eval_as_nil "ENV['HOME']"
-        should_eval_as_eql_to "ENV['RUBYOPT']", '-ryaml' # changed with jruby.runtime.env
-        # it was processed - feature got required :
-        should_eval_as_eql_to "require 'yaml'", false
-      end
-
       it "does a complete ENV clean including RUBYOPT" do
         set_config 'jruby.runtime.env', 'false'
         # set_config 'jruby.runtime.env.rubyopt', 'false'

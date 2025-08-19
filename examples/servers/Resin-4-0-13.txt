@@ -7,7 +7,7 @@ jruby.home: file:/Users/nicksieger/Projects/java/resin-4.0.13/webapps/sinatra/WE
 --- Context Init Parameters:
 ENV_HOST = Vanguard.local
 ENV_OUTPUT = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
-jruby.rack.ignore.env = true
+jruby.runtime.env = false
 public.root = /
 rack.env = production
 
@@ -33,8 +33,7 @@ Settings:
 compat_version = 
 filter_adds_html = true
 filter_verifies_resource = false
-ignore_environment = true
-initial_runtimes = 
+initial_runtimes =
 logger = org.jruby.rack.logging.ServletContextLogger@6c538793
 logger_class_name = servlet_context
 logger_name = jruby.rack

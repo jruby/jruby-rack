@@ -7,7 +7,7 @@ jruby.home: file:/private/tmp/Jetty_0_0_0_0_8080_sinatra.war__sinatra__86inrb/we
 --- Context Init Parameters:
 ENV_HOST = Vanguard.local
 ENV_OUTPUT = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
-jruby.rack.ignore.env = true
+jruby.runtime.env = false
 org.mortbay.jetty.webapp.NoTLDJarPattern = start.jar|ant-.*\.jar|dojo-.*\.jar|jetty-.*\.jar|jsp-api-.*\.jar|junit-.*\.jar|servlet-api-.*\.jar|dnsns\.jar|rt\.jar|jsse\.jar|tools\.jar|sunpkcs11\.jar|sunjce_provider\.jar|xerces.*\.jar
 public.root = /
 rack.env = production
@@ -34,8 +34,7 @@ Settings:
 compat_version = 
 filter_adds_html = true
 filter_verifies_resource = false
-ignore_environment = true
-initial_runtimes = 
+initial_runtimes =
 logger = org.jruby.rack.logging.ServletContextLogger@1303368e
 logger_class_name = servlet_context
 logger_name = jruby.rack
