@@ -169,13 +169,3 @@ describe 'JRuby::Rack::ErrorApp' do
   end
 
 end
-
-describe 'JRuby::Rack::Errors' do
-
-  before(:all) { require 'jruby/rack/errors' }
-
-  it "still works (backward compat)" do
-    expect(JRuby::Rack::Errors).to be JRuby::Rack::ErrorApp
-  end
-
-end
