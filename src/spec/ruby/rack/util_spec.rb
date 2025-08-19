@@ -31,10 +31,10 @@ describe org.jruby.rack.util.IOHelpers do
   it "reads magic comment 2" do
     code = "# encoding: UTF-8 \n" +
            "# comment\n" +
-           "# rack.version: 1.3.6 \n" +
+           "# rack.version: 2.2.0 \n" +
            "exit(0)\n'42'"
     string = IOHelpers.rubyMagicCommentValue(code, "rack.version:")
-    expect(string).to eql "1.3.6"
+    expect(string).to eql "2.2.0"
   end
 
   it "works when reading an empty/null string" do
