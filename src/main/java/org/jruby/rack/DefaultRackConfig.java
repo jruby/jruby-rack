@@ -86,11 +86,7 @@ public class DefaultRackConfig implements RackConfig {
 
     @Override
     public Integer getRuntimeTimeoutSeconds() {
-        Integer timeout = getPositiveInteger("jruby.runtime.acquire.timeout");
-        if (timeout == null) { // backwards compatibility with 1.0.x :
-            timeout = getPositiveInteger("jruby.runtime.timeout.sec");
-        }
-        return timeout;
+        return getPositiveInteger("jruby.runtime.acquire.timeout");
     }
 
     @Override
@@ -102,27 +98,15 @@ public class DefaultRackConfig implements RackConfig {
     @Override
     public Integer getNumInitializerThreads() {
         Number threads = getNumberProperty("jruby.runtime.init.threads");
-        if (threads == null) { // backwards compatibility with 1.0.x :
-            threads = getNumberProperty("jruby.runtime.initializer.threads");
-        }
         return threads != null ? threads.intValue() : null;
     }
 
     @Override
     public boolean isSerialInitialization() {
         Boolean serial = getBooleanProperty("jruby.runtime.init.serial");
-        if (serial == null) { // backwards compatibility with 1.0.x :
-            serial = getBooleanProperty("jruby.init.serial");
-
-            if (serial == null) { // if initializer threads set to <= 0
-                Integer threads = getNumInitializerThreads();
-                if ( threads != null && threads < 0 ) {
-                    serial = Boolean.TRUE;
-                }
-                else {
-                    serial = Boolean.FALSE;
-                }
-            }
+        if (serial == null) { // if initializer threads set to <= 0
+            Integer threads = getNumInitializerThreads();
+            serial = threads != null && threads < 0 ? Boolean.TRUE : Boolean.FALSE;
         }
         return serial;
     }
@@ -232,11 +216,7 @@ public class DefaultRackConfig implements RackConfig {
 
     @Override
     public Integer getMaximumMemoryBufferSize() {
-        Integer max = getPositiveInteger("jruby.rack.request.size.maximum.bytes");
-        if (max == null) { // backwards compatibility with 1.0.x :
-            max = getPositiveInteger("jruby.rack.request.size.threshold.bytes");
-        }
-        return max;
+        return getPositiveInteger("jruby.rack.request.size.maximum.bytes");
     }
 
     @Override

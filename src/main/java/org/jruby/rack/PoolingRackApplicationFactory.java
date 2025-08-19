@@ -114,11 +114,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         super.doInit();
         final RackConfig config = getConfig();
         // TODO until config.getRuntimeTimeoutSeconds returns an integer :
-        Number timeout = config.getNumberProperty("jruby.runtime.acquire.timeout");
-        if (timeout == null) { // backwards compatibility with 1.0.x :
-            timeout = config.getNumberProperty("jruby.runtime.timeout.sec");
-        }
-        setAcquireTimeout( timeout );
+        setAcquireTimeout( config.getNumberProperty("jruby.runtime.acquire.timeout") );
 
         setInitialSize( config.getInitialRuntimes() );
         setMaximumSize( config.getMaximumRuntimes() );
