@@ -84,6 +84,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
 
         public Response(RackEnvironment env) { this.env = env; }
 
+        @Override
         public int getStatus() {
             return status;
         }
@@ -93,6 +94,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
             this.status = status;
         }
 
+        @Override
         public Map<String, ?> getHeaders() {
             return headers;
         }
@@ -102,6 +104,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
             this.headers = headers == null ? Collections.emptyMap() : headers;
         }
 
+        @Override
         public String getBody() {
             if ( body == null ) {
                 try {
@@ -135,6 +138,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
             return stringWriter.toString();
         }
 
+        @Override
         public void respond(RackResponseEnvironment response) {
             try {
                 defaultRespond(this, response);

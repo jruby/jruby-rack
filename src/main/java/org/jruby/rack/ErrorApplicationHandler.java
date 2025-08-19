@@ -59,15 +59,19 @@ public class ErrorApplicationHandler implements ErrorApplication {
         this.error = error;
     }
 
+    @Override
     public RackResponse call(final RackEnvironment env) {
         env.setAttribute(RackEnvironment.EXCEPTION, getError());
         return getErrorApplication().call(env);
     }
 
+    @Override
     public void init() { getErrorApplication().init(); }
 
+    @Override
     public void destroy() { getErrorApplication().destroy(); }
 
+    @Override
     public Ruby getRuntime() {
         return getErrorApplication().getRuntime();
     }
