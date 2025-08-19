@@ -14,8 +14,6 @@ describe "integration" do
 
   before(:all) { require 'fileutils' }
 
-  #after(:all) { JRuby::Rack.context = nil }
-
   describe 'rack (lambda)' do
 
     before do
@@ -125,9 +123,11 @@ describe "integration" do
 
   describe 'rails 7.2', lib: :rails72 do
 
-    before(:all) do name = :rails72 # copy_gemfile :
-      FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/Gemfile")
-      FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/Gemfile.lock")
+    before(:all) do
+      name = :rails72 # copy_gemfile :
+      raise "Environment variable BUNDLE_GEMFILE seems to not contain #{name.to_s}" unless ENV['BUNDLE_GEMFILE']&.include?(name.to_s)
+      FileUtils.cp ENV['BUNDLE_GEMFILE'], File.join(STUB_DIR, "#{name}/Gemfile")
+      FileUtils.cp "#{ENV['BUNDLE_GEMFILE']}.lock", File.join(STUB_DIR, "#{name}/Gemfile.lock")
       Dir.chdir File.join(STUB_DIR, name.to_s)
     end
 
