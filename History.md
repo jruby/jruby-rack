@@ -12,12 +12,12 @@
 - Drop deprecated `jruby.rack.ignore.env` property, replaced long ago by `jruby.runtime.env` and optional `jruby.runtime.env.rubyopt`
 - Drop deprecated `JRuby::Rack::RailsFileSystemLayout` alias for `JRuby::Rack::FileSystemLayout`
 - Drop deprecated `JRuby::Rack::Errors` alias for `JRuby::Rack::ErrorApp`
+- Drop deprecated `org.jruby.rack.RackInput` alias for `org.jruby.rack.ext.Input` class
+- Drop/rename deprecated `RackConfig` and `ServletRackEnvironment` API methods per their earlier comments
 - Change context listener to throw, in case of an exception during initialization, by default
 - Change rails context listener to assume a thread-safe application by default
-- update (bundled) rack to 2.2.17
-- Fix Rails 7.1 CSRF protection when working with `JavaServletStore` sessions
 
-## 1.2.4 (UNRELEASED)
+## 1.2.4
 
 - update (bundled) rack to 2.2.17
 - Fix Rails 7.1 CSRF protection when working with `JavaServletStore` sessions

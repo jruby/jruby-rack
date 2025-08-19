@@ -58,8 +58,6 @@ module JRuby::Rack
     # @return [Class] the (default) layout class to use
     # @see #layout_class
     def self.default_layout_class; WebInfLayout; end
-    # @deprecated use the class method
-    def default_layout_class; self.class.default_layout_class; end
 
     # @return [Class] the layout class to use
     # @see #layout
@@ -186,11 +184,6 @@ module JRuby::Rack
           end
         eval code, TOPLEVEL_BINDING, path_to_file(url)
       end
-    end
-
-    # @deprecated no longer used, replaced with {#run_boot_hooks}
-    def load_extensions
-      run_boot_hooks
     end
 
     def relative_url_root(init_param = 'rack.relative_url_append')

@@ -53,7 +53,6 @@ public class RackLibrary implements Library, BasicLibraryService {
               "Input", _Object, Input.ALLOCATOR
         );
         _Input.defineAnnotatedMethods(Input.class);
-        _JRuby.setConstant("RackInput", _Input); // @deprecated backwards-compat
 
         // JRuby::Rack::Logger
         final RubyClass _Logger = _JRuby_Rack.defineClassUnder(

@@ -113,9 +113,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
     protected void doInit() throws Exception {
         super.doInit();
         final RackConfig config = getConfig();
-        // TODO until config.getRuntimeTimeoutSeconds returns an integer :
-        setAcquireTimeout( config.getNumberProperty("jruby.runtime.acquire.timeout") );
-
+        setAcquireTimeout( config.getRuntimeAcquireTimeout() );
         setInitialSize( config.getInitialRuntimes() );
         setMaximumSize( config.getMaximumRuntimes() );
 
@@ -264,18 +262,9 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         permits = maximumSize != null ? new Semaphore(maximumSize, true) : null;
         if (initialSize != null) { // otherwise pool filled on demand
             Queue<RackApplication> apps = createApplications();
-            launchInitializerThreads(apps);
+            launchInitialization(apps);
             waitTillPoolReady();
         }
-    }
-
-    /**
-     * @param apps a queue of apps
-     * @deprecated override {@link #launchInitialization(java.util.Queue)}
-     */
-    @Deprecated
-    protected void launchInitializerThreads(final Queue<RackApplication> apps) {
-        launchInitialization(apps);
     }
 
     /**
@@ -283,8 +272,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
      * @param apps the (initial) instances (for the pool) to be initialized
      */
     protected void launchInitialization(final Queue<RackApplication> apps) {
-        @SuppressWarnings("deprecation")
-        Integer initThreads = getConfig().getNumInitializerThreads();
+        Integer initThreads = getConfig().getRuntimeInitThreads();
         if ( initThreads == null ) initThreads = 4; // quad-core baby
 
         for (int i = 0; i < initThreads; i++) {

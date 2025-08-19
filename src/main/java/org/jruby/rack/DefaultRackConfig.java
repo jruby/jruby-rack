@@ -28,7 +28,6 @@ import org.jruby.util.SafePropertyAccessor;
  * @see System#getProperty(String)
  * @see RackConfig
  */
-@SuppressWarnings("deprecation")
 public class DefaultRackConfig implements RackConfig {
 
     private RackLogger logger;
@@ -85,7 +84,7 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     @Override
-    public Integer getRuntimeTimeoutSeconds() {
+    public Integer getRuntimeAcquireTimeout() {
         return getPositiveInteger("jruby.runtime.acquire.timeout");
     }
 
@@ -96,7 +95,7 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     @Override
-    public Integer getNumInitializerThreads() {
+    public Integer getRuntimeInitThreads() {
         Number threads = getNumberProperty("jruby.runtime.init.threads");
         return threads != null ? threads.intValue() : null;
     }
@@ -105,7 +104,7 @@ public class DefaultRackConfig implements RackConfig {
     public boolean isSerialInitialization() {
         Boolean serial = getBooleanProperty("jruby.runtime.init.serial");
         if (serial == null) { // if initializer threads set to <= 0
-            Integer threads = getNumInitializerThreads();
+            Integer threads = getRuntimeInitThreads();
             serial = threads != null && threads < 0 ? Boolean.TRUE : Boolean.FALSE;
         }
         return serial;
@@ -174,15 +173,6 @@ public class DefaultRackConfig implements RackConfig {
         return new StandardOutLogger(getOut());
     }
 
-    @Override
-    public boolean isFilterAddsHtml() {
-        return getBooleanProperty("jruby.rack.filter.adds.html", true);
-    }
-
-    @Override
-    public boolean isFilterVerifiesResource() {
-        return getBooleanProperty("jruby.rack.filter.verifies.resource", false);
-    }
 
     public String getLoggerName() {
         return getProperty("jruby.rack.logging.name", "jruby.rack");
