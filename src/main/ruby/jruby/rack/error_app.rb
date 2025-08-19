@@ -46,7 +46,7 @@ module JRuby
 
         code = response_code(env)
 
-        return respond(code) if ! root || ! accept_html?(env)
+        return respond(code) if !root || !accepts_html?(env)
 
         # TODO support custom JSON/XML 5xx and better HTTP_ACCEPT matching
         # NOTE: code == 503 ... we're try 503.html and fallback to 500.html
@@ -152,41 +152,9 @@ module JRuby
         end
       end
 
-      begin
-        require 'rack/utils'
-        Utils = ::Rack::Utils
-
-        if ''.respond_to?(:bytesize) # Ruby >= 1.9
-          def Utils.bytesize(string); string.bytesize end
-        else
-          def Utils.bytesize(string); string.size end
-        end unless defined? Utils.bytesize
-
-        require 'rack/mime'
-      rescue LoadError; end
-
-      if defined? Utils.best_q_match
-
-        def accepts_html?(env)
-          Utils.best_q_match(env['HTTP_ACCEPT'], %w[text/html])
-        rescue
-          http_accept?(env, 'text/html')
-        end
-
-      else
-
-        def accepts_html?(env)
-          http_accept?(env, 'text/html') || http_accept?(env, '*/*')
-        end
-
+      def accepts_html?(env)
+        ::Rack::Utils.best_q_match(env['HTTP_ACCEPT'], %w[text/html])
       end
-      alias accept_html? accepts_html? # JRuby-Rack 1.1 compatibility
-
-      def http_accept?(env, mime)
-        http_accept = env['HTTP_ACCEPT'].to_s
-        http_accept.empty? ? nil : !! http_accept.index(mime)
-      end
-
     end
   end
 end
