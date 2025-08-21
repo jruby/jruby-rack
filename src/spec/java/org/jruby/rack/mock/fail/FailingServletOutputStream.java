@@ -23,11 +23,11 @@
  */
 package org.jruby.rack.mock.fail;
 
-import org.springframework.mock.web.DelegatingServletOutputStream;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+
+import org.springframework.mock.web.DelegatingServletOutputStream;
 
 /**
  * @author kares

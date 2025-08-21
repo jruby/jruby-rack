@@ -9,7 +9,6 @@ package org.jruby.rack.fake;
 
 import java.io.IOException;
 import java.util.Enumeration;
-
 import javax.el.ELContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;

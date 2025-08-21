@@ -7,13 +7,13 @@
 
 package org.jruby.rack;
 
-import org.jruby.rack.servlet.ServletRackEnvironment;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.TagSupport;
+
+import org.jruby.rack.servlet.ServletRackEnvironment;
 
 @SuppressWarnings("serial")
 public class RackTag extends TagSupport {

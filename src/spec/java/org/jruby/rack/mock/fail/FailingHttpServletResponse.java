@@ -23,10 +23,10 @@
  */
 package org.jruby.rack.mock.fail;
 
-import org.springframework.mock.web.MockHttpServletResponse;
-
-import javax.servlet.ServletOutputStream;
 import java.io.IOException;
+import javax.servlet.ServletOutputStream;
+
+import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * @author kares

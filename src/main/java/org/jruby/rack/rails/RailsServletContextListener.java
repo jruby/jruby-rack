@@ -7,12 +7,12 @@
 
 package org.jruby.rack.rails;
 
-import org.jruby.rack.SerialPoolingRackApplicationFactory;
-import org.jruby.rack.SharedRackApplicationFactory;
 import org.jruby.rack.PoolingRackApplicationFactory;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackConfig;
 import org.jruby.rack.RackServletContextListener;
+import org.jruby.rack.SerialPoolingRackApplicationFactory;
+import org.jruby.rack.SharedRackApplicationFactory;
 
 /**
  *
