@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'sinatra', '< 4.0'
+gem 'sinatra', '< 5.0'
 gem 'webrick'
 gem "jruby-rack", "~> 1.2"
-gem 'rack', '2.2.14'
+gem 'rack', '3.2.0'
