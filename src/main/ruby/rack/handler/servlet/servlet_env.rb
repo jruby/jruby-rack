@@ -180,16 +180,16 @@ module Rack
 
           if after == ''
             if n_key == '[]' && depth != 0
-              return [val]
+              return val # was [val]: Different to original alg, as val is always an array
             else
-              params[n_key] = val
+              params[n_key] = val.last # was val: Different to original alg, as val is always an array
             end
           elsif after == "["
-            params[key] = val
+            params[key] = val.last # was val: Different to original alg, as val is always an array
           elsif after == "[]"
             params[n_key] ||= []
             return mark_parameter_error "expected Array (got #{params[n_key].class.name}) for param `#{n_key}'" unless params[n_key].is_a?(Array)
-            params[n_key] << val
+            params[n_key] += val  # was <<: Different to original alg, as val is always an array
           elsif after.start_with?('[]')
             # Recognize x[][y] (hash inside array) parameters
             unless after[2] == '[' && after.end_with?(']') && (child_key = after[3, after.length-4]) && !child_key.empty? && !child_key.index('[') && !child_key.index(']')
@@ -202,7 +202,7 @@ module Rack
             if params[n_key].last.is_a?(Hash) && !params_hash_has_key?(params[n_key].last, child_key)
               store_parameter3(params[n_key].last, child_key, val, depth + 1)
             else
-              params[n_key] << store_parameter3({ }, child_key, val, depth + 1)
+              params[n_key] += store_parameter3({ }, child_key, val, depth + 1) # was <<: Different to original alg, as val is always an array
             end
           else
             params[n_key] ||= {}
