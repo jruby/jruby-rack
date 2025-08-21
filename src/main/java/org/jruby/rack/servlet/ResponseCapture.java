@@ -47,6 +47,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
      * @return the status set using one of the set status methods
      * @see #handleStatus(int, boolean)
      */
+    @Override
     public int getStatus() {
         return status != null ? status : 200;
     }

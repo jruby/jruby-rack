@@ -27,6 +27,7 @@ public class ServletRackResponseEnvironment extends HttpServletResponseWrapper
         super(response);
     }
 
+    @Override
     @Deprecated
     public void defaultRespond(final RackResponse response) throws IOException {
         DefaultErrorApplication.defaultRespond(response, this);

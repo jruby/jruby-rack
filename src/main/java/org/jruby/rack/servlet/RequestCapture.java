@@ -81,10 +81,12 @@ public class RequestCapture extends HttpServletRequestWrapper {
         if ( requestParametersParsed() ) {
             return new Enumeration<String>() {
                 final Iterator<String> keys = requestParams.keySet().iterator();
+                @Override
                 public boolean hasMoreElements() {
                     return keys.hasNext();
                 }
 
+                @Override
                 public String nextElement() {
                     return keys.next();
                 }
