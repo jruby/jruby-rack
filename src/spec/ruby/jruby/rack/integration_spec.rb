@@ -157,7 +157,7 @@ describe "integration" do
       end
       after(:all) { restore_rails }
 
-      it "loaded rack ~> 2.2" do
+      it "loaded rack ~> 2.2.0" do
         @runtime = @rack_factory.getApplication.getRuntime
         should_eval_as_not_nil "defined?(Rack.release)"
         should_eval_as_eql_to "Rack.release.to_s[0, 3]", '2.2'
