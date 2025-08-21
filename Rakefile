@@ -177,7 +177,7 @@ task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do
     gemspec = Gem::Specification.new do |gem|
       gem.name = %q{jruby-rack}
       gem.version = GEM_VERSION
-      gem.authors = ['Nick Sieger']
+      gem.authors = ['Nick Sieger', 'Karol Bucek', 'JRuby contributors']
       gem.date = Date.today.to_s
       gem.license = 'MIT'
       gem.description = %{JRuby-Rack is a combined Java and Ruby library that adapts the Java Servlet API to Rack. For JRuby only.}
@@ -185,7 +185,7 @@ task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do
       gem.email = ['nick@nicksieger.com']
       gem.files = FileList["./**/*"].exclude("*.gem").map{ |f| f.sub(/^\.\//, '') }
       gem.homepage = %q{http://jruby.org}
-      gem.has_rdoc = false
+      gem.required_ruby_version = '>= 2.6.0' # JRuby >= 9.3
     end
     defined?(Gem::Builder) ? Gem::Builder.new(gemspec).build : begin
       require 'rubygems/package'; Gem::Package.build(gemspec)
