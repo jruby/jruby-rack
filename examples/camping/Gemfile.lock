@@ -40,7 +40,7 @@ DEPENDENCIES
   camping (< 3)
   jruby-jars (< 10)
   markaby
-  rack (~> 2.2)
+  rack (~> 2.2.0)
   rackup
   warbler!
 
