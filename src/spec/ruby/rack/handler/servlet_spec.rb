@@ -951,7 +951,6 @@ describe Rack::Handler::Servlet do
 
     it "uses custom response class" do
       expect(servlet).to receive(:create_env).and_return({})
-      # expect(app).to receive(:call).and_return([ 200, {}, '' ])
 
       servlet_env = double("servlet request")
       expect(servlet.call(servlet_env)).to be_a Rack::Handler::CustomResponse
