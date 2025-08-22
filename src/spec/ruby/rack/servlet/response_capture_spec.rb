@@ -76,8 +76,6 @@ describe org.jruby.rack.servlet.ResponseCapture do
   end
 
   it "is considered handled when more than Allow header is added with OPTIONS" do
-    pending "need Servlet API 3.0" unless servlet_30?
-
     servlet_request.method = 'OPTIONS'
 
     response_capture.setIntHeader "Answer", 42
@@ -87,8 +85,6 @@ describe org.jruby.rack.servlet.ResponseCapture do
   end
 
   it "is considered handled when header is added" do
-    pending "need Servlet API 3.0" unless servlet_30?
-
     servlet_request.method = 'OPTIONS'
 
     response_capture.addHeader "Hello", "World"
