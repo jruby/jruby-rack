@@ -213,12 +213,7 @@ describe JRuby::Rack::Booter do
     #    at RUBY.change_working_directory(classpath:/jruby/rack/booter.rb:125)
     #    at RUBY.boot!(classpath:/jruby/rack/booter.rb:105)
     #    at RUBY.(root)(classpath:/jruby/rack/boot/rack.rb:10)
-    if RUBY_VERSION > '1.9'
-      app_dir = File.absolute_path Dir.pwd
-    else
-      app_dir = File.expand_path Dir.pwd
-    end
-    app_dir = "#{app_dir}/sample.war!/WEB-INF"
+    app_dir = "#{File.absolute_path Dir.pwd}/sample.war!/WEB-INF"
     allow(File).to receive(:directory?).with(app_dir).and_return true
     allow(booter).to receive(:layout).and_return layout = double('layout')
     allow(layout).to receive(:app_path).and_return app_dir
