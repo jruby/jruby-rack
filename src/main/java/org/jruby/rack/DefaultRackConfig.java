@@ -184,8 +184,8 @@ public class DefaultRackConfig implements RackConfig {
                 Constructor<?> ctor = klass.getConstructor(String.class);
                 return (RackLogger) ctor.newInstance( getLoggerName() );
             }
-            catch (NoSuchMethodException | IllegalAccessException retry) {
-                return newLoggerInstance(klass, retry);
+            catch (NoSuchMethodException | IllegalAccessException ignore) {
+                return newLoggerInstance(klass);
             }
             catch (InstantiationException e) {
                 throw new RackException("could not create logger: '" + loggerClass + "'", e);
@@ -203,9 +203,9 @@ public class DefaultRackConfig implements RackConfig {
         return null;
     }
 
-    private static RackLogger newLoggerInstance(final Class<?> klass, final Exception retry) {
+    private static RackLogger newLoggerInstance(final Class<?> klass) {
         try {
-            return (RackLogger) klass.newInstance();
+            return (RackLogger) klass.getDeclaredConstructor().newInstance();
         }
         catch (Exception e) { // InstantiationException, IllegalAccessException
             throw new RackException("could not create logger: '" + klass.getName() +
