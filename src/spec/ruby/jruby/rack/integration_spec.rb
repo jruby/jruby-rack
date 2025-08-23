@@ -185,10 +185,12 @@ describe "integration" do
           unwrap_logger = "logger = Rails.logger.broadcasts.first;"
         end
 
-        # sanity check logger-silence works:
-        should_eval_as_eql_to "#{unwrap_logger} logger.silence { logger.warn('from-integration-spec') }", true
-
-        should_eval_as_eql_to "#{unwrap_logger} logger.real_logger.is_a?(org.jruby.rack.logging.ServletContextLogger)", true
+        if Rails::VERSION::STRING >= '6.0'
+          # sanity check logger-silence works:
+          should_eval_as_not_nil "#{unwrap_logger} defined?(logger.silence)"
+          should_eval_as_eql_to "#{unwrap_logger} logger.silence { logger.warn('from-integration-spec') }", true
+          should_eval_as_eql_to "#{unwrap_logger} logger.real_logger.is_a?(org.jruby.rack.logging.ServletContextLogger)", true
+        end
       end
 
       it "sets up public_path" do
