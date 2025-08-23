@@ -1,2 +1,21 @@
 */tmp
 */*.war
+
+# Rails stub files we don't want
+rails*/Rakefile
+rails*/Gemfile
+rails*/Gemfile.lock
+rails*/bin
+rails*/README.md
+rails*/config.ru
+rails*/.ruby-version
+rails*/package.json
+
+# Rails generates assets in samples that we don't really want
+rails*/**/*.ico
+rails*/**/*.png
+rails*/**/*.svg
+rails*/**/*.html
+rails*/**/*.erb
+rails*/**/*.js
+rails*/**/*.css

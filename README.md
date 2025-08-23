@@ -348,6 +348,20 @@ package and push the .jar every time a commit changes a source file).
 * mvn release:perform (possibly with -DuseReleaseProfile=false due to Javadoc doclint failures for now)
 * rake clean gem SKIP_SPECS=true and push the gem
 
+## Adding testing for new Rails versions
+
+* Add the new version to `.github/workflows/maven.yml` under the `matrix` section
+* Add a new configuration to the `Appraisals` file, then
+    ```bundle exec appraisal generate```
+* Generate a new stub Rails application for the new version
+    ```shell
+    VERSION=rails72
+    cd src/spec/stub
+    rm -rf $VERSION && BUNDLE_GEMFILE=~/Projects/community/jruby-rack/gemfiles/${VERSION}_rack22.gemfile bundle exec rails new $VERSION --minimal --skip-git --skip-docker --skip-active-model --skip-active-record --skip-test --skip-system-test --skip-dev-gems --skip-bundle --skip-keeps --skip-asset-pipeline --skip-ci --skip-brakeman --skip-rubocop
+    ```
+* Manual changes to make to support testing
+  * In `config/production.rb` comment out the default `config.logger` value so jruby-rack applies its own `RailsLogger`.  
+
 ## Support
 
 Please use [github][4] to file bugs, patches and/or pull requests.
