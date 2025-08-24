@@ -1,7 +1,7 @@
 # JRuby-Rack
 
-[![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][8]
-[![Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)][9]
+[![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][5]
+[![Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)][6]
 
 JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows
 any (Ruby) Rack-based application to run unmodified in a Java Servlet container.
@@ -34,9 +34,6 @@ If you're assembling your own WAR using other means, you can install the
 Otherwise you'll need to download the latest [jar release][2], drop it into the
 *WEB-INF/lib* directory and configure the `RackFilter` in your application's
 *web.xml* (see following examples).
-
-Alternatively you can use a server built upon JRuby-Rack such as [Trinidad][3]
-with sensible defaults, without the need to configure a deployment descriptor.
 
 ### Rails
 
@@ -183,7 +180,7 @@ JRuby runtime management and pooling is done automatically by the framework.
 In the case of Rails, runtimes are pooled by default (the default will most
 likely change with the adoption of Rails 4.0). For other Rack applications a
 single shared runtime is created and shared for every request by default.
-As of **1.1.9** if *jruby.min.runtimes* and *jruby.max.runtimes* values are
+If *jruby.min.runtimes* and *jruby.max.runtimes* values are
 specified pooling is supported for plain Rack applications as well.
 
 We do recommend to boot your runtimes up-front to avoid the cost of initializing
@@ -304,17 +301,16 @@ For those loggers that require a specific named logger, set it with the
 Checkout the JRuby-Rack code using [git](http://git-scm.com/) :
 
 ```shell
-git clone git://github.com/jruby/jruby-rack.git
+git clone git@github.com:jruby/jruby-rack.git
 cd jruby-rack
 ```
 
-Ensure you have [Maven](http://maven.apache.org/) installed.
-It is required for downloading jar artifacts that JRuby-Rack depends on.
+Ensure you have a compatible JVM installed. It is required for building and compiling.
 
 Build the .jar using Maven :
 
 ```shell
-mvn install
+./mvnw install
 ```
 
 the generated jar should be located at **target/jruby-rack-*.jar**
@@ -332,21 +328,20 @@ package and push the .jar every time a commit changes a source file).
 
 ## Releasing
 
-* Make sure auth is configured for "central" repository ID in your .m2/settings.xml
-* Update the version in src/main/ruby/jruby/rack/version.rb to the release version
-* mvn release:prepare
-* mvn release:perform (possibly with -DuseReleaseProfile=false due to Javadoc doclint failures for now)
-* rake clean gem SKIP_SPECS=true and push the gem
+* Make sure auth is configured for "central" repository ID in your `.m2/settings.xml`
+* Update the version in `src/main/ruby/jruby/rack/version.rb` to the release version
+* `./mvnw release:prepare`
+* `./mvnw release:perform` (possibly with `-DuseReleaseProfile=false` due to Javadoc doclint failures for now)
+* `rake clean gem SKIP_SPECS=true` and push the gem
 
 ## Support
 
-Please use [github][4] to file bugs, patches and/or pull requests.
-More information at the [wiki][5] or ask us at **#jruby**'s IRC channel.
+Please use [github][3] to file bugs, patches and/or pull requests.
+More information at the [wiki][4] or ask us at **#jruby**'s IRC channel.
 
 [1]: https://github.com/jruby/warbler#warbler--
-[2]: https://oss.sonatype.org/content/repositories/releases/org/jruby/rack/jruby-rack/
-[3]: https://github.com/trinidad/trinidad
-[4]: https://github.com/jruby/jruby-rack/issues
-[5]: https://wiki.github.com/jruby/jruby-rack
-[8]: http://badge.fury.io/rb/jruby-rack
-[9]: https://github.com/jruby/jruby-rack/actions/workflows/maven.yml
+[2]: https://central.sonatype.com/artifact/org.jruby.rack/jruby-rack
+[3]: https://github.com/jruby/jruby-rack/issues
+[4]: https://github.com/jruby/jruby-rack/wiki
+[5]: http://badge.fury.io/rb/jruby-rack
+[6]: https://github.com/jruby/jruby-rack/actions/workflows/maven.yml
