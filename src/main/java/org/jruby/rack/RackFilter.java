@@ -51,7 +51,6 @@ public class RackFilter extends UnmappedRackFilter {
      */
     public RackFilter(RackDispatcher dispatcher, RackContext context) {
         super(dispatcher, context);
-        initializeFromConfig();
     }
 
     @Override
