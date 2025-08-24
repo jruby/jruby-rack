@@ -68,16 +68,6 @@
 
   <repositories>
     <repository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-    </repository>
-    <repository>
       <id>mavengems</id>
       <url>mavengem:https://rubygems.org</url>
     </repository>
