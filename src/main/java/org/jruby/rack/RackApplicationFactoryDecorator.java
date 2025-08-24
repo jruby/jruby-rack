@@ -58,10 +58,6 @@ public abstract class RackApplicationFactoryDecorator
         return delegate;
     }
 
-    @Deprecated
-    public RackApplicationFactory getRealFactory() {
-        return getDelegate();
-    }
 
     public RackContext getContext() {
         return context;

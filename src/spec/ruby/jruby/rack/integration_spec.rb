@@ -32,7 +32,7 @@ describe "integration" do
       rack_factory = @servlet_context.getAttribute("rack.factory")
       expect(rack_factory).to be_a(RackApplicationFactory)
       expect(rack_factory).to be_a(SharedRackApplicationFactory)
-      expect(rack_factory.realFactory).to be_a(DefaultRackApplicationFactory)
+      expect(rack_factory.delegate).to be_a(DefaultRackApplicationFactory)
 
       expect(@servlet_context.getAttribute("rack.context")).to be_a(RackContext)
       expect(@servlet_context.getAttribute("rack.context")).to be_a(ServletRackContext)
@@ -109,7 +109,7 @@ describe "integration" do
         rack_factory = servlet_context.getAttribute("rack.factory")
         expect(rack_factory).to be_a(RackApplicationFactory)
         expect(rack_factory).to be_a(PoolingRackApplicationFactory)
-        expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
+        expect(rack_factory.delegate).to be_a(RailsRackApplicationFactory)
 
         expect(servlet_context.getAttribute("rack.context")).to be_a(RackContext)
         expect(servlet_context.getAttribute("rack.context")).to be_a(ServletRackContext)
@@ -124,7 +124,7 @@ describe "integration" do
         rack_factory = servlet_context.getAttribute("rack.factory")
         expect(rack_factory).to be_a(RackApplicationFactory)
         expect(rack_factory).to be_a(SharedRackApplicationFactory)
-        expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
+        expect(rack_factory.delegate).to be_a(RailsRackApplicationFactory)
 
         expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
       end
@@ -138,7 +138,7 @@ describe "integration" do
         rack_factory = servlet_context.getAttribute("rack.factory")
         expect(rack_factory).to be_a(RackApplicationFactory)
         expect(rack_factory).to be_a(SharedRackApplicationFactory)
-        expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
+        expect(rack_factory.delegate).to be_a(RailsRackApplicationFactory)
       end
     end
 

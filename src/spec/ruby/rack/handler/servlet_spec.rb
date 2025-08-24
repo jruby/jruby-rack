@@ -44,7 +44,7 @@ describe Rack::Handler::Servlet do
 
     it "creates a hash with the Rack variables in it" do
       hash = servlet.create_env(@servlet_env)
-      expect(hash['rack.version']).to eq Rack::VERSION
+      expect(hash['rack.version']).to eq Rack::RELEASE
       expect(hash['rack.multithread']).to eq true
       expect(hash['rack.multiprocess']).to eq false
       expect(hash['rack.run_once']).to eq false
@@ -204,7 +204,7 @@ describe Rack::Handler::Servlet do
       end
 
       env = servlet.create_env @servlet_env
-      expect(env["rack.version"]).to eq Rack::VERSION
+      expect(env["rack.version"]).to eq Rack::RELEASE
       expect(env["CONTENT_TYPE"]).to eq "text/html"
       expect(env["HTTP_HOST"]).to eq "serverhost"
       expect(env["HTTP_ACCEPT"]).to eq "text/*"
@@ -473,16 +473,9 @@ describe Rack::Handler::Servlet do
       env = servlet.create_env(@servlet_env)
       rack_request = Rack::Request.new(env)
 
-      # Rack::Utils::ParameterTypeError (< TypeError) since 1.6.0
-      if Rack::Utils.const_defined? :ParameterTypeError
-        error = Rack::Utils::ParameterTypeError
-      else
-        error = TypeError
-      end
-
-      expect { rack_request.GET }.to raise_error(error, "expected Hash (got Array) for param `foo'")
+      expect { rack_request.GET }.to raise_error(Rack::Utils::ParameterTypeError, "expected Hash (got Array) for param `foo'")
       expect(rack_request.POST).to eq({})
-      expect { rack_request.params }.to raise_error(error, "expected Hash (got Array) for param `foo'")
+      expect { rack_request.params }.to raise_error(Rack::Utils::ParameterTypeError, "expected Hash (got Array) for param `foo'")
 
       expect(rack_request.query_string).to eq 'foo[]=0&foo[bar]=1'
     end
@@ -891,22 +884,7 @@ describe Rack::Handler::Servlet do
       env = servlet.create_env @servlet_env
 
       expect(env['java.servlet_context']).to_not be nil
-      if servlet_30?
-        expect(env['java.servlet_context']).to be @servlet_context
-      else
-        expect(env['java.servlet_context']).to be @rack_context
-
-        # HACK to emulate Servlet API 3.0 MockHttpServletRequest has getServletContext :
-        env = Rack::Handler::Servlet::DefaultEnv.new(@servlet_request).to_hash
-
-        expect(env['java.servlet_context']).to_not be nil
-        expect(env['java.servlet_context']).to be @servlet_context
-        begin
-          expect(env['java.servlet_context']).to eq @servlet_context
-        rescue NoMethodError
-          expect((env['java.servlet_context'] == @servlet_context)).to eq true
-        end
-      end
+      expect(env['java.servlet_context']).to be @servlet_context
     end
 
     it "returns the servlet request when queried with java.servlet_request" do

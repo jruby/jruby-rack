@@ -76,31 +76,20 @@ public interface RackConfig {
      * @return the <code>ENV</code> to be used in started Ruby runtimes
      */
     Map<String, String> getRuntimeEnvironment();
-    
-    /** 
-     * Returns true if the outer environment (variables) should not be used.
-     *
-     * @return whether to <code>ENV.clear</code> the Ruby runtime
-     * @deprecated replaced with {@link #getRuntimeEnvironment()}
-     */
-    @Deprecated
-    boolean isIgnoreEnvironment();
-    
+
     /**
      * Return the configured amount of time before runtime acquisition times out (in seconds).
      *
      * @return the amount of time before runtimes acquisition times out
      */
-    @Deprecated // TODO rename to Float getRuntimeAquireTimeout
-    Integer getRuntimeTimeoutSeconds();
-    
+    Integer getRuntimeAcquireTimeout();
+
     /**
      * Get the number of initializer threads, or null if unspecified.
      *
      * @return the number of initializer threads or null
      */
-    @Deprecated // TODO rename to Integer getRuntimeInitThreads
-    Integer getNumInitializerThreads();
+    Integer getRuntimeInitThreads();
 
     /** 
      * Return true if runtimes should be initialized in serial 
@@ -141,29 +130,8 @@ public interface RackConfig {
      * @return a logger instance
      */
     RackLogger getLogger();
-    
-    /** 
-     * Return true if passing through the filter should append '.html' 
-     * (or 'index.html') to the path.
-     *
-     * @return true if the filter should append .html
-     * @deprecated configure filter with a nested init-param
-     * @see RackFilter
-     */
-    @Deprecated
-    boolean isFilterAddsHtml();
 
-    /** 
-     * Return true if filter should verify the resource exists using 
-     * ServletContext#getResource before adding .html on the request. 
-     *
-     * @return true if the filter should verify the resource
-     * @deprecated configure filter with a nested init-param
-     * @see RackFilter
-     */
-    @Deprecated
-    boolean isFilterVerifiesResource();
-        /**
+    /**
      * General property retrieval for custom configuration values.
      *
      * @param key the key
