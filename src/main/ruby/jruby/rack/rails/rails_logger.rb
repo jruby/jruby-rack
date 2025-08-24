@@ -2,6 +2,6 @@ require 'active_support/logger_silence' unless defined?(ActiveSupport::LoggerSil
 
 module JRuby::Rack
   class RailsLogger < JRuby::Rack::Logger
-    include ActiveSupport::LoggerSilence
+    include ActiveSupport::LoggerSilence if defined?(ActiveSupport::LoggerSilence)
   end
 end
