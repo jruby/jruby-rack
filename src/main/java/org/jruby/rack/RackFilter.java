@@ -57,19 +57,10 @@ public class RackFilter extends UnmappedRackFilter {
     @Override
     public void init(FilterConfig config) throws ServletException {
         super.init(config);
-        initializeFromConfig(); // configure init parameters the "old" way
-
-        // filter init params are preffered and override context params :
         String value = config.getInitParameter("addsHtmlToPathInfo");
         if ( value != null ) setAddsHtmlToPathInfo(Boolean.parseBoolean(value));
         value = config.getInitParameter("verifiesHtmlResource");
         if ( value != null ) setVerifiesHtmlResource(Boolean.parseBoolean(value));
-    }
-
-    private void initializeFromConfig() {
-        final RackConfig rackConfig = getContext().getConfig(); // backward compatibility :
-        addsHtmlToPathInfo = rackConfig.getBooleanProperty("jruby.rack.filter.adds.html", true);
-        verifiesHtmlResource = rackConfig.getBooleanProperty("jruby.rack.filter.verifies.resource", false);
     }
 
     @Override

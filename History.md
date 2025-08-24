@@ -14,6 +14,7 @@
 - Drop deprecated `Rack::Handler::Servlet::Env` and `Rack::Handler::Servlet::LazyEnv` types (replaced by `DefaultEnv`)
 - Drop undocumented and deprecated jruby-rack 1.0 backwards compat properties `jruby.runtime.timeout.sec`, `jruby.runtime.initializer.threads`, `jruby.init.serial`, `jruby.rack.request.size.threshold.bytes`
 - Drop deprecated `jruby.rack.ignore.env` property, replaced long ago by `jruby.runtime.env` and optional `jruby.runtime.env.rubyopt`
+- Drop deprecated `jruby.rack.filter.*` properties, replaced long ago by init parameters `addsHtmlToPathInfo` and `verifiesHtmlResource`
 - Drop deprecated `JRuby::Rack::RailsFileSystemLayout` alias for `JRuby::Rack::FileSystemLayout`
 - Drop deprecated `JRuby::Rack::Errors` alias for `JRuby::Rack::ErrorApp`
 - Drop deprecated `org.jruby.rack.RackInput` alias for `org.jruby.rack.ext.Input` class
