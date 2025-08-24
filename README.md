@@ -144,9 +144,14 @@ using is `org.jruby.rack.RackFilter`, the filter supports the following
   gets reset (accepts  values "true", "false" and "buffer" to reset the buffer
   only), by default "true"
 - **addsHtmlToPathInfo** controls whether the .html suffix is added to the URI
-  when checking if the request is for a static page
+  when checking if the request is for a static page. The default behavior for 
+  Rails and many other Ruby applications is to add an *.html* extension to the 
+  resource and attempt to handle it before serving a dynamic request on the 
+  original URI.  However, this behavior may confuse other servlets in your 
+  application that have a wildcard mapping. Defaults to true.
 - **verifiesHtmlResource** used with the previous parameter to make sure the
-  requested static resource exists before adding the .html request URI suffix
+  requested static resource exists before adding the .html request URI suffix.
+  Defaults to false.
 
 The application can also be configured to dispatch through a servlet instead of
 a filter, the servlet class name is `org.jruby.rack.RackServlet`.
@@ -245,20 +250,6 @@ as context init parameters in web.xml or as VM-wide system properties.
   been previously read this leads to a limitation (Rack won't see the POST paras).
   Thus an alternate pure 'servlet' env "conversion" is provided that maps servlet
   parameters (and cookies) directly to Rack params, avoiding Rack's input parsing.
-- `jruby.rack.filter.adds.html`:
-  **deprecated** use `addsHtmlToPathInfo` filter config init parameter.
-  The default behavior for Rails and many other Ruby applications is to add an
-  *.html* extension to the resource and attempt to handle it before serving a
-  dynamic request on the original URI.
-  However, this behavior may confuse other servlets in your application that
-  have a wildcard mapping. Defaults to true.
-- `jruby.rack.filter.verify.resource.exists`:
-  **deprecated** use `verifiesHtmlResource` filter config init parameter.
-  If `jruby.rack.filter.adds.html` is true, then this setting, when true, adds
-  an additional check using `ServletContext#getResource` to verify that the
-  *.html* resource exists. Default is false.
-  (Note that apparently some servers may not implement `getResource` in the way
-  that is expected here, so in that case this setting won't matter.)
 
 ## Initialization
 
