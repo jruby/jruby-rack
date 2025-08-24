@@ -1,6 +1,7 @@
 ## 1.2.5 (UNRELEASED)
 
 - Fix deprecated usages of JRuby runtime
+- Fix deprecated usages of Rack API
 
 ## 1.2.4
 

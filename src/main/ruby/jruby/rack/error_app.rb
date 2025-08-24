@@ -31,7 +31,7 @@ module JRuby
       attr_reader :root
 
       def initialize(root = nil)
-        if defined?(::Rack::File) && root.is_a?(::Rack::File)
+        if defined?(::Rack::Files) && root.is_a?(::Rack::Files)
           @root = root.root # backwards compatibility
         else
           @root = root.nil? ? JRuby::Rack.public_path : root

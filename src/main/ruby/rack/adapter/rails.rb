@@ -11,7 +11,7 @@ module Rack
       def initialize(options={})
         @root   = options[:root]   || Dir.pwd
         @public = options[:public] || ::File.join(@root, "public")
-        @file_server = Rack::File.new(@public)
+        @file_server = Rack::Files.new(@public)
         if defined?(ActionController::Dispatcher.middleware)
           @dispatcher = ActionController::Dispatcher.new
         else
