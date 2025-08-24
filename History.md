@@ -1,3 +1,7 @@
+## 1.2.5 (UNRELEASED)
+
+- Fix deprecated usages of JRuby runtime
+
 ## 1.2.4
 
 - update (bundled) rack to 2.2.17
