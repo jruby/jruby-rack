@@ -14,8 +14,6 @@ describe "integration" do
 
   before(:all) { require 'fileutils' }
 
-  #after(:all) { JRuby::Rack.context = nil }
-
   describe 'rack (lambda)' do
 
     before do
@@ -86,40 +84,141 @@ describe "integration" do
 
   end
 
+  it "should have defined Rails stub tests" do
+    expect(File.foreach(__FILE__).select { |line| line.include?("describe") }).to include(/^  describe.*lib: :#{CURRENT_LIB}/),
+      "Expected rails stub tests to be defined for #{CURRENT_LIB} inside integration_spec.rb"
+    expect(File.exist?(File.join(STUB_DIR, CURRENT_LIB.to_s))).to be(true),
+      "Expected rails stub dir for #{CURRENT_LIB.to_s} to exist at #{File.join(STUB_DIR, CURRENT_LIB.to_s).inspect}"
+  end if CURRENT_LIB.to_s.include?('rails')
+
   shared_examples_for 'a rails app', :shared => true do
 
-    let(:servlet_context) { new_servlet_context(base_path) }
+    base_path = "file://#{STUB_DIR}/#{CURRENT_LIB.to_s}"
 
-    it "initializes (pooling by default)" do
-      listener = org.jruby.rack.rails.RailsServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
-
-      rack_factory = servlet_context.getAttribute("rack.factory")
-      expect(rack_factory).to be_a(RackApplicationFactory)
-      expect(rack_factory).to be_a(PoolingRackApplicationFactory)
-      expect(rack_factory).to respond_to(:realFactory)
-      expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
-
-      expect(servlet_context.getAttribute("rack.context")).to be_a(RackContext)
-      expect(servlet_context.getAttribute("rack.context")).to be_a(ServletRackContext)
-
-      expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
+    let(:servlet_context) do
+      new_servlet_context(base_path).tap { |servlet_context| prepare_servlet_context(servlet_context, base_path) }
     end
 
-    it "initializes threadsafe!" do
-      servlet_context.addInitParameter('jruby.max.runtimes', '1')
+    context "runtime" do
 
-      listener = org.jruby.rack.rails.RailsServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+      it "initializes (pooling by default)" do
+        listener = org.jruby.rack.rails.RailsServletContextListener.new
+        listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
 
-      rack_factory = servlet_context.getAttribute("rack.factory")
-      expect(rack_factory).to be_a(RackApplicationFactory)
-      expect(rack_factory).to be_a(SharedRackApplicationFactory)
-      expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
+        rack_factory = servlet_context.getAttribute("rack.factory")
+        expect(rack_factory).to be_a(RackApplicationFactory)
+        expect(rack_factory).to be_a(PoolingRackApplicationFactory)
+        expect(rack_factory).to respond_to(:realFactory)
+        expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
 
-      expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
+        expect(servlet_context.getAttribute("rack.context")).to be_a(RackContext)
+        expect(servlet_context.getAttribute("rack.context")).to be_a(ServletRackContext)
+
+        expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
+      end
+
+      it "initializes threadsafe!" do
+        servlet_context.addInitParameter('jruby.max.runtimes', '1')
+
+        listener = org.jruby.rack.rails.RailsServletContextListener.new
+        listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+
+        rack_factory = servlet_context.getAttribute("rack.factory")
+        expect(rack_factory).to be_a(RackApplicationFactory)
+        expect(rack_factory).to be_a(SharedRackApplicationFactory)
+        expect(rack_factory.realFactory).to be_a(RailsRackApplicationFactory)
+
+        expect(rack_factory.getApplication).to be_a(DefaultRackApplication)
+      end
     end
 
+    context "initialized" do
+
+      before(:all) { copy_gemfile }
+
+      before(:all) do
+        initialize_rails('production', "file://#{base_path}") do |servlet_context, _|
+          prepare_servlet_context(servlet_context, base_path)
+        end
+      end
+      after(:all) { restore_rails }
+
+      it "loaded rack ~> 2.2.0" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rack.release)"
+        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '2.2'
+      end
+
+      it "booted with a servlet logger" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_not_nil "defined?(Rails)"
+        should_eval_as_not_nil "Rails.logger"
+
+        # production.rb: config.log_level = 'info'
+        should_eval_as_eql_to "Rails.logger.level", Logger::INFO
+
+        # Rails 7.1+ wraps the default in a ActiveSupport::BroadcastLogger
+        if Rails::VERSION::STRING < '7.1'
+          should_eval_as_eql_to "Rails.logger.is_a? JRuby::Rack::Logger", true
+          should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::TaggedLogging", true
+          unwrap_logger = "logger = Rails.logger;"
+        else
+          should_eval_as_not_nil "defined?(ActiveSupport::BroadcastLogger)"
+          should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::BroadcastLogger", true
+          should_eval_as_eql_to "Rails.logger.broadcasts.size", 1
+          should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? JRuby::Rack::Logger", true
+          # NOTE: TaggedLogging is a module that extends the logger instance:
+          should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? ActiveSupport::TaggedLogging", true
+
+          should_eval_as_eql_to "Rails.logger.broadcasts.first.level", Logger::INFO
+
+          unwrap_logger = "logger = Rails.logger.broadcasts.first;"
+        end
+
+        # sanity check logger-silence works:
+        should_eval_as_eql_to "#{unwrap_logger} logger.silence { logger.warn('from-integration-spec') }", true
+
+        should_eval_as_eql_to "#{unwrap_logger} logger.real_logger.is_a?(Java::OrgJrubyRackServlet::DefaultServletRackContext)", true
+      end
+
+      it "sets up public_path" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        should_eval_as_eql_to "Rails.public_path.to_s", "#{base_path}/public"
+      end
+
+      it "disables rack's chunked support (by default)" do
+        @runtime = @rack_factory.getApplication.getRuntime
+        expect_to_have_monkey_patched_chunked
+      end
+    end
+  end
+
+  describe 'rails 5.0', lib: :rails50 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 5.2', lib: :rails52 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 6.0', lib: :rails60 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 6.1', lib: :rails61 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 7.0', lib: :rails70 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 7.1', lib: :rails71 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 7.2', lib: :rails72 do
+    it_should_behave_like 'a rails app'
   end
 
   def expect_to_have_monkey_patched_chunked
@@ -135,8 +234,6 @@ describe "integration" do
     should_eval_as_eql_to script, "1\nsecond"
   end
 
-  ENV_COPY = ENV.to_h
-
   def initialize_rails(env = nil, servlet_context = @servlet_context)
     if !servlet_context || servlet_context.is_a?(String)
       base = servlet_context.is_a?(String) ? servlet_context : nil
@@ -149,26 +246,23 @@ describe "integration" do
     servlet_context.addInitParameter("jruby.runtime.env", the_env)
 
     yield(servlet_context, listener) if block_given?
+
     listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
     @rack_context = servlet_context.getAttribute("rack.context")
     @rack_factory = servlet_context.getAttribute("rack.factory")
-    @servlet_context ||= servlet_context
-  end
-
-  def restore_rails
-    #ENV['RACK_ENV'] = ENV_COPY['RACK_ENV'] if ENV.key?('RACK_ENV')
-    #ENV['RAILS_ENV'] = ENV_COPY['RAILS_ENV'] if ENV.key?('RAILS_ENV')
+    @servlet_context = servlet_context
   end
 
   def new_servlet_context(base_path = nil)
     servlet_context = org.jruby.rack.mock.RackLoggingMockServletContext.new base_path
-    servlet_context.logger = raise_logger
-    prepare_servlet_context servlet_context
+    servlet_context.logger = raise_logger('WARN').tap { |logger| logger.setEnabled(false) }
     servlet_context
   end
 
-  def prepare_servlet_context(servlet_context)
+  def prepare_servlet_context(servlet_context, base_path)
     set_compat_version servlet_context
+    servlet_context.addInitParameter('rails.root', base_path)
+    servlet_context.addInitParameter('jruby.rack.layout_class', 'FileSystemLayout')
   end
 
   def set_compat_version(servlet_context = @servlet_context); require 'jruby'
@@ -176,14 +270,21 @@ describe "integration" do
     servlet_context.addInitParameter("jruby.compat.version", compat_version.to_s)
   end
 
-  private
-
   GEMFILES_DIR = File.expand_path('../../../gemfiles', STUB_DIR)
 
-  def copy_gemfile(name)
-    # e.g. 'rails30'
-    FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile")
-    FileUtils.cp File.join(GEMFILES_DIR, "#{name}.gemfile.lock"), File.join(STUB_DIR, "#{name}/WEB-INF/Gemfile.lock")
+  def copy_gemfile
+    name = CURRENT_LIB.to_s
+    raise "Environment variable BUNDLE_GEMFILE seems to not contain #{name}" unless ENV['BUNDLE_GEMFILE']&.include?(name)
+    FileUtils.cp ENV['BUNDLE_GEMFILE'], File.join(STUB_DIR, "#{name}/Gemfile")
+    FileUtils.cp "#{ENV['BUNDLE_GEMFILE']}.lock", File.join(STUB_DIR, "#{name}/Gemfile.lock")
+    Dir.chdir File.join(STUB_DIR, name)
+  end
+
+  ENV_COPY = ENV.to_h
+
+  def restore_rails
+    ENV['RACK_ENV'] = ENV_COPY['RACK_ENV'] if ENV.key?('RACK_ENV')
+    ENV['RAILS_ENV'] = ENV_COPY['RAILS_ENV'] if ENV.key?('RAILS_ENV')
   end
 
 end
