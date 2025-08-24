@@ -177,11 +177,11 @@ Several aspects of Rails are automatically set up for you.
 ## JRuby Runtime Management
 
 JRuby runtime management and pooling is done automatically by the framework.
-In the case of Rails, runtimes are pooled by default (the default will most
-likely change with the adoption of Rails 4.0). For other Rack applications a
-single shared runtime is created and shared for every request by default.
+For Rack-only applications (and Rails ones from jruby-rack >= 1.3), a single 
+shared runtime is created and shared for every request by default.
+
 If *jruby.min.runtimes* and *jruby.max.runtimes* values are
-specified pooling is supported for plain Rack applications as well.
+specified pooling of runtimes can be enabled for both types of applications.
 
 We do recommend to boot your runtimes up-front to avoid the cost of initializing
 one while a request kicks in and find the pool empty, this can be easily avoided
