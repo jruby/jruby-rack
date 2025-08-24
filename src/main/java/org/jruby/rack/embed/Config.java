@@ -161,8 +161,8 @@ public class Config implements RackConfig {
     // runtime pooling in embedded ENVs not implemented :
 
     @Override
-    public Integer getRuntimeTimeoutSeconds() {
-        throw new UnsupportedOperationException("getRuntimeTimeoutSeconds()");
+    public Integer getRuntimeAcquireTimeout() {
+        throw new UnsupportedOperationException("getRuntimeAcquireTimeout()");
     }
 
     @Override
@@ -181,8 +181,8 @@ public class Config implements RackConfig {
     }
 
     @Override
-    public Integer getNumInitializerThreads() {
-        throw new UnsupportedOperationException("getNumInitializerThreads()");
+    public Integer getRuntimeInitThreads() {
+        throw new UnsupportedOperationException("getRuntimeInitThreads()");
     }
 
     @Override
@@ -191,25 +191,7 @@ public class Config implements RackConfig {
     }
 
     @Override
-    public boolean isIgnoreEnvironment() {
-        throw new UnsupportedOperationException("isIgnoreEnvironment()");
-    }
-
-    @Override
     public Map<String, String> getRuntimeEnvironment() {
         throw new UnsupportedOperationException("getRuntimeEnvironment()");
     }
-
-    // RackFilter aint's used with embed :
-
-    @Override
-    public boolean isFilterAddsHtml() {
-        throw new UnsupportedOperationException("isFilterAddsHtml()");
-    }
-
-    @Override
-    public boolean isFilterVerifiesResource() {
-        throw new UnsupportedOperationException("isFilterVerifiesResource()");
-    }
-
 }

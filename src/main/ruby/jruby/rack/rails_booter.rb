@@ -52,11 +52,6 @@ module JRuby::Rack
       end
     end
 
-    # @deprecated no longer used, replaced with {#run_boot_hooks}
-    def load_extensions
-      # no-op
-    end
-
     # no rack etc extensions required here (called during boot!)
     # require 'jruby/rack/rails/extensions' on #load_environment
 

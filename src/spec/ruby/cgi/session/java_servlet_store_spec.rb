@@ -171,6 +171,6 @@ describe CGI::Session::JavaServletStore do
       expect(@session).to receive(:getLastAccessedTime).and_return 123
       expect(@session).to receive(:setAttribute).with("__rails_secret", "abcrandom123")
       expect(@dbman.generate_digest("key")).to eq(hmac("abcrandom123", "key"))
-    end unless JRUBY_VERSION < '1.7.0'
+    end
   end
 end

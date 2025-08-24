@@ -6,13 +6,18 @@
 - Drop unnecessary `jruby.compat.version` and `RackConfig.getCompatVersion()` API
 - Drop JMS support
 - Drop deprecated `RackLogger` string (level) constants
-- Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hhsh
+- Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hash
+- Drop deprecated `Rack::Handler::Servlet::Env` and `Rack::Handler::Servlet::LazyEnv` types (replaced by `DefaultEnv`)
+- Drop undocumented and deprecated jruby-rack 1.0 backwards compat properties `jruby.runtime.timeout.sec`, `jruby.runtime.initializer.threads`, `jruby.init.serial`, `jruby.rack.request.size.threshold.bytes`
+- Drop deprecated `jruby.rack.ignore.env` property, replaced long ago by `jruby.runtime.env` and optional `jruby.runtime.env.rubyopt`
+- Drop deprecated `JRuby::Rack::RailsFileSystemLayout` alias for `JRuby::Rack::FileSystemLayout`
+- Drop deprecated `JRuby::Rack::Errors` alias for `JRuby::Rack::ErrorApp`
+- Drop deprecated `org.jruby.rack.RackInput` alias for `org.jruby.rack.ext.Input` class
+- Drop/rename deprecated `RackConfig` and `ServletRackEnvironment` API methods per their earlier comments
 - Change context listener to throw, in case of an exception during initialization, by default
 - Change rails context listener to assume a thread-safe application by default
-- update (bundled) rack to 2.2.17
-- Fix Rails 7.1 CSRF protection when working with `JavaServletStore` sessions
 
-## 1.2.4 (UNRELEASED)
+## 1.2.4
 
 - update (bundled) rack to 2.2.17
 - Fix Rails 7.1 CSRF protection when working with `JavaServletStore` sessions
@@ -173,9 +178,9 @@ Changes from 1.1.15 apply since the previous release got yanked due a regression
   to handle custom lazy-bound keys but can not use a default proc (#132)
 - support the renew (and skip) session option with servlet store (#131)
 - improve ENV isolation with booted Ruby runtimes
-  * jruby.rack.env replaces jruby.rack.ignore.env (now deprecated)
+  * jruby.runtime.env replaces jruby.rack.ignore.env (now deprecated)
   * make sure RUBYOPT is ignored (with backwards compat)
-  * jruby.rack.env.rubyopt for finer RUBYOPT behavior control
+  * jruby.runtime.env.rubyopt for finer RUBYOPT behavior control
   * allow env value to be specified from config
 - solve the rackup "chicken - egg" problem with a plain Rack app
   * with a magic comment in config.ru # rack.version: ~>1.3.6

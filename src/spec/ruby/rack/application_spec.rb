@@ -310,11 +310,11 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
       it "does not require 'rack' (until booter is called)" do
         @runtime = app_factory.newRuntime
-        should_eval_as_nil "defined?(::Rack::VERSION)"
+        should_eval_as_nil "defined?(::Rack::RELEASE)"
       end
 
       it "loads specified version of rack via bundler", :lib => :stub do
-        gem_install_unless_installed 'rack', '1.3.6'
+        gem_install_unless_installed 'rack', '2.2.0'
         set_config 'jruby.runtime.env', 'false'
 
         script = "# encoding: UTF-8\n" +
@@ -324,7 +324,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         @runtime = app_factory.newRuntime
 
         file = Tempfile.new('Gemfile')
-        file << "source 'https://rubygems.org'\n gem 'rack', '1.3.6'"
+        file << "source 'https://rubygems.org'\n gem 'rack', '2.2.0'"
         file.flush
         @runtime.evalScriptlet "ENV['BUNDLE_GEMFILE'] = #{file.path.inspect}"
         @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
@@ -334,8 +334,8 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         @runtime.evalScriptlet "require 'rack'"
 
         should_not_eval_as_nil "defined?(Bundler)"
-        should_eval_as_eql_to "Rack.release if defined? Rack.release", '1.3'
-        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '1.3.6'
+        should_eval_as_eql_to "Rack.release", '2.2.0'
+        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '2.2.0'
       end
 
       it "initializes the $servlet_context global variable" do
@@ -368,17 +368,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         @runtime = app_factory.newRuntime
         should_eval_as_nil "ENV['HOME']"
         should_eval_as_eql_to "ENV['RUBYOPT']", '-U'
-      end
-
-      it "keeps RUBYOPT by default with empty ENV (backwards compat)" do
-        set_config 'jruby.rack.ignore.env', 'true'
-
-        app_factory = app_factory_with_RUBYOPT '-ryaml'
-        @runtime = app_factory.newRuntime
-        should_eval_as_nil "ENV['HOME']"
-        should_eval_as_eql_to "ENV['RUBYOPT']", '-ryaml' # changed with jruby.runtime.env
-        # it was processed - feature got required :
-        should_eval_as_eql_to "require 'yaml'", false
       end
 
       it "does a complete ENV clean including RUBYOPT" do

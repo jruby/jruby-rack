@@ -7,7 +7,7 @@ jruby.home: classpath:/META-INF/jruby.home
 --- Context Init Parameters:
 ENV_HOST = Vanguard.local
 ENV_OUTPUT = /Users/nicksieger/Projects/ruby/jruby-rack/examples/servers
-jruby.rack.ignore.env = true
+jruby.runtime.env = false
 public.root = /
 rack.env = production
 resteasy.unwrapped.exceptions = javax.ejb.EJBException
@@ -34,8 +34,7 @@ Settings:
 compat_version = 
 filter_adds_html = true
 filter_verifies_resource = false
-ignore_environment = true
-initial_runtimes = 
+initial_runtimes =
 logger = org.jruby.rack.logging.ServletContextLogger@7ee18d93
 logger_class_name = servlet_context
 logger_name = jruby.rack

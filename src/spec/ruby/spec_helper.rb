@@ -54,48 +54,14 @@ module SharedHelpers
     JRuby::Rack::Helpers.silence_warnings(&block)
   end
 
-  @@servlet_30 = nil
-
-  def servlet_30?
-    return @@servlet_30 unless @@servlet_30.nil?
-    @@servlet_30 = !!(Java::javax.servlet.AsyncContext rescue nil)
-  end
-
-  private :servlet_30?
-
-  def rack_release_at_least?(at_least = nil)
-    require 'rack';
-    at_least ? Rack.release >= at_least : true
-  end
-
-  private :rack_release_at_least?
-
   def raise_logger(level = 'WARN')
     org.jruby.rack.logging.RaiseLogger.new(level, JRuby.runtime.out)
   end
 
   def gem_install_unless_installed(name, version)
-    found = nil
-    begin
-      if Gem::Specification.respond_to? :find_all
-        all = Gem::Specification.find_all
-        found = all.find do |spec|
-          spec.name == name && spec.version.to_s == version
-        end
-      elsif Gem::Specification.respond_to? :find_by_name
-        found = Gem::Specification.find_by_name name, version
-      else
-        raise Gem::LoadError unless Gem.available? name, version
-      end
-    rescue Gem::LoadError
-      found = false
-    end
-    # NOTE: won't ever be found in RubyGems >= 2.3 likely due Bundler
-    unless found
-      require 'rubygems/dependency_installer'
-      installer = Gem::DependencyInstaller.new
-      installer.install name, version
-    end
+    require 'rubygems/dependency_installer'
+    installer = Gem::DependencyInstaller.new
+    installer.install name, version
   end
 
   ExpectationNotMetError = RSpec::Expectations::ExpectationNotMetError

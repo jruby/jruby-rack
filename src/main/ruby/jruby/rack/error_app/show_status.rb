@@ -15,7 +15,7 @@ class JRuby::Rack::ErrorApp
 
     def call(env)
       status, headers, body = @app.call(env)
-      headers = Utils::HeaderHash.new(headers)
+      headers = ::Rack::Utils::HeaderHash.new(headers)
       empty = headers['Content-Length'].to_i <= 0
 
       detail = env['rack.showstatus.detail']
@@ -23,7 +23,7 @@ class JRuby::Rack::ErrorApp
       if (status.to_i >= 400 && empty) || detail
         # required erb template variables (captured with binding) :
         request = req = ::Rack::Request.new(env); request && req # avoid un-used warning
-        message = Utils::HTTP_STATUS_CODES[status.to_i] || status.to_s
+        message = ::Rack::Utils::HTTP_STATUS_CODES[status.to_i] || status.to_s
         detail = detail.nil? ? message : detail # false for no detail
 
         body = @template.result(binding)
@@ -36,7 +36,7 @@ class JRuby::Rack::ErrorApp
 
     # @private
     def h(obj)
-      obj.is_a?(String) ? Utils.escape_html(obj) : Utils.escape_html(obj.inspect)
+      obj.is_a?(String) ? ::Rack::Utils.escape_html(obj) : ::Rack::Utils.escape_html(obj.inspect)
     end
 
     # :stopdoc:
