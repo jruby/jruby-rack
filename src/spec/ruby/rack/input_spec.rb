@@ -208,9 +208,4 @@ describe JRuby::Rack::Input do
 
     it_should_behave_like_rack_input
   end
-
-  it "is exposed as JRuby::RackInput (backwards compat)" do
-    expect(JRuby::RackInput).to be JRuby::Rack::Input
-  end
-
 end

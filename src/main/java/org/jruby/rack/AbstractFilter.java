@@ -62,7 +62,7 @@ public abstract class AbstractFilter implements Filter {
         // NOTE: should be moved bellow, just before getDispatcher().process(...)
         RackResponseEnvironment responseEnv = new ServletRackResponseEnvironment(httpResponse);
 
-        if (isDoDispatch(requestCapture, responseCapture, chain, env, responseEnv)) {
+        if (isDoDispatch(requestCapture, responseCapture, chain, env)) {
             getDispatcher().process(env, responseEnv);
         }
 
@@ -97,26 +97,6 @@ public abstract class AbstractFilter implements Filter {
             FilterChain chain, RackEnvironment env)
             throws IOException, ServletException {
         return true;
-    }
-
-    /**
-     * @deprecated use {@link #isDoDispatch(RequestCapture, ResponseCapture, FilterChain, RackEnvironment)}
-     * @param request the request
-     * @param response the response
-     * @param chain the FilterChain
-     * @param env the RackEnvironent
-     * @param responseEnv the RackResponseEnvironment
-     * @return isDoDispatch
-     * @throws IOException if there's an IO exception
-     * @throws ServletException if there's a servlet exception
-     */
-    @Deprecated
-    protected boolean isDoDispatch(
-            RequestCapture request, ResponseCapture response,
-            FilterChain chain, RackEnvironment env,
-            RackResponseEnvironment responseEnv)
-            throws IOException, ServletException {
-        return isDoDispatch(request, response, chain, env);
     }
 
     /**

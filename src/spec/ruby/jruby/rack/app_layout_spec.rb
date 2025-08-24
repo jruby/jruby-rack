@@ -87,7 +87,12 @@ describe JRuby::Rack::WebInfLayout do
 
 end
 
-shared_examples "FileSystemLayout" do
+describe JRuby::Rack::FileSystemLayout do
+
+  let(:layout) do
+    allow(@rack_context).to receive(:getRealPath) { |path| path }
+    JRuby::Rack::FileSystemLayout.new(@rack_context)
+  end
 
   before do
     @original_work_dir = Dir.pwd
@@ -97,6 +102,20 @@ shared_examples "FileSystemLayout" do
 
   after do
     Dir.chdir @original_work_dir
+  end
+
+  it "sets app uri from an app.root context param" do
+    FileUtils.mkdir_p 'app/current'
+    expect(@rack_context).to receive(:getInitParameter).with("app.root").and_return "#{Dir.pwd}/app/current"
+    expect(layout.app_uri).to eq File.expand_path('app/current')
+    expect(layout.app_path).to eq "#{Dir.pwd}/app/current"
+  end
+
+  it "sets app uri from a rails.root context param" do
+    base = File.join File.dirname(__FILE__), '../../rails'
+    expect(@rack_context).to receive(:getInitParameter).with("rails.root").and_return base
+    expect(layout.app_uri).to eq base
+    expect(layout.app_path).to eq File.expand_path(base)
   end
 
   it "sets app and public uri defaults based on a typical (Rails/Rack) app" do
@@ -181,47 +200,3 @@ shared_examples "FileSystemLayout" do
   end
 
 end
-
-describe JRuby::Rack::FileSystemLayout do
-
-  let(:layout) do
-    allow(@rack_context).to receive(:getRealPath) { |path| path }
-    JRuby::Rack::FileSystemLayout.new(@rack_context)
-  end
-
-  it_behaves_like "FileSystemLayout"
-
-  it "sets app uri from an app.root context param" do
-    FileUtils.mkdir_p 'app/current'
-    expect(@rack_context).to receive(:getInitParameter).with("app.root").and_return "#{Dir.pwd}/app/current"
-    expect(layout.app_uri).to eq File.expand_path('app/current')
-    expect(layout.app_path).to eq "#{Dir.pwd}/app/current"
-  end
-
-  describe "deprecated-constant" do
-
-    it "still works" do
-      expect(JRuby::Rack::RailsFilesystemLayout).to be JRuby::Rack::FileSystemLayout
-    end
-
-  end
-
-end
-
-describe JRuby::Rack::RailsFileSystemLayout do
-
-  let(:layout) do
-    allow(@rack_context).to receive(:getRealPath) { |path| path }
-    JRuby::Rack::RailsFileSystemLayout.new(@rack_context)
-  end
-
-  it_behaves_like "FileSystemLayout"
-
-  it "sets app uri from a rails.root context param" do
-    base = File.join File.dirname(__FILE__), '../../rails'
-    expect(@rack_context).to receive(:getInitParameter).with("rails.root").and_return base
-    expect(layout.app_uri).to eq base
-    expect(layout.app_path).to eq File.expand_path(base)
-  end
-
-end if defined? JRuby::Rack::RailsFileSystemLayout

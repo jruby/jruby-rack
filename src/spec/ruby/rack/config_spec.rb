@@ -145,25 +145,19 @@ describe org.jruby.rack.servlet.ServletRackConfig do
 
     it "defaults to nil (runtime should keep default from System env)" do
       expect(@servlet_context).to receive(:getInitParameter).
-        with("jruby.runtime.environment").and_return nil
+        with("jruby.runtime.env").and_return nil
       expect(config.getRuntimeEnvironment).to be nil
     end
 
     it "is empty when set to false" do
       expect(@servlet_context).to receive(:getInitParameter).
-        with("jruby.runtime.environment").and_return 'false'
-      expect_empty_env config.getRuntimeEnvironment
-    end
-
-    it "setting jruby.rack.ignore.env returns empty env (backwards compat)" do
-      expect(@servlet_context).to receive(:getInitParameter).
-        with("jruby.rack.ignore.env").and_return 'true'
+        with("jruby.runtime.env").and_return 'false'
       expect_empty_env config.getRuntimeEnvironment
     end
 
     it "custom env hash" do
       expect(@servlet_context).to receive(:getInitParameter).
-        with("jruby.runtime.environment").
+        with("jruby.runtime.env").
         and_return "PATH=~/bin,HOME=/home/kares\nNAMES=Jozko, Ferko,Janko,GEM_HOME=/opt/rvm/gems\n"
       expect(config.getRuntimeEnvironment).to eql({
                                                     "PATH" => "~/bin", "HOME" => "/home/kares", "NAMES" => "Jozko, Ferko,Janko", "GEM_HOME" => "/opt/rvm/gems"

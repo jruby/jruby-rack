@@ -181,10 +181,5 @@ module JRuby
       end
 
     end
-
-    RailsFileSystemLayout = FileSystemLayout
-    # @private backwards compatibility
-    RailsFilesystemLayout = FileSystemLayout
-
   end
 end

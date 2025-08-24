@@ -224,10 +224,9 @@ as context init parameters in web.xml or as VM-wide system properties.
 - `jruby.runtime.env`: Allows to set a custom ENV hash for your Ruby environment
   and thus insulate the application from the environment it is running. By setting
   this option to en empty string (or 'false') it acts as if the ENV hash was
-  cleared out (similar to the now deprecated `jruby.rack.ignore.env` option).
-- `jruby.runtime.env.rubyopt`: This option is used for compatibility with the
-  (deprecated) `jruby.rack.ignore.env` option since it cleared out the ENV after
-  RUBYOPT has been processed, by setting it to true ENV['RUBYOPT'] will be kept.
+  cleared out (similar to the now removed `jruby.rack.ignore.env` option).
+- `jruby.runtime.env.rubyopt`: Set to true to cause ENV['RUBYOPT']
+  to be retained even when using `jruby.runtime.env` to override environemnt (similar to how the removed `jruby.rack.ignore.env` option behaved by default).
 - `jruby.rack.logging`: Specify the logging device to use. Defaults to
   `servlet_context`. See below.
 - `jruby.rack.request.size.initial.bytes`: Initial size for request body memory

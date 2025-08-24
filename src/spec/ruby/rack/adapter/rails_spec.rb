@@ -8,34 +8,9 @@
 require File.expand_path('../../spec_helper', File.dirname(__FILE__))
 
 require 'action_controller' if defined? Rails
-
-# if defined? ActionController::Base.session_options # :rails23
-#  # avoid ArgumentError with real 2.3 (default) middleware-stack :
-#  # A key is required to write a cookie containing the session data.
-#  # Use config.action_controller.session = ... in config/environment.rb
-#  ActionController::Base.session_options.update({
-#    :key => "_testapp_session", :secret => "some secret phrase" * 42
-#  })
-# else # :stub
-#  module ActionController
-#    class Base; end
-#  end
-# end
-
 require 'rack/adapter/rails'
 
 describe 'Rack::Adapter::Rails' do
-
-  before :all do
-    # avoid ArgumentError with real 2.3 (default) middleware-stack :
-    # A key is required to write a cookie containing the session data.
-    # Use config.action_controller.session = ... in config/environment.rb
-    ActionController::Base.session_options.update(
-      {
-        :key => "_testapp_session", :secret => "some secret phrase" * 42
-      })
-  end
-
   before :each do
     allow(ActionController::Base).to receive(:page_cache_extension).and_return ".html"
     @rails = Rack::Adapter::Rails.new
@@ -85,7 +60,7 @@ describe 'Rack::Adapter::Rails' do
     expect(@rails.call(@env)).to eq [200, {}, ""]
   end
 
-end if defined? ActionController::Base.session_options # :rails23
+end
 
 require 'rack/adapter/rails_cgi'
 

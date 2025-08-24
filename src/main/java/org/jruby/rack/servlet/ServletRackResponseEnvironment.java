@@ -7,12 +7,8 @@
 
 package org.jruby.rack.servlet;
 
-import java.io.IOException;
-
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
-import org.jruby.rack.DefaultErrorApplication;
-import org.jruby.rack.RackResponse;
 import org.jruby.rack.RackResponseEnvironment;
 
 /**
@@ -25,12 +21,6 @@ public class ServletRackResponseEnvironment extends HttpServletResponseWrapper
 
     public ServletRackResponseEnvironment(HttpServletResponse response) {
         super(response);
-    }
-
-    @Override
-    @Deprecated
-    public void defaultRespond(final RackResponse response) throws IOException {
-        DefaultErrorApplication.defaultRespond(response, this);
     }
 
 }

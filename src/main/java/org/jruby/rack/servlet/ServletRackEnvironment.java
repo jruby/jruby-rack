@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
-import org.jruby.rack.ext.Input;
 
 /**
  * Rack environment (default) implementation based on {@link HttpServletRequest}..
@@ -146,11 +145,4 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
         final String defaultURI = super.getRequestURI();
         return requestURIWithoutQuery = defaultURI == null ? "" : defaultURI;
     }
-
-    private Input io;
-
-    @Deprecated public Input toIO() { return io; }
-
-    @Deprecated public void setIO(Input io) { this.io = io; }
-
 }

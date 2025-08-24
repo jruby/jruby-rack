@@ -47,7 +47,5 @@ module Rack
       end
 
     end
-    # @deprecated backwards compatibility
-    LazyEnv = Env = Servlet::DefaultEnv
   end
 end

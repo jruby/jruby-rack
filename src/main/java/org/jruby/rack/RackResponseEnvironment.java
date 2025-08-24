@@ -120,13 +120,4 @@ public interface RackResponseEnvironment {
      */
     PrintWriter getWriter() throws IOException ;
 
-    /**
-     * @see RackResponse#respond(RackResponseEnvironment)
-     * @param response the response
-     * @throws IOException if there's an IO exception
-     * @deprecated (should) no longer (be) used
-     */
-    @Deprecated
-    void defaultRespond(RackResponse response) throws IOException ;
-
 }

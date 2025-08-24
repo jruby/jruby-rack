@@ -367,7 +367,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Checks and sets the required Rack version (if specified as a magic comment).
      *
-     * e.g. # rack.version: =1.3.6
+     * e.g. # rack.version: =2.2.0
      *
      * @apiNote Internal API, only visible due tests.
      *

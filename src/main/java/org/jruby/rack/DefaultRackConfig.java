@@ -28,7 +28,6 @@ import org.jruby.util.SafePropertyAccessor;
  * @see System#getProperty(String)
  * @see RackConfig
  */
-@SuppressWarnings("deprecation")
 public class DefaultRackConfig implements RackConfig {
 
     private RackLogger logger;
@@ -85,12 +84,8 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     @Override
-    public Integer getRuntimeTimeoutSeconds() {
-        Integer timeout = getPositiveInteger("jruby.runtime.acquire.timeout");
-        if (timeout == null) { // backwards compatibility with 1.0.x :
-            timeout = getPositiveInteger("jruby.runtime.timeout.sec");
-        }
-        return timeout;
+    public Integer getRuntimeAcquireTimeout() {
+        return getPositiveInteger("jruby.runtime.acquire.timeout");
     }
 
     @Override
@@ -100,29 +95,17 @@ public class DefaultRackConfig implements RackConfig {
     }
 
     @Override
-    public Integer getNumInitializerThreads() {
+    public Integer getRuntimeInitThreads() {
         Number threads = getNumberProperty("jruby.runtime.init.threads");
-        if (threads == null) { // backwards compatibility with 1.0.x :
-            threads = getNumberProperty("jruby.runtime.initializer.threads");
-        }
         return threads != null ? threads.intValue() : null;
     }
 
     @Override
     public boolean isSerialInitialization() {
         Boolean serial = getBooleanProperty("jruby.runtime.init.serial");
-        if (serial == null) { // backwards compatibility with 1.0.x :
-            serial = getBooleanProperty("jruby.init.serial");
-
-            if (serial == null) { // if initializer threads set to <= 0
-                Integer threads = getNumInitializerThreads();
-                if ( threads != null && threads < 0 ) {
-                    serial = Boolean.TRUE;
-                }
-                else {
-                    serial = Boolean.FALSE;
-                }
-            }
+        if (serial == null) { // if initializer threads set to <= 0
+            Integer threads = getRuntimeInitThreads();
+            serial = threads != null && threads < 0 ? Boolean.TRUE : Boolean.FALSE;
         }
         return serial;
     }
@@ -157,8 +140,8 @@ public class DefaultRackConfig implements RackConfig {
                 Constructor<?> ctor = klass.getConstructor(String.class);
                 return (RackLogger) ctor.newInstance( getLoggerName() );
             }
-            catch (NoSuchMethodException | IllegalAccessException retry) {
-                return newLoggerInstance(klass, retry);
+            catch (NoSuchMethodException | IllegalAccessException ignore) {
+                return newLoggerInstance(klass);
             }
             catch (InstantiationException e) {
                 throw new RackException("could not create logger: '" + loggerClass + "'", e);
@@ -176,9 +159,9 @@ public class DefaultRackConfig implements RackConfig {
         return null;
     }
 
-    private static RackLogger newLoggerInstance(final Class<?> klass, final Exception retry) {
+    private static RackLogger newLoggerInstance(final Class<?> klass) {
         try {
-            return (RackLogger) klass.newInstance();
+            return (RackLogger) klass.getDeclaredConstructor().newInstance();
         }
         catch (Exception e) { // InstantiationException, IllegalAccessException
             throw new RackException("could not create logger: '" + klass.getName() +
@@ -190,15 +173,6 @@ public class DefaultRackConfig implements RackConfig {
         return new StandardOutLogger(getOut());
     }
 
-    @Override
-    public boolean isFilterAddsHtml() {
-        return getBooleanProperty("jruby.rack.filter.adds.html", true);
-    }
-
-    @Override
-    public boolean isFilterVerifiesResource() {
-        return getBooleanProperty("jruby.rack.filter.verifies.resource", false);
-    }
 
     public String getLoggerName() {
         return getProperty("jruby.rack.logging.name", "jruby.rack");
@@ -232,40 +206,27 @@ public class DefaultRackConfig implements RackConfig {
 
     @Override
     public Integer getMaximumMemoryBufferSize() {
-        Integer max = getPositiveInteger("jruby.rack.request.size.maximum.bytes");
-        if (max == null) { // backwards compatibility with 1.0.x :
-            max = getPositiveInteger("jruby.rack.request.size.threshold.bytes");
-        }
-        return max;
+        return getPositiveInteger("jruby.rack.request.size.maximum.bytes");
     }
 
     @Override
     public Map<String, String> getRuntimeEnvironment() {
         String env = getProperty("jruby.runtime.env");
-        if ( env == null ) env = getProperty("jruby.runtime.environment");
         final Object envFlag = toStrictBoolean(env, null);
         if ( envFlag != null ) {
             // jruby.runtime.env = true keep as is (return null)
             // jruby.runtime.env = false clear env (return empty)
             return (Boolean) envFlag ? new HashMap<>(System.getenv()) : new HashMap<>();
         }
-        if ( isIgnoreEnvironment() ) return new HashMap<>();
         // TODO maybe support custom value 'servlet' to use init params ?
         return toStringMap(env);
     }
 
-    // NOTE: this is only here to be able to maintain previous behavior
-    // jruby.rack.ignore.env did ENV.clear but after RUBYOPT has been processed
+    // NOTE: this allows reinstating earlier behaviour where ENV was only cleared after RUBYOPT has been processed
     static boolean isIgnoreRUBYOPT(RackConfig config) {
-        // RUBYOPT ignored if jruby.runtime.env.rubyopt = false
-        Boolean rubyopt = config.getBooleanProperty("jruby.runtime.env.rubyopt");
-        if ( rubyopt == null ) return ! config.isIgnoreEnvironment();
-        return !rubyopt;
-    }
-
-    @Override
-    public boolean isIgnoreEnvironment() {
-        return getBooleanProperty("jruby.rack.ignore.env", false);
+        // RUBYOPT ignored if jruby.runtime.env.rubyopt = false or unset
+        Boolean retainRubyopt = config.getBooleanProperty("jruby.runtime.env.rubyopt");
+        return retainRubyopt == null || !retainRubyopt;
     }
 
     public boolean isThrowInitException() {

@@ -231,7 +231,7 @@ module Rack
 
         def load_builtin(env, key)
           case key
-          when 'rack.version'          then env[key] = ::Rack::VERSION
+          when 'rack.version'         then env[key] = ::Rack::RELEASE
           when 'rack.multithread'      then env[key] = true
           when 'rack.multiprocess'     then env[key] = false
           when 'rack.run_once'         then env[key] = false

@@ -51,12 +51,6 @@ module Rack
         # @private
         POST_PARAM_METHODS = [ 'POST', 'PUT', 'DELETE' ].freeze
 
-        if defined? Rack::Utils::ParameterTypeError
-          ParameterTypeError = Rack::Utils::ParameterTypeError
-        else
-          ParameterTypeError = TypeError
-        end
-
         # Load parameters into the (Rack) env from the Servlet API.
         # using Java::JakartaServletHttp::HttpServletRequest#getParameterMap
         def load_parameters
@@ -188,8 +182,8 @@ module Rack
         end
 
         def mark_parameter_error(msg)
-          raise ParameterTypeError, msg
-        rescue ParameterTypeError => e
+          raise Rack::Utils::ParameterTypeError, msg
+        rescue Rack::Utils::ParameterTypeError => e
           @parameter_error = e
         end
 

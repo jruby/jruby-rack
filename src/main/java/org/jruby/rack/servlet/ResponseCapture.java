@@ -199,7 +199,6 @@ public class ResponseCapture extends HttpServletResponseWrapper {
     }
 
     /**
-     * @deprecated no longer to be used from outside
      * @see #isHandled(HttpServletRequest)
      * @return true if handled
      */

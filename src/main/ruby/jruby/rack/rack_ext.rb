@@ -9,7 +9,7 @@ begin
   require 'rack'
 rescue LoadError
   require 'vendor/rack'
-end unless defined?(::Rack::VERSION)
+end unless defined?(::Rack::RELEASE)
 
 # Servlet API friendly extensions to Rack
 # Allows for forwarding the request to another servlet/JSP
