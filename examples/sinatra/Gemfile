@@ -1,7 +1,10 @@
 source 'https://rubygems.org'
 
-gem 'sinatra', '< 4.0'
+gem 'sinatra'
 gem 'webrick'
-gem "jruby-rack", "~> 1.2.4"
+gem 'jruby-rack', '~> 1.2.4'
 gem 'rack', '~> 2.2.0'
-gem "jruby-jars", "~> 9.4"
+
+group :development do
+  gem 'jruby-jars', '< 10'
+end
