@@ -1,10 +1,22 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    base64 (0.3.0)
+    jruby-jars (9.4.13.0)
     jruby-rack (1.2.4)
-    rack (2.2.14)
-    sinatra (1.0)
-      rack (>= 1.0)
+    mustermann (3.0.4)
+      ruby2_keywords (~> 0.0.1)
+    rack (2.2.17)
+    rack-protection (3.2.0)
+      base64 (>= 0.1.0)
+      rack (~> 2.2, >= 2.2.4)
+    ruby2_keywords (0.0.5)
+    sinatra (3.2.0)
+      mustermann (~> 3.0)
+      rack (~> 2.2, >= 2.2.4)
+      rack-protection (= 3.2.0)
+      tilt (~> 2.0)
+    tilt (2.6.1)
     webrick (1.9.1)
 
 PLATFORMS
@@ -12,7 +24,11 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  jruby-rack (~> 1.2)
-  rack (= 2.2.14)
+  jruby-jars (~> 9.4)
+  jruby-rack (~> 1.2.4)
+  rack (~> 2.2.0)
   sinatra (< 4.0)
   webrick
+
+BUNDLED WITH
+   2.6.9
