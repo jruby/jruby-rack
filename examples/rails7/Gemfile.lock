@@ -126,8 +126,6 @@ GEM
     psych (5.2.6-java)
       date
       jar-dependencies (>= 0.1.7)
-    puma (6.6.1-java)
-      nio4r (~> 2.0)
     racc (1.8.1-java)
     rack (2.2.17)
     rack-session (1.0.2)
@@ -185,8 +183,6 @@ GEM
     timeout (0.4.3)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2025.2)
-      tzinfo (>= 1.0.0)
     useragent (0.16.11)
     webrick (1.9.1)
     websocket-driver (0.8.0-java)
@@ -199,12 +195,10 @@ PLATFORMS
   universal-java-21
 
 DEPENDENCIES
-  jruby-jars (~> 9.4)
-  puma (>= 5.0)
+  jruby-jars (< 10)
   rack (~> 2.2.0)
   rails (~> 7.2.2, >= 7.2.2.2)
   sprockets-rails
-  tzinfo-data
 
 BUNDLED WITH
    2.6.9
