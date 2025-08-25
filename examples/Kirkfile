@@ -1,4 +1,4 @@
-rack "rails3/config.ru" do
+rack "rails7/config.ru" do
   listen 9090
 end
 
