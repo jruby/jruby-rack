@@ -95,7 +95,7 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jar-dependencies (0.5.5)
-    jruby-jars (9.4.13.0)
+    jruby-jars (9.4.14.0)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
