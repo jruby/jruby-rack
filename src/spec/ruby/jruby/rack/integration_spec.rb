@@ -185,12 +185,10 @@ describe "integration" do
           unwrap_logger = "logger = Rails.logger.broadcasts.first;"
         end
 
-        if Rails::VERSION::STRING >= '6.0'
-          # sanity check logger-silence works:
-          should_eval_as_not_nil "#{unwrap_logger} defined?(logger.silence)"
-          should_eval_as_eql_to "#{unwrap_logger} logger.silence { logger.warn('from-integration-spec') }", true
-          should_eval_as_eql_to "#{unwrap_logger} logger.real_logger.is_a?(org.jruby.rack.logging.ServletContextLogger)", true
-        end
+        # sanity check logger-silence works:
+        should_eval_as_not_nil "#{unwrap_logger} defined?(logger.silence)"
+        should_eval_as_eql_to "#{unwrap_logger} logger.silence { logger.warn('from-integration-spec') }", true
+        should_eval_as_eql_to "#{unwrap_logger} logger.real_logger.is_a?(org.jruby.rack.logging.ServletContextLogger)", true
       end
 
       it "sets up public_path" do
@@ -203,18 +201,6 @@ describe "integration" do
         expect_to_have_monkey_patched_chunked
       end
     end
-  end
-
-  describe 'rails 5.0', lib: :rails50 do
-    it_should_behave_like 'a rails app'
-  end
-
-  describe 'rails 5.2', lib: :rails52 do
-    it_should_behave_like 'a rails app'
-  end
-
-  describe 'rails 6.0', lib: :rails60 do
-    it_should_behave_like 'a rails app'
   end
 
   describe 'rails 6.1', lib: :rails61 do

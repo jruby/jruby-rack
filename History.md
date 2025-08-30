@@ -3,6 +3,7 @@
 - Support Javax Servlet API 4.0 (JEE 8)
 - Adds basic compatibility with JRuby 10.0
 - Drop support for JRuby 9.3
+- Drop support for Rails < 6.1
 - Drop unnecessary `jruby.compat.version` and `RackConfig.getCompatVersion()` API
 - Drop JMS support
 - Drop deprecated `RackLogger` string (level) constants
