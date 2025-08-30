@@ -19,6 +19,12 @@
 - Change context listener to throw, in case of an exception during initialization, by default
 - Change rails context listener to assume a thread-safe application by default
 
+## 1.2.5 (UNRELEASED)
+
+- Fix use of jruby-rack under Java 8 (#324)
+- Fix deprecated usages of JRuby runtime
+- Fix deprecated usages of Rack API
+
 ## 1.2.4
 
 - update (bundled) rack to 2.2.17
