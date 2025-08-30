@@ -1,5 +1,6 @@
 ## 1.2.5 (UNRELEASED)
 
+- Fix use of jruby-rack under Java 8 (#324)
 - Fix deprecated usages of JRuby runtime
 - Fix deprecated usages of Rack API
 
