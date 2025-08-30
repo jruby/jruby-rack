@@ -7,6 +7,8 @@
 
 package org.jruby.rack;
 
+import org.jruby.rack.ext.Input;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -157,4 +159,36 @@ public interface RackEnvironment {
      * @return the remote user
      */
     String getRemoteUser();
+
+    /**
+     * {@link RackEnvironment} extension to obtain a rack.input IO.
+     * <p>
+     * NOTE: This interface will most likely get moved onto the (parent)
+     * environment interface directly once the deprecated way of maintaining
+     * backwards compatibility (using jruby/rack/environment.rb) is removed.
+     *
+     * @deprecated Was an internal interface and is no longer used.
+     * @author kares
+     */
+    @Deprecated
+    interface ToIO {
+
+        // TODO move to RackEnvironment once jruby/rack/environment.rb removed
+
+        /**
+         * Convert this environment into a "rack.input" IO.
+         * Replaces the <code>to_io</code> monkey-patch ...
+         * @return rack.input
+         */
+        public Input toIO();
+
+        /**
+         * Set the rack.input, this is an optional operation and implementers
+         * might ignore this call silently if they're capable of constructing
+         * the rack.input themselves.
+         * @param io the rack.input instance
+         */
+        void setIO(Input io) ;
+
+    }
 }
