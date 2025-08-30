@@ -13,8 +13,8 @@ For more information on Rack, visit http://rack.github.io/.
 
 | JRuby-Rack Series                                          | Status     | Rack      | JRuby      | Java | Rails     | Target Servlet API  | Notes                                      |
 |------------------------------------------------------------|------------|-----------|------------|------|-----------|---------------------|--------------------------------------------|
-| 2.0 (_planned_)                                            | Dev        | 2.2       | 9.4 → 10.0 | 8+   | 5.0 → 8.0 | 5.0+ (Jakarta EE 9) | Pre 5.0 servlet APIs non functional.       |
-| 1.3 (master, _unreleased_)                                 | Dev        | 2.2       | 9.4 → 10.0 | 8+   | 5.0 → 8.0 | 4.0 (Java EE 8)     | Servlet 2.5 → 3.1 likely to work fine.     |
+| 2.0 (_planned_)                                            | Dev        | 2.2       | 9.4 → 10.0 | 8+   | 6.1 → 8.0 | 5.0+ (Jakarta EE 9) | Pre 5.0 servlet APIs non functional.       |
+| 1.3 (master, _unreleased_)                                 | Dev        | 2.2       | 9.4 → 10.0 | 8+   | 6.1 → 8.0 | 4.0 (Java EE 8)     | Servlet 2.5 → 3.1 likely to work fine.     |
 | [1.2](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained | 2.2       | 9.3 → 9.4  | 8+   | 5.0 → 7.2 | 3.0 (Java EE 6)     | Servlet 3.1 → 4.0 OK with some containers. |
 | [1.1](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL        | 1.x → 2.2 | 1.6 → 9.4  | 6+   | 2.1 → 5.2 | 2.5 (Java EE 5)     | Servlet 3.0 → 4.0 OK with some containers. |
 | 1.0                                                        | EOL        | 0.9 → 1.x | 1.1 → 1.9  | 5+   | 2.1 → 3.x | 2.5 (Java EE 5)     |                                            |
@@ -334,6 +334,20 @@ package and push the .jar every time a commit changes a source file).
 * `./mvnw release:prepare`
 * `./mvnw release:perform` (possibly with `-DuseReleaseProfile=false` due to Javadoc doclint failures for now)
 * `rake clean gem SKIP_SPECS=true` and push the gem
+
+## Adding testing for new Rails versions
+
+* Add the new version to `.github/workflows/maven.yml` under the `matrix` section
+* Add a new configuration to the `Appraisals` file, then
+    ```bundle exec appraisal generate```
+* Generate a new stub Rails application for the new version
+    ```shell
+    VERSION=rails72
+    cd src/spec/stub
+    rm -rf $VERSION && BUNDLE_GEMFILE=~/Projects/community/jruby-rack/gemfiles/${VERSION}_rack22.gemfile bundle exec rails new $VERSION --minimal --skip-git --skip-docker --skip-active-model --skip-active-record --skip-test --skip-system-test --skip-dev-gems --skip-bundle --skip-keeps --skip-asset-pipeline --skip-ci --skip-brakeman --skip-rubocop
+    ```
+* Manual changes to make to support testing
+  * In `config/production.rb` comment out the default `config.logger` value so jruby-rack applies its own `RailsLogger`.  
 
 ## Support
 

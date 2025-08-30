@@ -3,9 +3,6 @@ version_spec = ->(prefix, desc) { "~> #{desc.split(prefix).last.insert(1, ".")}.
 # Rails version -> rack versions in format
 # rails#{MAJOR}#{MINOR} => %w[ rack#{MAJOR}#{MINOR} ]
 {
-    "rails50" => %w[rack22],
-    "rails52" => %w[rack22],
-    "rails60" => %w[rack22],
     "rails61" => %w[rack22],
     "rails70" => %w[rack22],
     "rails71" => %w[rack22],
