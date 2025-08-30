@@ -7,8 +7,7 @@
 
 package org.jruby.rack.servlet;
 
-import javax.servlet.ServletContext;
-
+import jakarta.servlet.ServletContext;
 import org.jruby.rack.RackApplicationFactory;
 import org.jruby.rack.RackContext;
 
