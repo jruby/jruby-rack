@@ -7,6 +7,7 @@
 - Support Javax Servlet API 4.0 (JEE 8)
 - Adds basic compatibility with JRuby 10.0
 - Drop support for JRuby 9.3
+- Drop support for Rails < 6.1
 - Drop unnecessary `jruby.compat.version` and `RackConfig.getCompatVersion()` API
 - Drop JMS support
 - Drop deprecated `RackLogger` string (level) constants
@@ -21,6 +22,12 @@
 - Drop/rename deprecated `RackConfig` and `ServletRackEnvironment` API methods per their earlier comments
 - Change context listener to throw, in case of an exception during initialization, by default
 - Change rails context listener to assume a thread-safe application by default
+
+## 1.2.5 (UNRELEASED)
+
+- Fix use of jruby-rack under Java 8 (#324)
+- Fix deprecated usages of JRuby runtime
+- Fix deprecated usages of Rack API
 
 ## 1.2.4
 

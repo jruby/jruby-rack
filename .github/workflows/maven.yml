@@ -9,7 +9,7 @@ on:
 env:
   # Default versions for canonical release build
   DEFAULT_JAVA_VERSION: '8'
-  DEFAULT_JRUBY_VERSION: '9.4.13.0' # Should match pom.xml <jruby.version> property (AND a version inside the test matrix)
+  DEFAULT_JRUBY_VERSION: '9.4.14.0' # Should match pom.xml <jruby.version> property (AND a version inside the test matrix)
   DEFAULT_RACK_VERSION: '~> 2.2.0' # Should match Gemfile (AND a version inside the test matrix)
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '9.4.13.0', '10.0.2.0' ]
+        jruby_version: [ '9.4.14.0', '10.0.2.0' ]
         java_version: [ '8', '11', '17', '21' ]
         rack_version: [ '~> 2.2.0' ]
         exclude:
@@ -59,16 +59,13 @@ jobs:
     strategy:
       matrix:
         appraisal: [
-          'rails50_rack22',
-          'rails52_rack22',
-          'rails60_rack22',
           'rails61_rack22',
           'rails70_rack22',
           'rails71_rack22',
           'rails72_rack22',
           'rails80_rack22',
         ]
-        jruby_version: [ '9.4.13.0', '10.0.2.0' ]
+        jruby_version: [ '9.4.14.0', '10.0.2.0' ]
         java_version: [ '8', '11', '17', '21' ]
         exclude:
           - jruby_version: '10.0.2.0'
@@ -78,7 +75,7 @@ jobs:
           - jruby_version: '10.0.2.0'
             java_version: '17' # JRuby 10 requires Java 21
           - appraisal: 'rails80_rack22'
-            jruby_version: '9.4.13.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
+            jruby_version: '9.4.14.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
       fail-fast: false
 
     env:
@@ -96,7 +93,7 @@ jobs:
           cache: maven
 
       - name: Setup JRuby
-        uses: ruby/setup-ruby@829114fc20da43a41d27359103ec7a63020954d4 # v1.255.0
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: jruby-${{ matrix.jruby_version }}
           bundler-cache: 'false' # Need to install later so we can vary from Gemfile.lock as required for JRuby version compatibility
