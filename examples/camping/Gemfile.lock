@@ -18,7 +18,7 @@ GEM
     camping (2.1.532)
       mab (>= 0.0.3)
       rack (>= 1.0)
-    jruby-jars (9.4.13.0)
+    jruby-jars (9.4.14.0)
     jruby-rack (1.2.3)
     mab (0.0.3)
     markaby (0.9.4)
