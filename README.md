@@ -15,8 +15,8 @@ For more information on Rack, visit http://rack.github.io/.
 
 | JRuby-Rack Series                                              | Status        | Rack      | JRuby      | Java | Rails     | Target Servlet API  | Notes                                                          |
 |----------------------------------------------------------------|---------------|-----------|------------|------|-----------|---------------------|----------------------------------------------------------------|
-| **2.0 (_planned_, _unreleased_)**                              | Dev           | 2.2 → 3.2 | 9.4 → 10.0 | 8+   | 7.0 → 8.0 | 5.0+ (Jakarta EE 9) | ❌ Servlet < 5.0 containers will not work                       |
-| **1.3 (master, _unreleased_)**                                 | Dev           | 2.2 → 3.2 | 9.4 → 10.0 | 8+   | 7.0 → 8.0 | 4.0 (Java EE 8)     | ✅ _Unofficial_: Servlet 2.5 → 3.1 & Rails 6.1 likely working   |
+| **2.0 (_planned_, _unreleased_)**                              | Dev           | 2.2 → 3.2 | 9.4 → 10.0 | 8+   | 7.0 → 8.1 | 5.0+ (Jakarta EE 9) | ❌ Servlet < 5.0 containers will not work                       |
+| **1.3 (master, _unreleased_)**                                 | Dev           | 2.2 → 3.2 | 9.4 → 10.0 | 8+   | 7.0 → 8.1 | 4.0 (Java EE 8)     | ✅ _Unofficial_: Servlet 2.5 → 3.1 & Rails 6.1 likely working   |
 | [**1.2**](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained    | 2.2       | 9.3 → 9.4  | 8+   | 5.0 → 7.2 | 3.0 (Java EE 6)     | ✅ _Unofficial_: Servlet 3.1 → 4.0 also OK with most containers |
 | [**1.1**](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL @ 2024-05 | 1.x → 2.2 | 1.6 → 9.4  | 6+   | 2.1 → 5.2 | 2.5 (Java EE 5)     | ✅ _Unofficial_: Servlet 3.0 → 4.0 also OK with most containers |
 | [**1.0**](https://github.com/jruby/jruby-rack/tree/1.0.10)     | EOL @ 2011-11 | 0.9 → 1.x | 1.1 → 1.9  | 5+   | 2.1 → 3.x | 2.5 (Java EE 5)     |                                                                |
@@ -357,7 +357,7 @@ package and push the .jar every time a commit changes a source file).
     ```shell
     VERSION=rails72
     cd src/spec/stub
-    rm -rf $VERSION && BUNDLE_GEMFILE=~/Projects/community/jruby-rack/gemfiles/${VERSION}_rack22.gemfile bundle exec rails new $VERSION --minimal --skip-git --skip-docker --skip-active-model --skip-active-record --skip-test --skip-system-test --skip-dev-gems --skip-bundle --skip-keeps --skip-asset-pipeline --skip-ci --skip-brakeman --skip-rubocop
+    rm -rf $VERSION && BUNDLE_GEMFILE=~/Projects/community/jruby-rack/gemfiles/${VERSION}_rack32.gemfile bundle exec rails new $VERSION --minimal --skip-git --skip-docker --skip-active-model --skip-active-record --skip-test --skip-system-test --skip-dev-gems --skip-bundle --skip-keeps --skip-asset-pipeline --skip-ci --skip-brakeman --skip-rubocop
     ```
 * Manual changes to make to support testing
   * In `config/production.rb` comment out the default `config.logger` value so jruby-rack applies its own `RailsLogger`.  
