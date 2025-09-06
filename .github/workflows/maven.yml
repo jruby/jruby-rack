@@ -63,6 +63,7 @@ jobs:
           'rails71_rack22', 'rails71_rack31',
           'rails72_rack22', 'rails72_rack31',
           'rails80_rack22', 'rails80_rack31', 'rails80_rack32',
+          'rails81_rack31', 'rails81_rack32',
         ]
         jruby_version: [ '9.4.14.0', '10.0.3.0' ]
         java_version: [ '8', '11', '17', '21', '25' ]
@@ -78,6 +79,10 @@ jobs:
           - appraisal: 'rails80_rack31'
             jruby_version: '9.4.14.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
           - appraisal: 'rails80_rack32'
+            jruby_version: '9.4.14.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
+          - appraisal: 'rails81_rack31'
+            jruby_version: '9.4.14.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
+          - appraisal: 'rails81_rack32'
             jruby_version: '9.4.14.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
 
       fail-fast: false
