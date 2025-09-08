@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/jruby/warbler.git
-  revision: f10ed60aefe3bf498917bfd18de780fb7d240f65
+  revision: 523237b6d931efcd6f13a79692f6aa46ad997443
   branch: master
   specs:
     warbler (2.0.5)
@@ -9,7 +9,7 @@ GIT
       ostruct (= 0.6.2)
       rake (>= 13.0.3)
       rexml (~> 3.0)
-      rubyzip (>= 1.0.0)
+      rubyzip (>= 3.0.0)
 
 GEM
   remote: https://rubygems.org/
@@ -19,7 +19,7 @@ GEM
       mab (>= 0.0.3)
       rack (>= 1.0)
     jruby-jars (9.4.14.0)
-    jruby-rack (1.2.3)
+    jruby-rack (1.2.5)
     mab (0.0.3)
     markaby (0.9.4)
       builder
@@ -29,8 +29,8 @@ GEM
       rack (< 3)
       webrick
     rake (13.3.0)
-    rexml (3.4.1)
-    rubyzip (2.4.1)
+    rexml (3.4.3)
+    rubyzip (3.1.0)
     webrick (1.9.1)
 
 PLATFORMS
