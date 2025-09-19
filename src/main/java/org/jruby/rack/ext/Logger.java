@@ -246,6 +246,11 @@ public class Logger extends RubyObject { // implements RackLogger
         return context.runtime.newBoolean( add(DEBUG, context, msg, block) );
     }
 
+    @JRubyMethod(name = "debug")
+    public IRubyObject debug(final ThreadContext context, final Block block) {
+        return debug(context, context.nil, block);
+    }
+
     //
     // :call-seq:
     // info(message)
