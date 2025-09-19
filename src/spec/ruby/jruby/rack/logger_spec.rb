@@ -86,6 +86,26 @@ describe JRuby::Rack::Logger do
     expect(logger.warn?).to be true
   end
 
+  [:debug, :info, :warn, :error, :fatal].each do |level|
+    it "logs at #{level} level" do
+      logger.public_send(level, 'message')
+      expect(real_logger.logged_content).to eql "#{level.to_s.upcase}: message\n"
+
+      real_logger.reset
+      logger.public_send(level, 'message') { 'ignored' }
+      expect(real_logger.logged_content).to eql "#{level.to_s.upcase}: message\n"
+
+      real_logger.reset
+      logger.public_send(level, nil) { 'message' }
+      expect(real_logger.logged_content).to eql "#{level.to_s.upcase}: message\n"
+
+
+      real_logger.reset
+      logger.public_send(level) { 'message' }
+      expect(real_logger.logged_content).to eql "#{level.to_s.upcase}: message\n"
+    end
+  end
+
   it "disables real logger's formatting when formatter is set" do
     real_logger.formatting = true
     expect(real_logger.formatting?).to be true

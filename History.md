@@ -1,3 +1,7 @@
+## 1.2.6 (UNRELEASED)
+
+- Add missing block-only signature for debug logging
+
 ## 1.2.5
 
 - Fix use of jruby-rack under Java 8 (#324)
