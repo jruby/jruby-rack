@@ -3,7 +3,7 @@ GEM
   specs:
     base64 (0.3.0)
     jruby-jars (9.4.14.0)
-    jruby-rack (1.2.4)
+    jruby-rack (1.2.5)
     mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
     rack (2.2.17)

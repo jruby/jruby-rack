@@ -23,7 +23,11 @@
 - Change context listener to throw, in case of an exception during initialization, by default
 - Change rails context listener to assume a thread-safe application by default
 
-## 1.2.5 (UNRELEASED)
+## 1.2.6 (UNRELEASED)
+
+- Add missing block-only signature for debug logging
+
+## 1.2.5
 
 - Fix use of jruby-rack under Java 8 (#324)
 - Fix deprecated usages of JRuby runtime
