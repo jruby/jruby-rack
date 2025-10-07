@@ -39,8 +39,10 @@ updates:
       ruby-deps:
         patterns: [ "*" ]
     ignore:
-      - dependency-name: "rack*"
+      - dependency-name: "rack"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "rails"
+        update-types: [ "version-update:semver-minor" ]
       - dependency-name: "jruby-jars"
         update-types: [ "version-update:semver-major" ]
 
@@ -81,8 +83,10 @@ updates:
       ruby-deps:
         patterns: [ "*" ]
     ignore:
-      - dependency-name: "rack*"
+      - dependency-name: "rack"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "rails"
+        update-types: [ "version-update:semver-minor" ]
       - dependency-name: "jruby-jars"
         update-types: [ "version-update:semver-major" ]
 
