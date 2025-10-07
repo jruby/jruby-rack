@@ -18,20 +18,18 @@ GEM
     camping (2.1.532)
       mab (>= 0.0.3)
       rack (>= 1.0)
-    jruby-jars (9.4.14.0)
+    jruby-jars (10.0.2.0)
     jruby-rack (1.2.5)
     mab (0.0.3)
     markaby (0.9.4)
       builder
     ostruct (0.6.2)
-    rack (2.2.18)
-    rackup (1.0.1)
-      rack (< 3)
-      webrick
+    rack (3.2.2)
+    rackup (2.2.1)
+      rack (>= 3)
     rake (13.3.0)
-    rexml (3.4.3)
-    rubyzip (3.1.0)
-    webrick (1.9.1)
+    rexml (3.4.4)
+    rubyzip (3.1.1)
 
 PLATFORMS
   java
@@ -39,9 +37,9 @@ PLATFORMS
 
 DEPENDENCIES
   camping (< 3)
-  jruby-jars (< 10)
+  jruby-jars (< 11)
   markaby
-  rack (~> 2.2.18)
+  rack (~> 3.2.2)
   rackup
   warbler!
 
