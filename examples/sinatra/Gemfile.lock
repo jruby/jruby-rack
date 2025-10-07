@@ -30,5 +30,8 @@ DEPENDENCIES
   sinatra
   webrick
 
+RUBY VERSION
+   ruby 3.1.7p0 (jruby 9.4.14.0)
+
 BUNDLED WITH
    2.6.9
