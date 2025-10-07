@@ -1,3 +1,16 @@
+GIT
+  remote: https://github.com/jruby/warbler.git
+  revision: 523237b6d931efcd6f13a79692f6aa46ad997443
+  branch: master
+  specs:
+    warbler (2.0.5)
+      jruby-jars (>= 9.0.0)
+      jruby-rack (>= 1.1.1, < 1.3)
+      ostruct (= 0.6.2)
+      rake (>= 13.0.3)
+      rexml (~> 3.0)
+      rubyzip (>= 3.0.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -6,11 +19,15 @@ GEM
     jruby-rack (1.2.5)
     mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
+    ostruct (0.6.2)
     rack (2.2.18)
     rack-protection (3.2.0)
       base64 (>= 0.1.0)
       rack (~> 2.2, >= 2.2.4)
+    rake (13.3.0)
+    rexml (3.4.4)
     ruby2_keywords (0.0.5)
+    rubyzip (3.1.1)
     sinatra (3.2.0)
       mustermann (~> 3.0)
       rack (~> 2.2, >= 2.2.4)
@@ -25,9 +42,9 @@ PLATFORMS
 
 DEPENDENCIES
   jruby-jars (< 10)
-  jruby-rack (~> 1.2.4)
   rack (~> 2.2.0)
   sinatra
+  warbler!
   webrick
 
 RUBY VERSION
