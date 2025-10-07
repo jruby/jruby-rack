@@ -1,3 +1,16 @@
+GIT
+  remote: https://github.com/jruby/warbler.git
+  revision: 523237b6d931efcd6f13a79692f6aa46ad997443
+  branch: master
+  specs:
+    warbler (2.0.5)
+      jruby-jars (>= 9.0.0)
+      jruby-rack (>= 1.1.1, < 1.3)
+      ostruct (= 0.6.2)
+      rake (>= 13.0.3)
+      rexml (~> 3.0)
+      rubyzip (>= 3.0.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -96,6 +109,7 @@ GEM
       reline (>= 0.4.2)
     jar-dependencies (0.5.5)
     jruby-jars (9.4.14.0)
+    jruby-rack (1.2.5)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -120,6 +134,7 @@ GEM
     nio4r (2.7.4-java)
     nokogiri (1.18.9-java)
       racc (~> 1.4)
+    ostruct (0.6.2)
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
@@ -127,7 +142,7 @@ GEM
       date
       jar-dependencies (>= 0.1.7)
     racc (1.8.1-java)
-    rack (2.2.17)
+    rack (2.2.18)
     rack-session (1.0.2)
       rack (< 3)
     rack-test (2.2.0)
@@ -170,6 +185,8 @@ GEM
       psych (>= 4.0.0)
     reline (0.6.2)
       io-console (~> 0.5)
+    rexml (3.4.4)
+    rubyzip (3.1.1)
     securerandom (0.4.1)
     sprockets (4.2.2)
       concurrent-ruby (~> 1.0)
@@ -196,9 +213,13 @@ PLATFORMS
 
 DEPENDENCIES
   jruby-jars (< 10)
-  rack (~> 2.2.0)
+  rack (~> 2.2.18)
   rails (~> 7.2.2, >= 7.2.2.2)
   sprockets-rails
+  warbler!
+
+RUBY VERSION
+   ruby 3.1.7p0 (jruby 9.4.14.0)
 
 BUNDLED WITH
    2.6.9

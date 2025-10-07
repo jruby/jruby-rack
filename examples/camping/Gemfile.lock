@@ -24,7 +24,7 @@ GEM
     markaby (0.9.4)
       builder
     ostruct (0.6.2)
-    rack (2.2.17)
+    rack (2.2.18)
     rackup (1.0.1)
       rack (< 3)
       webrick
@@ -35,14 +35,18 @@ GEM
 
 PLATFORMS
   java
+  x86_64-linux
 
 DEPENDENCIES
   camping (< 3)
   jruby-jars (< 10)
   markaby
-  rack (~> 2.2.0)
+  rack (~> 2.2.18)
   rackup
   warbler!
+
+RUBY VERSION
+   ruby 3.1.7p0 (jruby 9.4.14.0)
 
 BUNDLED WITH
    2.6.9

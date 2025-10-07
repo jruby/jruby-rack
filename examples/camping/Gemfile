@@ -1,6 +1,8 @@
 source 'https://rubygems.org'
 
-gem 'rack', '~> 2.2.0'
+ruby '~> 3.1.0'
+
+gem 'rack', '~> 2.2.18'
 gem 'rackup'
 gem 'camping', '< 3'
 gem 'markaby'
