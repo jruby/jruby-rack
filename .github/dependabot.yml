@@ -45,6 +45,8 @@ updates:
   # Maintabled stable branches
   - package-ecosystem: maven
     target-branch: "1.2-stable"
+    commit-message:
+      prefix: "1.2.x: "
     directory: "/"
     schedule:
       interval: monthly
@@ -64,6 +66,8 @@ updates:
         update-types: [ "version-update:semver-major" ]
   - package-ecosystem: bundler
     target-branch: "1.2-stable"
+    commit-message:
+      prefix: "1.2.x: "
     directories:
       - "/"
       - "/examples/*"
