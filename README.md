@@ -1,8 +1,8 @@
 # JRuby-Rack
 
 [![Gem Version](https://badge.fury.io/rb/jruby-rack.png)](http://badge.fury.io/rb/jruby-rack)
-[![master Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3Amaster)
-[![1.2.x Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg?branch=1.2-stable)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3A1.2-stable)
+[![master Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3Amaster) (master)
+[![1.2.x Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg?branch=1.2-stable)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3A1.2-stable) (1.2.x)
  
 JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows
 any (Ruby) Rack-based application to run unmodified in a Java Servlet container.
