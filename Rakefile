@@ -156,7 +156,7 @@ end
 desc "Build the jruby-rack-#{GEM_VERSION}.gem"
 task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do
   Rake::Task['spec'].invoke unless ENV['SKIP_SPECS'] == 'true'
-  cp FileList["History.md", "LICENSE.txt", "README.md"], "target/gem"
+  cp FileList["CHANGELOG.md", "LICENSE.txt", "README.md"], "target/gem"
   cp target_jar, "target/gem/lib"
   if (jars = FileList["target/gem/lib/*.jar"].to_a).size > 1
     abort "Too many jars! #{jars.map{|j| File.basename(j)}.inspect}\nRun a clean build `rake clean` first"
