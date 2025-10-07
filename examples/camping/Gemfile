@@ -1,11 +1,11 @@
 source 'https://rubygems.org'
 
-gem 'rack', '~> 2.2.18'
+gem 'rack', '~> 3.2.2'
 gem 'rackup'
 gem 'camping', '< 3'
 gem 'markaby'
 
 group :development do
   gem 'warbler', github: 'jruby/warbler', branch: 'master'
-  gem 'jruby-jars', '< 10'
+  gem 'jruby-jars', '< 11'
 end
