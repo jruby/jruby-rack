@@ -39,7 +39,9 @@ updates:
       ruby-deps:
         patterns: [ "*" ]
     ignore:
-      - dependency-name: "rack"
+      - dependency-name: "rack*"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "jruby-jars"
         update-types: [ "version-update:semver-major" ]
 
   # Maintabled stable branches
@@ -79,5 +81,8 @@ updates:
       ruby-deps:
         patterns: [ "*" ]
     ignore:
-      - dependency-name: "rack"
+      - dependency-name: "rack*"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "jruby-jars"
+        update-types: [ "version-update:semver-major" ]
+
