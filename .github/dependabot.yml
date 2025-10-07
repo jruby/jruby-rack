@@ -30,6 +30,7 @@ updates:
   - package-ecosystem: bundler
     directories:
       - "/"
+      - "/examples/*"
     schedule:
       interval: monthly
     allow:
@@ -65,6 +66,7 @@ updates:
     target-branch: "1.2-stable"
     directories:
       - "/"
+      - "/examples/*"
     schedule:
       interval: monthly
     allow:
