@@ -4,7 +4,7 @@ ruby '~> 3.1.0'
 
 gem 'sinatra'
 gem 'webrick'
-gem 'rack', '~> 2.2.0'
+gem 'rack', '~> 2.2.19'
 
 group :development do
   gem 'warbler', github: 'jruby/warbler', branch: 'master'
