@@ -98,55 +98,45 @@ module JRuby::Rack
     protected
 
     def adjust_gem_path
-      gem_path = self.gem_path
+      desired_gem_path = self.gem_path
+
       case set_gem_path = env_gem_path
-      when true then
-        if env_path = ENV['GEM_PATH']
-          if gem_path.nil? || gem_path.empty?
-            return # keep ENV['GEM_PATH'] as is
-          elsif env_path != gem_path
-            separator = File::PATH_SEPARATOR
-            unless env_path.split(separator).include?(gem_path)
-              ENV['GEM_PATH'] = "#{gem_path}#{separator}#{env_path}"
-            end
-          end
+      when true then # default behaviour
+        if (current_env_gem_path = ENV['GEM_PATH'])
+          # keep ENV['GEM_PATH'] as is if we have nothing to do
+          return if desired_gem_path.nil? || desired_gem_path.empty?
+          return if current_env_gem_path == desired_gem_path
+          return if current_env_gem_path.split(File::PATH_SEPARATOR).include?(desired_gem_path)
+
+          # need to prepend it
+          ENV['GEM_PATH'] = "#{desired_gem_path}#{File::PATH_SEPARATOR}#{current_env_gem_path}"
         else
-          ENV['GEM_PATH'] = gem_path
+          ENV['GEM_PATH'] = desired_gem_path
         end
-      when false then
-        begin
-          require 'rubygems' unless defined? Gem.path
-        rescue LoadError
-        else
-          return if gem_path.nil? || gem_path.empty?
-          Gem.path.unshift(gem_path) unless Gem.path.include?(gem_path)
+      when nil then
+        if desired_gem_path && !desired_gem_path.empty? && (!defined?(Gem.path) || !Gem.path.include?(desired_gem_path) )
+          @rack_context.log("Gem.path won't be updated although seems configured: #{desired_gem_path}")
         end
-        return false
-      when nil then # org.jruby.rack.RackLogger::DEBUG
-        if gem_path && ! gem_path.empty? &&
-          ( ! defined?(Gem.path) || ! Gem.path.include?(gem_path) )
-          @rack_context.log("Gem.path won't be updated although seems configured: #{gem_path}")
-        end
-        return nil
-      else # 'jruby.rack.env.gem_path' "forced" to an explicit value
+        return nil # do nothing to ENV['GEM_PATH']
+      else # "forced" to an explicit value
         ENV['GEM_PATH'] = set_gem_path
       end
       # Whenever we touch ENV['GEM_PATH`], ensure we clear any cached paths. All other cases should exit early.
       Gem.clear_paths if defined?(Gem.clear_paths)
     end
 
-    # @return whether to update Gem.path and/or the environment GEM_PATH
-    # - true (default) forces ENV['GEM_PATH'] to be updated due compatibility
-    #   Bundler 1.6 fails to revolve gems correctly when Gem.path is updated
-    #   instead of the ENV['GEM_PATH'] environment variable
-    # - false disables ENV['GEM_PATH'] mangling for good (updates Gem.path)
+    # @return whether to update the environment GEM_PATH
+    # - true (default) forces ENV['GEM_PATH'] to be updated to include the `gem.path` above.
+    #   If you set it to a non-empty value, GEM_PATH will be forced to an explicit value,
+    #   overriding the environment and ignoring `gem.path`, `gem.home` etc.
     #
-    # - if not specified Gem.path will be updated based on setting
+    # - By setting this option to an empty string the ENV['GEM_PATH'] should not be modified
+    #   at all and will retain its original values implied by the process environment and
+    #  `jruby.runtime.env` setting.
     def env_gem_path
       gem_path = @rack_context.getInitParameter('jruby.rack.env.gem_path')
       return true if gem_path.nil? || gem_path.to_s == 'true'
-      return false if gem_path.to_s == 'false'
-      return nil if gem_path.empty? # set to an empty disables mangling
+      return nil if gem_path.empty? || gem_path.to_s == 'false' # treat false as "don't touch either ENV or Gem.path"
       gem_path
     end
     private :env_gem_path
