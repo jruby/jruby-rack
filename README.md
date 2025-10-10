@@ -371,6 +371,7 @@ package and push the .jar every time a commit changes a source file).
 Please use [github][3] to file bugs, patches and/or pull requests.
 More information at the [wiki][4] or ask us at **#jruby**'s IRC channel.
 
+[1]: https://github.com/jruby/warbler
 [2]: https://central.sonatype.com/artifact/org.jruby.rack/jruby-rack
 [3]: https://github.com/jruby/jruby-rack/issues
 [4]: https://github.com/jruby/jruby-rack/wiki
