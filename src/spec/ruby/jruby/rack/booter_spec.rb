@@ -98,16 +98,6 @@ describe JRuby::Rack::Booter do
     expect(booter.rack_env).to eq 'production'
   end
 
-  it "prepends gem_path to Gem.path (when configured to not mangle with ENV)" do
-    Gem.path.replace ['/opt/gems']
-    expect(@rack_context).to receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'false'
-
-    booter.gem_path = "wsjar:file:/opt/deploy/sample.war!/WEB-INF/gems"
-    booter.boot!
-
-    expect(Gem.path).to eql ['wsjar:file:/opt/deploy/sample.war!/WEB-INF/gems', '/opt/gems']
-  end
-
   it "prepends gem_path to Gem.path if not already present" do
     ENV['GEM_PATH'] = "file:/home/gems#{File::PATH_SEPARATOR}/usr/local/gems"
     Gem.clear_paths
@@ -147,6 +137,20 @@ describe JRuby::Rack::Booter do
     expect(@rack_context).to receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return ''
     ENV['GEM_PATH'] = '/opt/gems'
     Gem.clear_paths
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
+    expect(@rack_context).to receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
+
+    booter.boot!
+
+    expect(ENV['GEM_PATH']).to eq "/opt/gems"
+    expect(Gem.path).to start_with ["/opt/gems"]
+  end
+
+  it "does not prepend gem_path to ENV['GEM_PATH'] if jruby.rack.gem_path set to false" do
+    ENV['GEM_PATH'] = '/opt/gems'
+    Gem.clear_paths
+
+    expect(@rack_context).to receive(:getInitParameter).with("jruby.rack.env.gem_path").and_return 'false'
     expect(@rack_context).to receive(:getRealPath).with("/WEB-INF").and_return "/opt/deploy/sample.war!/WEB-INF"
     expect(@rack_context).to receive(:getRealPath).with("/WEB-INF/gems").and_return "/opt/deploy/sample.war!/WEB-INF/gems"
 
