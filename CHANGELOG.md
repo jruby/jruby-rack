@@ -2,6 +2,7 @@
 
 - Add missing block-only signature for debug logging
 - update (bundled) rack to 2.2.20
+- Ensure rack boot process leaves ENV['GEM_PATH'] and Gem.paths in a consistent state
 
 ## 1.2.5
 
