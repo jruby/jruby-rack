@@ -20,7 +20,7 @@ GEM
     mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
     ostruct (0.6.2)
-    rack (2.2.19)
+    rack (2.2.20)
     rack-protection (3.2.0)
       base64 (>= 0.1.0)
       rack (~> 2.2, >= 2.2.4)
@@ -42,7 +42,7 @@ PLATFORMS
 
 DEPENDENCIES
   jruby-jars (< 10)
-  rack (~> 2.2.19)
+  rack (~> 2.2.20)
   sinatra
   warbler!
   webrick
