@@ -131,6 +131,8 @@ module JRuby::Rack
       else # 'jruby.rack.env.gem_path' "forced" to an explicit value
         ENV['GEM_PATH'] = set_gem_path
       end
+      # Whenever we touch ENV['GEM_PATH`], ensure we clear any cached paths. All other cases should exit early.
+      Gem.clear_paths if defined?(Gem.clear_paths)
     end
 
     # @return whether to update Gem.path and/or the environment GEM_PATH
