@@ -155,7 +155,7 @@ GEM
       jar-dependencies (>= 0.1.7)
     racc (1.8.1)
     racc (1.8.1-java)
-    rack (2.2.19)
+    rack (2.2.20)
     rack-session (1.0.2)
       rack (< 3)
     rack-test (2.2.0)
@@ -233,7 +233,7 @@ PLATFORMS
 
 DEPENDENCIES
   jruby-jars (< 10)
-  rack (~> 2.2.19)
+  rack (~> 2.2.20)
   rails (~> 7.2.2, >= 7.2.2.2)
   sprockets-rails
   warbler!
