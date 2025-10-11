@@ -26,7 +26,10 @@
 ## 1.2.6 (UNRELEASED)
 
 - Add missing block-only signature for debug logging
-- update (bundled) rack to 2.2.19
+- update (bundled) rack to 2.2.20
+- Ensure rack boot process leaves ENV['GEM_PATH'] and Gem.paths in a consistent state
+- Remove undocumented and unsafe jruby.rack.env.gem_path = false option (unusable on Bundler 1.6+)
+- Fix unintended Rubygems initialization too early in boot process with JRuby 9.4+
 
 ## 1.2.5
 

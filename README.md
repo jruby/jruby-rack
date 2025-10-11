@@ -1,8 +1,10 @@
 # JRuby-Rack
 
-[![Gem Version](https://badge.fury.io/rb/jruby-rack.png)][5]
-[![Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)][6]
-
+[![Gem Version](https://img.shields.io/gem/v/jruby-rack)](https://rubygems.org/gems/jruby-rack)
+[![Jar Version](https://img.shields.io/maven-central/v/org.jruby.rack/jruby-rack)](https://central.sonatype.com/artifact/org.jruby.rack/jruby-rack)
+[![master Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3Amaster) (master)
+[![1.2.x Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg?branch=1.2-stable)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3A1.2-stable) (1.2.x)
+ 
 JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows
 any (Ruby) Rack-based application to run unmodified in a Java Servlet container.
 JRuby-Rack supports Rails as well as any Rack-compatible Ruby web framework.
@@ -231,7 +233,13 @@ as context init parameters in web.xml or as VM-wide system properties.
   this option to en empty string (or 'false') it acts as if the ENV hash was
   cleared out (similar to the now removed `jruby.rack.ignore.env` option).
 - `jruby.runtime.env.rubyopt`: Set to true to cause ENV['RUBYOPT']
-  to be retained even when using `jruby.runtime.env` to override environemnt (similar to how the removed `jruby.rack.ignore.env` option behaved by default).
+  to be retained even when using `jruby.runtime.env` to override the environment.
+- `jruby.rack.env.gem_path`: If set to `true` (the default) jruby-rack will
+  ensure ENV['GEM_PATH'] is altered to include the `gem.path` above. If you set it to a
+  value, this value will be used as GEM_PATH, overriding the environment and
+  ignoring `gem.path` etc. By setting this option to en empty string the ENV['GEM_PATH'] will
+  not be modified by jruby-rack at all and will retain its original values implied by
+  the process environment and `jruby.runtime.env` setting.
 - `jruby.rack.logging`: Specify the logging device to use. Defaults to
   `servlet_context`. See below.
 - `jruby.rack.request.size.initial.bytes`: Initial size for request body memory
@@ -356,9 +364,7 @@ package and push the .jar every time a commit changes a source file).
 Please use [github][3] to file bugs, patches and/or pull requests.
 More information at the [wiki][4] or ask us at **#jruby**'s IRC channel.
 
-[1]: https://github.com/jruby/warbler#warbler--
+[1]: https://github.com/jruby/warbler
 [2]: https://central.sonatype.com/artifact/org.jruby.rack/jruby-rack
 [3]: https://github.com/jruby/jruby-rack/issues
 [4]: https://github.com/jruby/jruby-rack/wiki
-[5]: http://badge.fury.io/rb/jruby-rack
-[6]: https://github.com/jruby/jruby-rack/actions/workflows/maven.yml
