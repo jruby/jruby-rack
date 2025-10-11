@@ -9,7 +9,8 @@ version_spec = ->(prefix, desc) { "~> #{desc.split(prefix).last.insert(1, ".")}.
     "rails61" => %w[rack22],
     "rails70" => %w[rack22],
     "rails71" => %w[rack22],
-    "rails72" => %w[rack22]
+    "rails72" => %w[rack22],
+    "rails80" => %w[rack22]
 }.each do |rails_desc, rack_descs|
   rack_descs.each do |rack_desc|
 

@@ -15,7 +15,7 @@ For more information on Rack, visit http://rack.github.io/.
 
 | JRuby-Rack Series                                          | Status     | Rack      | JRuby      | Java | Rails     | Target Servlet API  | Notes                                      |
 |------------------------------------------------------------|------------|-----------|------------|------|-----------|---------------------|--------------------------------------------|
-| [1.2](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained | 2.2       | 9.3 → 9.4  | 8+   | 5.0 → 7.2 | 3.0 (Java EE 6)     | Servlet 3.1 → 4.0 OK with some containers. |
+| [1.2](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained | 2.2       | 9.3 → 10.0 | 8+   | 5.0 → 8.0 | 3.0 (Java EE 6)     | Servlet 3.1 → 4.0 OK with some containers. |
 | [1.1](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL        | 1.x → 2.2 | 1.6 → 9.4  | 6+   | 2.1 → 5.2 | 2.5 (Java EE 5)     | Servlet 3.0 → 4.0 OK with some containers. |
 | 1.0                                                        | EOL        | 0.9 → 1.x | 1.1 → 1.9  | 5+   | 2.1 → 3.x | 2.5 (Java EE 5)     |                                            |
 
@@ -209,8 +209,6 @@ as context init parameters in web.xml or as VM-wide system properties.
   sub-path of the main servlet context root.
 - `gem.path`: Relative path to the bundled gem repository. Defaults to
   `/WEB-INF/gems`.
-- `jruby.compat.version`: Set to "1.8" or "1.9" to make JRuby run a specific
-  version of Ruby (same as the --1.8 / --1.9 command line flags).
 - `jruby.min.runtimes`: For non-threadsafe Rails applications using a runtime
   pool, specify an integer minimum number of runtimes to hold in the pool.
 - `jruby.max.runtimes`: For non-threadsafe Rails applications, an integer

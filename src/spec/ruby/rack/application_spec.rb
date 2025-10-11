@@ -393,13 +393,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_eval_as_eql_to "require 'yaml'", true # -ryaml not processed
       end
 
-      it "handles jruby.compat.version == '1.9' and starts in 1.9 mode" do
-        set_config 'jruby.compat.version', '1.9'
-        #@rack_config.stub(:getCompatVersion).and_return org.jruby.CompatVersion::RUBY1_9
-        @runtime = app_factory.new_runtime
-        expect(@runtime.is1_9).to be_truthy
-      end
-
       it "handles jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
         set_config 'jruby.runtime.arguments', '-X+O -Ke'
         # allow(@rack_config).to receive(:getRuntimeArguments).and_return ['-X+O', '-Ke'].to_java(:String)
