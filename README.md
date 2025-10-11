@@ -233,6 +233,12 @@ as context init parameters in web.xml or as VM-wide system properties.
 - `jruby.runtime.env.rubyopt`: This option is used for compatibility with the
   (deprecated) `jruby.rack.ignore.env` option since it cleared out the ENV after
   RUBYOPT has been processed, by setting it to true ENV['RUBYOPT'] will be kept.
+- `jruby.rack.env.gem_path`: If set to `true` (the default) jruby-rack will
+  ensure ENV['GEM_PATH'] is altered to include the `gem.path` above. If you set it to a
+  value, this value will be used as GEM_PATH, overriding the environment and
+  ignoring `gem.path` etc. By setting this option to en empty string the ENV['GEM_PATH'] will
+  not be modified by jruby-rack at all and will retain its original values implied by
+  the process environment and `jruby.runtime.env` setting.
 - `jruby.rack.logging`: Specify the logging device to use. Defaults to
   `servlet_context`. See below.
 - `jruby.rack.request.size.initial.bytes`: Initial size for request body memory
