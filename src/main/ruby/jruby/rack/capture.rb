@@ -5,13 +5,11 @@
 # See the file LICENSE.txt for details.
 #++
 
-require 'stringio'
-
 module JRuby::Rack
   module Capture
     module Base
       def output
-        @output ||= begin; StringIO.new; end
+        @output ||= begin; require 'stringio' unless defined?(StringIO); StringIO.new; end
       end
 
       def capture
@@ -34,6 +32,7 @@ module JRuby::Rack
     module Exception
       def output
         @output ||= begin
+          require 'stringio' unless defined?(StringIO)
           io = StringIO.new
           io.puts "An exception happened during JRuby-Rack startup", self.to_s
           io
