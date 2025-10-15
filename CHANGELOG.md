@@ -1,4 +1,4 @@
-## 1.2.6 (UNRELEASED)
+## 1.2.6
 
 - Add missing block-only signature for debug logging
 - update (bundled) rack to 2.2.20
