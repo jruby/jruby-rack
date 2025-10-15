@@ -1,13 +1,13 @@
 GIT
   remote: https://github.com/jruby/warbler.git
-  revision: 523237b6d931efcd6f13a79692f6aa46ad997443
+  revision: 8e3d3658f43348222d380d7cb782f51b03ed20af
   branch: master
   specs:
-    warbler (2.0.5)
-      jruby-jars (>= 9.0.0)
-      jruby-rack (>= 1.1.1, < 1.3)
-      ostruct (= 0.6.2)
-      rake (>= 13.0.3)
+    warbler (2.1.0)
+      jruby-jars (>= 9.4, < 10.1)
+      jruby-rack (>= 1.2.3, < 1.3)
+      ostruct (~> 0.6.2)
+      rake (~> 13.0, >= 13.0.3)
       rexml (~> 3.0)
       rubyzip (>= 3.0.0)
 
@@ -87,8 +87,8 @@ GEM
       tzinfo (~> 2.0, >= 2.0.5)
     base64 (0.3.0)
     benchmark (0.4.1)
-    bigdecimal (3.3.0)
-    bigdecimal (3.3.0-java)
+    bigdecimal (3.3.1)
+    bigdecimal (3.3.1-java)
     builder (3.3.0)
     cgi (0.5.0)
     cgi (0.5.0-java)
@@ -115,7 +115,7 @@ GEM
       reline (>= 0.4.2)
     jar-dependencies (0.5.5)
     jruby-jars (9.4.14.0)
-    jruby-rack (1.2.5)
+    jruby-rack (1.2.6)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -127,7 +127,7 @@ GEM
       net-smtp
     marcel (1.1.0)
     mini_mime (1.1.5)
-    minitest (5.25.5)
+    minitest (5.26.0)
     net-imap (0.5.12)
       date
       net-protocol
@@ -143,7 +143,7 @@ GEM
       racc (~> 1.4)
     nokogiri (1.18.10-x86_64-linux-gnu)
       racc (~> 1.4)
-    ostruct (0.6.2)
+    ostruct (0.6.3)
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
@@ -200,7 +200,7 @@ GEM
     reline (0.6.2)
       io-console (~> 0.5)
     rexml (3.4.4)
-    rubyzip (3.1.1)
+    rubyzip (3.2.0)
     securerandom (0.4.1)
     sprockets (4.2.2)
       concurrent-ruby (~> 1.0)
