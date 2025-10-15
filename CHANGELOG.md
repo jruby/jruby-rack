@@ -19,7 +19,7 @@
 - Change context listener to throw, in case of an exception during initialization, by default
 - Change rails context listener to assume a thread-safe application by default
 
-## 1.2.6 (UNRELEASED)
+## 1.2.6
 
 - Add missing block-only signature for debug logging
 - update (bundled) rack to 2.2.20
