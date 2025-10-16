@@ -7,8 +7,7 @@
  */
 package org.jruby.rack.embed;
 
-import javax.servlet.ServletConfig;
-
+import jakarta.servlet.ServletConfig;
 import org.jruby.rack.AbstractServlet;
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackDispatcher;
