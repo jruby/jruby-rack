@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       actions-deps:
         patterns: [ "*" ]
@@ -12,7 +12,7 @@ updates:
   - package-ecosystem: maven
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       maven-deps:
         dependency-type: "production"
@@ -32,7 +32,7 @@ updates:
       - "/"
       - "/examples/*"
     schedule:
-      interval: monthly
+      interval: weekly
     allow:
       - dependency-type: all
     groups:
@@ -53,7 +53,7 @@ updates:
       prefix: "1.2.x: "
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       maven-deps:
         dependency-type: "production"
@@ -76,7 +76,7 @@ updates:
       - "/"
       - "/examples/*"
     schedule:
-      interval: monthly
+      interval: weekly
     allow:
       - dependency-type: all
     groups:
