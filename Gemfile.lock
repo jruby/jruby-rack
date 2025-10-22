@@ -8,7 +8,7 @@ GEM
     diff-lcs (1.6.2)
     rack (2.2.20)
     rake (13.3.0)
-    rspec (3.13.1)
+    rspec (3.13.2)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
       rspec-mocks (~> 3.13.0)
