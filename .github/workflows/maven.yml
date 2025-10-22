@@ -99,6 +99,9 @@ jobs:
           bundler-cache: 'false' # Need to install later so we can vary from Gemfile.lock as required for JRuby version compatibility
           bundler: 'Gemfile.lock'
 
+      - name: Remove jruby-launcher # Coming from setup-ruby/ruby-build and causes annoying warnings
+        run: gem uninstall -a jruby-launcher
+
       - name: Run appraisal for ${{ matrix.appraisal }}
         run: bundle install && bundle exec rake spec
 
