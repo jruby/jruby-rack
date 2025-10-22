@@ -39,7 +39,7 @@ updates:
       ruby-deps:
         patterns: [ "*" ]
     ignore:
-      - dependency-name: "rack*"
+      - dependency-name: "rack"
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "rack*"
         update-types: [ "version-update:semver-major" ]
