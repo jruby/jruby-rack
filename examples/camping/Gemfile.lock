@@ -1,20 +1,14 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    builder (3.3.0)
     camping (2.1.532)
       mab (>= 0.0.3)
       rack (>= 1.0)
     jruby-jars (9.4.14.0)
     jruby-rack (1.2.6)
     mab (0.0.3)
-    markaby (0.9.4)
-      builder
     ostruct (0.6.3)
     rack (2.2.20)
-    rackup (1.0.1)
-      rack (< 3)
-      webrick
     rake (13.3.0)
     rexml (3.4.4)
     rubyzip (3.2.0)
@@ -25,18 +19,15 @@ GEM
       rake (~> 13.0, >= 13.0.3)
       rexml (~> 3.0)
       rubyzip (>= 3.0.0)
-    webrick (1.9.1)
 
 PLATFORMS
   java
   x86_64-linux
 
 DEPENDENCIES
-  camping (< 3)
+  camping
   jruby-jars (< 10)
-  markaby
-  rack (~> 2.2.20)
-  rackup
+  rack (~> 2.2)
   warbler (~> 2.1)
 
 RUBY VERSION
