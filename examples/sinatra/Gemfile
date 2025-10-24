@@ -6,7 +6,5 @@ gem 'sinatra'
 gem 'webrick'
 gem 'rack', '~> 2.2.20'
 
-group :development do
-  gem 'warbler', '~> 2.1'
-  gem 'jruby-jars', '< 10'
-end
+gem 'warbler', '~> 2.1'
+gem 'jruby-jars', '< 10'

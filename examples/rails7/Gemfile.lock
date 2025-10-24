@@ -222,7 +222,7 @@ GEM
     zeitwerk (2.6.18)
 
 PLATFORMS
-  universal-java-21
+  java
   x86_64-linux
 
 DEPENDENCIES

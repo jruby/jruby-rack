@@ -125,7 +125,7 @@ can embed it directly in the `web.xml` as follows (using Sinatra as an example):
 </context-param>
 ```
 
-Be sure to escape angle-brackets for XML !
+Be sure to escape angle-brackets for XML!
 
 
 ## Servlet Filter
@@ -319,6 +319,9 @@ logging system, configure `jruby.rack.logging` as follows:
 For those loggers that require a specific named logger, set it with the
 `jruby.rack.logging.name` option, by default "jruby.rack" name will be used.
 
+## Examples
+
+Some example demo applications are available at [./examples](./examples).
 
 ## Building
 
