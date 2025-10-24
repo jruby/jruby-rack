@@ -5,13 +5,6 @@ describe org.jruby.rack.embed.Dispatcher do
   let(:application) { double "application" }
   let(:context) { org.jruby.rack.embed.Context.new "test" }
 
-  before { $servlet_context = nil }; after { $servlet_context = nil }
-
-  it "initializes $servlet_context", :deprecated => true do
-    org.jruby.rack.embed.Dispatcher.new context, application
-    expect($servlet_context).to be(context)
-  end
-
   it "initializes JRuby::Rack.context" do
     prev_context = JRuby::Rack.context
     JRuby::Rack.context = nil
