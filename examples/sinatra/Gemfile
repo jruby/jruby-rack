@@ -3,8 +3,7 @@ source 'https://rubygems.org'
 ruby '~> 3.1.0'
 
 gem 'sinatra'
-gem 'webrick'
-gem 'rack', '~> 2.2.20'
+gem 'rack', '~> 2.2'
 
 gem 'warbler', '~> 2.1'
 gem 'jruby-jars', '< 10'
