@@ -38,5 +38,6 @@ As an executable jar within Jetty:
 | Sinatra | Demo Index                    | http://localhost:8080/            | http://localhost:8080/sinatra            |
 | Sinatra | Info                          | http://localhost:8080/info        | http://localhost:8080/sinatra/info       |
 | Sinatra | Snoop Dump                    | http://localhost:8080/env         | http://localhost:8080/sinatra/env        |
+| Sinatra | Streaming Demo                | http://localhost:8080/stream      | http://localhost:8080/sinatra/stream     |
 | Camping | Demo Index                    | http://localhost:8080/            | http://localhost:8080/camping            |
 | Camping | Snoop Dump                    | http://localhost:8080/snoop       | http://localhost:8080/camping/snoop      |

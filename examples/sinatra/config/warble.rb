@@ -1,7 +1,6 @@
 # Warbler web application assembly configuration file
 Warbler::Config.new do |config|
   config.features += ['executable']
-  config.includes = FileList["appengine-web.xml", "datastore-indexes.xml"]
 
   if ENV['JRUBY_RACK_SRC']
     config.java_libs.delete_if {|f| f =~ /jruby-rack[^\/]+\.jar/}

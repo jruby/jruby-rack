@@ -28,7 +28,6 @@ GEM
       rake (~> 13.0, >= 13.0.3)
       rexml (~> 3.0)
       rubyzip (>= 3.0.0)
-    webrick (1.9.1)
 
 PLATFORMS
   java
@@ -36,10 +35,9 @@ PLATFORMS
 
 DEPENDENCIES
   jruby-jars (< 10)
-  rack (~> 2.2.20)
+  rack (~> 2.2)
   sinatra
   warbler (~> 2.1)
-  webrick
 
 RUBY VERSION
    ruby 3.1.7p0 (jruby 9.4.14.0)
