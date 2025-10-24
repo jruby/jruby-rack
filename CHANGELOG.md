@@ -22,6 +22,7 @@ Breaking Ruby API changes
 - Drop deprecated `JRuby::Rack::RailsFileSystemLayout` alias for `JRuby::Rack::FileSystemLayout`
 - Drop deprecated `JRuby::Rack::Errors` alias for `JRuby::Rack::ErrorApp`
 - Drop deprecated `Rack::Handler::Servlet::Env` and `Rack::Handler::Servlet::LazyEnv` types (replaced by `DefaultEnv`)
+- Drop deprecated setting of global `$servlet_context` variable during embedded usage (replaced by `JRuby::Rack.context`)
 
 Breaking configuration capability changes 
 - Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hash

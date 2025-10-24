@@ -44,9 +44,6 @@ public class Dispatcher extends AbstractRackDispatcher {
         IRubyObject rackModule = runtime.getModule("JRuby").getConstantAt("Rack");
         // `JRuby::Rack.context = context`
         rackModule.callMethod(runtime.getCurrentContext(), "context=", rubyContext);
-        // TODO @deprecated only doing this due backwards compatibility :
-        // user code should use JRuby::Rack.context instead of $servlet_context
-        runtime.getGlobalVariables().set("$servlet_context", rubyContext);
     }
 
     @Override
@@ -68,7 +65,6 @@ public class Dispatcher extends AbstractRackDispatcher {
     protected void afterException(
             RackEnvironment env, Exception re,
             RackResponseEnvironment response) throws IOException {
-        // TODO a fast draft (probably should use rack.errors) :
         context.log("Error:", re);
         response.sendError(500);
     }
