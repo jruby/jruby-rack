@@ -9,6 +9,7 @@ class BodyController < ApplicationController
   private
   def body_size
     bytes = 0
+    request.body.rewind # Need to rewind to re-read body with Rack 3 - and rewindable bodies are not mandatory...
     while str = request.body.read(1024)
       bytes += str.size
     end
