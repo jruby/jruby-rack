@@ -188,7 +188,7 @@ GEM
     reline (0.6.2)
       io-console (~> 0.5)
     rexml (3.4.4)
-    rubyzip (3.2.0)
+    rubyzip (3.2.1)
     securerandom (0.4.1)
     sprockets (4.2.2)
       concurrent-ruby (~> 1.0)
@@ -228,10 +228,11 @@ PLATFORMS
 
 DEPENDENCIES
   jruby-jars (< 10)
+  jruby-rack
   rack (~> 2.2)
   rails (~> 7.2.0)
   sprockets-rails
-  warbler (~> 2.1)
+  warbler
 
 RUBY VERSION
    ruby 3.1.7p0 (jruby 9.4.14.0)

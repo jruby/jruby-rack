@@ -14,7 +14,7 @@ GEM
     rake (13.3.0)
     rexml (3.4.4)
     ruby2_keywords (0.0.5)
-    rubyzip (3.2.0)
+    rubyzip (3.2.1)
     sinatra (3.2.0)
       mustermann (~> 3.0)
       rack (~> 2.2, >= 2.2.4)
@@ -35,9 +35,10 @@ PLATFORMS
 
 DEPENDENCIES
   jruby-jars (< 10)
+  jruby-rack
   rack (~> 2.2)
   sinatra
-  warbler (~> 2.1)
+  warbler
 
 RUBY VERSION
    ruby 3.1.7p0 (jruby 9.4.14.0)
