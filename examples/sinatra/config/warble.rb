@@ -6,5 +6,4 @@ Warbler::Config.new do |config|
   require 'socket'
   config.webxml.ENV_OUTPUT = File.expand_path('../../servers', __FILE__)
   config.webxml.ENV_HOST   = Socket.gethostname
-  config.webxml.jruby.rack.ignore.env = true
 end
