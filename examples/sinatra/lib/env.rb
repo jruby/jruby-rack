@@ -21,6 +21,7 @@ end
 
 post '/body' do
   res = "Content-Type was: #{request.content_type.inspect}\n"
+  request.body.rewind # Need to rewind to re-read body with Rack 3 - and rewindable bodies are not mandatory...
   body = request.body.read
   if body.empty?
     status 400
