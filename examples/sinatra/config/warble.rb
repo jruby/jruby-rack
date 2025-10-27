@@ -2,10 +2,6 @@
 Warbler::Config.new do |config|
   config.features += ['executable']
 
-  if ENV['JRUBY_RACK_SRC']
-    config.java_libs.delete_if {|f| f =~ /jruby-rack[^\/]+\.jar/}
-    config.java_libs += FileList["../../target/jruby-rack*.jar"]
-  end
   config.dirs += ['views']
   require 'socket'
   config.webxml.ENV_OUTPUT = File.expand_path('../../servers', __FILE__)

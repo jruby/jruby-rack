@@ -6,6 +6,7 @@ gem 'sinatra'
 gem 'rack', '~> 2.2'
 
 group :development do
-  gem 'warbler', '~> 2.1'
+  if !ENV['WARBLER_SRC']; gem 'warbler' else gem 'warbler', path: '../../../warbler' end
+  if !ENV['JRUBY_RACK_SRC']; gem 'jruby-rack' else gem 'jruby-rack', path: '../../target' end
   gem 'jruby-jars', '< 10'
 end

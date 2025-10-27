@@ -41,3 +41,16 @@ As an executable jar within Jetty:
 | Sinatra | Streaming Demo                | http://localhost:8080/stream      | http://localhost:8080/sinatra/stream     |
 | Camping | Demo Index                    | http://localhost:8080/            | http://localhost:8080/camping            |
 | Camping | Snoop Dump                    | http://localhost:8080/snoop       | http://localhost:8080/camping/snoop      |
+
+## Development
+
+You can run the examples using local source for warbler or jruby-rack using env vars, e.g
+
+```shell
+export WARBLER_SRC=true JRUBY_RACK_SRC=true && bundle && bundle exec warble executable war && java -Dwarbler.debug=true -jar rails*.war
+```
+
+- Warbler can run directly from source
+- jruby-rack needs to be built, since it does not define a gemspec
+  - There are alternate ways to do this by replacing the jruby-rack jar within the warbled jar/war, however this is more
+    complex and error-prone that using the gem and ensuring compatibility since warbler itself depends on the jruby-rack gem. 
