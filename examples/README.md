@@ -28,13 +28,13 @@ As an executable jar within Jetty:
 
 | Example | Component              | Embedded Route                      | Deployed War Route                          |
 |---------|------------------------|-------------------------------------|---------------------------------------------|
-| Rails 7 | Status Page            | http://localhost:8080/up            | http://localhost:8080/rails7/up             |
-| Rails 7 | Snoop Dump             | http://localhost:8989/snoop         | http://localhost:8080/rails7/snoop          |
-| Rails 7 | Simple Form submission | http://localhost:8989/simple_form   | http://localhost:8080/rails7/simple_form    |
-| Rails 7 | Body Posts             | http://localhost:8989/body          | http://localhost:8080/rails7/body           |
-| Rails 7 | JSP (render)           | http://localhost:8989/jsp/          | http://localhost:8080/rails7/jsp/           |
-| Rails 7 | JSP (forward to)       | http://localhost:8989/jsp-forward/  | http://localhost:8080/rails7/jsp-forward/   |
-| Rails 7 | JSP (include)          | http://localhost:8989/jsp-include/  | http://localhost:8080/rails7/jsp-include/   |
+| Rails 8 | Status Page            | http://localhost:8080/up            | http://localhost:8080/rails8/up             |
+| Rails 8 | Snoop Dump             | http://localhost:8989/snoop         | http://localhost:8080/rails8/snoop          |
+| Rails 8 | Simple Form submission | http://localhost:8989/simple_form   | http://localhost:8080/rails8/simple_form    |
+| Rails 8 | Body Posts             | http://localhost:8989/body          | http://localhost:8080/rails8/body           |
+| Rails 8 | JSP (render)           | http://localhost:8989/jsp/          | http://localhost:8080/rails8/jsp/           |
+| Rails 8 | JSP (forward to)       | http://localhost:8989/jsp-forward/  | http://localhost:8080/rails8/jsp-forward/   |
+| Rails 8 | JSP (include)          | http://localhost:8989/jsp-include/  | http://localhost:8080/rails8/jsp-include/   |
 | Sinatra | Demo Index             | http://localhost:8989/              | http://localhost:8080/sinatra               |
 | Sinatra | Info                   | http://localhost:8989/info          | http://localhost:8080/sinatra/info          |
 | Sinatra | Snoop Dump             | http://localhost:8989/env           | http://localhost:8080/sinatra/env           |
