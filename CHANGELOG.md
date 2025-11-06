@@ -31,6 +31,10 @@ Breaking configuration capability changes
 - Drop deprecated `jruby.rack.ignore.env` property, replaced long ago by `jruby.runtime.env` and optional `jruby.runtime.env.rubyopt`
 - Drop deprecated `jruby.rack.filter.*` properties, replaced long ago by init parameters `addsHtmlToPathInfo` and `verifiesHtmlResource`
 
+## 1.2.7 (UNRELEASED)
+
+- Fix ability to include and forward to JSPs under Rails (#370)
+
 ## 1.2.6
 
 - Add missing block-only signature for debug logging
