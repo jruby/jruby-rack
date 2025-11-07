@@ -47,8 +47,10 @@ updates:
         update-types: [ "version-update:semver-minor" ]
       - dependency-name: "jruby-jars"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "jruby-rack" # path-based dependency; using latest anyway
+      - dependency-name: "warbler"    # path-based dependency; using latest anyway
 
-  # Maintabled stable branches
+  # Maintained stable branches
   - package-ecosystem: maven
     target-branch: "1.2-stable"
     commit-message:
@@ -93,4 +95,6 @@ updates:
         update-types: [ "version-update:semver-minor" ]
       - dependency-name: "jruby-jars"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "jruby-rack" # path-based dependency; using latest anyway
+      - dependency-name: "warbler"    # path-based dependency; using latest anyway
 
