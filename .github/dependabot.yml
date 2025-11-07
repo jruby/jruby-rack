@@ -30,7 +30,6 @@ updates:
   - package-ecosystem: bundler
     directories:
       - "/"
-      - "/examples/*"
     schedule:
       interval: weekly
     allow:
@@ -40,15 +39,7 @@ updates:
         patterns: [ "*" ]
     ignore:
       - dependency-name: "rack"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "rack*"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "rails"
         update-types: [ "version-update:semver-minor" ]
-      - dependency-name: "jruby-jars"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "jruby-rack" # path-based dependency; using latest anyway
-      - dependency-name: "warbler"    # path-based dependency; using latest anyway
 
   # Maintained stable branches
   - package-ecosystem: maven
@@ -78,7 +69,6 @@ updates:
       prefix: "1.2.x: "
     directories:
       - "/"
-      - "/examples/*"
     schedule:
       interval: weekly
     allow:
@@ -88,13 +78,5 @@ updates:
         patterns: [ "*" ]
     ignore:
       - dependency-name: "rack"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "rack*"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "rails"
         update-types: [ "version-update:semver-minor" ]
-      - dependency-name: "jruby-jars"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "jruby-rack" # path-based dependency; using latest anyway
-      - dependency-name: "warbler"    # path-based dependency; using latest anyway
 
