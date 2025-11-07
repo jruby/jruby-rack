@@ -1,3 +1,7 @@
+## 1.2.7 (UNRELEASED)
+
+- Fix ability to include and forward to JSPs under Rails (#370)
+
 ## 1.2.6
 
 - Add missing block-only signature for debug logging
