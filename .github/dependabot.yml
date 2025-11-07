@@ -39,7 +39,7 @@ updates:
         patterns: [ "*" ]
     ignore:
       - dependency-name: "rack"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
 
   # Maintained stable branches
   - package-ecosystem: maven
@@ -78,5 +78,5 @@ updates:
         patterns: [ "*" ]
     ignore:
       - dependency-name: "rack"
-        update-types: [ "version-update:semver-minor" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
 
