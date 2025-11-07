@@ -76,7 +76,7 @@
   <dependencies>
     <dependency>
       <groupId>org.jruby</groupId>
-      <artifactId>jruby-core</artifactId>
+      <artifactId>jruby</artifactId>
       <version>${jruby.version}</version>
       <scope>provided</scope>
     </dependency>

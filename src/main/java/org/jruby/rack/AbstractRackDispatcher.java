@@ -43,7 +43,6 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
         }
     }
 
-    @SuppressWarnings("deprecation")
     protected void handleException(
             final Exception e,
             final RackEnvironment request,

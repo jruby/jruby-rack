@@ -3,6 +3,7 @@ target
 *.log
 log
 activemq-data
+examples/*/Gemfile.lock
 examples/*/tmp
 examples/*/work
 examples/*/*.war

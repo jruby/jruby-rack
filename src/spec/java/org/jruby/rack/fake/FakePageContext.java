@@ -46,7 +46,7 @@ public class FakePageContext extends PageContext {
     }
 
     @Override
-    public void forward(String arg0) throws ServletException, IOException {
+    public void forward(String arg0) {
         throw new UnsupportedOperationException("Not supported yet. forward");
     }
 
@@ -111,12 +111,12 @@ public class FakePageContext extends PageContext {
     }
 
     @Override
-    public void handlePageException(Exception arg0) throws ServletException, IOException {
+    public void handlePageException(Exception arg0) {
         throw new UnsupportedOperationException("Not supported yet. handlePageException");
     }
 
     @Override
-    public void handlePageException(Throwable arg0) throws ServletException, IOException {
+    public void handlePageException(Throwable arg0) {
         throw new UnsupportedOperationException("Not supported yet. handlePageException");
     }
 
@@ -126,7 +126,7 @@ public class FakePageContext extends PageContext {
     }
 
     @Override
-    public void initialize(Servlet arg0, ServletRequest arg1, ServletResponse arg2, String arg3, boolean arg4, int arg5, boolean arg6) throws IOException, IllegalStateException, IllegalArgumentException {
+    public void initialize(Servlet arg0, ServletRequest arg1, ServletResponse arg2, String arg3, boolean arg4, int arg5, boolean arg6) throws IllegalStateException, IllegalArgumentException {
         throw new UnsupportedOperationException("Not supported yet. initialize");
     }
 
@@ -160,12 +160,14 @@ public class FakePageContext extends PageContext {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated // Deprecated in API parent
     public ExpressionEvaluator getExpressionEvaluator() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated // Deprecated in API parent
     public VariableResolver getVariableResolver() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

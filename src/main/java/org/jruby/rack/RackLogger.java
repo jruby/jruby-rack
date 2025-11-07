@@ -30,16 +30,6 @@ public interface RackLogger {
         log(Level.ERROR, message, ex);
     }
 
-    @Deprecated
-    default void log(Level level, String message) {
-        log(level, (CharSequence) message);
-    }
-
-    @Deprecated
-    default void log(Level level, String message, Throwable ex) {
-        log(level, (CharSequence) message, ex);
-    }
-
     abstract class Base implements RackLogger {
         public abstract Level getLevel() ;
         public void setLevel(Level level) { /* noop */ }

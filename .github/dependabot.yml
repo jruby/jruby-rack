@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       actions-deps:
         patterns: [ "*" ]
@@ -12,7 +12,7 @@ updates:
   - package-ecosystem: maven
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       maven-deps:
         dependency-type: "production"
@@ -30,9 +30,8 @@ updates:
   - package-ecosystem: bundler
     directories:
       - "/"
-      - "/examples/*"
     schedule:
-      interval: monthly
+      interval: weekly
     allow:
       - dependency-type: all
     groups:
@@ -41,19 +40,15 @@ updates:
     ignore:
       - dependency-name: "rack"
         update-types: [ "version-update:semver-major" ]
-      - dependency-name: "rails"
-        update-types: [ "version-update:semver-minor" ]
-      - dependency-name: "jruby-jars"
-        update-types: [ "version-update:semver-major" ]
 
-  # Maintabled stable branches
+  # Maintained stable branches
   - package-ecosystem: maven
     target-branch: "1.2-stable"
     commit-message:
       prefix: "1.2.x: "
     directory: "/"
     schedule:
-      interval: monthly
+      interval: weekly
     groups:
       maven-deps:
         dependency-type: "production"
@@ -74,9 +69,8 @@ updates:
       prefix: "1.2.x: "
     directories:
       - "/"
-      - "/examples/*"
     schedule:
-      interval: monthly
+      interval: weekly
     allow:
       - dependency-type: all
     groups:
@@ -84,9 +78,5 @@ updates:
         patterns: [ "*" ]
     ignore:
       - dependency-name: "rack"
-        update-types: [ "version-update:semver-major" ]
-      - dependency-name: "rails"
-        update-types: [ "version-update:semver-minor" ]
-      - dependency-name: "jruby-jars"
         update-types: [ "version-update:semver-major" ]
 

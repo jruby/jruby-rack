@@ -17,7 +17,7 @@ end unless defined?(::Rack::RELEASE)
 module JRuby
   module Rack
     module RackExt
-      module Request
+      module RequestHelpers
         java_import org.jruby.rack.servlet.ServletRackIncludedResponse
         
         def forward_to(path, params={})
@@ -38,8 +38,8 @@ module JRuby
         end
       end
 
-      ::Rack::Request.module_eval do
-        include ::JRuby::Rack::RackExt::Request
+      ::Rack::Request::Helpers.module_eval do
+        include ::JRuby::Rack::RackExt::RequestHelpers
       end
     end
   end

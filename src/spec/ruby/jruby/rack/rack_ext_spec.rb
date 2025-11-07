@@ -8,7 +8,7 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/../..')
 require 'jruby/rack/rack_ext'
 
-describe Rack::Request do
+describe JRuby::Rack::RackExt do
   before :each do
     @servlet_request = double("servlet_request")
     @servlet_response = double("servlet_response")
