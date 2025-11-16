@@ -51,6 +51,11 @@ module SharedHelpers
     mock_servlet_context
   end
 
+  def reset_servlet_context_global
+    $servlet_context = nil if defined? $servlet_context
+    JRuby::Rack.context = nil if defined?(JRuby::Rack) and JRuby::Rack.respond_to?(:context=)
+  end
+
   def silence_warnings(&block)
     JRuby::Rack::Helpers.silence_warnings(&block)
   end
@@ -125,7 +130,7 @@ $LOADED_FEATURES << 'jruby/rack/chunked.rb'
 
 STUB_DIR = File.expand_path('../stub', File.dirname(__FILE__))
 
-WD_START = Dir.getwd
+ORIGINAL_WORKING_DIR = Dir.getwd
 
 begin
   # NOTE: only if running with a `bundle exec` to better isolate
@@ -154,8 +159,8 @@ RSpec.configure do |config|
   config.after(:each) do
     (ENV.keys - @env_save.keys).each { |k| ENV.delete k }
     @env_save.each { |k, v| ENV[k] = v }
-    Dir.chdir(WD_START) unless Dir.getwd == WD_START
-    $servlet_context = nil if defined? $servlet_context
+    Dir.chdir(ORIGINAL_WORKING_DIR) unless Dir.getwd == ORIGINAL_WORKING_DIR
+    reset_servlet_context_global
   end
 
   # NOTE: only works when no other example filtering is in place: e.g. `rspec ... --example=logger` won't filter here

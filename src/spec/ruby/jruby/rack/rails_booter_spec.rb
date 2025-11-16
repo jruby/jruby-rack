@@ -122,10 +122,6 @@ describe JRuby::Rack::RailsBooter do
       end
     end
 
-    after :all do
-      $servlet_context = nil
-    end
-
     let(:railtie_class) { Class.new(Rails::Railtie) }
 
     it "should have loaded the railtie" do
