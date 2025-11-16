@@ -104,6 +104,8 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
   before :each do
     @app_factory = DefaultRackApplicationFactory.new
+    reset_booter
+    reset_servlet_context_global
   end
 
   it "should receive a rackup script via the 'rackup' parameter" do
@@ -159,11 +161,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
     input_stream = org.jruby.rack.servlet.RewindableInputStream.new(a_stream)
     expect(input_stream.getCurrentBufferSize).to eq 42
     expect(input_stream.getMaximumBufferSize).to eq 420
-  end
-
-  before do
-    reset_booter
-    JRuby::Rack.context = $servlet_context = nil
   end
 
   it "should init and create application object without a rackup script" do
@@ -340,7 +337,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
       it "initializes the $servlet_context global variable" do
         @runtime = app_factory.new_runtime
-        should_not_eval_as_nil "defined?($servlet_context)"
+        expect(@runtime.evalScriptlet("defined?($servlet_context)")).to be_truthy
       end
 
       it "clears environment variables if the configuration ignores the environment" do

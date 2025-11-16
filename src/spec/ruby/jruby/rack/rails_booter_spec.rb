@@ -129,10 +129,6 @@ describe JRuby::Rack::RailsBooter do
       end
     end
 
-    after :all do
-      $servlet_context = nil
-    end
-
     it "should have loaded the railtie" do
       expect(defined?(JRuby::Rack::Railtie)).not_to be nil
     end
