@@ -294,17 +294,17 @@ describe JRuby::Rack::Booter do
         @runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'")
 
         # booter got setup :
-        should_not_eval_as_nil "defined?(JRuby::Rack.booter)"
-        should_not_eval_as_nil "JRuby::Rack.booter"
+        should_eval_as_not_nil "defined?(JRuby::Rack.booter)"
+        should_eval_as_not_nil "JRuby::Rack.booter"
         should_eval_as_eql_to "JRuby::Rack.booter.class.name", 'JRuby::Rack::Booter'
 
         # Booter.boot! run :
-        should_not_eval_as_nil "ENV['RACK_ENV']"
+        should_eval_as_not_nil "ENV['RACK_ENV']"
         # rack got required :
-        should_not_eval_as_nil "defined?(Rack::RELEASE)"
-        should_not_eval_as_nil "defined?(Rack.release)"
+        should_eval_as_not_nil "defined?(Rack::RELEASE)"
+        should_eval_as_not_nil "defined?(Rack.release)"
         # check if it got loaded correctly :
-        should_not_eval_as_nil "Rack::Request.new({}) rescue nil"
+        should_eval_as_not_nil "Rack::Request.new({}) rescue nil"
       end
 
     end
@@ -341,13 +341,13 @@ describe JRuby::Rack::Booter do
         @runtime.evalScriptlet("load 'jruby/rack/boot/rails.rb'")
 
         # booter got setup :
-        should_not_eval_as_nil "defined?(JRuby::Rack.booter)"
-        should_not_eval_as_nil "JRuby::Rack.booter"
+        should_eval_as_not_nil "defined?(JRuby::Rack.booter)"
+        should_eval_as_not_nil "JRuby::Rack.booter"
         should_eval_as_eql_to "JRuby::Rack.booter.class.name", 'JRuby::Rack::RailsBooter'
 
         # Booter.boot! run :
-        should_not_eval_as_nil "ENV['RACK_ENV']"
-        should_not_eval_as_nil "ENV['RAILS_ENV']"
+        should_eval_as_not_nil "ENV['RACK_ENV']"
+        should_eval_as_not_nil "ENV['RAILS_ENV']"
 
         # rack not yet required (let bundler decide which rack version to load) :
         should_eval_as_nil "defined?(Rack::RELEASE)"
