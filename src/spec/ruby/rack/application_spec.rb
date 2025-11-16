@@ -300,8 +300,8 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
       it "creates a new Ruby runtime with the jruby-rack environment pre-loaded" do
         @runtime = app_factory.newRuntime
-        should_not_eval_as_nil "defined?(::Rack)"
-        should_not_eval_as_nil "defined?(::Rack::Handler::Servlet)"
+        should_eval_as_not_nil "defined?(::Rack)"
+        should_eval_as_not_nil "defined?(::Rack::Handler::Servlet)"
         should_eval_as_nil "defined?(Rack::Handler::Bogus)"
       end
 
@@ -330,7 +330,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         app_factory.checkAndSetRackVersion(@runtime)
         @runtime.evalScriptlet "require 'rack'"
 
-        should_not_eval_as_nil "defined?(Bundler)"
+        should_eval_as_not_nil "defined?(Bundler)"
         should_eval_as_eql_to "Rack.release", '2.2.0'
         should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '2.2.0'
       end

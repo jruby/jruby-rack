@@ -86,42 +86,25 @@ module SharedHelpers
 
   # org.jruby.Ruby.evalScriptlet helpers - comparing values from different runtimes
 
-  def should_eval_as_eql_to(code, expected, options = {})
-    if options.is_a?(Hash)
-      runtime = options[:runtime] || @runtime
-    else
-      runtime, options = options, {}
-    end
-    message = options[:message] || "expected eval #{code.inspect} to be == $expected but was $actual"
-    be_flag = options.has_key?(:should) ? options[:should] : be_truthy
-
-    expected = expected.inspect.to_java
-    actual = runtime.evalScriptlet(code).inspect.to_java
-    expect(actual.equals(expected)).to be_flag, message.gsub('$expected', expected.to_s).gsub('$actual', actual.to_s)
+  def should_eval_as_eql_to(code, expected)
+    actual = @runtime.evalScriptlet(code)
+    expect(actual.inspect).to eq(expected.inspect), "expected eval #{code.inspect} to be == #{expected.to_s} but was #{actual.to_s}"
   end
 
-  def should_eval_as_not_eql_to(code, expected, options = {})
-    should_eval_as_eql_to(code, expected, options.merge(
-      :should => be_falsy,
-      :message => options[:message] || "expected eval #{code.inspect} to be != $expected but was not")
-    )
+  def should_eval_as_not_eql_to(code, expected)
+    actual = @runtime.evalScriptlet(code)
+    expect(actual.inspect).not_to eq(expected.inspect), "expected eval #{code.inspect} NOT to be == #{expected.to_s}"
   end
 
-  def should_eval_as_nil(code, runtime = @runtime)
-    should_eval_as_eql_to code, nil, :runtime => runtime,
-                          :message => "expected eval #{code.inspect} to be nil but was $actual"
+  def should_eval_as_nil(code)
+    actual = @runtime.evalScriptlet(code)
+    expect(actual).to be_nil, "expected eval #{code.inspect} to be nil but was #{actual.to_s}"
   end
 
-  def should_eval_as_not_nil(code, runtime = @runtime)
-    should_eval_as_eql_to code, nil, :should => be_falsy, :runtime => runtime,
-                          :message => "expected eval #{code.inspect} to not be nil but was"
+  def should_eval_as_not_nil(code)
+    actual = @runtime.evalScriptlet(code)
+    expect(actual).to_not be_nil, "expected eval #{code.inspect} to not be nil"
   end
-
-  def should_not_eval_as_nil(code, runtime = @runtime)
-    # alias
-    should_eval_as_not_nil(code, runtime)
-  end
-
 end
 
 # NOTE: avoid chunked-patch (loaded by default from a hook at
