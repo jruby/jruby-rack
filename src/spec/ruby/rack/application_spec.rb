@@ -516,7 +516,7 @@ end
 
 describe org.jruby.rack.rails.RailsRackApplicationFactory do
 
-  java_import org.jruby.rack.rails.RailsRackApplicationFactory
+  require 'jruby/rack/rails_booter'
 
   before :each do
     @app_factory = RailsRackApplicationFactory.new
@@ -665,7 +665,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     allow(@factory).to receive(:newApplication) do
       app = double "app"
       allow(app).to receive(:init) do
-        sleep(0.10)
+        sleep(0.05)
       end
       app
     end
@@ -679,6 +679,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
   it "throws an exception from getApplication when an app failed to initialize " +
      "(even when only a single application initialization fails)" do
+    app_init_secs = 0.05
     allow(@factory).to receive(:init)
     app_count = java.util.concurrent.atomic.AtomicInteger.new(0)
     allow(@factory).to receive(:newApplication) do
@@ -687,7 +688,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
         if app_count.addAndGet(1) == 2
           raise org.jruby.rack.RackInitializationException.new('failed app init')
         end
-        sleep(0.05)
+        sleep(app_init_secs)
       end
       app
     end
@@ -701,7 +702,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     rescue org.jruby.rack.RackInitializationException
       # ignore - sometimes initialization happens fast enough that the init error is thrown already
     end
-    sleep(0.20)
+    sleep(num_runtimes * app_init_secs + 0.07) # sleep with a buffer
 
     failed = 0
     num_runtimes.times do
@@ -717,10 +718,11 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   end
 
   it "wait until pool is filled when invoking getApplication (with wait set to false)" do
+    app_init_secs = 0.2
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
       app = double "app"
-      allow(app).to receive(:init) { sleep(0.2) }
+      allow(app).to receive(:init) { sleep(app_init_secs) }
       app
     end
     allow(@rack_config).to receive(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
@@ -728,17 +730,17 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     expect(@rack_config).to receive(:getMaximumRuntimes).and_return 4
 
     @pooling_factory.init(@rack_context)
-    millis = java.lang.System.currentTimeMillis
+    start = java.lang.System.currentTimeMillis
     expect(@pooling_factory.getApplication).not_to be nil
-    millis = java.lang.System.currentTimeMillis - millis
-    expect(millis).to be >= 150 # getApplication waited ~ 0.2 secs
+    expect(java.lang.System.currentTimeMillis - start).to be_within(70).of(app_init_secs * 1000) # getApplication waited ~ sleep time
   end
 
   it "waits acquire timeout till an application is available from the pool (than raises)" do
+    app_init_secs = 0.2
     allow(@factory).to receive(:init)
     expect(@factory).to receive(:newApplication).twice do
       app = double "app"
-      expect(app).to receive(:init) { sleep(0.2) }
+      expect(app).to receive(:init) { sleep(app_init_secs) }
       app
     end
     allow(@rack_config).to receive(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
@@ -747,57 +749,56 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
     @pooling_factory.init(@rack_context)
     @pooling_factory.acquire_timeout = 1.to_java # second
-    millis = java.lang.System.currentTimeMillis
+    start = java.lang.System.currentTimeMillis
     expect(@pooling_factory.getApplication).not_to be nil
-    millis = java.lang.System.currentTimeMillis - millis
-    expect(millis).to be >= 150 # getApplication waited ~ 0.2 secs
+    expect(java.lang.System.currentTimeMillis - start).to be_within(70).of(app_init_secs * 1000)
 
     app2 = @pooling_factory.getApplication # now the pool is empty
-
-    @pooling_factory.acquire_timeout = 0.1.to_java # second
-    millis = java.lang.System.currentTimeMillis
+    timeout_secs = 0.1
+    @pooling_factory.acquire_timeout = (timeout_secs).to_java
+    start = java.lang.System.currentTimeMillis
     expect { @pooling_factory.getApplication }.to raise_error(org.jruby.rack.AcquireTimeoutException)
-    millis = java.lang.System.currentTimeMillis - millis
-    expect(millis).to be >= 90 # waited about ~ 0.1 secs
+    expect(java.lang.System.currentTimeMillis - start).to be_within(20).of(timeout_secs * 1000)
 
     @pooling_factory.finishedWithApplication(app2) # gets back to the pool
     expect(@pooling_factory.getApplication).to eq app2
   end
 
   it "gets and initializes new applications until maximum allows to create more" do
+    app_init_secs = 0.1
     allow(@factory).to receive(:init)
     expect(@factory).to receive(:newApplication).twice do
       app = double "app (new)"
-      expect(app).to receive(:init) { sleep(0.1) }
+      expect(app).to receive(:init) { sleep(app_init_secs) }
       app
     end
     allow(@rack_config).to receive(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
     allow(@rack_config).to receive(:getInitialRuntimes).and_return 2
     allow(@rack_config).to receive(:getMaximumRuntimes).and_return 4
 
+    timeout_secs = 0.1
     @pooling_factory.init(@rack_context)
-    @pooling_factory.acquire_timeout = 0.10.to_java # second
+    @pooling_factory.acquire_timeout = (timeout_secs).to_java # second
 
     2.times { expect(@pooling_factory.getApplication).not_to be nil }
 
+    app_get_secs = 0.15
     expect(@factory).to receive(:getApplication).twice do
-      app = double "app (get)"; sleep(0.15); app
+      app = double "app (get)"; sleep(app_get_secs); app
     end
 
-    millis = java.lang.System.currentTimeMillis
+    start = java.lang.System.currentTimeMillis
     2.times { expect(@pooling_factory.getApplication).not_to be nil }
-    millis = java.lang.System.currentTimeMillis - millis
-    expect(millis).to be >= 300 # waited about 2 x 0.15 secs
+    expect(java.lang.System.currentTimeMillis - start).to be_within(70).of(2 * app_get_secs * 1000)
 
-    millis = java.lang.System.currentTimeMillis
+    start = java.lang.System.currentTimeMillis
     expect {
       @pooling_factory.getApplication
     }.to raise_error(org.jruby.rack.AcquireTimeoutException)
-    millis = java.lang.System.currentTimeMillis - millis
-    expect(millis).to be >= 90 # waited about ~ 0.10 secs
+    expect(java.lang.System.currentTimeMillis - start).to be_within(20).of(timeout_secs * 1000)
   end
 
-  it "initializes initial runtimes in paralel (with wait set to false)" do
+  it "initializes initial runtimes in parallel (with wait set to false)" do
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
       app = double "app"
@@ -821,12 +822,11 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   end
 
   it "throws from init when application initialization in thread failed" do
+    app_init_secs = 0.05
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
       app = double "app"
-      allow(app).to receive(:init) do
-        sleep(0.05); raise "app.init raising"
-      end
+      allow(app).to receive(:init) { sleep(app_init_secs); raise "app.init raising" }
       app
     end
     allow(@rack_config).to receive(:getInitialRuntimes).and_return 2
@@ -845,9 +845,6 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
     expect { @pooling_factory.init(@rack_context) }.to raise_error org.jruby.rack.RackInitializationException
     expect(raise_error_logged).to eql 1 # logs same init exception once
-
-    # NOTE: seems it's not such a good idea to return empty on init error
-    #     expect(@pooling_factory.getManagedApplications).to be_empty
   end
 
 end

@@ -10,6 +10,7 @@ java_import 'javax.servlet.http.HttpServletResponse'
 
 java_import 'org.jruby.rack.RackApplicationFactory'
 java_import 'org.jruby.rack.DefaultRackApplicationFactory'
+java_import 'org.jruby.rack.rails.RailsRackApplicationFactory'
 java_import 'org.jruby.rack.servlet.RequestCapture'
 java_import 'org.jruby.rack.servlet.ResponseCapture'
 java_import 'org.jruby.rack.servlet.RewindableInputStream'
