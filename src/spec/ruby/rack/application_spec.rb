@@ -338,7 +338,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '2.2.0'
       end
 
-      it "initializes the $servlet_context global variable" do
+      it "initializes the servlet_context global variable" do
         @runtime = app_factory.new_runtime
         should_not_eval_as_nil "defined?($servlet_context)"
       end
