@@ -137,8 +137,8 @@ public abstract class RackApplicationFactoryDecorator
     public RackApplication getApplication() throws RackException {
         final RuntimeException error = getInitError();
         if ( error != null ) {
-            log(DEBUG, "due a previous initialization failure application instance can not be returned");
-            throw error; // this is better - we shall never return null here ...
+            log(DEBUG, "due to a previous initialization failure application instance can not be returned");
+            throw error;
         }
         return getApplicationImpl();
     }
