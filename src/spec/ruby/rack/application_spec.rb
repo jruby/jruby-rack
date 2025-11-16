@@ -731,10 +731,11 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   end
 
   it "waits acquire timeout till an application is available from the pool (than raises)" do
+    sleepForMillis = 200
     allow(@factory).to receive(:init)
     expect(@factory).to receive(:newApplication).twice do
       app = double "app"
-      expect(app).to receive(:init) { sleep(0.2) }
+      expect(app).to receive(:init) { sleep(sleepForMillis.to_f / 1000) }
       app
     end
     allow(@rack_config).to receive(:getBooleanProperty).with("jruby.runtime.init.wait").and_return false
@@ -743,18 +744,16 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
     @pooling_factory.init(@rack_context)
     @pooling_factory.acquire_timeout = 1.to_java # second
-    millis = java.lang.System.currentTimeMillis
+    start = java.lang.System.currentTimeMillis
     expect(@pooling_factory.getApplication).not_to be nil
-    millis = java.lang.System.currentTimeMillis - millis
-    expect(millis).to be >= 150 # getApplication waited ~ 0.2 secs
+    expect(java.lang.System.currentTimeMillis - start).to be_within(70).of(sleepForMillis) # getApplication waited ~ sleep time
 
     app2 = @pooling_factory.getApplication # now the pool is empty
-
-    @pooling_factory.acquire_timeout = 0.1.to_java # second
-    millis = java.lang.System.currentTimeMillis
+    timeoutMillis = 100
+    @pooling_factory.acquire_timeout = (timeoutMillis.to_f / 1000).to_java
+    start = java.lang.System.currentTimeMillis
     expect { @pooling_factory.getApplication }.to raise_error(org.jruby.rack.AcquireTimeoutException)
-    millis = java.lang.System.currentTimeMillis - millis
-    expect(millis).to be >= 90 # waited about ~ 0.1 secs
+    expect(java.lang.System.currentTimeMillis - start).to be_within(10).of(timeoutMillis) # getApplication waited ~ sleep time
 
     @pooling_factory.finishedWithApplication(app2) # gets back to the pool
     expect(@pooling_factory.getApplication).to eq app2
