@@ -793,7 +793,8 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     expect(millis).to be >= 90 # waited about ~ 0.10 secs
   end
 
-  it "initializes initial runtimes in paralel (with wait set to false)" do
+  it "initializes initial runtimes in parallel (with wait set to false)" do
+    @factory = double("factory (non-tracking)", null_object: true)
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
       app = double "app"
