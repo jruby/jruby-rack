@@ -21,7 +21,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.6)
-    thor (1.4.0)
+    thor (1.5.0)
 
 PLATFORMS
   universal-java-1.8
