@@ -203,10 +203,6 @@ describe "integration" do
     end
   end
 
-  describe 'rails 6.1', lib: :rails61 do
-    it_should_behave_like 'a rails app'
-  end
-
   describe 'rails 7.0', lib: :rails70 do
     it_should_behave_like 'a rails app'
   end
