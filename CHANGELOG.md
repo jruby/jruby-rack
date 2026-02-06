@@ -9,7 +9,7 @@
 
 Breaking compatibility changes
 - Drop support for JRuby 9.3
-- Drop support for Rails < 6.1
+- Drop support for Rails < 7.0
 
 Breaking behavioral changes
 - Change context listener to throw by default in case of an exception during initialization

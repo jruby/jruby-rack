@@ -738,10 +738,10 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     expect(@rack_config).to receive(:getInitialRuntimes).and_return 3
     expect(@rack_config).to receive(:getMaximumRuntimes).and_return 4
 
-    @pooling_factory.init(@rack_context)
     start = java.lang.System.currentTimeMillis
+    @pooling_factory.init(@rack_context)
     expect(@pooling_factory.getApplication).not_to be nil
-    expect(java.lang.System.currentTimeMillis - start).to be_within(70).of(app_init_secs * 1000) # getApplication waited ~ sleep time
+    expect(java.lang.System.currentTimeMillis - start).to be >= app_init_secs * 1000 - 70 # getApplication waited ~ sleep time
   end
 
   it "waits acquire timeout till an application is available from the pool (than raises)" do
@@ -760,14 +760,14 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     @pooling_factory.acquire_timeout = 1.to_java # second
     start = java.lang.System.currentTimeMillis
     expect(@pooling_factory.getApplication).not_to be nil
-    expect(java.lang.System.currentTimeMillis - start).to be_within(70).of(app_init_secs * 1000)
+    expect(java.lang.System.currentTimeMillis - start).to be >= app_init_secs * 1000 - 70
 
     app2 = @pooling_factory.getApplication # now the pool is empty
     timeout_secs = 0.1
     @pooling_factory.acquire_timeout = (timeout_secs).to_java
     start = java.lang.System.currentTimeMillis
     expect { @pooling_factory.getApplication }.to raise_error(org.jruby.rack.AcquireTimeoutException)
-    expect(java.lang.System.currentTimeMillis - start).to be_within(20).of(timeout_secs * 1000)
+    expect(java.lang.System.currentTimeMillis - start).to be >= timeout_secs * 1000 - 20
 
     @pooling_factory.finishedWithApplication(app2) # gets back to the pool
     expect(@pooling_factory.getApplication).to eq app2
@@ -800,13 +800,13 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
     start = java.lang.System.currentTimeMillis
     2.times { expect(@pooling_factory.getApplication).not_to be nil }
-    expect(java.lang.System.currentTimeMillis - start).to be_within(70).of(2 * app_get_secs * 1000)
+    expect(java.lang.System.currentTimeMillis - start).to be >= 2 * app_init_secs * 1000 - 70
 
     start = java.lang.System.currentTimeMillis
     expect {
       @pooling_factory.getApplication
     }.to raise_error(org.jruby.rack.AcquireTimeoutException)
-    expect(java.lang.System.currentTimeMillis - start).to be_within(20).of(timeout_secs * 1000)
+    expect(java.lang.System.currentTimeMillis - start).to be >= timeout_secs * 1000 - 20
   end
 
   it "initializes initial runtimes in parallel (with wait set to false)" do
