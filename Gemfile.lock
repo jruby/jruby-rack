@@ -6,7 +6,7 @@ GEM
       rake
       thor (>= 0.14.0)
     diff-lcs (1.6.2)
-    rack (2.2.21)
+    rack (2.2.22)
     rake (13.3.1)
     rspec (3.13.2)
       rspec-core (~> 3.13.0)
@@ -33,6 +33,6 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal
-  rack (~> 2.2.21)
+  rack (~> 2.2.22)
   rake (~> 13.3)
   rspec
