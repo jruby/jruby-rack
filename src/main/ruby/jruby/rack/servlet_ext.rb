@@ -9,7 +9,7 @@ require 'java'
 
 # Ruby-friendly extensions to the Servlet API.
 
-module Java::JavaxServlet::ServletContext
+module Java::JakartaServlet::ServletContext
   # Fetch an attribute from the servlet context.
   def [](key)
     getAttribute(key.to_s)
@@ -38,7 +38,7 @@ module Java::JavaxServlet::ServletContext
   end
 end
 
-module Java::JavaxServlet::ServletRequest
+module Java::JakartaServlet::ServletRequest
   # Fetch an attribute from the servlet request.
   def [](key)
     getAttribute(key.to_s)
@@ -67,7 +67,7 @@ module Java::JavaxServlet::ServletRequest
   end
 end
 
-module Java::JavaxServletHttp::HttpSession
+module Java::JakartaServletHttp::HttpSession
   # Fetch an attribute from the session.
   def [](key)
     getAttribute(key.to_s)

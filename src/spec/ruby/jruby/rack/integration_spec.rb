@@ -27,7 +27,7 @@ describe "integration" do
       )
 
       listener = org.jruby.rack.RackServletContextListener.new
-      listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
+      listener.contextInitialized Java::JakartaServlet::ServletContextEvent.new(@servlet_context)
 
       rack_factory = @servlet_context.getAttribute("rack.factory")
       expect(rack_factory).to be_a(RackApplicationFactory)
@@ -45,7 +45,7 @@ describe "integration" do
                                           "run lambda { |env| [ 200, {'Via' => 'JRuby-Rack', 'Content-Type' => 'text/plain'}, 'OK' ] }"
         )
         listener = org.jruby.rack.RackServletContextListener.new
-        listener.contextInitialized javax.servlet.ServletContextEvent.new(@servlet_context)
+        listener.contextInitialized Java::JakartaServlet::ServletContextEvent.new(@servlet_context)
         @rack_context = @servlet_context.getAttribute("rack.context")
         @rack_factory = @servlet_context.getAttribute("rack.factory")
       end
@@ -104,7 +104,7 @@ describe "integration" do
         servlet_context.addInitParameter('jruby.max.runtimes', '2')
 
         listener = org.jruby.rack.rails.RailsServletContextListener.new
-        listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+      listener.contextInitialized Java::JakartaServlet::ServletContextEvent.new(servlet_context)
 
         rack_factory = servlet_context.getAttribute("rack.factory")
         expect(rack_factory).to be_a(RackApplicationFactory)
@@ -119,7 +119,7 @@ describe "integration" do
 
       it "initializes shared (thread-safe) by default" do
         listener = org.jruby.rack.rails.RailsServletContextListener.new
-        listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+      listener.contextInitialized Java::JakartaServlet::ServletContextEvent.new(servlet_context)
 
         rack_factory = servlet_context.getAttribute("rack.factory")
         expect(rack_factory).to be_a(RackApplicationFactory)
@@ -133,7 +133,7 @@ describe "integration" do
         servlet_context.addInitParameter('jruby.max.runtimes', '1')
 
         listener = org.jruby.rack.rails.RailsServletContextListener.new
-        listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+      listener.contextInitialized Java::JakartaServlet::ServletContextEvent.new(servlet_context)
 
         rack_factory = servlet_context.getAttribute("rack.factory")
         expect(rack_factory).to be_a(RackApplicationFactory)
@@ -245,7 +245,7 @@ describe "integration" do
 
     yield(servlet_context, listener) if block_given?
 
-    listener.contextInitialized javax.servlet.ServletContextEvent.new(servlet_context)
+    listener.contextInitialized Java::JakartaServlet::ServletContextEvent.new(servlet_context)
     @rack_context = servlet_context.getAttribute("rack.context")
     @rack_factory = servlet_context.getAttribute("rack.factory")
     @servlet_context = servlet_context
