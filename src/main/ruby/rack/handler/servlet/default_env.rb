@@ -19,15 +19,20 @@ module Rack
       # ServletRequest input stream to be not read (e.g. for POSTs).
       class DefaultEnv < Hash # The environment must be an instance of Hash !
 
-        BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme
-          rack.multithread rack.multiprocess rack.run_once rack.hijack?
-          java.servlet_request java.servlet_response java.servlet_context
-          jruby.rack.version).
-          map!(&:freeze)
+        BUILTINS = Rack.release < '3' ?
+                     # rack 2.2.x
+                     Set.new(%w(rack.version rack.multithread rack.multiprocess rack.run_once
+                        rack.input rack.errors rack.url_scheme rack.hijack?
+                        java.servlet_request java.servlet_response java.servlet_context
+                        jruby.rack.context jruby.rack.version).map!(&:freeze)) :
+                     # rack 3.0 and later
+                     Set.new(%w(rack.input rack.errors rack.url_scheme rack.hijack?
+                        java.servlet_request java.servlet_response java.servlet_context
+                        jruby.rack.context jruby.rack.version).map!(&:freeze))
 
         VARIABLES = %w(CONTENT_TYPE CONTENT_LENGTH PATH_INFO QUERY_STRING
           REMOTE_ADDR REMOTE_HOST REMOTE_USER REQUEST_METHOD REQUEST_URI
-          SCRIPT_NAME SERVER_NAME SERVER_PORT SERVER_SOFTWARE).
+          SCRIPT_NAME SERVER_NAME SERVER_PORT SERVER_SOFTWARE SERVER_PROTOCOL).
           map!(&:freeze)
 
         attr_reader :env
@@ -216,6 +221,7 @@ module Rack
             when 'SCRIPT_NAME'     then env[key] = @servlet_env.getScriptName
             when 'SERVER_NAME'     then env[key] = @servlet_env.getServerName || ''
             when 'SERVER_PORT'     then env[key] = @servlet_env.getServerPort.to_s
+            when 'SERVER_PROTOCOL' then env[key] = @servlet_env.getProtocol
             when 'SERVER_SOFTWARE' then env[key] = rack_context.getServerInfo
             else
               # NOTE: even though we allowed for overrides and loaded all attributes
@@ -230,8 +236,10 @@ module Rack
         end
 
         def load_builtin(env, key)
+          return nil unless BUILTINS.include?(key)
+
           case key
-          when 'rack.version'         then env[key] = ::Rack::RELEASE
+          when 'rack.version'         then env[key] = ::Rack.release
           when 'rack.multithread'     then env[key] = true
           when 'rack.multiprocess'    then env[key] = false
           when 'rack.run_once'        then env[key] = false
