@@ -572,20 +572,8 @@ end
 
 describe org.jruby.rack.PoolingRackApplicationFactory do
 
-  # Workaround rspec mocks/proxies not being thread-safe which causes occasional failures
-  class Synchronized
-    def initialize(obj)
-      @delegate = obj
-      @lock = Mutex.new
-    end
-
-    def method_missing(name, *args, &block)
-      @lock.synchronize { @delegate.send(name, *args, &block) }
-    end
-  end
-
   before :each do
-    @factory = Synchronized.new(double("factory").as_null_object)
+    @factory = double("factory").as_null_object
     @pooling_factory = org.jruby.rack.PoolingRackApplicationFactory.new @factory
     @pooling_factory.context = @rack_context
   end
@@ -635,7 +623,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   it "creates applications during initialization according to the jruby.min.runtimes context parameter" do
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
-      app = Synchronized.new(double("app").as_null_object)
+      app = double("app").as_null_object
       expect(app).to receive(:init)
       app
     end
@@ -668,7 +656,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   it "forces the maximum size to be greater or equal to the initial size" do
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
-      app = Synchronized.new(double("app").as_null_object)
+      app = double("app").as_null_object
       expect(app).to receive(:init)
       app
     end
@@ -690,7 +678,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
   it "waits till initial runtimes get initialized (with wait set to true)" do
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
-      app = Synchronized.new(double("app").as_null_object)
+      app = double("app").as_null_object
       allow(app).to receive(:init) do
         sleep(0.05)
       end
@@ -710,7 +698,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     allow(@factory).to receive(:init)
     app_count = java.util.concurrent.atomic.AtomicInteger.new(0)
     allow(@factory).to receive(:newApplication) do
-      app = Synchronized.new(double("app").as_null_object)
+      app = double("app").as_null_object
       allow(app).to receive(:init) do
         if app_count.addAndGet(1) == 2
           raise org.jruby.rack.RackInitializationException.new('failed app init')
@@ -748,7 +736,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     app_init_secs = 0.2
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
-      app = Synchronized.new(double("app").as_null_object)
+      app = double("app").as_null_object
       allow(app).to receive(:init) { sleep(app_init_secs) }
       app
     end
@@ -766,7 +754,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     app_init_secs = 0.2
     allow(@factory).to receive(:init)
     expect(@factory).to receive(:newApplication).twice do
-      app = Synchronized.new(double("app").as_null_object)
+      app = double("app").as_null_object
       expect(app).to receive(:init) { sleep(app_init_secs) }
       app
     end
@@ -795,7 +783,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     app_init_secs = 0.1
     allow(@factory).to receive(:init)
     expect(@factory).to receive(:newApplication).twice do
-      app = Synchronized.new(double("app (new)").as_null_object)
+      app = double("app (new)").as_null_object
       expect(app).to receive(:init) { sleep(app_init_secs) }
       app
     end
@@ -811,7 +799,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
 
     app_get_secs = 0.15
     expect(@factory).to receive(:getApplication).twice do
-      app = Synchronized.new(double("app (get)").as_null_object)
+      app = double("app (get)").as_null_object
       sleep(app_get_secs)
       app
     end
@@ -831,7 +819,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     app_init_secs = 0.15
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
-      app = Synchronized.new(double("app").as_null_object)
+      app = double("app").as_null_object
       allow(app).to receive(:init) { sleep(app_init_secs) }
       app
     end
@@ -858,7 +846,7 @@ describe org.jruby.rack.PoolingRackApplicationFactory do
     app_init_secs = 0.05
     allow(@factory).to receive(:init)
     allow(@factory).to receive(:newApplication) do
-      app = Synchronized.new(double("app").as_null_object)
+      app = double("app").as_null_object
       allow(app).to receive(:init) { sleep(app_init_secs); raise "app.init raising" }
       app
     end
