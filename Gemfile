@@ -4,7 +4,7 @@ group :default do
   if rack_version = ENV['RACK_VERSION']
     gem 'rack', rack_version
   else
-    gem 'rack', '~> 2.2.21'
+    gem 'rack', '~> 2.2.22'
   end
 end
 
