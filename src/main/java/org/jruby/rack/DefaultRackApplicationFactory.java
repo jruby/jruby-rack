@@ -354,7 +354,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             runtime.evalScriptlet("JRuby::Rack::Response.dechunk = " + dechunkFlag);
         }
         else { // dechunk null (default) or not a true/false value ... we're patch :
-            runtime.evalScriptlet("JRuby::Rack::Booter.on_boot { require 'jruby/rack/chunked' }");
+            // runtime.evalScriptlet("JRuby::Rack::Booter.on_boot { require 'jruby/rack/chunked' }");
             // `require 'jruby/rack/chunked'` that happens after Rack is loaded
         }
         String swallowAbort = rackContext.getConfig().getProperty("jruby.rack.response.swallow_client_abort");
