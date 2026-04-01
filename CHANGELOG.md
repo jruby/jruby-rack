@@ -1,7 +1,7 @@
 ## 1.2.7 (UNRELEASED)
 
 - Fix ability to include and forward to JSPs under Rails (#370)
-- Update (bundled) rack to 2.2.22 (#301)
+- Update (bundled) rack to 2.2.23 (#417)
 
 ## 1.2.6
 
