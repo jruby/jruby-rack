@@ -1,13 +1,13 @@
 source 'https://rubygems.org'
 
-ruby '~> 3.1.0'
+ruby '~> 3.4.0'
 
-gem 'rails', '~> 7.2.0'
-gem 'rack', '~> 2.2.0'
+gem 'rails', '~> 8.1.0'
+gem 'rack', '~> 3.2.0'
 gem 'sprockets-rails'
 
 group :development do
   if !ENV['WARBLER_SRC']; gem 'warbler' else gem 'warbler', path: '../../../warbler' end
   if !ENV['JRUBY_RACK_SRC']; gem 'jruby-rack' else gem 'jruby-rack', path: '../../target' end
-  gem 'jruby-jars', '~> 9.4.0'
+  gem 'jruby-jars', '~> 10.0.0'
 end
