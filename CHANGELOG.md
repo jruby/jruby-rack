@@ -2,6 +2,7 @@
 
 - Officially support Javax Servlet API 4.0 (JEE 8)
 - Officially support JRuby 10.0
+- Support Rack 3.0 -> 3.2 (default vendored Rack is still 2.2)
 
 Breaking compatibility changes
 - Drop support for JRuby 9.3
