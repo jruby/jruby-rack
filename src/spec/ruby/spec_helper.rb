@@ -22,16 +22,10 @@ JRuby::Util.load_ext('org.jruby.rack.ext.RackLibrary')
 
 module SharedHelpers
 
-  java_import 'org.jruby.rack.RackContext'
-  java_import 'org.jruby.rack.RackConfig'
-  java_import 'org.jruby.rack.servlet.ServletRackContext'
-  java_import 'javax.servlet.ServletContext'
-  java_import 'javax.servlet.ServletConfig'
-
   def mock_servlet_context
-    @servlet_context = ServletContext.impl {}
-    @rack_config ||= RackConfig.impl {}
-    @rack_context ||= ServletRackContext.impl {}
+    @servlet_context = Java::JavaxServlet::ServletContext.impl {}
+    @rack_config ||= Java::OrgJrubyRack::RackConfig.impl {}
+    @rack_context ||= Java::OrgJrubyRackServlet::ServletRackContext.impl {}
     [@rack_context, @servlet_context].each do |context|
       allow(context).to receive(:log)
       allow(context).to receive(:isEnabled).and_return nil
@@ -39,9 +33,10 @@ module SharedHelpers
       allow(context).to receive(:getRealPath).and_return "/"
       allow(context).to receive(:getResource).and_return nil
       allow(context).to receive(:getContextPath).and_return "/"
+      allow(context).to receive(:init_parameter_names).and_return []
     end
     allow(@rack_context).to receive(:getConfig).and_return @rack_config
-    @servlet_config ||= ServletConfig.impl {}
+    @servlet_config ||= Java::JavaxServlet::ServletConfig.impl {}
     allow(@servlet_config).to receive(:getServletName).and_return "a Servlet"
     allow(@servlet_config).to receive(:getServletContext).and_return @servlet_context
     @servlet_context
@@ -151,8 +146,8 @@ RSpec.configure do |config|
 
   config.backtrace_exclusion_patterns = [
     /bin\//,
-    #/gems/,
-    /spec\/spec_helper\.rb/,
+    # /gems/,
+    # /spec\/spec_helper\.rb/,
   ]
 
 end
