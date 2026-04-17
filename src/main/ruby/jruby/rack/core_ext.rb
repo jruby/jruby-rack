@@ -15,7 +15,7 @@ class Exception
   include JRuby::Rack::Capture::Environment if $DEBUG
   include JRuby::Rack::Capture::RubyGems
   include JRuby::Rack::Capture::Bundler
-  include JRuby::Rack::Capture::JRubyRackConfig
+  include JRuby::Rack::Capture::JRubyRackConfig if JRUBY_VERSION.start_with?("9.") # Workaround for JRuby 10 with missing CompatVersion class
   include JRuby::Rack::Capture::JavaEnvironment if $DEBUG
 end
 
