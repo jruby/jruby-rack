@@ -35,7 +35,7 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: ./mvnw -B install -Djruby.test.version=${{ matrix.jruby_version }}
+      run: ./mvnw -ntp install -Dstyle.color=always -Djruby.test.version=${{ matrix.jruby_version }}
       env:
         RACK_VERSION: ${{ matrix.rack_version }}
 
