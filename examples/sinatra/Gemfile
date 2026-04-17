@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '~> 3.1.0'
+ruby RUBY_VERSION
 
 gem 'sinatra', '< 4'
 gem 'rack', '~> 2.2.0'
@@ -8,5 +8,5 @@ gem 'rack', '~> 2.2.0'
 group :development do
   if !ENV['WARBLER_SRC']; gem 'warbler' else gem 'warbler', path: '../../../warbler' end
   if !ENV['JRUBY_RACK_SRC']; gem 'jruby-rack' else gem 'jruby-rack', path: '../../target' end
-  gem 'jruby-jars', '~> 9.4.0'
+  gem 'jruby-jars', JRUBY_VERSION
 end
