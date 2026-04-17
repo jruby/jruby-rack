@@ -9,7 +9,7 @@ on:
 env:
   # Default versions for canonical release build
   DEFAULT_JAVA_VERSION: '8'
-  DEFAULT_JRUBY_VERSION: '9.4.14.0' # Should match pom.xml <jruby.version> property (AND a version inside the test matrix)
+  DEFAULT_JRUBY_VERSION: '9.4.14.0' # Should match pom.xml <jruby.compat.version> property (AND a version inside the test matrix)
   DEFAULT_RACK_VERSION: '~> 2.2.0' # Should match Gemfile (AND a version inside the test matrix)
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
         cache: maven
 
     - name: Build with Maven
-      run: ./mvnw -B install -Djruby.version=${{ matrix.jruby_version }}
+      run: ./mvnw -B install -Djruby.test.version=${{ matrix.jruby_version }}
       env:
         RACK_VERSION: ${{ matrix.rack_version }}
 
@@ -73,7 +73,6 @@ jobs:
 
     env:
       BUNDLE_GEMFILE: gemfiles/${{ matrix.appraisal }}.gemfile
-      JRUBY_VERSION: ${{ matrix.jruby_version }}
 
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
