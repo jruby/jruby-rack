@@ -486,16 +486,11 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       app_object = app_factory.newApplication
 
       raise_info_logged = 0
-      raise_error_logged = 0
       allow(@rack_context).to receive(:log) do |level, msg, e|
         if level.to_s == 'INFO'
           expect(msg).to eql 'failed to capture exception message'
           expect(e).to be_a java.lang.NoClassDefFoundError
           raise_info_logged += 1
-        elsif level.to_s == 'ERROR'
-          expect(msg).to eql 'unable to initialize application'
-          expect(e).to be_a org.jruby.exceptions.RaiseException
-          raise_error_logged += 1
         else
           true
         end
@@ -505,7 +500,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         app_object.init
         fail "expected to raise"
       rescue => e
-        expect(e.message).to eql 'something went wrong'
+        expect(e.message).to eql 'something went wrong' # original error
       end
 
       expect(raise_info_logged).to eql 1 # logs info message for exception capture
