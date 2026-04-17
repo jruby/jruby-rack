@@ -38,14 +38,14 @@ directory 'target/classes'
 
 desc "Compile classes"
 task(:compile => 'target/classes') do
-  sh "./mvnw compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
+  sh "./mvnw compile"
 end
 
 directory 'target/test-classes'
 
 desc "Compile test classes"
 task(:test_prepare => ['target/classes', 'target/test-classes']) do
-  sh "./mvnw test-compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
+  sh "./mvnw test-compile"
 end
 
 desc "Unpack the rack gem"

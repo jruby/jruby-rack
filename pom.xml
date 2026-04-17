@@ -21,7 +21,11 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <jruby.version>9.4.14.0</jruby.version>
+    <!-- Version to target at compile time -->
+    <jruby.compat.version>9.4.14.0</jruby.compat.version>
+    <!-- Version to execute tests with -->
+    <jruby.test.version>${jruby.compat.version}</jruby.test.version>
+
     <jruby.maven.plugins.version>3.0.6</jruby.maven.plugins.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
     <slf4j.version>2.0.17</slf4j.version>
@@ -79,7 +83,7 @@
       <!-- This has to be jruby-complete, as bundler-maven-plugin has special logic to exclude jruby-complete - otherwise
            it conflicts with the bootclasspath if using different "target compile version" to "runtime version" -->
       <artifactId>jruby-complete</artifactId>
-      <version>${jruby.version}</version>
+      <version>${jruby.compat.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -243,7 +247,7 @@
             <phase>test</phase>
             <goals><goal>install</goal></goals>
             <configuration>
-              <jrubyVersion>${jruby.version}</jrubyVersion>
+              <jrubyVersion>${jruby.test.version}</jrubyVersion>
               <local>false</local>
               <quiet>false</quiet>
             </configuration>
@@ -255,7 +259,7 @@
         <artifactId>rake-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
         <configuration>
-          <jrubyVersion>${jruby.version}</jrubyVersion>
+          <jrubyVersion>${jruby.test.version}</jrubyVersion>
         </configuration>
         <executions>
           <execution>
