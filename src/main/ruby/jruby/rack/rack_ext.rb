@@ -38,11 +38,7 @@ module JRuby
         end
       end
 
-      if JRUBY_VERSION >= '9.4'
-        ::Rack::Request::Helpers.module_eval do
-          include ::JRuby::Rack::RackExt::RequestHelpers
-        end
-      else
+      if JRUBY_VERSION.start_with?("9.3")
         ::Rack::Request.module_eval do
           include ::JRuby::Rack::RackExt::RequestHelpers
         end
@@ -50,6 +46,10 @@ module JRuby
         ::ActionDispatch::Request.module_eval do
           include ::JRuby::Rack::RackExt::RequestHelpers
         end if defined?(::ActionDispatch::Request)
+      else
+        ::Rack::Request::Helpers.module_eval do
+          include ::JRuby::Rack::RackExt::RequestHelpers
+        end
       end
     end
   end
