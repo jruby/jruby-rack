@@ -439,7 +439,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
                 rubyException.callMethod(context, "capture");
                 rubyException.callMethod(context, "store");
             }
-            catch (Exception e) {
+            catch (Throwable e) {
                 rackContext.log(INFO, "failed to capture exception message", e);
                 // won't be able to capture anything
             }

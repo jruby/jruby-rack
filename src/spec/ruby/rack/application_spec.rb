@@ -476,6 +476,35 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         expect(e.message).to eql 'something went wrong'
       end
     end
+
+    it "swallows and logs errors during exception detail capturing" do
+      expect(@rack_config).to receive(:getRackup).and_return("raise 'something went wrong'")
+      expect_any_instance_of(Exception).to receive(:capture).and_raise java.lang.NoClassDefFoundError.new("missing class during exception capture")
+
+      app_factory = mocked_runtime_application_factory
+      app_factory.init @rack_context
+      app_object = app_factory.newApplication
+
+      raise_info_logged = 0
+      allow(@rack_context).to receive(:log) do |level, msg, e|
+        if level.to_s == 'INFO'
+          expect(msg).to eql 'failed to capture exception message'
+          expect(e).to be_a java.lang.NoClassDefFoundError
+          raise_info_logged += 1
+        else
+          true
+        end
+      end
+
+      begin
+        app_object.init
+        fail "expected to raise"
+      rescue => e
+        expect(e.message).to eql 'something went wrong' # original error
+      end
+
+      expect(raise_info_logged).to eql 1 # logs info message for exception capture
+    end
   end
 
   describe "getApplication" do

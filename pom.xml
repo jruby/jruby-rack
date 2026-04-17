@@ -21,11 +21,15 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <jruby.version>9.4.14.0</jruby.version>
+    <!-- Version to target at compile time -->
+    <jruby.compat.version>9.4.14.0</jruby.compat.version>
+    <!-- Version to execute tests with -->
+    <jruby.test.version>${jruby.compat.version}</jruby.test.version>
+
     <jruby.maven.plugins.version>3.0.6</jruby.maven.plugins.version>
     <gem.home>${project.build.directory}/rubygems</gem.home>
     <slf4j.version>2.0.17</slf4j.version>
-    <log4j.version>2.25.3</log4j.version>
+    <log4j.version>2.25.4</log4j.version>
     <spring.version>5.3.39</spring.version>
   </properties>
 
@@ -76,8 +80,10 @@
   <dependencies>
     <dependency>
       <groupId>org.jruby</groupId>
-      <artifactId>jruby</artifactId>
-      <version>${jruby.version}</version>
+      <!-- This has to be jruby-complete, as bundler-maven-plugin has special logic to exclude jruby-complete - otherwise
+           it conflicts with the bootclasspath if using different "target compile version" to "runtime version" -->
+      <artifactId>jruby-complete</artifactId>
+      <version>${jruby.compat.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -95,7 +101,7 @@
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.3.5</version>
+      <version>1.3.6</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -141,7 +147,7 @@
       <extension>
         <groupId>org.jruby.maven</groupId>
         <artifactId>mavengem-wagon</artifactId>
-        <version>2.0.2</version>
+        <version>2.0.3</version>
       </extension>
     </extensions>
     <defaultGoal>install</defaultGoal>
@@ -195,7 +201,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>3.5.0</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -235,7 +241,7 @@
             <phase>test</phase>
             <goals><goal>install</goal></goals>
             <configuration>
-              <jrubyVersion>${jruby.version}</jrubyVersion>
+              <jrubyVersion>${jruby.test.version}</jrubyVersion>
               <local>false</local>
               <quiet>false</quiet>
             </configuration>
@@ -247,7 +253,7 @@
         <artifactId>rake-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
         <configuration>
-          <jrubyVersion>${jruby.version}</jrubyVersion>
+          <jrubyVersion>${jruby.test.version}</jrubyVersion>
         </configuration>
         <executions>
           <execution>

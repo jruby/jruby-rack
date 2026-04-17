@@ -1,6 +1,6 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__) + '/..')
 
-describe org.jruby.rack.DefaultRackConfig do
+describe 'org.jruby.rack.DefaultRackConfig' do
 
   let(:config) do
     config = org.jruby.rack.DefaultRackConfig.new
@@ -23,7 +23,7 @@ describe org.jruby.rack.DefaultRackConfig do
 
 end
 
-describe org.jruby.rack.servlet.ServletRackConfig do
+describe 'org.jruby.rack.servlet.ServletRackConfig' do
 
   let(:config) do
     config = org.jruby.rack.servlet.ServletRackConfig.new(@servlet_context)

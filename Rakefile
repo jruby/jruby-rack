@@ -38,14 +38,14 @@ directory 'target/classes'
 
 desc "Compile classes"
 task(:compile => 'target/classes') do
-  sh "./mvnw compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
+  sh "./mvnw -ntp -Dstyle.color=always compile"
 end
 
 directory 'target/test-classes'
 
 desc "Compile test classes"
 task(:test_prepare => ['target/classes', 'target/test-classes']) do
-  sh "./mvnw test-compile #{ENV['JRUBY_VERSION'] ? "-Djruby.version=#{ENV['JRUBY_VERSION']}" : ""}"
+  sh "./mvnw -ntp -Dstyle.color=always test-compile"
 end
 
 desc "Unpack the rack gem"
@@ -88,7 +88,7 @@ task :test_resources => ["target/test-classes"]
 namespace :resources do
   desc "Copy (and generate) resources"
   task :copy => :resources do
-    sh './mvnw process-resources -Dmdep.skip=true'
+    sh './mvnw -ntp process-resources -Dstyle.color=always -Dmdep.skip=true'
   end
   desc "Generate test resources"
   task :test => :test_resources
@@ -198,8 +198,7 @@ task :release_checks do
       "  git push origin :#{GEM_VERSION}" if ok
   end
 
-  pom_version = `./mvnw help:evaluate -Dexpression=project.version`.
-    split("\n").reject { |line| line =~ /[INFO]/ }.first.chomp
+  pom_version = `./mvnw help:evaluate -q --non-recursive -DforceStdout -Dexpression=project.version`
   if pom_version =~ /dev|SNAPSHOT/
     fail "Can't release a dev/snapshot version.\n" +
       "Please update pom.xml to the final release version, run `mvn install', and commit the result."
@@ -219,7 +218,7 @@ task :release => [:release_checks, :clean] do
   args = ''
   args << "-Dgpg.keyname=#{ENV['GPG_KEYNAME']} " if ENV['GPG_KEYNAME']
 
-  sh "./mvnw -Prelease #{args} -DupdateReleaseInfo=true clean deploy"
+  sh "./mvnw -ntp -Prelease #{args} -Dstyle.color=always -DupdateReleaseInfo=true clean deploy"
 
   sh "git tag #{GEM_VERSION}"
 
