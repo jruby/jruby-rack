@@ -75,7 +75,9 @@
   <dependencies>
     <dependency>
       <groupId>org.jruby</groupId>
-      <artifactId>jruby</artifactId>
+      <!-- This has to be jruby-complete, as bundler-maven-plugin has special logic to exclude jruby-complete - otherwise
+           it conflicts with the bootclasspath if using different "target compile version" to "runtime version" -->
+      <artifactId>jruby-complete</artifactId>
       <version>${jruby.version}</version>
       <scope>provided</scope>
     </dependency>
