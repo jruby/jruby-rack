@@ -2,8 +2,8 @@ source 'https://rubygems.org'
 
 ruby RUBY_VERSION
 
-gem 'sinatra', '< 4'
-gem 'rack', '~> 2.2.0'
+gem 'sinatra', '< 5'
+gem 'rack', '~> 3.2.0'
 
 group :development do
   if !ENV['WARBLER_SRC']; gem 'warbler' else gem 'warbler', path: '../../../warbler' end

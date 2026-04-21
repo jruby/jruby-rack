@@ -153,10 +153,10 @@ describe "integration" do
       end
       after(:all) { restore_rails }
 
-      it "loaded rack ~> 2.2.0" do
+      it "loaded default rack version" do
         @runtime = @rack_factory.getApplication.getRuntime
         should_eval_as_not_nil "defined?(Rack.release)"
-        should_eval_as_eql_to "Rack.release.to_s[0, 3]", '2.2'
+        should_eval_as_eql_to "%w(2.2 3.1 3.2).include? Rack.release.to_s[0, 3]", true
       end
 
       it "booted with a servlet logger" do
@@ -197,6 +197,7 @@ describe "integration" do
       end
 
       it "disables rack's chunked support (by default)" do
+        skip "Only runs on Rack < 3.0" unless Rack.release < '3'
         @runtime = @rack_factory.getApplication.getRuntime
         expect_to_have_monkey_patched_chunked
       end
@@ -216,6 +217,10 @@ describe "integration" do
   end
 
   describe 'rails 8.0', lib: :rails80 do
+    it_should_behave_like 'a rails app'
+  end
+
+  describe 'rails 8.1', lib: :rails81 do
     it_should_behave_like 'a rails app'
   end
 
