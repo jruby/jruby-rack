@@ -155,7 +155,7 @@ public class RequestCapture extends HttpServletRequestWrapper {
                     }
                     params.put(key, newValues);
                 }
-            } catch (UnsupportedEncodingException e) { /* UTF-8 should be fine */ }
+            } catch (UnsupportedEncodingException ignore) { /* UTF-8 should be fine */ }
         }
         
         this.requestParams = params;

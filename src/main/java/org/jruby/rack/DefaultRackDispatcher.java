@@ -55,7 +55,7 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
             // TODO seems redundant maybe we should let the container decide ?!
             context.log(RackLogger.ERROR, "error app failed to handle exception: " + e, re);
             Integer errorCode = getErrorApplicationFailureStatusCode();
-            if ( errorCode != null && errorCode.intValue() > 0 ) {
+            if ( errorCode != null && errorCode > 0 ) {
                 response.sendError(errorCode);
             }
             else {

@@ -390,14 +390,14 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         if ( waitNum != null ) {
             int wait = waitNum.intValue();
             if (maximumSize != null && wait > maximumSize) {
-                wait = maximumSize.intValue();
+                wait = maximumSize;
             }
             return wait;
         }
         // otherwise we assume it to be a boolean true/false flag :
         Boolean waitFlag = getConfig().getBooleanProperty("jruby.runtime.init.wait");
         if ( waitFlag == null ) waitFlag = Boolean.TRUE;
-        return waitFlag ? ( initialSize == null ? 1 : initialSize.intValue() ) : 0;
+        return waitFlag ? ( initialSize == null ? 1 : initialSize) : 0;
         // NOTE: this slightly changes the behavior in 1.1.8, in previous
         // versions the initialization only waited for 1 application instance
         // to be available in the pool - here by default we wait till initial
@@ -406,7 +406,7 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
 
     @Override
     public Collection<RackApplication> getManagedApplications() {
-        int initSize = initialSize != null ? initialSize.intValue() : -1;
+        int initSize = initialSize != null ? initialSize : -1;
         synchronized (applicationPool) {
             if ( applicationPool.isEmpty() ) {
                 if ( initSize > 0 ) return null; // ~ init error

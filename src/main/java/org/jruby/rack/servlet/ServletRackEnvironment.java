@@ -26,7 +26,6 @@ import org.jruby.rack.ext.Input;
  *
  * @author nicksieger
  */
-@SuppressWarnings("unchecked")
 public class ServletRackEnvironment extends HttpServletRequestWrapper
     implements RackEnvironment {
 
@@ -102,9 +101,9 @@ public class ServletRackEnvironment extends HttpServletRequestWrapper
 
         final StringBuilder buffer = new StringBuilder(32);
         final String onlyURI = getRequestURIWithoutQuery();
-        if ( onlyURI.length() > 0 ) {
+        if (!onlyURI.isEmpty()) {
             final String script = getScriptName();
-            if ( script != null && script.length() > 0
+            if ( script != null && !script.isEmpty()
                 && onlyURI.indexOf(script) == 0 ) {
                 buffer.append( onlyURI.substring(script.length()) );
             } else {
