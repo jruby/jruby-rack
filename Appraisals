@@ -2,10 +2,10 @@ version_spec = ->(prefix, desc) { "~> #{desc.split(prefix).last.insert(1, ".")}.
 
 # rails#{MAJOR}#{MINOR} => config_obj
 {
-  "rails50" => {racks: %w[rack22], ext_gems: %w[mutex_m bigdecimal base64]},
-  "rails52" => {racks: %w[rack22], ext_gems: %w[mutex_m bigdecimal]},
-  "rails60" => {racks: %w[rack22], ext_gems: %w[mutex_m bigdecimal]},
-  "rails61" => {racks: %w[rack22], ext_gems: %w[mutex_m bigdecimal]},
+  "rails50" => {racks: %w[rack22], ext_gems: %w[mutex_m bigdecimal benchmark base64]},
+  "rails52" => {racks: %w[rack22], ext_gems: %w[mutex_m bigdecimal benchmark]},
+  "rails60" => {racks: %w[rack22], ext_gems: %w[mutex_m bigdecimal benchmark]},
+  "rails61" => {racks: %w[rack22], ext_gems: %w[mutex_m bigdecimal benchmark]},
   "rails70" => {racks: %w[rack22]},
   "rails71" => {racks: %w[rack22]},
   "rails72" => {racks: %w[rack22]},
