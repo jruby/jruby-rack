@@ -130,7 +130,7 @@ public class DefaultRackConfig implements RackConfig {
                 }
             }
         }
-        return serial.booleanValue();
+        return serial;
     }
 
     @Override
@@ -282,8 +282,7 @@ public class DefaultRackConfig implements RackConfig {
     static boolean isIgnoreRUBYOPT(RackConfig config) {
         // RUBYOPT ignored if jruby.runtime.env.rubyopt = false
         Boolean rubyopt = config.getBooleanProperty("jruby.runtime.env.rubyopt");
-        if ( rubyopt == null ) return ! config.isIgnoreEnvironment();
-        return rubyopt != null && ! rubyopt.booleanValue();
+        return rubyopt == null ? !config.isIgnoreEnvironment() : !rubyopt;
     }
 
     @Override
@@ -297,14 +296,11 @@ public class DefaultRackConfig implements RackConfig {
 
     static boolean isThrowInitException(RackConfig config) {
         Boolean error = config.getBooleanProperty("jruby.rack.error");
-        if ( error != null && ! error.booleanValue() ) {
+        if ( error != null && !error) {
             return true; // jruby.rack.error = false
         }
         error = config.getBooleanProperty("jruby.rack.exception");
-        if ( error != null && ! error.booleanValue() ) {
-            return true; // jruby.rack.exception = false
-        }
-        return false;
+        return error != null && !error; // jruby.rack.exception = false
     }
 
     @Override
@@ -350,7 +346,7 @@ public class DefaultRackConfig implements RackConfig {
         if (value == null) return null;
         try {
             int i = Integer.parseInt(value);
-            if (i > 0) return Integer.valueOf(i);
+            if (i > 0) return i;
         } catch (Exception e) { /* ignored */ }
         return null;
     }
@@ -382,12 +378,12 @@ public class DefaultRackConfig implements RackConfig {
             }
             if ( number == ((int) number) )
             if ( number > Integer.MAX_VALUE ) {
-                return Long.valueOf((long) number);
+                return (long) number;
             }
             else {
-                return Integer.valueOf((int) number);
+                return (int) number;
             }
-            return Float.valueOf(number);
+            return number;
         }
         catch (Exception e) { /* ignored */ }
         return defaultValue;
@@ -409,7 +405,7 @@ public class DefaultRackConfig implements RackConfig {
                 for ( final String entry : entries ) {
                     String[] pair = entry.split("=", 2);
                     if ( pair.length == 1 ) { // no = separator
-                        if ( entry.trim().length() == 0 ) continue;
+                        if ( entry.trim().isEmpty() ) continue;
                         if ( lastKey == null ) continue; // missing key
                         map.put( lastKey, lastVal = lastVal + ',' + entry );
                     }

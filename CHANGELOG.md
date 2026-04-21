@@ -1,6 +1,7 @@
 ## 1.2.7 (UNRELEASED)
 
-- Fix compatibility with JRuby 10.0 and Rails 8.0 (#419)
+- Ensure compatibility with JRuby 10.0 and 10.1 (#419)
+- Ensure compatibility with Rails 8.0 (#419)
 - Fix ability to include and forward to JSPs under Rails (#370)
 - Update (bundled) rack to 2.2.23 (#417)
 

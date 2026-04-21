@@ -56,7 +56,7 @@ public class ResponseCapture extends HttpServletResponseWrapper {
 
     /**
      * Status code handler customizable by sub-classes.
-     *
+     * <p>
      * Besides serving as a setter, should return whether the status has been
      * "accepted" (super methods will be called when this is invoked from response
      * API methods such as {@link #setStatus(int)}).
@@ -253,10 +253,9 @@ public class ResponseCapture extends HttpServletResponseWrapper {
         return this.notHandledStatuses;
     }
 
-    @SuppressWarnings("unchecked")
     public void setNotHandledStatuses(final Collection<Integer> notHandledStatuses) {
         this.notHandledStatuses =
-            notHandledStatuses == null ? Collections.EMPTY_SET : notHandledStatuses;
+            notHandledStatuses == null ? Collections.emptySet() : notHandledStatuses;
     }
 
     boolean isHandledByDefault() {

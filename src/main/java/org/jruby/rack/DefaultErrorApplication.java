@@ -75,8 +75,7 @@ public class DefaultErrorApplication extends DefaultRackApplication
     private class Response implements RackResponse {
 
         private int status = 500;
-        @SuppressWarnings("rawtypes")
-        private Map headers = Collections.EMPTY_MAP;
+        private Map<String, ?> headers = Collections.emptyMap();
         private String body;
 
         protected final RackEnvironment env;
@@ -99,9 +98,9 @@ public class DefaultErrorApplication extends DefaultRackApplication
             return headers;
         }
 
-        @SuppressWarnings("unused")
+        @SuppressWarnings({"unused", "unchecked"})
         public void setHeaders(@SuppressWarnings("rawtypes") Map headers) {
-            this.headers = headers == null ? Collections.EMPTY_MAP : headers;
+            this.headers = headers == null ? Collections.emptyMap() : headers;
         }
 
         @Override

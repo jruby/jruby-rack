@@ -202,7 +202,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
 
     public RackApplication newErrorApplication() {
         Boolean error = rackContext.getConfig().getBooleanProperty("jruby.rack.error");
-        if ( error != null && ! error.booleanValue() ) { // jruby.rack.error = false
+        if ( error != null && !error) { // jruby.rack.error = false
             return new DefaultErrorApplication(rackContext);
         }
         try {
@@ -585,7 +585,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         if (iniSize == null) iniSize = RewindableInputStream.INI_BUFFER_SIZE;
         Integer maxSize = config.getMaximumMemoryBufferSize();
         if (maxSize == null) maxSize = RewindableInputStream.MAX_BUFFER_SIZE;
-        if (iniSize.intValue() > maxSize.intValue()) iniSize = maxSize;
+        if (iniSize > maxSize) iniSize = maxSize;
 
         RewindableInputStream.setDefaultInitialBufferSize(iniSize);
         RewindableInputStream.setDefaultMaximumBufferSize(maxSize);
