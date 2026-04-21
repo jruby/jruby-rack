@@ -1,7 +1,6 @@
 ## 1.3.0 (UNRELEASED) 
 
 - Officially support Javax Servlet API 4.0 (JEE 8)
-- Ensure compatibility with JRuby 10.1
 
 Breaking compatibility changes
 - Drop support for JRuby 9.3
@@ -33,7 +32,8 @@ Breaking configuration capability changes
 
 ## 1.2.7 (UNRELEASED)
 
-- Fix compatibility with JRuby 10.0 and Rails 8.0 (#419)
+- Ensure compatibility with JRuby 10.0 and 10.1 (#419, #423)
+- Ensure compatibility with Rails 8.0 (#419)
 - Fix ability to include and forward to JSPs under Rails (#370)
 - Update (bundled) rack to 2.2.23 (#417)
 
