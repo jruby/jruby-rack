@@ -289,7 +289,7 @@ Or the equivalent of doing `bundle exec rackup ...` if you're using Bundler :
 ## Logging
 
 JRuby-Rack sets up a delegate logger for Rails that sends logging output to
-`javax.servlet.ServletContext#log` by default. If you wish to use a different
+`jakarta.servlet.ServletContext#log` by default. If you wish to use a different
 logging system, configure `jruby.rack.logging` as follows:
 
 - `servlet_context` (default): Sends log messages to the servlet context.
