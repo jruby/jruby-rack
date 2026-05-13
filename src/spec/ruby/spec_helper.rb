@@ -5,8 +5,8 @@ $CLASSPATH << File.expand_path('classes', target)
 $CLASSPATH << File.expand_path('test-classes', target)
 jars.each { |jar| $CLASSPATH << File.expand_path(jar, lib) }
 
-java_import 'javax.servlet.http.HttpServletRequest'
-java_import 'javax.servlet.http.HttpServletResponse'
+java_import 'jakarta.servlet.http.HttpServletRequest'
+java_import 'jakarta.servlet.http.HttpServletResponse'
 
 java_import 'org.jruby.rack.RackApplicationFactory'
 java_import 'org.jruby.rack.DefaultRackApplicationFactory'
@@ -23,7 +23,7 @@ JRuby::Util.load_ext('org.jruby.rack.ext.RackLibrary')
 module SharedHelpers
 
   def mock_servlet_context
-    @servlet_context = Java::JavaxServlet::ServletContext.impl {}
+    @servlet_context = Java::JakartaServlet::ServletContext.impl {}
     @rack_config ||= Java::OrgJrubyRack::RackConfig.impl {}
     @rack_context ||= Java::OrgJrubyRackServlet::ServletRackContext.impl {}
     [@rack_context, @servlet_context].each do |context|
@@ -36,7 +36,7 @@ module SharedHelpers
       allow(context).to receive(:init_parameter_names).and_return []
     end
     allow(@rack_context).to receive(:getConfig).and_return @rack_config
-    @servlet_config ||= Java::JavaxServlet::ServletConfig.impl {}
+    @servlet_config ||= Java::JakartaServlet::ServletConfig.impl {}
     allow(@servlet_config).to receive(:getServletName).and_return "a Servlet"
     allow(@servlet_config).to receive(:getServletContext).and_return @servlet_context
     @servlet_context
@@ -152,10 +152,10 @@ RSpec.configure do |config|
 
 end
 
-java_import org.springframework.mock.web.MockServletConfig
-java_import org.springframework.mock.web.MockServletContext
-java_import org.springframework.mock.web.MockHttpServletRequest
-java_import org.springframework.mock.web.MockHttpServletResponse
+java_import 'org.springframework.mock.web.MockServletConfig'
+java_import 'org.springframework.mock.web.MockServletContext'
+java_import 'org.springframework.mock.web.MockHttpServletRequest'
+java_import 'org.springframework.mock.web.MockHttpServletResponse'
 
 class StubInputStream < java.io.InputStream
 
@@ -193,7 +193,7 @@ class StubOutputStream < java.io.OutputStream
 
 end
 
-class StubServletInputStream < javax.servlet.ServletInputStream
+class StubServletInputStream < Java::JakartaServlet::ServletInputStream
 
   def initialize(val = "")
     @delegate = StubInputStream.new(val)

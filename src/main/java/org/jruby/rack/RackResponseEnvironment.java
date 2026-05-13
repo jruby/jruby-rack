@@ -16,8 +16,8 @@ import java.io.PrintWriter;
  * handle and return the Rack response) interface.
  * It is likely to be (only) implemented as a HTTP servlet response.
  *
- * @see javax.servlet.ServletResponse
- * @see javax.servlet.http.HttpServletResponse
+ * @see jakarta.servlet.ServletResponse
+ * @see jakarta.servlet.http.HttpServletResponse
  * @see RackResponse
  *
  * @author nicksieger
@@ -26,30 +26,30 @@ public interface RackResponseEnvironment {
 
     /**
      * @return whether the underlying response has been committed.
-     * @see javax.servlet.ServletResponse#isCommitted()
+     * @see jakarta.servlet.ServletResponse#isCommitted()
      */
     boolean isCommitted();
 
     /**
      * Reset the response (buffer) so we can begin a new response.
-     * @see javax.servlet.ServletResponse#reset()
+     * @see jakarta.servlet.ServletResponse#reset()
      */
     void reset();
 
     /**
-     * @see javax.servlet.ServletResponse#setContentType(String)
+     * @see jakarta.servlet.ServletResponse#setContentType(String)
      * @param type the content type
      */
     void setContentType(String type) ;
 
     /**
-     * @see javax.servlet.ServletResponse#setContentLength(int)
+     * @see jakarta.servlet.ServletResponse#setContentLength(int)
      * @param length the content length
      */
     void setContentLength(int length) ;
 
     /**
-     * @see javax.servlet.ServletResponse#setCharacterEncoding(String)
+     * @see jakarta.servlet.ServletResponse#setCharacterEncoding(String)
      * @param charset the charset
      */
     void setCharacterEncoding(String charset) ;
@@ -107,14 +107,14 @@ public interface RackResponseEnvironment {
     void sendError(int code) throws IOException ;
 
     /**
-     * @see javax.servlet.ServletResponse#getOutputStream()
+     * @see jakarta.servlet.ServletResponse#getOutputStream()
      * @return the output stream
      * @throws IOException if there's an IO exception
      */
     OutputStream getOutputStream() throws IOException ;
 
     /**
-     * @see javax.servlet.ServletResponse#getWriter()
+     * @see jakarta.servlet.ServletResponse#getWriter()
      * @return the writer
      * @throws IOException if there's an IO exception
      */

@@ -1,3 +1,7 @@
+## 2.0.0 (UNRELEASED)
+
+- Support Jakarta Servlet API 5.0 (JEE 9)
+
 ## 1.3.0 (UNRELEASED) 
 
 - Officially support Javax Servlet API 4.0 (JEE 8)
