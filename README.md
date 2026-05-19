@@ -348,7 +348,7 @@ Releasing must be done by users authorized to push to the `org.jruby` group ID o
 * Update the versions in `pom.xml` and `src/main/ruby/jruby/rack/version.rb` to the release version
 * Commit the version update locally
 * Run `./mvnw deploy -Prelease` to build, sign, and push all artifacts to Maven Central staging
-* Once verified by Maven Central, authorize the deployment of the release on https://central.sonatype.org
+* Confirm the release completes publishing at `https://central.sonatype.org`
 * `rake clean gem SKIP_SPECS=true` and push the gem
 * Tag the release version in git
 * Update the versions again to the next dev version (`-SNAPSHOT` for the Maven artifact in `pom.xml` and `.SNAPSHOT` for the gem in `version.rb`)
