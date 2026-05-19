@@ -1,4 +1,4 @@
-## 1.2.7 (UNRELEASED)
+## 1.2.7
 
 - Ensure compatibility with JRuby 10.0 and 10.1 (#419, #423)
 - Ensure compatibility with Rails 8.0 (#419)
