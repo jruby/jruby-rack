@@ -342,11 +342,17 @@ package and push the .jar every time a commit changes a source file).
 
 ## Releasing
 
+Releasing must be done by users authorized to push to the `org.jruby` group ID on https://central.sonatype.org and to push the `jruby-rack` gem to https://rubygems.org.
+
 * Make sure auth is configured for "central" repository ID in your `.m2/settings.xml`
-* Update the version in `src/main/ruby/jruby/rack/version.rb` to the release version
-* `./mvnw release:prepare`
-* `./mvnw release:perform` (possibly with `-DuseReleaseProfile=false` due to Javadoc doclint failures for now)
+* Update the versions in `pom.xml` and `src/main/ruby/jruby/rack/version.rb` to the release version
+* Commit the version update locally
+* Run `./mvnw deploy -Prelease` to build, sign, and push all artifacts to Maven Central staging
+* Once verified by Maven Central, authorize the deployment of the release on https://central.sonatype.org
 * `rake clean gem SKIP_SPECS=true` and push the gem
+* Tag the release version in git
+* Update the versions again to the next dev version (`-SNAPSHOT` for the Maven artifact in `pom.xml` and `.SNAPSHOT` for the gem in `version.rb`)
+* Push all commits and tags to GitHub
 
 ## Adding testing for new Rails versions
 
