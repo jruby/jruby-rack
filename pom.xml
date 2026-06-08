@@ -22,7 +22,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- Version to target at compile time -->
-    <jruby.compat.version>9.4.14.0</jruby.compat.version>
+    <jruby.compat.version>9.4.15.0</jruby.compat.version>
     <!-- Version to execute tests with -->
     <jruby.test.version>${jruby.compat.version}</jruby.test.version>
 
