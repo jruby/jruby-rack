@@ -332,7 +332,7 @@ describe Rack::Handler::Servlet do
 
     it "exposes the servlet context xxxx" do
       env = servlet.create_env @servlet_env
-      expect(env['java.servlet_context']).to be_a javax.servlet.ServletContext
+      expect( env['java.servlet_context'] ).to be_a Java::JakartaServlet::ServletContext
     end
 
     it "exposes the rack context" do
@@ -1071,9 +1071,9 @@ describe Rack::Handler::Servlet do
 
     it "sets cookies from servlet requests" do
       cookies = []
-      cookies << javax.servlet.http.Cookie.new('foo', 'bar')
-      cookies << javax.servlet.http.Cookie.new('bar', '142')
-      servlet_request.setCookies cookies.to_java :'javax.servlet.http.Cookie'
+      cookies << Java::JakartaServletHttp::Cookie.new('foo', 'bar')
+      cookies << Java::JakartaServletHttp::Cookie.new('bar', '142')
+      servlet_request.setCookies cookies.to_java :'jakarta.servlet.http.Cookie'
       env = servlet.create_env(servlet_env)
       rack_request = Rack::Request.new(env)
       expect(rack_request.cookies).to eq({ 'foo' => 'bar', 'bar' => '142' })
@@ -1085,7 +1085,7 @@ describe Rack::Handler::Servlet do
       rack_request = Rack::Request.new(env)
       expect(rack_request.cookies).to eq({})
 
-      servlet_request.setCookies [].to_java :'javax.servlet.http.Cookie'
+      servlet_request.setCookies [].to_java :'jakarta.servlet.http.Cookie'
       env = servlet.create_env(servlet_env)
       rack_request = Rack::Request.new(env)
       expect(rack_request.cookies).to eq({})
@@ -1093,9 +1093,9 @@ describe Rack::Handler::Servlet do
 
     it "sets a single cookie from servlet requests" do
       cookies = []
-      cookies << javax.servlet.http.Cookie.new('foo', 'bar')
-      cookies << javax.servlet.http.Cookie.new('foo', '142')
-      servlet_request.setCookies cookies.to_java :'javax.servlet.http.Cookie'
+      cookies << Java::JakartaServletHttp::Cookie.new('foo', 'bar')
+      cookies << Java::JakartaServletHttp::Cookie.new('foo', '142')
+      servlet_request.setCookies cookies.to_java :'jakarta.servlet.http.Cookie'
       env = servlet.create_env(servlet_env)
       rack_request = Rack::Request.new(env)
       expect(rack_request.cookies).to eq({ 'foo' => 'bar' })
