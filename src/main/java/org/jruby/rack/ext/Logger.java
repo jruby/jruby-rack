@@ -194,14 +194,14 @@ public class Logger extends RubyObject { // implements RackLogger
     }
 
     private static RackLogger.Level mapLevel(final int level) {
-        switch (level) {
-            case DEBUG: return RackLogger.Level.DEBUG;
-            case INFO : return RackLogger.Level.INFO ;
-            case WARN : return RackLogger.Level.WARN ;
-            case ERROR: return RackLogger.Level.ERROR;
-            case FATAL: return RackLogger.Level.FATAL;
-        }
-        return null;
+        return switch (level) {
+            case DEBUG -> RackLogger.Level.DEBUG;
+            case INFO -> RackLogger.Level.INFO;
+            case WARN -> RackLogger.Level.WARN;
+            case ERROR -> RackLogger.Level.ERROR;
+            case FATAL -> RackLogger.Level.FATAL;
+            default -> null;
+        };
     }
 
     @JRubyMethod(name = "progname")
@@ -386,8 +386,7 @@ public class Logger extends RubyObject { // implements RackLogger
             final long datetime = System.currentTimeMillis();
             msg = format_message(context, severity, datetime, progname, msg);
         }
-        else if ( msg instanceof RubyException ) {
-            final RubyException ex = (RubyException) msg;
+        else if (msg instanceof RubyException ex) {
             doLog( loggerLevel, ex.toThrowable() );
             return true;
         }
@@ -444,14 +443,14 @@ public class Logger extends RubyObject { // implements RackLogger
             new ByteList(new byte[] { 'A','N','Y' }, false);
 
     private static ByteList formatSeverity(final int severity) {
-        switch ( severity) {
-            case DEBUG: return FORMATTED_DEBUG;
-            case INFO : return FORMATTED_INFO ;
-            case WARN : return FORMATTED_WARN ;
-            case ERROR: return FORMATTED_ERROR;
-            case FATAL: return FORMATTED_FATAL;
-        }
-        return FORMATTED_ANY;
+        return switch (severity) {
+            case DEBUG -> FORMATTED_DEBUG;
+            case INFO -> FORMATTED_INFO;
+            case WARN -> FORMATTED_WARN;
+            case ERROR -> FORMATTED_ERROR;
+            case FATAL -> FORMATTED_FATAL;
+            default -> FORMATTED_ANY;
+        };
     }
 
     private static int toInt(final IRubyObject level) {

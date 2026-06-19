@@ -36,7 +36,6 @@ import org.jruby.util.StringSupport;
  *
  * @author nicksieger
  */
-@SuppressWarnings("serial")
 public class Input extends RubyObject {
 
     static final ObjectAllocator ALLOCATOR = Input::new;
