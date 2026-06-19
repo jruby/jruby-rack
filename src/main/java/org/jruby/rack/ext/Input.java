@@ -15,10 +15,10 @@ import java.lang.reflect.Method;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyModule;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Access;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.servlet.RewindableInputStream;
@@ -36,15 +36,12 @@ import org.jruby.util.StringSupport;
  *
  * @author nicksieger
  */
-@SuppressWarnings("serial")
 public class Input extends RubyObject {
 
     static final ObjectAllocator ALLOCATOR = Input::new;
 
     static RubyClass getClass(final Ruby runtime) {
-        final RubyModule _JRuby_Rack = (RubyModule)
-            runtime.getModule("JRuby").getConstantAt("Rack");
-        return (RubyClass) _JRuby_Rack.getConstantAt("Input");
+        return Access.getClass(runtime.getCurrentContext(), "JRuby", "Rack", "Input");
     }
 
     private boolean rewindable;
@@ -135,7 +132,7 @@ public class Input extends RubyObject {
     public IRubyObject read(final ThreadContext context, final IRubyObject[] args) {
         int readLen = 0;
         if ( args.length > 0 ) {
-            long len = args[0].convertToInteger("to_i").getLongValue();
+            long len = args[0].convertToInteger("to_i").asLong(context);
             readLen = (int) Math.min(len, Integer.MAX_VALUE);
         }
         final RubyString buffer = args.length > 1 ? args[1].asString() : null;
@@ -143,7 +140,7 @@ public class Input extends RubyObject {
             final byte[] bytes = readUntil(MATCH_NONE, readLen);
             if ( bytes != null ) {
                 if ( buffer != null ) {
-                    buffer.clear();
+                    buffer.clear(context);
                     buffer.catWithCodeRange(new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
                     return buffer;
                 }

@@ -10,6 +10,7 @@ package org.jruby.rack.embed;
 import java.io.IOException;
 
 import org.jruby.Ruby;
+import org.jruby.api.Access;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.rack.AbstractRackDispatcher;
 import org.jruby.rack.DefaultRackApplication;
@@ -18,6 +19,7 @@ import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.RackInitializationException;
 import org.jruby.rack.RackResponseEnvironment;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -40,10 +42,11 @@ public class Dispatcher extends AbstractRackDispatcher {
         if (context instanceof Context) {
             ((Context) context).getConfig().doInitialize(runtime);
         }
-        IRubyObject rubyContext = JavaUtil.convertJavaToRuby(runtime, context);
-        IRubyObject rackModule = runtime.getModule("JRuby").getConstantAt("Rack");
+        ThreadContext currentContext = runtime.getCurrentContext();
         // `JRuby::Rack.context = context`
-        rackModule.callMethod(runtime.getCurrentContext(), "context=", rubyContext);
+        Access.getModule(currentContext, "JRuby")
+                .getConstantAt(currentContext, "Rack")
+                .callMethod(currentContext, "context=", JavaUtil.convertJavaToRuby(runtime, context));
     }
 
     @Override
@@ -70,7 +73,7 @@ public class Dispatcher extends AbstractRackDispatcher {
     }
 
     @Override
-    protected void afterProcess(RackApplication app) throws IOException {
+    protected void afterProcess(RackApplication app) {
         // NOOP
     }
 
