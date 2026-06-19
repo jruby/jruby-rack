@@ -21,6 +21,8 @@ version_spec = ->(prefix, desc) { "~> #{desc.split(prefix).last.insert(1, ".")}.
         c[:ext_gems]&.each do |gem_name|
           gem gem_name
         end
+
+        gem "i18n", "!= 1.15.0" # Broken on Ruby 3.1
       end
     end
   end

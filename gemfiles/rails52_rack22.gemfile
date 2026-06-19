@@ -8,6 +8,7 @@ group :default do
   gem "mutex_m"
   gem "bigdecimal"
   gem "benchmark"
+  gem "i18n", "!= 1.15.0"
 end
 
 group :development do

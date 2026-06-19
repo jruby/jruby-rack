@@ -9,6 +9,7 @@ group :default do
   gem "bigdecimal"
   gem "benchmark"
   gem "base64"
+  gem "i18n", "!= 1.15.0"
 end
 
 group :development do
