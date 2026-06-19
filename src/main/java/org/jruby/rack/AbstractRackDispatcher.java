@@ -58,7 +58,7 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
 
     protected abstract RackApplication getApplication() throws RackException;
     
-    protected abstract void afterProcess(RackApplication app) throws IOException;
+    protected abstract void afterProcess(RackApplication app);
     
     protected abstract void afterException(
             RackEnvironment request, 

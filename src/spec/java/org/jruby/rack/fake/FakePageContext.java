@@ -120,7 +120,7 @@ public class FakePageContext extends PageContext {
     }
 
     @Override
-    public void include(String arg0) throws ServletException, IOException {
+    public void include(String arg0) {
         throw new UnsupportedOperationException("Not supported yet. include");
     }
 
@@ -155,7 +155,7 @@ public class FakePageContext extends PageContext {
     }
 
     @Override
-    public void include(String arg0, boolean arg1) throws ServletException, IOException {
+    public void include(String arg0, boolean arg1) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

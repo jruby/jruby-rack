@@ -102,23 +102,20 @@ public interface RackResponseEnvironment {
     /**
      * Send a simple error page response (based on the status code).
      * @param code the (HTTP) status code
-     * @throws IOException if there's an IO exception
      */
-    void sendError(int code) throws IOException ;
+    void sendError(int code) throws IOException;
 
     /**
      * @see javax.servlet.ServletResponse#getOutputStream()
      * @return the output stream
-     * @throws IOException if there's an IO exception
      */
-    OutputStream getOutputStream() throws IOException ;
+    OutputStream getOutputStream() throws IOException;
 
     /**
      * @see javax.servlet.ServletResponse#getWriter()
      * @return the writer
-     * @throws IOException if there's an IO exception
      */
-    PrintWriter getWriter() throws IOException ;
+    PrintWriter getWriter() throws IOException;
 
     /**
      * @see RackResponse#respond(RackResponseEnvironment)
