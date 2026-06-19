@@ -23,6 +23,7 @@
 
     <!-- Version to target at compile time -->
     <jruby.compat.version>9.4.15.0</jruby.compat.version>
+    <jruby.compat.artifact>jruby</jruby.compat.artifact>
     <!-- Version to execute tests with -->
     <jruby.test.version>${jruby.compat.version}</jruby.test.version>
 
@@ -79,9 +80,10 @@
   <dependencies>
     <dependency>
       <groupId>org.jruby</groupId>
-      <!-- This has to be jruby-complete, as bundler-maven-plugin has special logic to exclude jruby-complete - otherwise
-           it conflicts with the bootclasspath if using different "target compile version" to "runtime version" -->
-      <artifactId>jruby-complete</artifactId>
+      <!-- This has to be jruby-complete when running with bundler-maven-plugin since it has special logic to
+           exclude jruby-complete - otherwise it conflicts with the bootclasspath if using different
+           "target compile version" to "runtime version" -->
+      <artifactId>${jruby.compat.artifact}</artifactId>
       <version>${jruby.compat.version}</version>
       <scope>provided</scope>
     </dependency>
