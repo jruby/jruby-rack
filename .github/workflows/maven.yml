@@ -52,8 +52,6 @@ jobs:
     strategy:
       matrix:
         appraisal: [
-          'rails70_rack22',
-          'rails71_rack22',
           'rails72_rack22',
           'rails80_rack22',
         ]
