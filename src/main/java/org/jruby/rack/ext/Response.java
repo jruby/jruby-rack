@@ -363,7 +363,7 @@ public class Response extends RubyObject implements RackResponse {
 
     private static final ByteList NEW_LINE = new ByteList(new byte[] { '\n' }, false);
 
-    protected void writeHeaders(final RackResponseEnvironment response) throws IOException {
+    protected void writeHeaders(final RackResponseEnvironment response) {
         this.headers.visitAll(currentContext(), new RubyHash.Visitor() { // headers.each { |key, val| }
             @Override
             public void visit(final IRubyObject key, final IRubyObject val) {

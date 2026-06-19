@@ -73,7 +73,7 @@ public class Dispatcher extends AbstractRackDispatcher {
     }
 
     @Override
-    protected void afterProcess(RackApplication app) throws IOException {
+    protected void afterProcess(RackApplication app) {
         // NOOP
     }
 
