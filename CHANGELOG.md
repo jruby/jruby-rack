@@ -3,7 +3,7 @@
 - Officially support Javax Servlet API 4.0 (JEE 8)
 
 Breaking compatibility changes
-- Drop support for JRuby 9.3
+- Drop support for JRuby 9.x
 - Drop support for Rails < 7.0
 
 Breaking behavioral changes

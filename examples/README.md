@@ -4,7 +4,7 @@ This directory includes samples using JRuby-Rack to build Rack web applications 
 into Java app servers.
 
 - All use [Warbler](https://github.com/jruby/warbler) to do so for easy of packaging.
-- Require JRuby `9.4` and a compatible JVM (Java `8` -> `25`).
+- Require JRuby `10.0` and a compatible JVM (Java `21` -> `25`).
 
 ### Building/running
 

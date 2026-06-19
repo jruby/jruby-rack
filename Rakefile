@@ -175,7 +175,7 @@ task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do
       gem.email = ['nick@nicksieger.com']
       gem.files = FileList["./**/*"].exclude("*.gem").map{ |f| f.sub(/^\.\//, '') }
       gem.homepage = %q{http://jruby.org}
-      gem.required_ruby_version = '>= 3.1.0' # JRuby >= 9.4
+      gem.required_ruby_version = '>= 3.4.0' # JRuby >= 10.0
     end
 
     require 'rubygems/package'
