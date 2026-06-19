@@ -26,6 +26,8 @@ package org.jruby.rack.ext;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
+import org.jruby.api.Define;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.load.BasicLibraryService;
 import org.jruby.runtime.load.Library;
 
@@ -37,48 +39,40 @@ import org.jruby.runtime.load.Library;
 public class RackLibrary implements Library, BasicLibraryService {
 
     public static void load(final Ruby runtime) {
-        final RubyModule _JRuby = runtime.getOrCreateModule("JRuby");
-        final RubyModule _JRuby_Rack = _JRuby.defineModuleUnder("Rack");
+        ThreadContext context = runtime.getCurrentContext();
+        final RubyModule _JRuby = Define.defineModule(context, "JRuby");
+        final RubyModule _JRuby_Rack = _JRuby.defineModuleUnder(context, "Rack");
 
         final RubyClass _Object = runtime.getObject();
 
         // JRuby::Rack::Response
-        final RubyClass _Response = _JRuby_Rack.defineClassUnder(
-              "Response", _Object, Response.ALLOCATOR
-        );
-        _Response.defineAnnotatedMethods(Response.class);
+        final RubyClass _Response = _JRuby_Rack.defineClassUnder(context, "Response", _Object, Response.ALLOCATOR);
+        _Response.defineMethods(context, Response.class);
 
         // JRuby::Rack::Input
-        final RubyClass _Input = _JRuby_Rack.defineClassUnder(
-              "Input", _Object, Input.ALLOCATOR
-        );
-        _Input.defineAnnotatedMethods(Input.class);
+        final RubyClass _Input = _JRuby_Rack.defineClassUnder(context, "Input", _Object, Input.ALLOCATOR);
+        _Input.defineMethods(context, Input.class);
 
         // JRuby::Rack::Logger
-        final RubyClass _Logger = _JRuby_Rack.defineClassUnder(
-              "Logger", _Object, Logger.ALLOCATOR
-        );
-        _Logger.defineAnnotatedMethods(Logger.class);
+        final RubyClass _Logger = _JRuby_Rack.defineClassUnder(context, "Logger", _Object, Logger.ALLOCATOR);
+        _Logger.defineMethods(context, Logger.class);
         // Rails compatibility as it assumes logger.class::DEBUG to work :
-        _Logger.setConstant("DEBUG", runtime.newFixnum(Logger.DEBUG));
-        _Logger.setConstant("INFO",  runtime.newFixnum(Logger.INFO));
-        _Logger.setConstant("WARN",  runtime.newFixnum(Logger.WARN));
-        _Logger.setConstant("ERROR", runtime.newFixnum(Logger.ERROR));
-        _Logger.setConstant("FATAL", runtime.newFixnum(Logger.FATAL));
+        _Logger.setConstant(context, "DEBUG", runtime.newFixnum(Logger.DEBUG));
+        _Logger.setConstant(context, "INFO",  runtime.newFixnum(Logger.INFO));
+        _Logger.setConstant(context, "WARN",  runtime.newFixnum(Logger.WARN));
+        _Logger.setConstant(context, "ERROR", runtime.newFixnum(Logger.ERROR));
+        _Logger.setConstant(context, "FATAL", runtime.newFixnum(Logger.FATAL));
         //_Logger.setConstant("UNKNOWN", runtime.newFixnum(Logger.UNKNOWN));
         // JRuby::Rack::ServletLog
-        final RubyClass _ServletLog = _JRuby_Rack.defineClassUnder(
-              "ServletLog", _Object, Logger.ServletLog.ALLOCATOR
-        );
-        _ServletLog.defineAnnotatedMethods(Logger.ServletLog.class);
+        final RubyClass _ServletLog = _JRuby_Rack.defineClassUnder(context, "ServletLog", _Object, Logger.ServletLog.ALLOCATOR);
+        _ServletLog.defineMethods(context, Logger.ServletLog.class);
 
-        final RubyModule _Rack = runtime.getOrCreateModule("Rack");
-        final RubyModule _Rack_Handler = _Rack.defineModuleUnder("Handler");
+        final RubyModule _Rack = Define.defineModule(context, "Rack");
+        final RubyModule _Rack_Handler = _Rack.defineModuleUnder(context, "Handler");
 
         // Rack::Handler::Servlet
-        final RubyClass _Servlet = _Rack_Handler.defineClassUnder(
-              "Servlet", _Object, Servlet.ALLOCATOR);
-        _Servlet.defineAnnotatedMethods(Servlet.class);
+        final RubyClass _Servlet = _Rack_Handler.defineClassUnder(context, "Servlet", _Object, Servlet.ALLOCATOR);
+        _Servlet.defineMethods(context, Servlet.class);
     }
 
     @Override

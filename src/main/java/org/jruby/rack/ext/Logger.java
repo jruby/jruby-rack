@@ -34,6 +34,7 @@ import org.jruby.RubyString;
 import org.jruby.RubyTime;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Access;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.RackContext;
@@ -86,8 +87,7 @@ public class Logger extends RubyObject { // implements RackLogger
     @Override
     @JRubyMethod(required = 0)
     public IRubyObject initialize(final ThreadContext context) {
-        IRubyObject jrubyRack = context.runtime.getModule("JRuby").getConstant("Rack");
-        initialize( jrubyRack.callMethod(context, "context") ); // JRuby::Rack.context
+        initialize(Access.getModule(context, "JRuby").getConstant(context, "Rack").callMethod(context, "context") ); // JRuby::Rack.context
         return this;
     }
 
@@ -455,7 +455,7 @@ public class Logger extends RubyObject { // implements RackLogger
     }
 
     private static int toInt(final IRubyObject level) {
-        return level.convertToInteger("to_i").getIntValue();
+        return level.convertToInteger("to_i").asInt(level.getRuntime().getCurrentContext());
     }
 
     @SuppressWarnings("unchecked")
@@ -496,7 +496,7 @@ public class Logger extends RubyObject { // implements RackLogger
             final IRubyObject rackContext;
             if ( args != null && args.length > 0 ) rackContext = args[0];
             else {
-                IRubyObject jrubyRack = context.runtime.getModule("JRuby").getConstant("Rack");
+                IRubyObject jrubyRack = Access.getModule(context, "JRuby").getConstant("Rack");
                 rackContext = jrubyRack.callMethod(context, "context"); // JRuby::Rack.context
             }
             if ( rackContext.isNil() ) {
