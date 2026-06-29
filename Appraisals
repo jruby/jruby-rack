@@ -22,7 +22,7 @@ version_spec = ->(prefix, desc) { "~> #{desc.split(prefix).last.insert(1, ".")}.
           gem gem_name
         end
 
-        gem "i18n", "!= 1.15.0" # Broken on Ruby 3.1
+        gem "rdoc", "!= 8.0.0" # Transitive of irb, broken on JRuby 10.x
       end
     end
   end
