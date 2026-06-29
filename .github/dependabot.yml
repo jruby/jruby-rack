@@ -1,5 +1,6 @@
 version: 2
 updates:
+  # Master branch
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
@@ -8,7 +9,6 @@ updates:
       actions-deps:
         patterns: [ "*" ]
 
-  # Master branch
   - package-ecosystem: maven
     directory: "/"
     schedule:
@@ -27,6 +27,7 @@ updates:
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "org.springframework*"
         update-types: [ "version-update:semver-major" ]
+
   - package-ecosystem: bundler
     directories:
       - "/"
@@ -42,6 +43,17 @@ updates:
         update-types: [ "version-update:semver-major" ]
 
   # Maintained stable branches
+  - package-ecosystem: github-actions
+    target-branch: "1.2-stable"
+    commit-message:
+      prefix: "1.2.x: "
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions-deps:
+        patterns: [ "*" ]
+
   - package-ecosystem: maven
     target-branch: "1.2-stable"
     commit-message:
@@ -63,6 +75,7 @@ updates:
         update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
       - dependency-name: "org.springframework*"
         update-types: [ "version-update:semver-major" ]
+
   - package-ecosystem: bundler
     target-branch: "1.2-stable"
     commit-message:
@@ -79,4 +92,3 @@ updates:
     ignore:
       - dependency-name: "rack"
         update-types: [ "version-update:semver-major" ]
-
