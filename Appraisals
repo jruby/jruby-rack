@@ -1,4 +1,5 @@
-version_spec = ->(prefix, desc) { "~> #{desc.split(prefix).last.insert(1, ".")}.0" }
+major_minor = -> (prefix, desc) { desc.split(prefix).last.insert(1, ".") }
+version_spec = ->(prefix, desc) { "~> #{major_minor.call(prefix, desc)}.0" }
 
 # rails#{MAJOR}#{MINOR} => config_obj
 {
@@ -22,7 +23,7 @@ version_spec = ->(prefix, desc) { "~> #{desc.split(prefix).last.insert(1, ".")}.
           gem gem_name
         end
 
-        gem "rdoc", "!= 8.0.0" # Transitive of irb, broken on JRuby 10.x
+        gem "rdoc", "!= 8.0.0" if major_minor.call("rails", rails_desc) >= "7.0"
       end
     end
   end

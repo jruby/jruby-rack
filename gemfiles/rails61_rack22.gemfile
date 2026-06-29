@@ -8,7 +8,6 @@ group :default do
   gem "mutex_m"
   gem "bigdecimal"
   gem "benchmark"
-  gem "rdoc", "!= 8.0.0"
 end
 
 group :development do
