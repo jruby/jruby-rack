@@ -44,10 +44,11 @@ describe Rack::Handler::Servlet do
 
     it "creates a hash with the Rack variables in it" do
       hash = servlet.create_env(@servlet_env)
-      expect(hash['rack.version']).to eq Rack::RELEASE
-      expect(hash['rack.multithread']).to eq true
-      expect(hash['rack.multiprocess']).to eq false
-      expect(hash['rack.run_once']).to eq false
+      expect(hash['rack.version']).to eq Rack.release < '3' ? Rack.release : nil
+      expect(hash['rack.multithread']).to eq Rack.release < '3' ? true : nil
+      expect(hash['rack.multiprocess']).to eq Rack.release < '3' ? false : nil
+      expect(hash['rack.run_once']).to eq Rack.release < '3' ? false : nil
+      expect(hash['rack.hijack?']).to eq false
     end
 
     it "adds all attributes from the servlet request" do
@@ -68,6 +69,7 @@ describe Rack::Handler::Servlet do
         "SERVER_NAME" => "override",
         "SERVER_PORT" => 8080,
         "SERVER_SOFTWARE" => "servy",
+        "SERVER_PROTOCOL" => "HTTP/2.0",
         "REMOTE_HOST" => "override",
         "REMOTE_ADDR" => "192.168.0.1",
         "REMOTE_USER" => "override"
@@ -83,6 +85,7 @@ describe Rack::Handler::Servlet do
       expect(env["SERVER_NAME"]).to eq "override"
       expect(env["SERVER_PORT"]).to eq "8080"
       expect(env["SERVER_SOFTWARE"]).to eq "servy"
+      expect(env["SERVER_PROTOCOL"]).to eq "HTTP/2.0"
       expect(env["REMOTE_HOST"]).to eq "override"
       expect(env["REMOTE_ADDR"]).to eq "192.168.0.1"
       expect(env["REMOTE_USER"]).to eq "override"
@@ -163,6 +166,7 @@ describe Rack::Handler::Servlet do
       @servlet_request.setQueryString('hello=there')
       @servlet_request.setServerName('serverhost')
       @servlet_request.setServerPort(80)
+      @servlet_request.setProtocol('HTTP/1.1')
       @servlet_request.setRemoteAddr('127.0.0.1')
       @servlet_request.setRemoteHost('localhost')
       @servlet_request.setRemoteUser('admin')
@@ -176,6 +180,7 @@ describe Rack::Handler::Servlet do
       expect(env["QUERY_STRING"]).to eq "hello=there"
       expect(env["SERVER_NAME"]).to eq "serverhost"
       expect(env["SERVER_PORT"]).to eq "80"
+      expect(env["SERVER_PROTOCOL"]).to eq "HTTP/1.1"
       expect(env["REMOTE_HOST"]).to eq "localhost"
       expect(env["REMOTE_ADDR"]).to eq "127.0.0.1"
       expect(env["REMOTE_USER"]).to eq "admin"
@@ -193,6 +198,7 @@ describe Rack::Handler::Servlet do
       @servlet_request.setQueryString('hello=there')
       @servlet_request.setServerName('serverhost')
       @servlet_request.setServerPort(80)
+      @servlet_request.setProtocol('HTTP/1.1')
       @servlet_request.setRemoteAddr('127.0.0.1')
       @servlet_request.setRemoteHost('localhost')
       @servlet_request.setRemoteUser('admin')
@@ -204,7 +210,7 @@ describe Rack::Handler::Servlet do
       end
 
       env = servlet.create_env @servlet_env
-      expect(env["rack.version"]).to eq Rack::RELEASE
+      expect(env["rack.version"]).to eq Rack.release < '3' ? Rack.release : nil
       expect(env["CONTENT_TYPE"]).to eq "text/html"
       expect(env["HTTP_HOST"]).to eq "serverhost"
       expect(env["HTTP_ACCEPT"]).to eq "text/*"
@@ -215,6 +221,7 @@ describe Rack::Handler::Servlet do
       expect(env["QUERY_STRING"]).to eq "hello=there"
       expect(env["SERVER_NAME"]).to eq "serverhost"
       expect(env["SERVER_PORT"]).to eq "80"
+      expect(env["SERVER_PROTOCOL"]).to eq "HTTP/1.1"
       expect(env["REMOTE_HOST"]).to eq "localhost"
       expect(env["REMOTE_ADDR"]).to eq "127.0.0.1"
       expect(env["REMOTE_USER"]).to eq "admin"
@@ -419,11 +426,12 @@ describe Rack::Handler::Servlet do
       env = servlet.create_env(@servlet_env)
       rack_request = Rack::Request.new(env)
 
-      # { "foo" => "0", "bar[" => "1", "baz_" => "2", "meh" => "3" }
+      # Rack 2.2: { "foo" => "0", "bar" => "1", "baz_" => "2", "meh" => "3" }
+      # Rack 3.x: { "foo]" => "0", "bar[" => "1", "baz_" => "2", "[meh" => "3" }
 
-      expect(rack_request.GET['foo']).to eql('0')
+      expect(rack_request.GET[Rack.release >= '3' ? 'foo]' : 'foo']).to eql('0')
       expect(rack_request.GET['baz_']).to eql('2')
-      expect(rack_request.GET['meh']).to eql('3')
+      expect(rack_request.GET[Rack.release >= '3' ? '[meh' : 'meh']).to eql('3')
 
       expect(rack_request.query_string).to eql 'foo]=0&bar[=1&baz_=2&[meh=3'
     end
@@ -447,12 +455,12 @@ describe Rack::Handler::Servlet do
       env = servlet.create_env(@servlet_env)
       rack_request = Rack::Request.new(env)
 
-      # params = { "foo" => { "bar" => "2", "baz" => "1", "meh" => [ nil, nil ] }, "huh" => { "1" => "b", "0" => "a" } }
-      #    expect(rack_request.GET).to eql(params)
+      # Rack 2.2 params = { "foo" => { "bar" => "2", "baz" => "1", "meh" => [ "x", "42" ] }, "huh" => { "1" => "b", "0" => "a" } }
+      # Rack 3.x params = { "foo" => { "bar" => "2", "baz" => "1", "meh[" => { "]" => "42" } }, "huh" => { "1" => "b", "0" => "a" } }
 
       expect(rack_request.GET['foo']['bar']).to eql('2')
       expect(rack_request.GET['foo']['baz']).to eql('1')
-      expect(rack_request.params['foo']['meh']).to be_a Array
+      expect(rack_request.params['foo'][Rack.release >= '3' ? 'meh[' : 'meh']).to be_a Rack.release >= '3' ? Hash : Array
       expect(rack_request.params['huh']).to eql({ "1" => "b", "0" => "a" })
 
       expect(rack_request.POST).to eql Hash.new
@@ -531,6 +539,7 @@ describe Rack::Handler::Servlet do
       expect(env.keys).to include('QUERY_STRING')
       expect(env.keys).to include('SERVER_NAME')
       expect(env.keys).to include('SERVER_PORT')
+      expect(env.keys).to include('SERVER_PROTOCOL')
       expect(env.keys).to include('REMOTE_HOST')
       expect(env.keys).to include('REMOTE_ADDR')
       expect(env.keys).to include('REMOTE_USER')
@@ -538,12 +547,16 @@ describe Rack::Handler::Servlet do
         expect(env.keys).to include(key)
       end
 
-      expect(env.keys).to include('rack.version')
+      if Rack.release < '3'
+        expect(env.keys).to include('rack.version')
+        expect(env.keys).to include('rack.multithread')
+        expect(env.keys).to include('rack.multiprocess')
+        expect(env.keys).to include('rack.run_once')
+      end
+
       expect(env.keys).to include('rack.input')
       expect(env.keys).to include('rack.errors')
       expect(env.keys).to include('rack.url_scheme')
-      expect(env.keys).to include('rack.multithread')
-      expect(env.keys).to include('rack.run_once')
       expect(env.keys).to include('java.servlet_context')
       expect(env.keys).to include('java.servlet_request')
       expect(env.keys).to include('java.servlet_response')
@@ -570,11 +583,15 @@ describe Rack::Handler::Servlet do
       expect { env['OTHER_METHOD'] }.to_not raise_error
       expect(env['OTHER_METHOD']).to be nil
 
-      expect { env['rack.version'] }.to_not raise_error
+      if Rack.release < '3'
+        expect { env['rack.version'] }.to_not raise_error
+        expect { env['rack.multithread'] }.to_not raise_error
+        expect { env['rack.multiprocess'] }.to_not raise_error
+        expect { env['rack.run_once'] }.to_not raise_error
+      end
+
       expect { env['rack.input'] }.to_not raise_error
       expect { env['rack.errors'] }.to_not raise_error
-      expect { env['rack.run_once'] }.to_not raise_error
-      expect { env['rack.multithread'] }.to_not raise_error
       expect { env['java.servlet_context'] }.to_not raise_error
       expect { env['java.servlet_request'] }.to_not raise_error
       expect { env['java.servlet_response'] }.to_not raise_error
@@ -700,17 +717,21 @@ describe Rack::Handler::Servlet do
         expect(env['SCRIPT_NAME']).to eql '/main'
         expect(env['SERVER_NAME']).to eql 'serverhost'
         expect(env['SERVER_PORT']).to eql '80'
+        expect(env['SERVER_PROTOCOL']).to eql 'HTTP/1.1'
         expect(env['OTHER_METHOD']).to be nil
         Rack::Handler::Servlet::DefaultEnv::VARIABLES.each do |key|
           expect(env[key]).to_not be(nil), "key: #{key.inspect} nil"
         end
 
         expect(env['rack.url_scheme']).to_not be nil
-        expect(env['rack.version']).to_not be nil
         expect(env['jruby.rack.version']).to_not be nil
 
-        expect(env['rack.run_once']).to be false
-        expect(env['rack.multithread']).to be true
+        if Rack.release < '3'
+          expect(env['rack.version']).to_not be nil
+          expect(env['rack.multithread']).to be true
+          expect(env['rack.multiprocess']).to be false
+          expect(env['rack.run_once']).to be false
+        end
 
         expect(env['rack.whatever']).to be nil
 
@@ -841,6 +862,7 @@ describe Rack::Handler::Servlet do
       expect(env.keys).to include('QUERY_STRING')
       expect(env.keys).to include('SERVER_NAME')
       expect(env.keys).to include('SERVER_PORT')
+      expect(env.keys).to include('SERVER_PROTOCOL')
       expect(env.keys).to include('REMOTE_HOST')
       expect(env.keys).to include('REMOTE_ADDR')
       expect(env.keys).to include('REMOTE_USER')
@@ -848,12 +870,16 @@ describe Rack::Handler::Servlet do
         expect(env.keys).to include(key)
       end
 
-      expect(env.keys).to include('rack.version')
+      if Rack.release < '3'
+        expect(env.keys).to include('rack.version')
+        expect(env.keys).to include('rack.multithread')
+        expect(env.keys).to include('rack.multiprocess')
+        expect(env.keys).to include('rack.run_once')
+      end
+
       expect(env.keys).to include('rack.input')
       expect(env.keys).to include('rack.errors')
       expect(env.keys).to include('rack.url_scheme')
-      expect(env.keys).to include('rack.multithread')
-      expect(env.keys).to include('rack.run_once')
       expect(env.keys).to include('java.servlet_context')
       expect(env.keys).to include('java.servlet_request')
       expect(env.keys).to include('java.servlet_response')

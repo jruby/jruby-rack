@@ -76,13 +76,13 @@ module Rack
                     get_vals << v; true
                   end
                 end
-                store_parameter(key, get_vals, query_hash)
-                store_parameter(key, post_vals, form_hash)
+                store_parameter(query_hash, key, get_vals)
+                store_parameter(form_hash, key, post_vals)
               else
-                store_parameter(key, val, query_hash)
+                store_parameter(query_hash, key, val)
               end
             else # POST param :
-              store_parameter(key, val, form_hash)
+              store_parameter(form_hash, key, val)
             end
           end
           # Rack::Request#GET
@@ -112,9 +112,10 @@ module Rack
         #
         # @param key the param name
         # @param val the value(s) in a array-like structure
-        # @param hash the Hash to store the name, value pair
-        def store_parameter(key, val, hash)
+        # @param params the Hash to store the name, value pair
+        def store_parameter2(params, key, val, depth = 0)
           # emulating Rack::Utils.parse_nested_query behavior
+          raise ::Rack::Utils::ParamsTooDeepError if depth >= 32
 
           if match = key.match(KEY_SEP)
             n_key = match[1]; sub = match[2]
@@ -124,24 +125,110 @@ module Rack
 
           if sub
             if sub.empty? # e.g. foo[]=1&foo[]=2
-              if arr = hash[ n_key ]
+              if arr = params[ n_key ]
                 return mark_parameter_error "expected Array (got #{arr.class}) for param `#{n_key}'" unless arr.is_a?(Array)
-                hash[ n_key ] = arr + val.to_a; return
+                params[ n_key ] = arr + val.to_a; return
               end
-              hash[ n_key ] = val.to_a # String[]
+              params[ n_key ] = val.to_a # String[]
             else # foo[bar]=rrr&foo[baz]=zzz
-              if hsh = hash[ n_key ]
+              if hsh = params[ n_key ]
                 return mark_parameter_error "expected Hash (got #{hsh.class}) for param `#{n_key}'" unless hsh.is_a?(Hash)
-                store_parameter(sub, val, hsh)
+                store_parameter2(hsh, sub, val, depth + 1)
               else
-                hash[ n_key ] = { sub => val[ val.length - 1 ] }
+                params[ n_key ] = { sub => val[ val.length - 1 ] }
               end
             end
           else
             # for 'foo=bad&foo=bar' does { 'foo' => 'bar' }
-            hash[ n_key ] = val[ val.length - 1 ] # last
+            params[ n_key ] = val[ val.length - 1 ] # last
           end
         end
+        private :store_parameter2
+
+        def store_parameter3(params, key, val, depth = 0)
+          raise ::Rack::Utils::ParamsTooDeepError if depth >= 32
+
+          if !key
+            # nil name, treat same as empty string (required by tests)
+            n_key = after = ''
+          elsif depth == 0
+            # Start of parsing, don't treat [] or [ at start of string specially
+            if start = key.index('[', 1)
+              # Start of parameter nesting, use part before brackets as key
+              n_key = key[0, start]
+              after = key[start, key.length]
+            else
+              # Plain parameter with no nesting
+              n_key = key
+              after = ''
+            end
+          elsif key.start_with?('[]')
+            # Array nesting
+            n_key = '[]'
+            after = key[2, key.length]
+          elsif key.start_with?('[') && (start = key.index(']', 1))
+            # Hash nesting, use the part inside brackets as the key
+            n_key = key[1, start-1]
+            after = key[start+1, key.length]
+          else
+            # Probably malformed input, nested but not starting with [
+            # treat full name as key for backwards compatibility.
+            n_key = key
+            after = ''
+          end
+
+          return if n_key.empty?
+
+          if after == ''
+            if n_key == '[]' && depth != 0
+              return val # was [val]: Different to original alg, as val is always an array
+            else
+              params[n_key] = val.last # was val: Different to original alg, as val is always an array
+            end
+          elsif after == "["
+            params[key] = val.last # was val: Different to original alg, as val is always an array
+          elsif after == "[]"
+            params[n_key] ||= []
+            return mark_parameter_error "expected Array (got #{params[n_key].class.name}) for param `#{n_key}'" unless params[n_key].is_a?(Array)
+            params[n_key] += val  # was <<: Different to original alg, as val is always an array
+          elsif after.start_with?('[]')
+            # Recognize x[][y] (hash inside array) parameters
+            unless after[2] == '[' && after.end_with?(']') && (child_key = after[3, after.length-4]) && !child_key.empty? && !child_key.index('[') && !child_key.index(']')
+              # Handle other nested array parameters
+              child_key = after[2, after.length]
+            end
+            params[n_key] ||= []
+            return mark_parameter_error "expected Array (got #{params[n_key].class.name}) for param `#{n_key}'" unless params[n_key].is_a?(Array)
+
+            if params[n_key].last.is_a?(Hash) && !params_hash_has_key?(params[n_key].last, child_key)
+              store_parameter3(params[n_key].last, child_key, val, depth + 1)
+            else
+              params[n_key] += store_parameter3({ }, child_key, val, depth + 1) # was <<: Different to original alg, as val is always an array
+            end
+          else
+            params[n_key] ||= {}
+            return mark_parameter_error "expected Hash (got #{params[n_key].class.name}) for param `#{n_key}'" unless params[n_key].is_a?(Hash)
+            params[n_key] = store_parameter3(params[n_key], after, val, depth + 1)
+          end
+
+          params
+        end
+        private :store_parameter3
+
+        def params_hash_has_key?(hash, key)
+          return false if /\[\]/.match?(key)
+
+          key.split(/[\[\]]+/).inject(hash) do |h, part|
+            next h if part == ''
+            return false unless h.is_a?(Hash) && h.key?(part)
+            h[part]
+          end
+
+          true
+        end
+        private :params_hash_has_key?
+
+        alias_method :store_parameter, (Rack.release >= '3' ? :store_parameter3 : :store_parameter2)
 
         COOKIE_STRING = "rack.request.cookie_string".freeze
         COOKIE_HASH = "rack.request.cookie_hash".freeze
