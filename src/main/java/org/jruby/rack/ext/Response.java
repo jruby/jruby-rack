@@ -615,15 +615,23 @@ public class Response extends RubyObject implements RackResponse {
         return false;
     }
 
+    /**
+     * How many nested causes {@link #isClientAbortException(Exception)} inspects.
+     * A cause chain is allowed to be cyclic, thus the traversal needs a bound.
+     */
+    private static final int MAX_CAUSE_DEPTH = 20;
+
     // ioe.inspect =~ /(ClientAbortException|EofException|broken pipe)/i
     protected boolean isClientAbortException(final Exception ioe) {
         String error = ioe.toString();
         if ( error.contains("ClientAbortException") ) return true;
         if ( error.contains("EofException") ) return true;
-        while ( true ) {
+        Throwable cause = ioe;
+        for ( int depth = 0; depth < MAX_CAUSE_DEPTH; depth++ ) {
             if ( error.toLowerCase().contains("broken pipe") ) return true;
-            if ( ioe.getCause() == null ) break;
-            error = ioe.getCause().getMessage();
+            cause = cause.getCause();
+            if ( cause == null ) break;
+            error = cause.getMessage();
             if ( error == null ) break;
         }
         return false;
