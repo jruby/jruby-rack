@@ -519,6 +519,49 @@ describe JRuby::Rack::Response do
       end
     end
 
+    it "raises exceptions with a nested cause that do not look like abort exceptions" do
+      servlet_response = org.jruby.rack.mock.fail.FailingHttpServletResponse.new
+      # e.g. Jetty failing a stalled write: IOException caused by a TimeoutException
+      servlet_response.setFailure java.io.IOException.new(
+        java.util.concurrent.TimeoutException.new('Idle timeout expired: 30000/30000 ms')
+      )
+      begin
+        with_swallow_client_abort do
+          response.write_body new_response_environment(servlet_response)
+        end
+        fail 'IO exception NOT raised!'
+      rescue java.io.IOException => e
+        expect(e.to_s).to match(/idle timeout expired/i)
+      end
+    end
+
+    it "swallows client abort exceptions nested deeper in the cause chain" do
+      servlet_response = org.jruby.rack.mock.fail.FailingHttpServletResponse.new
+      servlet_response.setFailure java.io.IOException.new('write failed',
+        java.io.IOException.new('connection problem', java.io.IOException.new('Broken pipe'))
+      )
+      with_swallow_client_abort do
+        response.write_body new_response_environment(servlet_response)
+      end
+    end
+
+    it "raises (and does not hang) on a cyclic cause chain" do
+      failure = java.io.IOException.new 'write failed'
+      cause = java.io.IOException.new 'nested failure'
+      failure.initCause cause
+      cause.initCause failure
+      servlet_response = org.jruby.rack.mock.fail.FailingHttpServletResponse.new
+      servlet_response.setFailure failure
+      begin
+        with_swallow_client_abort do
+          response.write_body new_response_environment(servlet_response)
+        end
+        fail 'IO exception NOT raised!'
+      rescue java.io.IOException => e
+        expect(e.to_s).to match(/write failed/i)
+      end
+    end
+
     private
 
     def with_dechunk(dechunk = true)
