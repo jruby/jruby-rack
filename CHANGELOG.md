@@ -1,3 +1,7 @@
+## 1.2.8 (UNRELEASED)
+
+- Fix possible infinite loop in Response#isClientAbortException (#449, #450)
+
 ## 1.2.7
 
 - Ensure compatibility with JRuby 10.0 and 10.1 (#419, #423)
