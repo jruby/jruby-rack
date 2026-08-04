@@ -9,7 +9,7 @@ on:
 env:
   # Default versions for canonical release build
   DEFAULT_JAVA_VERSION: '21'
-  DEFAULT_JRUBY_VERSION: '9.4.15.0' # Should match pom.xml <jruby.compat.version> property (AND a version inside the test matrix)
+  DEFAULT_JRUBY_VERSION: '10.0.6.0' # Should match pom.xml <jruby.compat.version> property (AND a version inside the test matrix)
   DEFAULT_RACK_VERSION: '~> 2.2.0' # Should match Gemfile (AND a version inside the test matrix)
 
 jobs:
