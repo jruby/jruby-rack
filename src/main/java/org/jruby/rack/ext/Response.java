@@ -50,6 +50,7 @@ import org.jruby.javasupport.JavaUtil;
 import org.jruby.rack.RackException;
 import org.jruby.rack.RackResponse;
 import org.jruby.rack.RackResponseEnvironment;
+import org.jruby.rack.util.JRubyCompat;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.BlockBody;
 import org.jruby.runtime.Helpers;
@@ -168,7 +169,7 @@ public class Response extends RubyObject implements RackResponse {
             channelChunkSize = null;
         }
         else {
-            final long val = value.convertToInteger("to_i").asLong(self.getRuntime().getCurrentContext());
+            final long val = JRubyCompat.toLong(value.getRuntime().getCurrentContext(), value);
             channelChunkSize = (int) val;
         }
         return value;
@@ -203,7 +204,7 @@ public class Response extends RubyObject implements RackResponse {
             channelBufferSize = 16 * 1024;
         }
         else {
-            final long val = value.convertToInteger("to_i").asLong(self.getRuntime().getCurrentContext());
+            final long val = JRubyCompat.toLong(self.getRuntime().getCurrentContext(), value);
             channelBufferSize = (int) val;
         }
         return value;
@@ -231,13 +232,12 @@ public class Response extends RubyObject implements RackResponse {
             if ( arr.size() < 3 ) {
                 throw context.runtime.newArgumentError("expected 3 array elements (rack-response)");
             }
-            this.status = (int) arr.eltInternal(0).convertToInteger("to_i").asLong(context);
+            this.status = JRubyCompat.toInt(context, arr.eltInternal(0));
             this.headers = arr.eltInternal(1).convertToHash();
             this.body = arr.eltInternal(2);
         }
         else {
-            this.status = (int) arg.callMethod(context, "[]", context.runtime.newFixnum(0)).
-                convertToInteger("to_i").asLong(context);
+            this.status = JRubyCompat.toInt(context, arg.callMethod(context, "[]", context.runtime.newFixnum(0)));
             this.headers = arg.callMethod(context, "[]", context.runtime.newFixnum(1)).convertToHash();
             this.body = arg.callMethod(context, "[]", context.runtime.newFixnum(2));
         }
@@ -326,7 +326,8 @@ public class Response extends RubyObject implements RackResponse {
     public void respond(final RackResponseEnvironment response) throws RackException {
         if ( ! response.isCommitted() ) {
             try { // NOTE: we're assuming possible overrides are out of our NS
-                if (getMetaClass().getName(currentContext()).startsWith("JRuby::Rack")) {
+                //noinspection deprecation getName without context is deprecated in 9.4 but not yet removed in 10.1
+                if (getMetaClass().getName().startsWith("JRuby::Rack")) {
                     // do the Java 'optimized' version :
                     writeStatus(response);
                     writeHeaders(response);
@@ -375,7 +376,7 @@ public class Response extends RubyObject implements RackResponse {
 
                 if ( name.equalsIgnoreCase("Content-Length") ) {
                     if ( isChunked() ) return;
-                    final long length = val.convertToInteger("to_i").asLong(currentContext());
+                    final long length = JRubyCompat.toLong(currentContext(), val);
                     if ( length < Integer.MAX_VALUE ) {
                         response.setContentLength( (int) length ); return;
                     } // else will do addHeader
@@ -410,7 +411,7 @@ public class Response extends RubyObject implements RackResponse {
                 }
 
                 if ( val instanceof RubyNumeric ) {
-                    final long value = val.convertToInteger("to_i").asLong(currentContext());
+                    final long value = JRubyCompat.toLong(currentContext(), val);
                     if ( value < Integer.MAX_VALUE ) {
                         response.addIntHeader(name, (int) value); return;
                     } // else will do addHeader
