@@ -7,8 +7,9 @@
 - Officially support Javax Servlet API 4.0 (JEE 8)
 
 Breaking compatibility changes
-- Drop support for JRuby 9.3
-- Drop support for Rails < 7.0
+- Drop support for Java < 21
+- Drop support for JRuby < 9.4
+- Drop support for Rails < 7.2
 
 Breaking behavioral changes
 - Change context listener to throw by default in case of an exception during initialization
@@ -34,9 +35,10 @@ Breaking configuration capability changes
 - Drop deprecated `jruby.rack.ignore.env` property, replaced long ago by `jruby.runtime.env` and optional `jruby.runtime.env.rubyopt`
 - Drop deprecated `jruby.rack.filter.*` properties, replaced long ago by init parameters `addsHtmlToPathInfo` and `verifiesHtmlResource`
 
-## 1.2.7 (UNRELEASED)
+## 1.2.7
 
-- Fix compatibility with JRuby 10.0 and Rails 8.0 (#419)
+- Ensure compatibility with JRuby 10.0 and 10.1 (#419, #423)
+- Ensure compatibility with Rails 8.0 (#419)
 - Fix ability to include and forward to JSPs under Rails (#370)
 - Update (bundled) rack to 2.2.23 (#417)
 

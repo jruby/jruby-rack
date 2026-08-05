@@ -45,7 +45,10 @@ directory 'target/test-classes'
 
 desc "Compile test classes"
 task(:test_prepare => ['target/classes', 'target/test-classes']) do
-  sh "./mvnw -ntp -Dstyle.color=always test-compile"
+  # This has to be jruby-complete when running with bundler-maven-plugin since it has special logic to
+  # exclude jruby-complete - otherwise it conflicts with the bootclasspath if using different
+  # "target compile version" to "runtime version"
+  sh "./mvnw -ntp -Dstyle.color=always -Djruby.compat.artifact=jruby-complete test-compile"
 end
 
 desc "Unpack the rack gem"

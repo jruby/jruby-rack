@@ -52,7 +52,7 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
             context.log(ERROR, "couldn't handle exception (response is committed)", e);
             return;
         }
-        context.log(INFO, "resetting rack response due exception: " + e);
+        context.log(INFO, "resetting rack response due to exception: " + e);
         response.reset();
 
         afterException(request, e, response);
@@ -60,7 +60,7 @@ public abstract class AbstractRackDispatcher implements RackDispatcher {
 
     protected abstract RackApplication getApplication() throws RackException;
     
-    protected abstract void afterProcess(RackApplication app) throws IOException;
+    protected abstract void afterProcess(RackApplication app);
     
     protected abstract void afterException(
             RackEnvironment request, 

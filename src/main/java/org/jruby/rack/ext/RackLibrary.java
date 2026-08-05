@@ -26,8 +26,11 @@ package org.jruby.rack.ext;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.load.BasicLibraryService;
 import org.jruby.runtime.load.Library;
+
+import static org.jruby.rack.util.JRubyCompat.*;
 
 /**
  * Sets up our (J)Ruby parts implemented in "native" Java.
@@ -37,48 +40,33 @@ import org.jruby.runtime.load.Library;
 public class RackLibrary implements Library, BasicLibraryService {
 
     public static void load(final Ruby runtime) {
-        final RubyModule _JRuby = runtime.getOrCreateModule("JRuby");
-        final RubyModule _JRuby_Rack = _JRuby.defineModuleUnder("Rack");
-
-        final RubyClass _Object = runtime.getObject();
+        ThreadContext context = runtime.getCurrentContext();
+        final RubyModule _JRuby = defineModule(context, "JRuby");
+        final RubyModule _JRuby_Rack = defineModuleUnder(context, _JRuby, "Rack");
 
         // JRuby::Rack::Response
-        final RubyClass _Response = _JRuby_Rack.defineClassUnder(
-              "Response", _Object, Response.ALLOCATOR
-        );
-        _Response.defineAnnotatedMethods(Response.class);
+        defineClassUnder(context, _JRuby_Rack, "Response", Response.class, Response.ALLOCATOR);
 
         // JRuby::Rack::Input
-        final RubyClass _Input = _JRuby_Rack.defineClassUnder(
-              "Input", _Object, Input.ALLOCATOR
-        );
-        _Input.defineAnnotatedMethods(Input.class);
+        defineClassUnder(context, _JRuby_Rack, "Input", Input.class, Input.ALLOCATOR);
 
         // JRuby::Rack::Logger
-        final RubyClass _Logger = _JRuby_Rack.defineClassUnder(
-              "Logger", _Object, Logger.ALLOCATOR
-        );
-        _Logger.defineAnnotatedMethods(Logger.class);
+        final RubyClass _Logger = defineClassUnder(context, _JRuby_Rack, "Logger", Logger.class, Logger.ALLOCATOR);
         // Rails compatibility as it assumes logger.class::DEBUG to work :
-        _Logger.setConstant("DEBUG", runtime.newFixnum(Logger.DEBUG));
-        _Logger.setConstant("INFO",  runtime.newFixnum(Logger.INFO));
-        _Logger.setConstant("WARN",  runtime.newFixnum(Logger.WARN));
-        _Logger.setConstant("ERROR", runtime.newFixnum(Logger.ERROR));
-        _Logger.setConstant("FATAL", runtime.newFixnum(Logger.FATAL));
+        setConstant(context, _Logger, "DEBUG", runtime.newFixnum(Logger.DEBUG));
+        setConstant(context, _Logger, "INFO", runtime.newFixnum(Logger.INFO));
+        setConstant(context, _Logger, "WARN", runtime.newFixnum(Logger.WARN));
+        setConstant(context, _Logger, "ERROR", runtime.newFixnum(Logger.ERROR));
+        setConstant(context, _Logger, "FATAL", runtime.newFixnum(Logger.FATAL));
         //_Logger.setConstant("UNKNOWN", runtime.newFixnum(Logger.UNKNOWN));
         // JRuby::Rack::ServletLog
-        final RubyClass _ServletLog = _JRuby_Rack.defineClassUnder(
-              "ServletLog", _Object, Logger.ServletLog.ALLOCATOR
-        );
-        _ServletLog.defineAnnotatedMethods(Logger.ServletLog.class);
+        defineClassUnder(context, _JRuby_Rack, "ServletLog", Logger.ServletLog.class, Logger.ServletLog.ALLOCATOR);
 
-        final RubyModule _Rack = runtime.getOrCreateModule("Rack");
-        final RubyModule _Rack_Handler = _Rack.defineModuleUnder("Handler");
+        final RubyModule _Rack = defineModule(context, "Rack");
+        final RubyModule _Rack_Handler = defineModuleUnder(context, _Rack, "Handler");
 
         // Rack::Handler::Servlet
-        final RubyClass _Servlet = _Rack_Handler.defineClassUnder(
-              "Servlet", _Object, Servlet.ALLOCATOR);
-        _Servlet.defineAnnotatedMethods(Servlet.class);
+        defineClassUnder(context, _Rack_Handler, "Servlet", Servlet.class, Servlet.ALLOCATOR);
     }
 
     @Override

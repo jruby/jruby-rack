@@ -16,7 +16,6 @@ import jakarta.servlet.ServletException;
  * @author nicksieger
  */
 public interface RackDispatcher {
-    void process(RackEnvironment request, RackResponseEnvironment response)
-        throws ServletException, IOException;
+    void process(RackEnvironment request, RackResponseEnvironment response) throws IOException;
     void destroy();
 }

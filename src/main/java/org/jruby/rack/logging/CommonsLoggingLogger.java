@@ -33,15 +33,14 @@ public class CommonsLoggingLogger extends RackLogger.Base {
 
     @Override
     public boolean isEnabled(Level level) {
-        if ( level == null ) return logger.isInfoEnabled();
-        switch ( level ) {
-            case DEBUG: return logger.isDebugEnabled();
-            case INFO:  return logger.isInfoEnabled();
-            case WARN:  return logger.isWarnEnabled();
-            case ERROR: return logger.isErrorEnabled();
-            case FATAL: return logger.isFatalEnabled();
-        }
-        return logger.isTraceEnabled();
+        if ( level == null ) return logger.isInfoEnabled(); // TODO ???!
+        return switch (level) {
+            case DEBUG -> logger.isDebugEnabled();
+            case INFO -> logger.isInfoEnabled();
+            case WARN -> logger.isWarnEnabled();
+            case ERROR -> logger.isErrorEnabled();
+            case FATAL -> logger.isFatalEnabled();
+        };
     }
 
     @Override

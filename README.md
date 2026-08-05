@@ -13,13 +13,13 @@ For more information on Rack, visit http://rack.github.io/.
 
 ## Compatibility
 
-| JRuby-Rack Series                                              | Status        | Rack      | JRuby      | Java | Rails     | Target Servlet API  | Notes                                                          |
-|----------------------------------------------------------------|---------------|-----------|------------|------|-----------|---------------------|----------------------------------------------------------------|
-| **2.0 (_planned_, _unreleased_)**                              | Dev           | 2.2       | 9.4 → 10.0 | 8+   | 7.0 → 8.0 | 5.0+ (Jakarta EE 9) | ❌ Servlet < 5.0 containers will not work                       |
-| **1.3 (master, _unreleased_)**                                 | Dev           | 2.2       | 9.4 → 10.0 | 8+   | 7.0 → 8.0 | 4.0 (Java EE 8)     | ✅ _Unofficial_: Servlet 2.5 → 3.1 & Rails 6.1 likely working   |
-| [**1.2**](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained    | 2.2       | 9.3 → 10.0 | 8+   | 5.0 → 8.0 | 3.0 (Java EE 6)     | ✅ _Unofficial_: Servlet 3.1 → 4.0 also OK with most containers |
-| [**1.1**](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL @ 2024-05 | 1.x → 2.2 | 1.6 → 9.4  | 6+   | 2.1 → 5.2 | 2.5 (Java EE 5)     | ✅ _Unofficial_: Servlet 3.0 → 4.0 also OK with most containers |
-| [**1.0**](https://github.com/jruby/jruby-rack/tree/1.0.10)     | EOL @ 2011-11 | 0.9 → 1.x | 1.1 → 1.9  | 5+   | 2.1 → 3.x | 2.5 (Java EE 5)     |                                                                |
+| JRuby-Rack Series                                              | Status        | Rack      | JRuby      | Java | Rails     | Target Servlet API  | Notes                                                               |
+|----------------------------------------------------------------|---------------|-----------|------------|------|-----------|---------------------|---------------------------------------------------------------------|
+| **2.0 (_planned_, _unreleased_)**                              | Dev           | 2.2       | 9.4 → 10.1 | 21+  | 7.2 → 8.0 | 5.0+ (Jakarta EE 9) | ❌ Servlet < 5.0 containers will not work                           |
+| **1.3 (master, _unreleased_)**                                 | Dev           | 2.2       | 9.4 → 10.1 | 21+  | 7.2 → 8.0 | 4.0 (Java EE 8)     | ✅ _Unofficial_: Servlet 2.5 → 3.1 & Rails 6.1 → 7.1 also likely OK |
+| [**1.2**](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained    | 2.2       | 9.3 → 10.1 | 8+   | 5.0 → 8.0 | 3.0 (Java EE 6)     | ✅ _Unofficial_: Servlet 3.1 → 4.0 also OK with most containers     |
+| [**1.1**](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL @ 2024-05 | 1.x → 2.2 | 1.6 → 9.4  | 6+   | 2.1 → 5.2 | 2.5 (Java EE 5)     | ✅ _Unofficial_: Servlet 3.0 → 4.0 also OK with most containers     |
+| [**1.0**](https://github.com/jruby/jruby-rack/tree/1.0.10)     | EOL @ 2011-11 | 0.9 → 1.x | 1.1 → 1.9  | 5+   | 2.1 → 3.x | 2.5 (Java EE 5)     |                                                                     |
 
 ## Getting Started
 
@@ -332,7 +332,7 @@ the generated jar should be located at `target/jruby-rack-*.jar`
 Alternatively use Rake, e.g. to build the gem (skipping specs) :
 
 ```shell
-jruby -S rake clean gem SKIP_SPECS=true
+rake clean gem SKIP_SPECS=true
 ```
 
 You can **not** use JRuby-Rack with Bundler directly from the git (or http) URL
@@ -340,19 +340,47 @@ You can **not** use JRuby-Rack with Bundler directly from the git (or http) URL
 is compiled and generated on-demand during the build (it would require us to
 package and push the .jar every time a commit changes a source file).
 
-## Releasing
+## Testing
 
-* Make sure auth is configured for "central" repository ID in your `.m2/settings.xml`
-* Update the version in `src/main/ruby/jruby/rack/version.rb` to the release version
-* `./mvnw release:prepare`
-* `./mvnw release:perform` (possibly with `-DuseReleaseProfile=false` due to Javadoc doclint failures for now)
-* `rake clean gem SKIP_SPECS=true` and push the gem
+JRuby-Rack is always compiled against the version defined by `jruby.compat.version` in `pom.xml`. By default, tests
+will be run with this default version.
 
-## Adding testing for new Rails versions
+Run tests against a specific JRuby version:
+
+```shell
+./mvnw test -Djruby.test.version=10.1.1.0
+```
+
+Or via JRuby/Rake with the local JRuby version implied by your path:
+```shell
+bundle install
+rake spec
+```
+
+Filter for specific specs:
+
+```shell
+SPEC=src/spec/ruby/rack/application_spec.rb ./mvnw test
+# or
+SPEC=src/spec/ruby/rack/application_spec.rb rake spec
+```
+
+### Run appraisals alongside different real Rails/Rack versions
+
+JRuby-Rack defaults to run specs with a Rails stub. You can run the specs against a real Rails version using the Gemfiles
+managed by the `Appraisals` gem.
+
+```shell
+export BUNDLE_GEMFILE=gemfiles/rails72_rack22.gemfile
+bundle install
+bundle exec rake spec
+```
+
+### Adding testing for new Rails versions
 
 * Add the new version to `.github/workflows/maven.yml` under the `matrix` section
 * Add a new configuration to the `Appraisals` file, then
-    ```bundle exec appraisal generate```
+  ```bundle exec appraisal generate```
 * Generate a new stub Rails application for the new version
     ```shell
     VERSION=rails72
@@ -360,12 +388,26 @@ package and push the .jar every time a commit changes a source file).
     rm -rf $VERSION && BUNDLE_GEMFILE=~/Projects/community/jruby-rack/gemfiles/${VERSION}_rack22.gemfile bundle exec rails new $VERSION --minimal --skip-git --skip-docker --skip-active-model --skip-active-record --skip-test --skip-system-test --skip-dev-gems --skip-bundle --skip-keeps --skip-asset-pipeline --skip-ci --skip-brakeman --skip-rubocop
     ```
 * Manual changes to make to support testing
-  * In `config/production.rb` comment out the default `config.logger` value so jruby-rack applies its own `RailsLogger`.  
+  * In `config/production.rb` comment out the default `config.logger` value so jruby-rack applies its own `RailsLogger`.
+
+## Releasing
+
+Releasing must be done by users authorized to push to the `org.jruby` group ID on https://central.sonatype.org and to push the `jruby-rack` gem to https://rubygems.org.
+
+* Make sure auth is configured for "central" repository ID in your `.m2/settings.xml`
+* Update the versions in `pom.xml` and `src/main/ruby/jruby/rack/version.rb` to the release version
+* Commit the version update locally
+* Run `./mvnw deploy -Prelease` to build, sign, and push all artifacts to Maven Central staging
+* Confirm the release completes publishing at `https://central.sonatype.org`
+* `rake clean gem SKIP_SPECS=true` and push the gem
+* Tag the release version in git
+* Update the versions again to the next dev version (`-SNAPSHOT` for the Maven artifact in `pom.xml` and `.SNAPSHOT` for the gem in `version.rb`)
+* Push all commits and tags to GitHub
 
 ## Support
 
 Please use [github][3] to file bugs, patches and/or pull requests.
-More information at the [wiki][4] or ask us at **#jruby**'s IRC channel.
+More information at the [wiki][4] or ask us on our Matrix room at **#jruby:matrix.org**.
 
 [1]: https://github.com/jruby/warbler
 [2]: https://central.sonatype.com/artifact/org.jruby.rack/jruby-rack

@@ -12,5 +12,8 @@ group :development do
   gem 'appraisal', :require => nil
 end
 
-gem 'rake', '~> 13.4', :group => :test, :require => nil
-gem 'rspec', :group => :test
+group :test do
+  gem 'rake', '~> 13.4', :require => nil
+  gem 'rspec'
+  gem 'logger'
+end

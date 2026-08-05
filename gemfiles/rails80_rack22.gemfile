@@ -2,14 +2,18 @@
 
 source "https://rubygems.org"
 
-gem "rake", "~> 13.3", group: :test, require: nil
-gem "rspec", group: :test
-
 group :default do
   gem "rack", "~> 2.2.0"
   gem "rails", "~> 8.0.0"
+  gem "rdoc", "!= 8.0.0"
 end
 
 group :development do
   gem "appraisal", require: nil
+end
+
+group :test do
+  gem "rake", "~> 13.4", require: nil
+  gem "rspec"
+  gem "logger"
 end

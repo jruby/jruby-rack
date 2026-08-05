@@ -9,6 +9,8 @@ package org.jruby.rack.servlet;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.EventListener;
@@ -82,14 +84,14 @@ public class DefaultServletRackContext implements ServletRackContext, RackLogger
                     // still might end up as an URL with path "file:/home"
                     if (urlPath.startsWith("file:")) {
                         // handles "file:/home" and "file:///home" as well
-                        realPath = new URL(urlPath).getPath(); // "/home"
+                        realPath = new URI(urlPath).toURL().getPath(); // "/home"
                     }
                     else {
                         realPath = urlPath;
                     }
                 }
             }
-            catch (MalformedURLException e) { /* ignored */ }
+            catch (URISyntaxException | MalformedURLException e) { /* ignored */ }
         }
         return realPath;
     }

@@ -18,6 +18,8 @@ import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.RackInitializationException;
 import org.jruby.rack.RackResponseEnvironment;
+import org.jruby.rack.util.JRubyCompat;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
 /**
@@ -40,10 +42,12 @@ public class Dispatcher extends AbstractRackDispatcher {
         if (context instanceof Context) {
             ((Context) context).getConfig().doInitialize(runtime);
         }
-        IRubyObject rubyContext = JavaUtil.convertJavaToRuby(runtime, context);
-        IRubyObject rackModule = runtime.getModule("JRuby").getConstantAt("Rack");
+        ThreadContext currentContext = runtime.getCurrentContext();
         // `JRuby::Rack.context = context`
-        rackModule.callMethod(runtime.getCurrentContext(), "context=", rubyContext);
+        //noinspection deprecation getConstant without context is deprecated in 9.4 but not removed in 10.0 or 10.1
+        JRubyCompat.getModule(currentContext, "JRuby")
+                .getConstant("Rack")
+                .callMethod(currentContext, "context=", JavaUtil.convertJavaToRuby(runtime, context));
     }
 
     @Override
@@ -70,7 +74,7 @@ public class Dispatcher extends AbstractRackDispatcher {
     }
 
     @Override
-    protected void afterProcess(RackApplication app) throws IOException {
+    protected void afterProcess(RackApplication app) {
         // NOOP
     }
 
