@@ -10,7 +10,6 @@ package org.jruby.rack.embed;
 import java.io.IOException;
 
 import org.jruby.Ruby;
-import org.jruby.api.Access;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.rack.AbstractRackDispatcher;
 import org.jruby.rack.DefaultRackApplication;
@@ -19,6 +18,7 @@ import org.jruby.rack.RackContext;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.RackInitializationException;
 import org.jruby.rack.RackResponseEnvironment;
+import org.jruby.rack.util.JRubyCompat;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -44,8 +44,9 @@ public class Dispatcher extends AbstractRackDispatcher {
         }
         ThreadContext currentContext = runtime.getCurrentContext();
         // `JRuby::Rack.context = context`
-        Access.getModule(currentContext, "JRuby")
-                .getConstantAt(currentContext, "Rack")
+        //noinspection deprecation getConstant without context is deprecated in 9.4 but not removed in 10.0 or 10.1
+        JRubyCompat.getModule(currentContext, "JRuby")
+                .getConstant("Rack")
                 .callMethod(currentContext, "context=", JavaUtil.convertJavaToRuby(runtime, context));
     }
 

@@ -243,13 +243,15 @@
         <groupId>org.jruby.maven</groupId>
         <artifactId>bundler-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
+        <configuration>
+          <jrubyVersion>${jruby.test.version}</jrubyVersion>
+        </configuration>
         <executions>
           <execution>
             <id>bundle-install</id>
             <phase>test</phase>
             <goals><goal>install</goal></goals>
             <configuration>
-              <jrubyVersion>${jruby.test.version}</jrubyVersion>
               <local>false</local>
               <quiet>false</quiet>
             </configuration>

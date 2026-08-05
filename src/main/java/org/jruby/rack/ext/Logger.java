@@ -34,12 +34,12 @@ import org.jruby.RubyString;
 import org.jruby.RubyTime;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.api.Access;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.RackContext;
 import org.jruby.rack.RackLogger;
 import org.jruby.rack.logging.ServletContextLogger;
+import org.jruby.rack.util.JRubyCompat;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
@@ -87,7 +87,8 @@ public class Logger extends RubyObject { // implements RackLogger
     @Override
     @JRubyMethod(required = 0)
     public IRubyObject initialize(final ThreadContext context) {
-        initialize(Access.getModule(context, "JRuby").getConstant(context, "Rack").callMethod(context, "context") ); // JRuby::Rack.context
+        //noinspection deprecation getConstant without context is deprecated in 9.4 but not removed in 10.0 or 10.1
+        initialize(JRubyCompat.getModule(context, "JRuby").getConstant("Rack").callMethod(context, "context") ); // JRuby::Rack.context
         return this;
     }
 
@@ -144,7 +145,7 @@ public class Logger extends RubyObject { // implements RackLogger
             this.level = LEVEL_NOT_SET;
             return level;
         }
-        this.level = toInt(level);
+        this.level = JRubyCompat.toInt(context, level);
         return get_level(context);
     }
 
@@ -346,7 +347,7 @@ public class Logger extends RubyObject { // implements RackLogger
     public IRubyObject add(final ThreadContext context, final IRubyObject[] args, final Block block) {
         int severity = UNKNOWN;
         final IRubyObject sev = args[0];
-        if ( !sev.isNil() ) severity = toInt(sev);
+        if ( !sev.isNil() ) severity = JRubyCompat.toInt(context, sev);
         IRubyObject msg;
         if ( args.length > 1 ) {
             msg = args[1];
@@ -426,7 +427,7 @@ public class Logger extends RubyObject { // implements RackLogger
 
     @JRubyMethod(visibility = Visibility.PRIVATE)
     public IRubyObject format_severity(final ThreadContext context, final IRubyObject sev) {
-        return RubyString.newStringShared(context.runtime, formatSeverity(toInt(sev)));
+        return RubyString.newStringShared(context.runtime, formatSeverity(JRubyCompat.toInt(context, sev)));
     }
 
     private static final ByteList FORMATTED_DEBUG =
@@ -451,10 +452,6 @@ public class Logger extends RubyObject { // implements RackLogger
             case FATAL -> FORMATTED_FATAL;
             default -> FORMATTED_ANY;
         };
-    }
-
-    private static int toInt(final IRubyObject level) {
-        return level.convertToInteger("to_i").asInt(level.getRuntime().getCurrentContext());
     }
 
     @SuppressWarnings("unchecked")
@@ -495,7 +492,7 @@ public class Logger extends RubyObject { // implements RackLogger
             final IRubyObject rackContext;
             if ( args != null && args.length > 0 ) rackContext = args[0];
             else {
-                IRubyObject jrubyRack = Access.getModule(context, "JRuby").getConstant("Rack");
+                IRubyObject jrubyRack = JRubyCompat.getModule(context, "JRuby").getConstant("Rack");
                 rackContext = jrubyRack.callMethod(context, "context"); // JRuby::Rack.context
             }
             if ( rackContext.isNil() ) {
