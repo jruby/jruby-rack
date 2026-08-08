@@ -17,8 +17,6 @@ version_spec = ->(prefix, desc) { "~> #{major_minor.call(prefix, desc)}.0" }
         c[:ext_gems]&.each do |gem_name|
           gem gem_name
         end
-
-        gem "rdoc", "!= 8.0.0" if major_minor.call("rails", rails_desc) >= "7.0"
       end
     end
   end
