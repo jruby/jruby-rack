@@ -1,6 +1,7 @@
 ## 1.2.8 (UNRELEASED)
 
 - Fix possible infinite loop in Response#isClientAbortException (#449, #450)
+- Update (bundled) rack to 2.2.24
 
 ## 1.2.7
 
