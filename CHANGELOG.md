@@ -35,6 +35,11 @@ Breaking configuration capability changes
 - Drop deprecated `jruby.rack.ignore.env` property, replaced long ago by `jruby.runtime.env` and optional `jruby.runtime.env.rubyopt`
 - Drop deprecated `jruby.rack.filter.*` properties, replaced long ago by init parameters `addsHtmlToPathInfo` and `verifiesHtmlResource`
 
+## 1.2.8 (UNRELEASED)
+
+- Fix possible infinite loop in Response#isClientAbortException (#449, #450)
+- Update (bundled) rack to 2.2.24
+
 ## 1.2.7
 
 - Ensure compatibility with JRuby 10.0 and 10.1 (#419, #423)
