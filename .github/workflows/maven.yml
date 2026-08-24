@@ -21,7 +21,7 @@ jobs:
       matrix:
         jruby_version: [ '9.4.15.0', '10.0.6.0', '10.1.1.0' ]
         java_version: [ '21', '25' ]
-        rack_version: [ '~> 2.2.0' ]
+        rack_version: [ '~> 2.2.0', '~> 3.1.0', '~> 3.2.0' ]
       fail-fast: false
 
     steps:
@@ -52,13 +52,22 @@ jobs:
     strategy:
       matrix:
         appraisal: [
-          'rails72_rack22',
-          'rails80_rack22',
+          'rails72_rack22', 'rails72_rack31',
+          'rails80_rack22', 'rails80_rack31', 'rails80_rack32',
+          'rails81_rack31', 'rails81_rack32',
         ]
         jruby_version: [ '9.4.15.0', '10.0.6.0', '10.1.1.0' ]
         java_version: [ '21', '25' ]
         exclude:
           - appraisal: 'rails80_rack22'
+            jruby_version: '9.4.15.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
+          - appraisal: 'rails80_rack31'
+            jruby_version: '9.4.15.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
+          - appraisal: 'rails80_rack32'
+            jruby_version: '9.4.15.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
+          - appraisal: 'rails81_rack31'
+            jruby_version: '9.4.15.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
+          - appraisal: 'rails81_rack32'
             jruby_version: '9.4.15.0' # Rails 8 requires Ruby 3.4 compatibility, which JRuby 9.4 does not support
       fail-fast: false
 
