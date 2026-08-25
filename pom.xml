@@ -5,7 +5,7 @@
  This source code is available under the MIT license.
  See the file LICENSE.txt for details.
  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.jruby.rack</groupId>
@@ -19,7 +19,10 @@
   </description>
 
   <properties>
+    <!-- Build related settings -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jruby.maven.plugins.version>3.0.6</jruby.maven.plugins.version>
+    <gem.home>${project.build.directory}/rubygems</gem.home>
 
     <!-- Version to target at compile time -->
     <jruby.compat.version>10.0.6.0</jruby.compat.version>
@@ -27,11 +30,14 @@
     <!-- Version to execute tests with -->
     <jruby.test.version>${jruby.compat.version}</jruby.test.version>
 
-    <jruby.maven.plugins.version>3.0.6</jruby.maven.plugins.version>
-    <gem.home>${project.build.directory}/rubygems</gem.home>
+    <!-- Minimum servlet API compatibility to target -->
+    <servlet-api.compat.version>5.0.0</servlet-api.compat.version>
+
+    <!-- Test Dependencies -->
+    <servlet-api.test.version>6.1.0</servlet-api.test.version>
+    <spring.version>6.2.19</spring.version>
     <slf4j.version>2.0.18</slf4j.version>
     <log4j.version>2.26.1</log4j.version>
-    <spring.version>5.3.39</spring.version>
   </properties>
 
   <issueManagement>
@@ -91,7 +97,7 @@
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
-      <version>5.0.0</version>
+      <version>${servlet-api.compat.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -128,6 +134,12 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -224,6 +236,26 @@
             <configuration>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
               <excludeGroupIds>org.jruby,rubygems</excludeGroupIds>
+              <!-- compile floor stays off the test classpath; test version copied below -->
+              <excludeArtifactIds>jakarta.servlet-api</excludeArtifactIds>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-test-servlet-api</id>
+            <phase>process-sources</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <!-- Use later version of API for testing than we compile against -->
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>jakarta.servlet</groupId>
+                  <artifactId>jakarta.servlet-api</artifactId>
+                  <version>${servlet-api.test.version}</version>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
             </configuration>
           </execution>
         </executions>
@@ -265,7 +297,11 @@
             <phase>test</phase>
             <goals><goal>rake</goal></goals>
             <configuration>
+              <!--suppress UnresolvedMavenProperty -->
               <args>speconly SKIP_SPECS=${skipTests}</args>
+              <!-- keep the maven-resolved (compile floor) servlet-api off the spec JVM classpath;
+                   spec_helper.rb builds the classpath from target/lib (see copy-test-servlet-api) -->
+              <addProjectClasspath>false</addProjectClasspath>
             </configuration>
           </execution>
           <execution>
