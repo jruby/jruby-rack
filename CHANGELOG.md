@@ -5,10 +5,13 @@
 ## 1.3.0 (UNRELEASED) 
 
 - Officially support Javax Servlet API 4.0 (JEE 8)
+- Refactor logging for more sane defaults
+- Remove long-deprecated configuration and API functionality
+
+For most users this should be a minor upgrade; as long as not depending on deprecated functionality or JRuby 9.x.
 
 Breaking compatibility changes
-- Drop support for Java < 21
-- Drop support for JRuby < 9.4
+- Drop support for JRuby 9.x (and thus Java < 21)
 - Drop support for Rails < 7.2
 
 Breaking behavioral changes

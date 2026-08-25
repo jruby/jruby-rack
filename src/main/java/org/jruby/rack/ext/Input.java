@@ -18,11 +18,11 @@ import org.jruby.RubyClass;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Access;
 import org.jruby.javasupport.JavaEmbedUtils;
 import org.jruby.rack.RackEnvironment;
 import org.jruby.rack.servlet.RewindableInputStream;
 import org.jruby.rack.util.ExceptionUtils;
-import org.jruby.rack.util.JRubyCompat;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
@@ -40,20 +40,20 @@ public class Input extends RubyObject {
 
     static final ObjectAllocator ALLOCATOR = Input::new;
 
+    static RubyClass getClass(final Ruby runtime) {
+        return Access.getClass(runtime.getCurrentContext(), "JRuby", "Rack", "Input");
+    }
+
     private boolean rewindable;
     private InputStream input;
     private int length = 0;
-
-    private Input(Ruby runtime) {
-        this(runtime, JRubyCompat.getClass(runtime.getCurrentContext(), "JRuby", "Rack", "Input"));
-    }
 
     protected Input(Ruby runtime, RubyClass klass) {
         super(runtime, klass);
     }
 
     public Input(Ruby runtime, final RackEnvironment env) {
-        this(runtime);
+        super(runtime, getClass(runtime));
         initialize(env);
     }
 
@@ -61,8 +61,9 @@ public class Input extends RubyObject {
         this(runtime, input, false, length);
     }
 
-    public Input(Ruby runtime, final InputStream input, final boolean rewindable, final int length) {
-        this(runtime);
+    public Input(Ruby runtime, final InputStream input, final boolean rewindable,
+        final int length) {
+        super(runtime, getClass(runtime));
         this.rewindable = rewindable;
         this.setInput( input );
         this.length = length;
@@ -131,7 +132,7 @@ public class Input extends RubyObject {
     public IRubyObject read(final ThreadContext context, final IRubyObject[] args) {
         int readLen = 0;
         if ( args.length > 0 ) {
-            long len = JRubyCompat.toLong(context, args[0]);
+            long len = args[0].convertToInteger("to_i").asLong(context);
             readLen = (int) Math.min(len, Integer.MAX_VALUE);
         }
         final RubyString buffer = args.length > 1 ? args[1].asString() : null;
@@ -139,7 +140,7 @@ public class Input extends RubyObject {
             final byte[] bytes = readUntil(MATCH_NONE, readLen);
             if ( bytes != null ) {
                 if ( buffer != null ) {
-                    JRubyCompat.clearString(context, buffer);
+                    buffer.clear(context);
                     buffer.catWithCodeRange(new ByteList(bytes, false), StringSupport.CR_UNKNOWN);
                     return buffer;
                 }
