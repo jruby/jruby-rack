@@ -157,7 +157,7 @@ file (target_jruby_rack_version = "target/gem/lib/jruby/rack/version.rb") do |fi
 end
 
 desc "Build the jruby-rack-#{GEM_VERSION}.gem"
-task :gem => [target_jar, target_jruby_rack, target_jruby_rack_version] do
+task :gem => [:clean, target_jar, target_jruby_rack, target_jruby_rack_version] do
   Rake::Task['spec'].invoke unless ENV['SKIP_SPECS'] == 'true'
   cp FileList["CHANGELOG.md", "LICENSE.txt", "README.md"], "target/gem"
   cp target_jar, "target/gem/lib"
