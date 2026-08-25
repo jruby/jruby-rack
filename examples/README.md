@@ -52,7 +52,8 @@ As an executable jar within Jetty:
 You can run the examples using local source for warbler or jruby-rack using env vars, e.g
 
 ```shell
-export WARBLER_SRC=true JRUBY_RACK_SRC=true && bundle && bundle exec warble executable war && java -Dwarbler.debug=true -jar rails*.war
+rm -f Gemfile.lock && WARBLER_SRC=true JRUBY_RACK_SRC=true bundle install && WARBLER_SRC=true JRUBY_RACK_SRC=true bundle exec warble executable war
+java -Dwarbler.debug=true -jar rails*.war
 ```
 
 - Warbler can run directly from source
