@@ -30,12 +30,15 @@
     <!-- Version to execute tests with -->
     <jruby.test.version>${jruby.compat.version}</jruby.test.version>
 
-    <!-- Minimum servlet API compatibility to target -->
+    <!-- Minimum servlet API compatibility to target (Jakarta EE 9) -->
     <servlet-api.compat.version>5.0.0</servlet-api.compat.version>
+    <servlet-jsp-api.compat.version>3.0.0</servlet-jsp-api.compat.version>
 
     <!-- Test Dependencies -->
     <servlet-api.test.version>6.1.0</servlet-api.test.version>
+    <el-api.test.version>6.0.1</el-api.test.version>
     <spring.version>6.2.19</spring.version>
+
     <slf4j.version>2.0.18</slf4j.version>
     <log4j.version>2.26.1</log4j.version>
   </properties>
@@ -103,7 +106,7 @@
     <dependency>
       <groupId>jakarta.servlet.jsp</groupId>
       <artifactId>jakarta.servlet.jsp-api</artifactId>
-      <version>3.0.0</version>
+      <version>${servlet-jsp-api.compat.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -151,7 +154,7 @@
     <dependency>
       <groupId>jakarta.el</groupId>
       <artifactId>jakarta.el-api</artifactId>
-      <version>4.0.0</version>
+      <version>${el-api.test.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
