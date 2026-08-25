@@ -5,8 +5,10 @@ ruby RUBY_VERSION
 gem 'camping', '< 3'
 gem 'rack', '~> 2.2.0'
 
-group :development do
-  if !ENV['WARBLER_SRC']; gem 'warbler' else gem 'warbler', path: '../../../warbler' end
-  if !ENV['JRUBY_RACK_SRC']; gem 'jruby-rack' else gem 'jruby-rack', path: '../../target' end
-  gem 'jruby-jars', JRUBY_VERSION
+unless defined?(WARBLER_CONFIG)
+  group :development do
+    if !ENV['WARBLER_SRC']; gem 'warbler' else gem 'warbler', path: '../../../warbler' end
+    if !ENV['JRUBY_RACK_SRC']; gem 'jruby-rack' else gem 'jruby-rack', path: '../../target/gem' end
+    gem 'jruby-jars', JRUBY_VERSION
+  end
 end
