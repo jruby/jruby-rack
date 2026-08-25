@@ -1,6 +1,6 @@
 ## 2.0.0 (UNRELEASED)
 
-- Support Jakarta Servlet API 5.0 (JEE 9)
+- Support Jakarta Servlet API 5.0 → 6.1 (Jakarta EE 9 → 11)
 
 ## 1.3.0 (UNRELEASED) 
 
