@@ -358,4 +358,69 @@ describe JRuby::Rack::Booter do
 
   end
 
+  describe "#prepare_bundler_env" do
+    require 'tmpdir'; require 'fileutils'
+
+    before :each do
+      @original_pwd = Dir.pwd
+      @original_bundle_env = {}
+      %w(BUNDLE_GEMFILE BUNDLE_VERSION BUNDLE_FROZEN).each { |k| @original_bundle_env[k] = ENV.delete(k) }
+    end
+
+    after :each do
+      Dir.chdir(@original_pwd)
+      @original_bundle_env.each { |k, v| v.nil? ? ENV.delete(k) : ENV[k] = v }
+      FileUtils.rm_rf @app_dir if @app_dir
+    end
+
+    def boot_app(gemfile = "source 'https://rubygems.org'\n", lockfile = "GEM\n")
+      @app_dir = File.realpath(Dir.mktmpdir('rack-app')) # macOS: /var -> /private/var
+      File.write(File.join(@app_dir, 'Gemfile'), gemfile) if gemfile
+      File.write(File.join(@app_dir, 'Gemfile.lock'), lockfile) if gemfile && lockfile
+      booter.layout_class = JRuby::Rack::FileSystemLayout
+      booter.app_path = @app_dir
+      booter.boot!
+    end
+
+    it "defaults BUNDLE_GEMFILE, BUNDLE_VERSION and BUNDLE_FROZEN for a bundled (plain Rack) application" do
+      boot_app
+      expect( ENV['BUNDLE_GEMFILE'] ).to eq File.join(@app_dir, 'Gemfile')
+      expect( ENV['BUNDLE_VERSION'] ).to eq 'system'
+      expect( ENV['BUNDLE_FROZEN'] ).to eq 'true'
+    end
+
+    it "does not default BUNDLE_FROZEN without a Gemfile.lock" do
+      boot_app "source 'https://rubygems.org'\n", nil
+      expect( ENV['BUNDLE_GEMFILE'] ).to eq File.join(@app_dir, 'Gemfile')
+      expect( ENV['BUNDLE_VERSION'] ).to eq 'system'
+      expect( ENV['BUNDLE_FROZEN'] ).to be nil
+    end
+
+
+    it "does not touch the environment for a non-bundled application (no Gemfile)" do
+      boot_app nil
+      expect( ENV['BUNDLE_GEMFILE'] ).to be nil
+      expect( ENV['BUNDLE_VERSION'] ).to be nil
+      expect( ENV['BUNDLE_FROZEN'] ).to be nil
+    end
+
+    it "tolerates (custom) layouts without a real app path" do
+      booter.layout = double('layout', :app_path => nil)
+      expect { booter.send :prepare_bundler_env }.to_not raise_error
+      expect( ENV['BUNDLE_GEMFILE'] ).to be nil
+      expect( ENV['BUNDLE_VERSION'] ).to be nil
+    end
+
+    it "respects values from the environment (or set by init.rb, evaluated before)" do
+      ENV['BUNDLE_GEMFILE'] = gemfile = File.join(Dir.pwd, 'Gemfile')
+      ENV['BUNDLE_VERSION'] = 'lockfile'
+      ENV['BUNDLE_FROZEN'] = 'false'
+      boot_app
+      expect( ENV['BUNDLE_GEMFILE'] ).to eq gemfile
+      expect( ENV['BUNDLE_VERSION'] ).to eq 'lockfile'
+      expect( ENV['BUNDLE_FROZEN'] ).to eq 'false'
+    end
+
+  end
+
 end
