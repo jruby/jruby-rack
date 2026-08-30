@@ -1,5 +1,6 @@
-## 1.2.8 (UNRELEASED)
+## 1.2.8
 
+- Improve isolation and bundler version/CLI boot issues with more opinionated boot process (#461)
 - Fix possible infinite loop in Response#isClientAbortException (#449, #450)
 - Fix startup logging of captured errors when config properties cannot be dumped
 - Update (bundled) rack to 2.2.24
