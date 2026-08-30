@@ -99,6 +99,70 @@ describe JRuby::Rack::RailsBooter do
     expect(booter.public_path).to eq "."
   end
 
+  describe "#prepare_bundler (default rails boot.rb pre-boot)" do
+    require 'tmpdir'; require 'fileutils'
+
+    DEFAULT_RAILS_BOOT_RB = <<-BOOT # Rails 5.x - 8.x default config/boot.rb
+      ENV["BUNDLE_GEMFILE"] ||= File.expand_path("../Gemfile", __dir__)
+
+      require "bundler/setup" # Set up gems listed in the Gemfile.
+    BOOT
+
+    before :each do
+      @original_pwd = Dir.pwd
+      @original_bundle_env = {}
+      %w(BUNDLE_GEMFILE BUNDLE_VERSION BUNDLE_FROZEN).each { |k| @original_bundle_env[k] = ENV.delete(k) }
+      require 'bundler'
+    end
+
+    after :each do
+      Dir.chdir(@original_pwd)
+      @original_bundle_env.each { |k, v| v.nil? ? ENV.delete(k) : ENV[k] = v }
+      FileUtils.rm_rf @app_dir if @app_dir
+    end
+
+    def booted_with_boot_rb(boot_rb, gemfile = "source 'https://rubygems.org'\n")
+      @app_dir = File.realpath(Dir.mktmpdir('rails-app')) # macOS: /var -> /private/var
+      FileUtils.mkdir_p File.join(@app_dir, 'config')
+      File.write File.join(@app_dir, 'config', 'boot.rb'), boot_rb
+      File.write File.join(@app_dir, 'Gemfile'), gemfile if gemfile
+      booter.layout_class = JRuby::Rack::FileSystemLayout
+      booter.app_path = @app_dir
+      booter.boot!
+      booter
+    end
+
+    def prepare_bundler!(booted)
+      booted.send :prepare_bundler, File.join(@app_dir, 'config', 'boot.rb')
+    end
+
+    it "pre-boots bundler for a default rails boot.rb" do
+      booted = booted_with_boot_rb DEFAULT_RAILS_BOOT_RB
+      allow(Bundler.ui).to receive(:silence).and_yield
+      expect(Bundler).to receive(:setup)
+      prepare_bundler! booted
+    end
+
+    it "does not pre-boot when boot.rb manages BUNDLE_WITHOUT itself" do
+      booted = booted_with_boot_rb %Q{ENV['BUNDLE_WITHOUT'] = 'test'\nrequire "bundler/setup"\n}
+      expect(Bundler).to_not receive(:setup)
+      prepare_bundler! booted
+    end
+
+    it "does not pre-boot when the require is commented out" do
+      booted = booted_with_boot_rb %Q{# require "bundler/setup"\n}
+      expect(Bundler).to_not receive(:setup)
+      prepare_bundler! booted
+    end
+
+    it "does not pre-boot a non-bundled application (no Gemfile)" do
+      booted = booted_with_boot_rb DEFAULT_RAILS_BOOT_RB, nil
+      expect(Bundler).to_not receive(:setup)
+      prepare_bundler! booted
+    end
+
+  end
+
   RAILS_ROOT_DIR = File.expand_path("../../../rails", __FILE__)
 
   describe "Rails (stubbed)", :lib => :stub do
