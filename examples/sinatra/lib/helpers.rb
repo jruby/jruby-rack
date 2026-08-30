@@ -1,7 +1,6 @@
 module EnvCaptureHelper
   def self.jruby_rack_capture_on?
-    defined?(JRuby::Rack::Capture) && defined?($servlet_context) &&
-      $servlet_context.getConfig.getProperty('jruby.rack.capture.off').nil?
+    defined?(JRuby::Rack::Capture) && defined?($servlet_context)
   end
 
   def capture
