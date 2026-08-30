@@ -389,7 +389,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             runtime.evalScriptlet("require 'rubygems'");
 
             if ( rackVersion.equalsIgnoreCase("bundler") ) {
-                runtime.evalScriptlet("require 'bundler/setup'");
+                runtime.evalScriptlet("require 'bundler'; Bundler.setup");
             }
             else {
                 rackContext.log(DEBUG, "detected 'rack.version' magic comment, " +

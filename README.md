@@ -283,7 +283,7 @@ Use `rack.version` to specify the Rack gem version to be loaded before rackup :
 Or the equivalent of doing `bundle exec rackup ...` if you're using Bundler :
 
 ```ruby
-# rack.version: bundler (requires 'bundler/setup' before loading the script)
+# rack.version: bundler (require 'bundler'; Bundler.setup; before loading the script)
 ```
 
 ## Logging
