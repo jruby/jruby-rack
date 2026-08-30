@@ -404,14 +404,11 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             rackContext.log(DEBUG, "could not read 'rack.version' magic comment from rackup", e);
         }
 
-        if ( rackVersion == null ) {
-            // NOTE: try matching a `require 'bundler/setup'` line ... maybe not ?!
-        }
         if ( rackVersion != null ) {
             runtime.evalScriptlet("require 'rubygems'");
 
             if ( rackVersion.equalsIgnoreCase("bundler") ) {
-                runtime.evalScriptlet("require 'bundler/setup'");
+                runtime.evalScriptlet("require 'bundler'; Bundler.setup");
             }
             else {
                 rackContext.log(DEBUG, "detected 'rack.version' magic comment, " +

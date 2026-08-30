@@ -1,8 +1,8 @@
 # -*- mode: ruby -*-
 
 require './lib/helpers'
-require 'rubygems'
-require 'bundler/setup'
+require 'bundler'
+Bundler.setup
 require './lib/env'
 require './lib/stream'
 
