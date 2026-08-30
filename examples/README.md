@@ -11,19 +11,17 @@ into Java app servers.
 For deployment into a separate webserver:
 
 1. ```bash
-    bundle
-    bundle exec warble war
+    rm -f Gemfile.lock && bundle install && bundle exec warble war
     ```
 2. Drop the war into a relevant Java app server running a compatible JVM version
 
 As an executable jar within Jetty:
 
 1. ```bash
-    bundle
-    bundle exec warble executable war
+    rm -f Gemfile.lock && bundle install && bundle exec warble executable war
     ```
 2. ```shell
-    java -jar *.war
+    java -Dwarbler.debug=true -Dwarbler.port=8080 -jar *.war
     ```
 
 ## Demo routes
@@ -49,14 +47,7 @@ As an executable jar within Jetty:
 
 ## Development
 
-You can run the examples using local source for warbler or jruby-rack using env vars, e.g
-
-```shell
-rm -f Gemfile.lock && WARBLER_SRC=true JRUBY_RACK_SRC=true bundle install && WARBLER_SRC=true JRUBY_RACK_SRC=true bundle exec warble executable war
-java -Dwarbler.debug=true -jar rails*.war
-```
-
-- Warbler can run directly from source
-- jruby-rack needs to be built, since it does not define a gemspec
-  - There are alternate ways to do this by replacing the jruby-rack jar within the warbled jar/war, however this is more
-    complex and error-prone that using the gem and ensuring compatibility since warbler itself depends on the jruby-rack gem. 
+You can run the examples using local source for warbler or jruby-rack by
+- Uncommenting the relevant `path: ` suffixes in the example Gemfiles.
+- (For Warbler) Build from source first, since its booting jar files are not committed to source
+- (For jruby-rack) Build from source first, since it does not define a gemspec

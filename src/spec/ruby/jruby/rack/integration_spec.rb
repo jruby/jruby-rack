@@ -91,10 +91,12 @@ describe "integration" do
 
   shared_examples_for 'a rails app', :shared => true do
 
-    base_path = "file://#{STUB_DIR}/#{CURRENT_LIB.to_s}"
+    base_path = "#{STUB_DIR}/#{CURRENT_LIB.to_s}"
 
     let(:servlet_context) do
-      new_servlet_context(base_path).tap { |servlet_context| prepare_servlet_context(servlet_context, base_path) }
+      # the servlet context (Spring mock) resource base needs URL form, while rails.root
+      # is a plain filesystem path - just like with a real (expanded war) container
+      new_servlet_context("file://#{base_path}").tap { |servlet_context| prepare_servlet_context(servlet_context, base_path) }
     end
 
     context "runtime" do

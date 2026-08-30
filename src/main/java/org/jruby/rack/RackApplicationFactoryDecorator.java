@@ -134,7 +134,9 @@ public abstract class RackApplicationFactoryDecorator
         final RuntimeException error = getInitError();
         if ( error != null ) {
             log(DEBUG, "due to a previous initialization failure application instance can not be returned");
-            throw error;
+            // wrap (e.g. RaiseException): the stored error may hold a Ruby exception belonging
+            // to the failed application's runtime, un-rescuable in another Ruby runtime as-is
+            throw RackInitializationException.wrap(error);
         }
         return getApplicationImpl();
     }

@@ -93,7 +93,7 @@ module JRuby::Rack
         end
         output.puts("\n--- JRuby-Rack Config",
                     *(methods.sort.map do |m|
-                        "#{m} = #{servlet_context.config.send(m)}" rescue "#{m} = <error: #{$?}>"
+                        "#{m} = #{servlet_context.config.send(m)}" rescue "#{m} = <error: #{$!}>"
                       end))
       end
     end
