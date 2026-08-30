@@ -322,7 +322,14 @@ public class PoolingRackApplicationFactory extends RackApplicationFactoryDecorat
         throws RackInitializationException {
         createdApplications.incrementAndGet();
         if ( init ) initedApplications.incrementAndGet();
-        return init ? getDelegate().getApplication() : getDelegate().newApplication();
+        try {
+            return init ? getDelegate().getApplication() : getDelegate().newApplication();
+        }
+        catch (final RuntimeException e) {
+            // wrap (e.g. RaiseException): the raw error may hold a Ruby exception belonging
+            // to the failed application's runtime, un-rescuable in another Ruby runtime
+            throw RackInitializationException.wrap(e);
+        }
     }
 
     /** Called when a thread initialized an application. */
