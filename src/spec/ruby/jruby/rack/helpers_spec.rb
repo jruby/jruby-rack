@@ -59,14 +59,14 @@ describe JRuby::Rack::Helpers do
   end
 
   it "underscores" do
-    expect(underscore("ServletLog")).to eql 'servlet_log'
+    expect(underscore("ErrorLog")).to eql 'error_log'
     expect(underscore("Rack::Handler::Servlet")).to eql 'rack/handler/servlet'
     expect(underscore("Rack::Handler::Servlet::DefaultEnv")).to eql 'rack/handler/servlet/default_env'
   end
 
   it "underscores (with built-in JRuby conversion by default) on successive capital cases" do
     expect(underscore(:"JRuby")).to eql 'jruby'
-    expect(underscore("JRuby::Rack::ServletLog")).to eql 'jruby/rack/servlet_log'
+    expect(underscore("JRuby::Rack::ErrorLog")).to eql 'jruby/rack/error_log'
     expect(underscore("Math::PI")).to eql 'math/pi'
     expect(underscore("Math::PIANO")).to eql 'math/piano'
     expect(underscore("Net::HTTP::SSLError")).to eql 'net/http/ssl_error'
@@ -90,7 +90,7 @@ describe JRuby::Rack::Helpers do
   end
 
   it "strips name on underscore" do
-    expect(underscore(:" ServletLog ")).to eql 'servlet_log'
+    expect(underscore(:" ErrorLog ")).to eql 'error_log'
     expect(underscore("  Rack::Handler::Servlet")).to eql 'rack/handler/servlet'
   end
 

@@ -49,13 +49,6 @@ module JRuby
       def logger; @@logger ||= Logger.new(context) end
       # @private only used with tests
       def logger=(logger); @@logger = logger end
-
-      private
-
-      # @deprecated Mostly for compatibility - not used anymore.
-      def logdev; ServletLog.new(context) end
-      alias servlet_log logdev
-
     end
   end
 end

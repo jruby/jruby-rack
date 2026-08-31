@@ -28,8 +28,6 @@ module JRuby::Rack
       end
     end
 
-    # TODO prefix initializers with 'jruby_rack.' !?
-
     initializer 'set_servlet_logger', :before => :initialize_logger do |app|
       app.config.logger ||= begin
         require 'jruby/rack/rails/rails_logger'

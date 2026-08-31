@@ -147,7 +147,7 @@ java.servlet_response = HTTP/1.1 200
 
 jruby.rack.dynamic.requests.only = true
 jruby.rack.version = 1.1.0.dev-SNAPSHOT
-rack.errors = #<JRuby::Rack::ServletLog:0x3d5d9be1>
+rack.errors = #<JRuby::Rack::ErrorLog:0x3d5d9be1>
 rack.input = #<JRuby::RackInput:0x4ca4f040>
 rack.multiprocess = false
 rack.multithread = true

@@ -21,6 +21,7 @@ Breaking Java API changes
 - Drop/rename deprecated `RackConfig` and `ServletRackEnvironment` API methods per their earlier comments
 - Drop deprecated `RackLogger` string (`level`) constants
 - Custom `RackLogger` implementations must accept `CharSequence` rather than `String` to allow `RubyString` passthrough 
+- Rename deprecated `JRuby::Rack::ServletLog` to `JRuby::Rack::ErrorLog` for clarity, despite usage only in servlet contexts.
 
 Breaking Ruby API changes
 - Drop deprecated `JRuby::Rack::RailsFileSystemLayout` alias for `JRuby::Rack::FileSystemLayout`
