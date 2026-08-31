@@ -10,6 +10,7 @@ end
 
 group :development do
   gem 'appraisal', :require => nil
+  gem 'rexml'
 end
 
 group :test do
