@@ -2,10 +2,10 @@
 
 - Support Jakarta Servlet API 5.0 → 6.1 (Jakarta EE 9 → 11)
 
-## 1.3.0 (UNRELEASED) 
+## 1.3.0 (UNRELEASED)
 
 - Officially support Javax Servlet API 4.0 (JEE 8)
-- Refactor logging for more sane defaults
+- Refactor logging for more sane defaults and improved performance
 - Remove long-deprecated configuration and API functionality
 
 For most users this should be a minor upgrade; as long as you do not depend on functionality deprecated within
