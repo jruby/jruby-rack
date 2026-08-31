@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-# require "active_support/concern"
-require "logger"
-
 module ActiveSupport
   module LoggerThreadSafeLevel # :nodoc:
     # extend ActiveSupport::Concern
