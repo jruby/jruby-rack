@@ -23,7 +23,6 @@
  */
 package org.jruby.rack.ext;
 
-import jakarta.servlet.ServletContext;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyException;
@@ -34,11 +33,8 @@ import org.jruby.RubyTime;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.api.Access;
-import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaEmbedUtils;
-import org.jruby.rack.RackContext;
 import org.jruby.rack.RackLogger;
-import org.jruby.rack.logging.ServletContextLogger;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
@@ -86,25 +82,20 @@ public class Logger extends RubyObject { // implements RackLogger
     @Override
     @JRubyMethod(required = 0)
     public IRubyObject initialize(final ThreadContext context) {
-        initialize(Access.getModule(context, "JRuby").getConstant(context, "Rack").callMethod(context, "context") ); // JRuby::Rack.context
+        this.logger = asRackLogger(Access.getModule(context, "JRuby").getConstant(context, "Rack").callMethod(context, "context") ); // JRuby::Rack.context
         return this;
     }
 
     @JRubyMethod(required = 1)
     public IRubyObject initialize(final ThreadContext context, final IRubyObject logger) {
-        initialize(logger);
+        this.logger = asRackLogger(logger);
         return this;
     }
 
-    private void initialize(final IRubyObject context) {
-        if ( context.isNil() ) throw getRuntime().newArgumentError("no context");
+    private static RackLogger asRackLogger(final IRubyObject context) {
+        if (context.isNil()) throw context.getRuntime().newArgumentError("no context");
 
-        if ( context instanceof RackLogger ) {
-            this.logger = (RackLogger) context;
-        }
-        else {
-            this.logger = context.toJava(RackLogger.class);
-        }
+        return context instanceof RackLogger rackLogger ? rackLogger : context.toJava(RackLogger.class);
     }
 
     @JRubyMethod
@@ -389,7 +380,6 @@ public class Logger extends RubyObject { // implements RackLogger
             doLog( loggerLevel, ex.toThrowable() );
             return true;
         }
-        // @logdev.write(format_message(format_severity(severity), Time.now, progname, message))
         if ( ! msg.isNil() ) doLog( loggerLevel, msg.asString() );
         return true;
     }
@@ -475,59 +465,27 @@ public class Logger extends RubyObject { // implements RackLogger
         logger.log(message);
     }
 
-    /**
-     * @deprecated Likely, no longer used at all, mostly for 1.1 compatibility.
-     */
-    @JRubyClass(name="JRuby::Rack::ServletLog")
-    public static class ServletLog extends RubyObject {
+    @JRubyClass(name="JRuby::Rack::ErrorLog")
+    public static class ErrorLog extends RubyObject {
 
-        static final ObjectAllocator ALLOCATOR = ServletLog::new;
+        static final ObjectAllocator ALLOCATOR = ErrorLog::new;
 
-        private RackLogger context;
+        private RackLogger logger;
 
-        protected ServletLog(Ruby runtime, RubyClass metaClass) {
+        protected ErrorLog(Ruby runtime, RubyClass metaClass) {
             super(runtime, metaClass);
         }
 
-        @JRubyMethod(optional = 1)
-        public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
-            final IRubyObject rackContext;
-            if ( args != null && args.length > 0 ) rackContext = args[0];
-            else {
-                IRubyObject jrubyRack = Access.getModule(context, "JRuby").getConstant("Rack");
-                rackContext = jrubyRack.callMethod(context, "context"); // JRuby::Rack.context
-            }
-            if ( rackContext.isNil() ) {
-                throw context.runtime.newArgumentError("no context");
-            }
-            if ( rackContext instanceof RackContext ) {
-                this.context = (RackContext) rackContext;
-            }
-            else {
-                try {
-                    this.context = rackContext.toJava(RackLogger.class);
-                }
-                catch (RaiseException e) { // TypeError
-                    final IRubyObject error = e.getException();
-                    if ( error == null || ! context.runtime.getTypeError().isInstance(error) ) {
-                        throw e;
-                    }
-                    // support passing in a ServletContext instance (for convenience) :
-                    try {
-                        ServletContext servletContext = rackContext.toJava(ServletContext.class);
-                        this.context = new ServletContextLogger(servletContext);
-                    }
-                    catch (RaiseException fail) {
-                        throw context.runtime.newArgumentError("context is not a ServletContext nor a RackContext");
-                    }
-                }
-            }
+        @JRubyMethod(required = 1)
+        public IRubyObject initialize(final ThreadContext context, final IRubyObject logger) {
+            // a RackContext is-a RackLogger, raises TypeError for anything else
+            this.logger = Logger.asRackLogger(logger);
             return this;
         }
 
         @JRubyMethod
         public IRubyObject write(final IRubyObject msg) {
-            context.log( msg.toString() );
+            logger.log( msg.toString() );
             return msg;
         }
 
@@ -540,7 +498,5 @@ public class Logger extends RubyObject { // implements RackLogger
         public IRubyObject noop(final ThreadContext context) {
             return context.nil; /* NOOP */
         }
-
     }
-
 }

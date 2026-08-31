@@ -131,19 +131,30 @@ describe JRuby::Rack::Logger do
     expect(logger.class::FATAL).to eql 4
   end
 
-  describe JRuby::Rack::ServletLog do
-    let(:servlet_context_logger) do
-      org.jruby.rack.logging.ServletContextLogger.new(servlet_context)
+  describe JRuby::Rack::ErrorLog do
+    it "pipes rack error log messages to servlet context loggers" do
+      error_log = JRuby::Rack::ErrorLog.new org.jruby.rack.logging.ServletContextLogger.new(servlet_context)
+      error_log.write "hello"
+      expect(real_logger.logged_content).to match(/hello/)
+      error_log.puts "hoja!hoj"
+      expect(real_logger.logged_content).to match(/hoja!/)
+      error_log.close
     end
 
-    it "writes messages to the servlet context" do
-      JRuby::Rack.context = servlet_context_logger
-      servlet_log = JRuby::Rack.send(:servlet_log)
-      servlet_log.write "hello"
-      expect(real_logger.logged_content).to match(/hello/)
-      servlet_log.puts "hoja!hoj"
-      expect(real_logger.logged_content).to match(/hoja!/)
-      servlet_log.close
+    it "rejects a (java) context that is not a logger" do
+      expect { JRuby::Rack::ErrorLog.new java.lang.Object.new }.to raise_error(TypeError)
+    end
+
+    it "pipes rack error log messages to another logger" do
+      direct_buffer_logger = org.jruby.rack.logging.BufferLogger.new
+      error_log = JRuby::Rack::ErrorLog.new(direct_buffer_logger)
+      error_log.write "hello"
+      expect(direct_buffer_logger.logged_content).to match(/hello/)
+      error_log.puts "hoja!hoj"
+      expect(direct_buffer_logger.logged_content).to match(/hoja!/)
+
+      expect(real_logger.logged_content).to be_empty
+      error_log.close
     end
   end
 end

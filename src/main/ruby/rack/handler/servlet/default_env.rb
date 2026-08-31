@@ -239,7 +239,7 @@ module Rack
           when 'rack.input'            then
             env[key] = @servlet_env ? JRuby::Rack::Input.new(@servlet_env) : nil
           when 'rack.errors'           then context = rack_context
-            env[key] = context ? JRuby::Rack::ServletLog.new(context) : nil
+            env[key] = context ? JRuby::Rack::ErrorLog.new(context) : nil
           when 'rack.url_scheme'
             env[key] = scheme = @servlet_env ? @servlet_env.getScheme : nil
             env['HTTPS'] = 'on' if scheme == 'https'

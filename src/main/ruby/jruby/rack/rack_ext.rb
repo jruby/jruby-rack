@@ -7,8 +7,9 @@
 
 begin
   require 'rack'
-rescue LoadError
-  require 'vendor/rack'
+rescue LoadError => e
+  raise LoadError, "#{e.message}\nJRuby-Rack no longer vendors Rack - make sure the rack gem is " \
+    "available to the application (e.g. add it to the Gemfile or install it into the gem path)"
 end unless defined?(::Rack::RELEASE)
 
 # Servlet API friendly extensions to Rack

@@ -423,4 +423,41 @@ describe JRuby::Rack::Booter do
 
   end
 
+  describe "#prepare_bundler" do
+    require 'tmpdir'; require 'fileutils'
+
+    before :each do
+      @original_pwd = Dir.pwd
+      @original_bundle_env = {}
+      %w(BUNDLE_GEMFILE BUNDLE_VERSION BUNDLE_FROZEN).each { |k| @original_bundle_env[k] = ENV.delete(k) }
+      require 'bundler'
+    end
+
+    after :each do
+      Dir.chdir(@original_pwd)
+      @original_bundle_env.each { |k, v| v.nil? ? ENV.delete(k) : ENV[k] = v }
+      FileUtils.rm_rf @app_dir if @app_dir
+    end
+
+    def boot_app(gemfile = "source 'https://rubygems.org'\n")
+      @app_dir = File.realpath(Dir.mktmpdir('rack-app')) # macOS: /var -> /private/var
+      File.write(File.join(@app_dir, 'Gemfile'), gemfile) if gemfile
+      booter.layout_class = JRuby::Rack::FileSystemLayout
+      booter.app_path = @app_dir
+      booter.boot!
+    end
+
+    it "boots Bundler up-front for a bundled application (so Rack resolves per the lockfile)" do
+      allow(Bundler.ui).to receive(:silence).and_yield
+      expect(Bundler).to receive(:setup)
+      boot_app
+    end
+
+    it "does not boot Bundler for a non-bundled application (no Gemfile)" do
+      expect(Bundler).to_not receive(:setup)
+      boot_app nil
+    end
+
+  end
+
 end

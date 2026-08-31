@@ -136,7 +136,7 @@ describe Rack::Handler::Servlet do
 
     it "sets the rack.errors to log via rack context" do
       env = servlet.create_env @servlet_env
-      expect(env['rack.errors']).to be_a(JRuby::Rack::ServletLog)
+      expect(env['rack.errors']).to be_a(JRuby::Rack::ErrorLog)
 
       expect(@rack_context).to receive(:log).with("bar").ordered
       expect(@rack_context).to receive(:log).with("huu").ordered

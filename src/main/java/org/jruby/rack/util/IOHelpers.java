@@ -23,12 +23,10 @@
  */
 package org.jruby.rack.util;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,29 +63,6 @@ public abstract class IOHelpers {
         }
 
         return str.toString();
-    }
-
-    public static String rubyMagicCommentValue(final String script, final String prefix)
-        throws IOException {
-        if ( script == null ) return null;
-
-        final BufferedReader reader = new BufferedReader(new StringReader(script), 80);
-
-        String line, comment = null; Pattern pattern = null;
-        while ( (line = reader.readLine()) != null ) {
-            // we only support (magic) comments at the beginning :
-            if (line.isEmpty() || line.charAt(0) != '#' ) break;
-
-            if (pattern == null) {
-                pattern = Pattern.compile(prefix + "\\s*(\\S+)");
-            }
-            Matcher matcher = pattern.matcher(line);
-            if (matcher.find()) {
-                comment = matcher.group(1); break;
-            }
-        }
-        reader.close();
-        return comment;
     }
 
 }

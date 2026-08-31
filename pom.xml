@@ -5,7 +5,7 @@
  This source code is available under the MIT license.
  See the file LICENSE.txt for details.
  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+<project xsi:schemaLocation='http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd' xmlns='http://maven.apache.org/POM/4.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.jruby.rack</groupId>
@@ -289,7 +289,7 @@
       </plugin>
       <plugin>
         <groupId>org.jruby.maven</groupId>
-        <artifactId>rake-maven-plugin</artifactId>
+        <artifactId>gem-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
         <configuration>
           <jrubyVersion>${jruby.test.version}</jrubyVersion>
@@ -298,23 +298,13 @@
           <execution>
             <id>rake-spec</id>
             <phase>test</phase>
-            <goals><goal>rake</goal></goals>
+            <goals><goal>exec</goal></goals>
             <configuration>
               <!--suppress UnresolvedMavenProperty -->
-              <args>speconly SKIP_SPECS=${skipTests}</args>
+              <args>-S rake speconly SKIP_SPECS=${skipTests}</args>
               <!-- keep the maven-resolved (compile floor) servlet-api off the spec JVM classpath;
                    spec_helper.rb builds the classpath from target/lib (see copy-test-servlet-api) -->
               <addProjectClasspath>false</addProjectClasspath>
-            </configuration>
-          </execution>
-          <execution>
-            <!-- additional (ruby) generated resources -->
-            <id>rake-resources</id>
-            <phase>prepare-package</phase>
-            <!-- bind "late" so we do not run during compile/test-compile -->
-            <goals><goal>rake</goal></goals>
-            <configuration>
-              <args>resources VERSION=${project.version}</args>
             </configuration>
           </execution>
         </executions>

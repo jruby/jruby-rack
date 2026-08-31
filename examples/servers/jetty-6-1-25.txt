@@ -155,7 +155,7 @@ Date: Thu, 22 Sep 2011 23:10:50 GMT
 
 jruby.rack.dynamic.requests.only = true
 jruby.rack.version = 1.1.0.dev-SNAPSHOT
-rack.errors = #<JRuby::Rack::ServletLog:0x32f22097>
+rack.errors = #<JRuby::Rack::ErrorLog:0x32f22097>
 rack.input = #<JRuby::RackInput:0x3639b3a2>
 rack.multiprocess = false
 rack.multithread = true

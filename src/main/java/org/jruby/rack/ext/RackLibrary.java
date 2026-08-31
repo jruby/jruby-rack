@@ -63,9 +63,9 @@ public class RackLibrary implements Library, BasicLibraryService {
         _Logger.setConstant(context, "ERROR", runtime.newFixnum(Logger.ERROR));
         _Logger.setConstant(context, "FATAL", runtime.newFixnum(Logger.FATAL));
         //_Logger.setConstant("UNKNOWN", runtime.newFixnum(Logger.UNKNOWN));
-        // JRuby::Rack::ServletLog
-        final RubyClass _ServletLog = _JRuby_Rack.defineClassUnder(context, "ServletLog", _Object, Logger.ServletLog.ALLOCATOR);
-        _ServletLog.defineMethods(context, Logger.ServletLog.class);
+        // JRuby::Rack::ErrorLog
+        final RubyClass _ErrorLog = _JRuby_Rack.defineClassUnder(context, "ErrorLog", _Object, Logger.ErrorLog.ALLOCATOR);
+        _ErrorLog.defineMethods(context, Logger.ErrorLog.class);
 
         final RubyModule _Rack = Define.defineModule(context, "Rack");
         final RubyModule _Rack_Handler = _Rack.defineModuleUnder(context, "Handler");

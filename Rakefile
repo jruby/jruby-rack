@@ -51,53 +51,18 @@ task(:test_prepare => ['target/classes', 'target/test-classes']) do
   sh "./mvnw -ntp -Dstyle.color=always -Djruby.compat.artifact=jruby-complete test-compile"
 end
 
-desc "Unpack the rack gem"
-task :unpack_gem => "target" do |t|
-  target = File.expand_path(t.prerequisites.first)
-  rack_gemfile = Gem.loaded_specs['rack'].cache_file
-  unless uptodate?("#{target}/vendor/rack.rb", [__FILE__, rack_gemfile])
-    mkdir_p "target/vendor"
-    require 'rubygems/installer'
-    rack_dir = File.basename(rack_gemfile).sub(/\.gem$/, '')
-    Gem::Package.new(rack_gemfile).extract_files("#{target}/#{rack_dir}")
-    File.open("#{target}/vendor/rack.rb", "w") do |f|
-      f << "dir = File.dirname(__FILE__)\n"
-      f << "if dir =~ /.jar!/ && dir !~ /^file:/\n"
-      f << "  $LOAD_PATH.unshift 'file:' + dir + '/#{rack_dir}'\n"
-      f << "else\n"
-      f << "  $LOAD_PATH.unshift dir + '/#{rack_dir}'\n"
-      f << "end\n"
-      f << "require 'rack'"
-    end
-  end
-end
-GENERATED << 'target/vendor/rack.rb'
-
-desc "Generate (ruby) resources"
-task :resources => ['target/classes', :unpack_gem] do |t|
-  rack_dir = File.basename(FileList["target/rack-*"].first)
-  classes_dir = t.prerequisites.first
-  { 'target/vendor' => "#{classes_dir}/vendor",
-    "target/#{rack_dir}/lib" => "#{classes_dir}/vendor/#{rack_dir}"}.each do |src,dest|
-    mkdir_p dest
-    FileList["#{src}/*"].each do |f|
-      cp_r f, dest
-    end
-  end
-end
-
 task :test_resources => ["target/test-classes"]
 
 namespace :resources do
-  desc "Copy (and generate) resources"
-  task :copy => :resources do
+  desc "Copy resources"
+  task :copy do
     sh './mvnw -ntp process-resources -Dstyle.color=always -Dmdep.skip=true'
   end
   desc "Generate test resources"
   task :test => :test_resources
 end
 
-task :speconly => [ :resources, :test_resources ] do
+task :speconly => [ :test_resources ] do
   if ENV['SKIP_SPECS'].to_s == 'true'
     puts "Skipping specs due to SKIP_SPECS=#{ENV['SKIP_SPECS']}"
   else
@@ -143,7 +108,6 @@ GENERATED << target_jruby_rack
 
 file (target_jar = "target/jruby-rack-#{JAR_VERSION}.jar") do |file|
   Rake::Task['compile'].invoke
-  Rake::Task['resources'].invoke
   sh "jar cf #{file.name} -C target/classes ."
 end
 
@@ -179,6 +143,7 @@ task :gem => [:clean, target_jar, target_jruby_rack, target_jruby_rack_version] 
       gem.files = FileList["./**/*"].exclude("*.gem").map{ |f| f.sub(/^\.\//, '') }
       gem.homepage = %q{http://jruby.org}
       gem.required_ruby_version = '>= 3.4.0' # JRuby >= 10.0
+      gem.add_dependency 'rack', '~> 2.2.0'
     end
 
     require 'rubygems/package'
@@ -248,7 +213,7 @@ task :update_version do
     end
     version = version.join('.')
   else
-    version.sub!('-', '.') # normalize "maven" style VERSION
+    version = version.sub('-', '.') # normalize "maven" style VERSION
   end
   if version != GEM_VERSION
     gem_version = Gem::Version.create(version) # validates VERSION string

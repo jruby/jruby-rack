@@ -91,6 +91,7 @@ module JRuby::Rack
       export_global_settings
       load_settings_from_init_rb
       prepare_bundler_env
+      prepare_bundler
       set_relative_url_root
       run_boot_hooks
       self
@@ -197,6 +198,19 @@ module JRuby::Rack
       # re-resolution that reports a misleading GemNotFound. (Deliberately not BUNDLE_DEPLOYMENT, which forces the
       # vendor/bundle path.)
       ENV['BUNDLE_FROZEN'] ||= 'true' if File.exist?("#{ENV['BUNDLE_GEMFILE']}.lock")
+    end
+
+    # Boots Bundler (`Bundler.setup`) up-front for a bundled application, so that gems required during the boot - Rack
+    # in particular - resolve per the application's lockfile, instead of rubygems activating the newest version found
+    # on the gem path. The application's own `Bundler.setup` (e.g. from *config.ru*) then becomes a no-op.
+    def prepare_bundler
+      boot_bundler! if ENV['BUNDLE_GEMFILE'] # not a bundled application
+    end
+
+    def boot_bundler!
+      require 'bundler'
+      # pre-boot bundler with groups respecting BUNDLE_WITHOUT from the environment
+      Bundler.ui.silence { Bundler.setup }
     end
 
     def relative_url_root(init_param = 'rack.relative_url_append')
