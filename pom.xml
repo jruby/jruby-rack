@@ -371,6 +371,7 @@
                   <head>NOTE:</head>
                 </tag>
               </tags>
+              <doclint>none</doclint>
             </configuration>
             <executions>
               <execution>
