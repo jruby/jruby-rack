@@ -253,7 +253,7 @@
       </plugin>
       <plugin>
         <groupId>org.jruby.maven</groupId>
-        <artifactId>rake-maven-plugin</artifactId>
+        <artifactId>gem-maven-plugin</artifactId>
         <version>${jruby.maven.plugins.version}</version>
         <configuration>
           <jrubyVersion>${jruby.test.version}</jrubyVersion>
@@ -262,9 +262,10 @@
           <execution>
             <id>rake-spec</id>
             <phase>test</phase>
-            <goals><goal>rake</goal></goals>
+            <goals><goal>exec</goal></goals>
             <configuration>
-              <args>speconly SKIP_SPECS=${skipTests}</args>
+              <!--suppress UnresolvedMavenProperty -->
+              <args>-S rake speconly SKIP_SPECS=${skipTests}</args>
             </configuration>
           </execution>
           <execution>
@@ -272,9 +273,9 @@
             <id>rake-resources</id>
             <phase>prepare-package</phase>
             <!-- bind "late" so we do not run during compile/test-compile -->
-            <goals><goal>rake</goal></goals>
+            <goals><goal>exec</goal></goals>
             <configuration>
-              <args>resources VERSION=${project.version}</args>
+              <args>-S rake resources VERSION=${project.version}</args>
             </configuration>
           </execution>
         </executions>
