@@ -248,7 +248,7 @@ task :update_version do
     end
     version = version.join('.')
   else
-    version.sub!('-', '.') # normalize "maven" style VERSION
+    version = version.sub('-', '.') # normalize "maven" style VERSION
   end
   if version != GEM_VERSION
     gem_version = Gem::Version.create(version) # validates VERSION string
