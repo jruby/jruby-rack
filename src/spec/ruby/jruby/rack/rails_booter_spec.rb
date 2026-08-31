@@ -149,6 +149,12 @@ describe JRuby::Rack::RailsBooter do
       prepare_bundler! booted
     end
 
+    it "does not pre-boot when boot.rb ever calls Bundler.setup itself" do
+      booted = booted_with_boot_rb %Q{if ENV['BOOT_ALL']\n  require "bundler/setup"\nelse\n  require "bundler"\n  Bundler.setup(:default)\nend\n}
+      expect(Bundler).to_not receive(:setup)
+      prepare_bundler! booted
+    end
+
     it "does not pre-boot when the require is commented out" do
       booted = booted_with_boot_rb %Q{# require "bundler/setup"\n}
       expect(Bundler).to_not receive(:setup)

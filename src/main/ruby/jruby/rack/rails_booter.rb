@@ -83,8 +83,12 @@ module JRuby::Rack
     def rails_has_default_bundler_boot?(boot_rb_path)
       boot_rb_content = File.read(boot_rb_path) if File.readable?(boot_rb_path)
       return false unless boot_rb_content
-      # Assume default if there is a `require 'bundler/setup'` and no `BUNDLE_WITHOUT` in the boot.rb file.
-      %r{^\s*require\s+["']bundler/setup["']} =~ boot_rb_content && %r{BUNDLE_WITHOUT} !~ boot_rb_content
+
+      # Assume default if there is a `require 'bundler/setup'` and no custom Bundler management e.g
+      # explicit `Bundler.setup(...)` call or `BUNDLE_WITHOUT` hardcoded.
+      %r{^\s*require\s+["']bundler/setup["']} =~ boot_rb_content &&
+        %r{Bundler\.setup} !~ boot_rb_content &&
+        %r{BUNDLE_WITHOUT} !~ boot_rb_content
     end
 
     class << self
