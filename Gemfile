@@ -16,4 +16,6 @@ end
 group :test do
   gem 'rake', '~> 13.4', :require => nil
   gem 'rspec'
+
+  gem 'logger' # Required for stubbing Rails' active_support/logger
 end
