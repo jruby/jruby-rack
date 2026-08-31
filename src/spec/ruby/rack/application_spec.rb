@@ -2,8 +2,6 @@ require File.expand_path('../spec_helper', File.dirname(__FILE__))
 
 describe org.jruby.rack.DefaultRackApplication, "call" do
 
-  before(:all) { require 'tempfile' }
-
   before :each do
     @rack_env = org.jruby.rack.RackEnvironment.impl do |name, *args|
       case name.to_s
@@ -308,31 +306,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       it "does not require 'rack' (until booter is called)" do
         @runtime = app_factory.newRuntime
         should_eval_as_nil "defined?(::Rack::RELEASE)"
-      end
-
-      it "loads specified version of rack via bundler", :lib => :stub do
-        gem_install_unless_installed 'rack', '2.2.0'
-        set_config 'jruby.runtime.env', 'false'
-
-        script = "# encoding: UTF-8\n" +
-                 "# rack.version: bundler \n" +
-                 "Proc.new { 'proc-rack-app' }"
-        app_factory.setRackupScript script
-        @runtime = app_factory.newRuntime
-
-        file = Tempfile.new('Gemfile')
-        file << "source 'https://rubygems.org'\n gem 'rack', '2.2.0'"
-        file.flush
-        @runtime.evalScriptlet "ENV['BUNDLE_GEMFILE'] = #{file.path.inspect}"
-        @runtime.evalScriptlet "ENV['GEM_HOME'] = #{ENV['GEM_HOME'].inspect}"
-        @runtime.evalScriptlet "ENV['GEM_PATH'] = #{ENV['GEM_PATH'].inspect}"
-
-        app_factory.checkAndSetRackVersion(@runtime)
-        @runtime.evalScriptlet "require 'rack'"
-
-        should_eval_as_not_nil "defined?(Bundler)"
-        should_eval_as_eql_to "Rack.release", '2.2.0'
-        should_eval_as_eql_to "Gem.loaded_specs['rack'].version.to_s", '2.2.0'
       end
 
       it "initializes the $servlet_context global variable" do

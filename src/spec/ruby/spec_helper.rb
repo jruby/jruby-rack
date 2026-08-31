@@ -59,12 +59,6 @@ module SharedHelpers
     org.jruby.rack.logging.RaiseLogger.new(level, JRuby.runtime.out)
   end
 
-  def gem_install_unless_installed(name, version)
-    require 'rubygems/dependency_installer'
-    installer = Gem::DependencyInstaller.new
-    installer.install name, version
-  end
-
   ExpectationNotMetError = RSpec::Expectations::ExpectationNotMetError
 
   def expect_eql_java_bytes(actual, expected)

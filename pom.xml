@@ -275,16 +275,6 @@
               <args>-S rake speconly SKIP_SPECS=${skipTests}</args>
             </configuration>
           </execution>
-          <execution>
-            <!-- additional (ruby) generated resources -->
-            <id>rake-resources</id>
-            <phase>prepare-package</phase>
-            <!-- bind "late" so we do not run during compile/test-compile -->
-            <goals><goal>exec</goal></goals>
-            <configuration>
-              <args>-S rake resources VERSION=${project.version}</args>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
       <plugin>

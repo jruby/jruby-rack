@@ -4,18 +4,27 @@
 - Refactor logging for more sane defaults
 - Remove long-deprecated configuration and API functionality
 
-For most users this should be a minor upgrade; as long as not depending on deprecated functionality or JRuby 9.x.
+For most users this should be a minor upgrade; as long as you do not depend on functionality deprecated within
+JRuby-Rack 1.2.x, EOL JRuby or EOL Rails versions.
 
 Breaking compatibility changes
 - Drop support for JRuby 9.x (and thus Java < 21)
 - Drop support for Rails < 7.2
+- Drop JMS support
 
 Breaking behavioral changes
 - Change context listener to throw by default in case of an exception during initialization
 - Change rails context listener to assume a thread-safe application by default
+- Rack is no longer vendored inside the jar, so applications must ensure rack is provided via bundler or GEM_PATH
 
-Breaking Java API changes
-- Drop JMS support
+Breaking configuration capability changes
+- Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hash
+- Drop deprecated and undocumented jruby-rack 1.0 backwards compat properties `jruby.runtime.timeout.sec`, `jruby.runtime.initializer.threads`, `jruby.init.serial`, `jruby.rack.request.size.threshold.bytes`
+- Drop deprecated `jruby.rack.ignore.env` property, replaced long ago by `jruby.runtime.env` and optional `jruby.runtime.env.rubyopt`
+- Drop deprecated `jruby.rack.filter.*` properties, replaced long ago by init parameters `addsHtmlToPathInfo` and `verifiesHtmlResource`
+- Drop handling of `# rack.version` magic comments inside `config.ru` files, replaced by bundler or user-managed `GEM_PATH`
+
+Breaking Java API changes (only relevant for users extending the Java API)
 - Drop unnecessary `jruby.compat.version` and `RackConfig.getCompatVersion()` API
 - Drop deprecated `org.jruby.rack.RackInput` alias for `org.jruby.rack.ext.Input` class
 - Drop/rename deprecated `RackConfig` and `ServletRackEnvironment` API methods per their earlier comments
@@ -23,17 +32,11 @@ Breaking Java API changes
 - Custom `RackLogger` implementations must accept `CharSequence` rather than `String` to allow `RubyString` passthrough 
 - Rename deprecated `JRuby::Rack::ServletLog` to `JRuby::Rack::ErrorLog` for clarity, despite usage only in servlet contexts.
 
-Breaking Ruby API changes
+Breaking Ruby API changes (only relevant for users extending the Ruby API)
 - Drop deprecated `JRuby::Rack::RailsFileSystemLayout` alias for `JRuby::Rack::FileSystemLayout`
 - Drop deprecated `JRuby::Rack::Errors` alias for `JRuby::Rack::ErrorApp`
 - Drop deprecated `Rack::Handler::Servlet::Env` and `Rack::Handler::Servlet::LazyEnv` types (replaced by `DefaultEnv`)
 - Drop deprecated setting of global `$servlet_context` variable during embedded usage (replaced by `JRuby::Rack.context`)
-
-Breaking configuration capability changes 
-- Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hash
-- Drop deprecated and undocumented jruby-rack 1.0 backwards compat properties `jruby.runtime.timeout.sec`, `jruby.runtime.initializer.threads`, `jruby.init.serial`, `jruby.rack.request.size.threshold.bytes`
-- Drop deprecated `jruby.rack.ignore.env` property, replaced long ago by `jruby.runtime.env` and optional `jruby.runtime.env.rubyopt`
-- Drop deprecated `jruby.rack.filter.*` properties, replaced long ago by init parameters `addsHtmlToPathInfo` and `verifiesHtmlResource`
 
 ## 1.2.8
 
