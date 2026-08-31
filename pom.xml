@@ -37,7 +37,7 @@
     <!-- Test Dependencies -->
     <servlet-api.test.version>6.1.0</servlet-api.test.version>
     <el-api.test.version>6.0.1</el-api.test.version>
-    <spring.version>6.2.19</spring.version>
+    <spring.version>7.0.9</spring.version>
 
     <slf4j.version>2.0.18</slf4j.version>
     <log4j.version>2.26.1</log4j.version>
