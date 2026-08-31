@@ -2,7 +2,12 @@ source 'https://rubygems.org'
 
 ruby RUBY_VERSION
 
-gem 'sinatra', '< 4'
+gem 'sinatra', '< 4' # v4 requires Rack 3.x support
+
+if JRUBY_VERSION.start_with?('10.1.')
+  gem 'ostruct'
+  gem 'logger'
+end
 
 group :development do
   gem 'jruby-jars', JRUBY_VERSION

@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 ruby RUBY_VERSION
 
-gem 'camping', '< 3'
+gem 'camping', '< 3' # v3 requires Rack 3.x support
 
 group :development do
   gem 'jruby-jars', JRUBY_VERSION
