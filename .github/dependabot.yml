@@ -40,7 +40,7 @@ updates:
         patterns: [ "*" ]
     ignore:
       - dependency-name: "rack"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
 
   # Maintained stable branches
   - package-ecosystem: github-actions
@@ -91,7 +91,7 @@ updates:
         patterns: [ "*" ]
     ignore:
       - dependency-name: "rack"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
 
   - package-ecosystem: github-actions
     target-branch: "1.2-stable"
@@ -141,4 +141,4 @@ updates:
         patterns: [ "*" ]
     ignore:
       - dependency-name: "rack"
-        update-types: [ "version-update:semver-major" ]
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
