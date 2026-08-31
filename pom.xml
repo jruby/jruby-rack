@@ -316,7 +316,7 @@
         <extensions>true</extensions>
         <configuration>
           <publishingServerId>central</publishingServerId>
-          <autoPublish>true</autoPublish>
+          <autoPublish>false</autoPublish>
         </configuration>
       </plugin>
       <plugin>
