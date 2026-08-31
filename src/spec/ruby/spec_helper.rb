@@ -113,7 +113,6 @@ ORIGINAL_WORKING_DIR = Dir.getwd
 begin
   # NOTE: only if running with a `bundle exec` to better isolate
   if $LOAD_PATH.find { |path| path =~ /\/rails\-[\w\.]*\// }
-    require 'logger' # Workaround for concurrent-ruby problems on older rails versions
     require 'rails/version' # use Rails::VERSION to detect current env
     require 'rails' # attempt to load rails - for "real life" testing
   end

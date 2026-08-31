@@ -6,7 +6,6 @@ GEM
       rake
       thor (>= 0.14.0)
     diff-lcs (1.6.2)
-    logger (1.7.0)
     rack (2.2.24)
     rake (13.4.2)
     rexml (3.4.4)
@@ -31,7 +30,6 @@ PLATFORMS
 
 DEPENDENCIES
   appraisal
-  logger
   rack (~> 2.2.24)
   rake (~> 13.4)
   rexml
@@ -40,7 +38,6 @@ DEPENDENCIES
 CHECKSUMS
   appraisal (2.5.0) sha256=36989221be127913b0dba8d114da2001e6b2dceea7bd4951200eaba764eed3ce
   diff-lcs (1.6.2) sha256=9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962
-  logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
   rack (2.2.24) sha256=ef16526a0d871c43753452338c754040a664c8b41bf0dd7450b85f7772adca5f
   rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
   rexml (3.4.4) sha256=19e0a2c3425dfbf2d4fc1189747bdb2f849b6c5e74180401b15734bc97b5d142

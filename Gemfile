@@ -16,5 +16,4 @@ end
 group :test do
   gem 'rake', '~> 13.4', :require => nil
   gem 'rspec'
-  gem 'logger'
 end
