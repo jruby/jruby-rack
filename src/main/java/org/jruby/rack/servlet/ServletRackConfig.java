@@ -7,8 +7,7 @@
 
 package org.jruby.rack.servlet;
 
-import javax.servlet.ServletContext;
-
+import jakarta.servlet.ServletContext;
 import org.jruby.rack.DefaultRackConfig;
 import org.jruby.rack.RackLogger;
 import org.jruby.rack.logging.ServletContextLogger;

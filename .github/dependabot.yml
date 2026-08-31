@@ -44,6 +44,56 @@ updates:
 
   # Maintained stable branches
   - package-ecosystem: github-actions
+    target-branch: "1.3-stable"
+    commit-message:
+      prefix: "1.3.x: "
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions-deps:
+        patterns: [ "*" ]
+
+  - package-ecosystem: maven
+    target-branch: "1.3-stable"
+    commit-message:
+      prefix: "1.3.x: "
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      maven-deps:
+        dependency-type: "production"
+      maven-dev-deps:
+        dependency-type: "development"
+    ignore:
+      - dependency-name: "org.jruby*"
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "jakarta*"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "javax*"
+        update-types: [ "version-update:semver-major", "version-update:semver-minor" ]
+      - dependency-name: "org.springframework*"
+        update-types: [ "version-update:semver-major" ]
+
+  - package-ecosystem: bundler
+    target-branch: "1.3-stable"
+    commit-message:
+      prefix: "1.3.x: "
+    directories:
+      - "/"
+    schedule:
+      interval: weekly
+    allow:
+      - dependency-type: all
+    groups:
+      ruby-deps:
+        patterns: [ "*" ]
+    ignore:
+      - dependency-name: "rack"
+        update-types: [ "version-update:semver-major" ]
+
+  - package-ecosystem: github-actions
     target-branch: "1.2-stable"
     commit-message:
       prefix: "1.2.x: "

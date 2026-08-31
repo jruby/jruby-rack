@@ -54,13 +54,6 @@ public class RackLoggingMockServletContext extends org.springframework.mock.web.
     }
 
     @Override
-    @Deprecated // Deprecated in API parent
-    @SuppressWarnings("deprecation") // Deprecated in API parent
-    public void log(Exception ex, String message) {
-        logger.log(message, ex);
-    }
-
-    @Override
     public void log(String message, Throwable ex) {
         logger.log(message, ex);
     }

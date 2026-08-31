@@ -7,7 +7,7 @@
 
 package org.jruby.rack;
 
-import javax.servlet.ServletConfig;
+import jakarta.servlet.ServletConfig;
 
 @SuppressWarnings("serial")
 public class RackServlet extends AbstractServlet {

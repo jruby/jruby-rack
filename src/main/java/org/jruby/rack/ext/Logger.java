@@ -23,7 +23,6 @@
  */
 package org.jruby.rack.ext;
 
-
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyException;

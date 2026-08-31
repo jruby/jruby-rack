@@ -3,6 +3,7 @@
 [![Gem Version](https://img.shields.io/gem/v/jruby-rack)](https://rubygems.org/gems/jruby-rack)
 [![Jar Version](https://img.shields.io/maven-central/v/org.jruby.rack/jruby-rack)](https://central.sonatype.com/artifact/org.jruby.rack/jruby-rack)
 [![master Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3Amaster) (master)
+[![1.3.x Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg?branch=1.3-stable)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3A1.3-stable) (1.3.x)
 [![1.2.x Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg?branch=1.2-stable)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3A1.2-stable) (1.2.x)
  
 JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows
@@ -13,13 +14,13 @@ For more information on Rack, visit http://rack.github.io/.
 
 ## Compatibility
 
-| JRuby-Rack Series                                              | Status        | Rack      | JRuby       | Java | Rails     | Target Servlet API  | Notes                                                                |
-|----------------------------------------------------------------|---------------|-----------|-------------|------|-----------|---------------------|----------------------------------------------------------------------|
-| **2.0 (_planned_, _unreleased_)**                              | Dev           | 2.2       | 10.0 → 10.1 | 21+  | 7.2 → 8.0 | 5.0+ (Jakarta EE 9) | ❌ Servlet < 5.0 containers will not work                            |
-| **1.3 (master, _unreleased_)**                                 | Dev           | 2.2       | 10.0 → 10.1 | 21+  | 7.2 → 8.0 | 4.0 (Java EE 8)     | ✅ _Unofficial_: Servlet 2.5 → 3.1 & Rails 6.1 → 7.1 also likely OK. |
-| [**1.2**](https://github.com/jruby/jruby-rack/tree/1.2-stable) | Maintained    | 2.2       | 9.3 → 10.1  | 8+   | 5.0 → 8.0 | 3.0 (Java EE 6)     | ✅ _Unofficial_: Servlet 3.1 → 4.0 also OK with most containers      |
-| [**1.1**](https://github.com/jruby/jruby-rack/tree/1.1-stable) | EOL @ 2024-05 | 1.x → 2.2 | 1.6 → 9.4   | 6+   | 2.1 → 5.2 | 2.5 (Java EE 5)     | ✅ _Unofficial_: Servlet 3.0 → 4.0 also OK with most containers      |
-| [**1.0**](https://github.com/jruby/jruby-rack/tree/1.0.10)     | EOL @ 2011-11 | 0.9 → 1.x | 1.1 → 1.9   | 5+   | 2.1 → 3.x | 2.5 (Java EE 5)     |                                                                      |
+| JRuby-Rack Series                                                                        | Status        | Rack      | JRuby       | Java | Rails     | Servlet API (min → mostly supported) | Notes                                                     |
+|------------------------------------------------------------------------------------------|---------------|-----------|-------------|------|-----------|--------------------------------------|-----------------------------------------------------------|
+| **2.0 (_master_, _unreleased_)**                                                         | Dev           | 2.2       | 10.0 → 10.1 | 21+  | 7.2 → 8.0 | 5.0 → 6.1 (Jakarta EE 9 → 11)        | ❌ Servlet < 5.0 containers will not work                 |
+| [**1.3**](https://github.com/jruby/jruby-rack/tree/1.3-stable) (_planned_, _unreleased_) | Dev           | 2.2       | 10.0 → 10.1 | 21+  | 7.2 → 8.0 | 4.0 (Java EE 8)                      | ✅ _Unofficial_: Rails 6.1 → 7.1 untested, but likely OK. |
+| [**1.2**](https://github.com/jruby/jruby-rack/tree/1.2-stable)                           | Maintained    | 2.2       | 9.3 → 10.1  | 8+   | 5.0 → 8.0 | 3.0 → 4.0 (Java EE 6 → 7)            |                                                           |
+| [**1.1**](https://github.com/jruby/jruby-rack/tree/1.1-stable)                           | EOL @ 2024-05 | 1.x → 2.2 | 1.6 → 9.4   | 6+   | 2.1 → 5.2 | 2.5 → 4.0 (Java EE 5 → 7)            |                                                           |
+| [**1.0**](https://github.com/jruby/jruby-rack/tree/1.0.10)                               | EOL @ 2011-11 | 0.9 → 1.x | 1.1 → 1.9   | 5+   | 2.1 → 3.x | 2.5 (Java EE 5)                      |                                                           |
 
 ## Getting Started
 
@@ -275,7 +276,7 @@ or available on the application's gem path.
 ## Logging
 
 JRuby-Rack sets up a delegate logger for Rails that sends logging output to
-`javax.servlet.ServletContext#log` by default. If you wish to use a different
+`jakarta.servlet.ServletContext#log` by default. If you wish to use a different
 logging system, configure `jruby.rack.logging` as follows:
 
 - `servlet_context` (default): Sends log messages to the servlet context.
