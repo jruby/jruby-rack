@@ -20,27 +20,4 @@ describe org.jruby.rack.util.IOHelpers do
     expect(string).to eql "# comment\nputs 'vůl or kôň';\nexit(0)\n"
   end
 
-  it "reads magic comment 1" do
-    code = "# hello: world \n" +
-           "# comment\n" +
-           "exit(0);"
-    string = IOHelpers.rubyMagicCommentValue(code, "hello:")
-    expect(string).to eql "world"
-  end
-
-  it "reads magic comment 2" do
-    code = "# encoding: UTF-8 \n" +
-           "# comment\n" +
-           "# rack.version: 2.2.0 \n" +
-           "exit(0)\n'42'"
-    string = IOHelpers.rubyMagicCommentValue(code, "rack.version:")
-    expect(string).to eql "2.2.0"
-  end
-
-  it "works when reading an empty/null string" do
-    expect(IOHelpers.rubyMagicCommentValue(nil, 'ruby.version:')).to be nil
-    expect(IOHelpers.rubyMagicCommentValue('', 'ruby.version:')).to be nil
-    expect(IOHelpers.rubyMagicCommentValue("\n", 'ruby.version:')).to be nil
-  end
-
 end

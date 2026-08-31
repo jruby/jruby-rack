@@ -165,7 +165,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
             rackContext.log(WARN, "no rackup script found - starting empty Rack application!");
             rackupScript = "";
         }
-        checkAndSetRackVersion(runtime);
         runtime.evalScriptlet("load 'jruby/rack/boot/rack.rb'");
         return createRackServletWrapper(runtime, rackupScript, rackupLocation);
     }
@@ -364,40 +363,6 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
         if ( swallowAbortFlag != null ) {
             runtime.evalScriptlet("JRuby::Rack::Response.swallow_client_abort = " + swallowAbortFlag);
         }
-    }
-
-    /**
-     * Checks and sets the required Rack version (if specified as a magic comment).
-     *
-     * e.g. # rack.version: =2.2.0
-     *
-     * @apiNote Internal API, only visible due tests.
-     *
-     * @param runtime the JRuby runtime
-     * @return the rack version requirement
-     */
-    public String checkAndSetRackVersion(final Ruby runtime) {
-        String rackVersion = null;
-        try {
-            rackVersion = IOHelpers.rubyMagicCommentValue(rackupScript, "rack.version:");
-        }
-        catch (Exception e) {
-            rackContext.log(DEBUG, "could not read 'rack.version' magic comment from rackup", e);
-        }
-
-        if ( rackVersion != null ) {
-            runtime.evalScriptlet("require 'rubygems'");
-
-            if ( rackVersion.equalsIgnoreCase("bundler") ) {
-                runtime.evalScriptlet("require 'bundler'; Bundler.setup");
-            }
-            else {
-                rackContext.log(DEBUG, "detected 'rack.version' magic comment, " +
-                        "will use `gem 'rack', '"+ rackVersion +"'`");
-                runtime.evalScriptlet("gem 'rack', '"+ rackVersion +"' if defined? gem");
-            }
-        }
-        return rackVersion;
     }
 
     private RackApplication createApplication(final ApplicationObjectFactory appFactory) {

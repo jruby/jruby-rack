@@ -267,24 +267,10 @@ Ruby environment before booting the application. You can create a file called
 These files, if found, will be evaluated before booting the Rack environment,
 allowing you to set environment variables, load scripts, etc.
 
-For plain Rack applications, JRuby-Rack also supports a magic comment to solve
-the "rackup" chicken-egg problem (you need Rack's builder loaded before loading
-the `config.ru`, yet you may want to setup the gem version from within the rackup
- file). As we ship with the Rack gem bundled, otherwise when executing the
-provided `config.ru` the bundled (latest) version of Rack will get loaded.
-
-Use `rack.version` to specify the Rack gem version to be loaded before rackup :
-
-```ruby
-# encoding: UTF-8
-# rack.version: ~>2.2.10 (before code is loaded gem '~>2.2.10' will be called)
-```
-
-Or the equivalent of doing `bundle exec rackup ...` if you're using Bundler :
-
-```ruby
-# rack.version: bundler (require 'bundler'; Bundler.setup; before loading the script)
-```
+JRuby-Rack does not vendor Rack - the application is expected to provide it, just like 
+with other Ruby web servers. For applications depending on `jruby-rack` via jar (rather than gem),
+this means having `rack` in the `Gemfile` (usually implied by the web framework); 
+or available on the application's gem path.
 
 ## Logging
 

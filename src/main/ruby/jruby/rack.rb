@@ -60,6 +60,6 @@ require 'jruby/rack/response'
 require 'jruby/rack/servlet_ext'
 require 'jruby/rack/core_ext'
 
-# loading Rack is delayed to allow the application to boot it's desired Rack
-# version (if it needs one) e.g. in a Rails application until Bundler setups
+# loading Rack is delayed until the booter has run `Bundler.setup` (for a
+# bundled application), so that the application's lockfile decides the version
 JRuby::Rack::Booter.on_boot { require 'jruby/rack/rack_ext' }

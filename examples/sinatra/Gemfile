@@ -3,7 +3,6 @@ source 'https://rubygems.org'
 ruby RUBY_VERSION
 
 gem 'sinatra', '< 4'
-gem 'rack', '~> 2.2.0'
 
 group :development do
   gem 'jruby-jars', JRUBY_VERSION

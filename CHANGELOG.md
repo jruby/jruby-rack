@@ -15,6 +15,7 @@ Breaking compatibility changes
 Breaking behavioral changes
 - Change context listener to throw by default in case of an exception during initialization
 - Change rails context listener to assume a thread-safe application by default
+- Rack is no longer vendored inside the jar, so applications must ensure rack is provided via bundler or GEM_PATH
 
 Breaking configuration capability changes
 - Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hash
@@ -36,12 +37,6 @@ Breaking Ruby API changes (only relevant for users extending the Ruby API)
 - Drop deprecated `JRuby::Rack::Errors` alias for `JRuby::Rack::ErrorApp`
 - Drop deprecated `Rack::Handler::Servlet::Env` and `Rack::Handler::Servlet::LazyEnv` types (replaced by `DefaultEnv`)
 - Drop deprecated setting of global `$servlet_context` variable during embedded usage (replaced by `JRuby::Rack.context`)
-
-Breaking configuration capability changes 
-- Drop `jruby.rack.jruby.version` and `jruby.rack.rack.release` keys from rack `env` Hash
-- Drop deprecated and undocumented jruby-rack 1.0 backwards compat properties `jruby.runtime.timeout.sec`, `jruby.runtime.initializer.threads`, `jruby.init.serial`, `jruby.rack.request.size.threshold.bytes`
-- Drop deprecated `jruby.rack.ignore.env` property, replaced long ago by `jruby.runtime.env` and optional `jruby.runtime.env.rubyopt`
-- Drop deprecated `jruby.rack.filter.*` properties, replaced long ago by init parameters `addsHtmlToPathInfo` and `verifiesHtmlResource`
 
 ## 1.2.8
 

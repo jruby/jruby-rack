@@ -132,39 +132,35 @@ describe JRuby::Rack::RailsBooter do
       booter
     end
 
-    def prepare_bundler!(booted)
-      booted.send :prepare_bundler, File.join(@app_dir, 'config', 'boot.rb')
-    end
-
     it "pre-boots bundler for a default rails boot.rb" do
       booted = booted_with_boot_rb DEFAULT_RAILS_BOOT_RB
       allow(Bundler.ui).to receive(:silence).and_yield
       expect(Bundler).to receive(:setup)
-      prepare_bundler! booted
+      booted.send :rails_boot_path
     end
 
     it "does not pre-boot when boot.rb manages BUNDLE_WITHOUT itself" do
       booted = booted_with_boot_rb %Q{ENV['BUNDLE_WITHOUT'] = 'test'\nrequire "bundler/setup"\n}
       expect(Bundler).to_not receive(:setup)
-      prepare_bundler! booted
+      booted.send :rails_boot_path
     end
 
     it "does not pre-boot when boot.rb ever calls Bundler.setup itself" do
       booted = booted_with_boot_rb %Q{if ENV['BOOT_ALL']\n  require "bundler/setup"\nelse\n  require "bundler"\n  Bundler.setup(:default)\nend\n}
       expect(Bundler).to_not receive(:setup)
-      prepare_bundler! booted
+      booted.send :rails_boot_path
     end
 
     it "does not pre-boot when the require is commented out" do
       booted = booted_with_boot_rb %Q{# require "bundler/setup"\n}
       expect(Bundler).to_not receive(:setup)
-      prepare_bundler! booted
+      booted.send :rails_boot_path
     end
 
     it "does not pre-boot a non-bundled application (no Gemfile)" do
       booted = booted_with_boot_rb DEFAULT_RAILS_BOOT_RB, nil
       expect(Bundler).to_not receive(:setup)
-      prepare_bundler! booted
+      booted.send :rails_boot_path
     end
 
   end
