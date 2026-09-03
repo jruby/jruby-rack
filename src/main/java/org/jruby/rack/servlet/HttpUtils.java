@@ -23,9 +23,9 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
+ * @jruby-rack.impl Propagated to jruby-rack from old Javax Servlet API &lt;= 4.0.
  * @deprecated As of Java(tm) Servlet API 2.3. These methods were only useful with the default encoding and have been
- *             moved to the request interfaces.
- * @implNote   Propagated to jruby-rack from old Javax Servlet API <= 4.0.
+ * moved to the request interfaces.
  *
  */
 @Deprecated
@@ -42,17 +42,16 @@ public class HttpUtils {
      * <p>
      * A key can appear more than once in the query string with different values. However, the key appears only once in
      * the HashMap, with its value being an array of strings containing the multiple values sent by the query string.
-     * 
+     *
      * <p>
      * The keys and values in the HashMap are stored in their decoded form, so any + characters are converted to
      * spaces, and characters sent in hexadecimal notation (like <i>%xx</i>) are converted to ASCII characters.
      *
      * @param s a string containing the query to be parsed
-     *
      * @return a <code>Map</code> object built from the parsed key-value pairs
-     *
-     * @exception IllegalArgumentException if the query string is invalid
+     * @throws IllegalArgumentException if the query string is invalid
      */
+    @SuppressWarnings("unused") // consumed via Ruby code
     public static Map<String, String[]> parseQueryString(String s) {
 
         String valArray[];
