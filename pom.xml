@@ -300,12 +300,12 @@
         <configuration>
           <tags>
             <tag>
-              <name>jruby-rack.api</name>
+              <name>apiNote</name>
               <placement>a</placement>
               <head>API:</head>
             </tag>
             <tag>
-              <name>jruby-rack.impl</name>
+              <name>implNote</name>
               <placement>a</placement>
               <head>NOTE:</head>
             </tag>
