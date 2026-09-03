@@ -75,7 +75,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Initialize this factory using the given context.
      *
-     * @implNote exception handling is left to the outer factory.
+     * @jruby-rack.impl exception handling is left to the outer factory.
      * @param rackContext the RackContext
      */
     @Override
@@ -93,7 +93,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Creates a new application instance (without initializing it).
      *
-     * @implNote exception handling is left to the outer factory.
+     * @jruby-rack.impl exception handling is left to the outer factory.
      * @return new application instance
      */
     @Override
@@ -104,7 +104,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Creates a new application and initializes it.
      *
-     * @implNote exception handling is left to the outer factory.
+     * @jruby-rack.impl exception handling is left to the outer factory.
      * @return new, initialized application
      */
     @Override
@@ -117,7 +117,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Destroys the application (assumably) created by this factory.
      *
-     * @implNote exception handling is left to the outer factory.
+     * @jruby-rack.impl exception handling is left to the outer factory.
      * @param app the application to "release"
      */
     @Override
@@ -323,7 +323,7 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
     /**
      * Initializes the runtime (exports the context, boots the Rack handler).
      *
-     * @apiNote Internal API, only visible due tests.
+     * @jruby-rack.api Internal API, only visible due tests.
      *
      * @param runtime the JRuby runtime
      */
