@@ -9,7 +9,6 @@ package org.jruby.rack;
  * 
  * @author kares
  */
-@SuppressWarnings("serial")
 public class AcquireTimeoutException extends RackException {
     
     public AcquireTimeoutException(String message) {

@@ -14,7 +14,6 @@ import jakarta.servlet.jsp.JspException;
 import jakarta.servlet.jsp.tagext.TagSupport;
 import org.jruby.rack.servlet.ServletRackEnvironment;
 
-@SuppressWarnings("serial")
 public class RackTag extends TagSupport {
     private String path;
     private String params;

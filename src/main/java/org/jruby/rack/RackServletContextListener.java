@@ -94,8 +94,8 @@ public class RackServletContextListener implements ServletContextListener {
             final RackApplicationFactory factory,
             final ServletRackContext rackContext) {
         if ( isThrowInitException(rackContext.getConfig()) ) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
+            if (e instanceof RuntimeException runtimeException) {
+                throw runtimeException;
             }
             throw RackInitializationException.wrap(e);
         }

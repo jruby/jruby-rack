@@ -9,8 +9,6 @@ package org.jruby.rack;
 
 import java.io.IOException;
 
-import jakarta.servlet.ServletException;
-
 /**
  *
  * @author nicksieger

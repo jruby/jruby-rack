@@ -113,8 +113,8 @@ public class Logger extends RubyObject { // implements RackLogger
     @JRubyMethod
     public IRubyObject real_logger(final ThreadContext context) {
         RackLogger logger = this.logger;
-        if (logger instanceof RackLogger.DelegatingLogger) {
-            logger = ((RackLogger.DelegatingLogger) logger).unwrapLogger();
+        if (logger instanceof RackLogger.DelegatingLogger delegatingLogger) {
+            logger = delegatingLogger.unwrapLogger();
         }
         return JavaEmbedUtils.javaToRuby(context.runtime, logger);
     }
@@ -399,8 +399,8 @@ public class Logger extends RubyObject { // implements RackLogger
 
     @JRubyMethod(visibility = Visibility.PRIVATE, required = 4)
     public IRubyObject format_message(final ThreadContext context, final IRubyObject[] args) {
-        if ( formatter instanceof RubyProc ) {
-            return ((RubyProc) formatter).call(context, args);
+        if (formatter instanceof RubyProc rubyProc) {
+            return rubyProc.call(context, args);
         }
         return formatter.callMethod(context, "call", args);
     }
