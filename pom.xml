@@ -31,6 +31,7 @@
     <jruby.test.version>${jruby.compat.version}</jruby.test.version>
 
     <!-- Minimum servlet API compatibility to target (Jakarta EE 9) -->
+    <!-- See https://en.wikipedia.org/wiki/Jakarta_EE#Web_profile -->
     <servlet-api.compat.version>5.0.0</servlet-api.compat.version>
     <servlet-jsp-api.compat.version>3.0.0</servlet-jsp-api.compat.version>
 
