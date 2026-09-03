@@ -1,3 +1,7 @@
+## 1.2.9 (UNRELEASED)
+
+- TBC
+
 ## 1.2.8
 
 - Improve isolation and bundler version/CLI boot issues with more opinionated boot process (#461)
