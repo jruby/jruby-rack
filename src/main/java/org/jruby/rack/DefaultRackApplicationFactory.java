@@ -53,8 +53,8 @@ public class DefaultRackApplicationFactory implements RackApplicationFactory {
      * @return unwrapped "real" factory (might be the same as given)
      */
     public static RackApplicationFactory getRealFactory(final RackApplicationFactory factory) {
-        if ( factory instanceof RackApplicationFactory.Decorator ) {
-            return getRealFactory( ((Decorator) factory).getDelegate() );
+        if (factory instanceof Decorator decorator) {
+            return getRealFactory( decorator.getDelegate() );
         }
         return factory;
     }

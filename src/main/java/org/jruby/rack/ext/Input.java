@@ -84,11 +84,11 @@ public class Input extends RubyObject {
     public IRubyObject initialize(final ThreadContext context, final IRubyObject input) {
         final Object arg = JavaEmbedUtils.rubyToJava(input);
         // NOTE: this.rewindable = true; by default ?!
-        if ( arg instanceof InputStream ) {
-            setInput( (InputStream) arg );
+        if (arg instanceof InputStream inputStream) {
+            setInput(inputStream);
         }
-        else if ( arg instanceof RackEnvironment ) {
-            initialize((RackEnvironment) arg);
+        else if (arg instanceof RackEnvironment rackEnvironment) {
+            initialize(rackEnvironment);
         }
         return context.nil;
     }
@@ -189,8 +189,8 @@ public class Input extends RubyObject {
             }
             catch (InvocationTargetException e) {
                 final Throwable target = e.getCause();
-                if ( target instanceof IOException ) {
-                    throw ExceptionUtils.newIOError(context.runtime, (IOException) target);
+                if (target instanceof IOException ioException) {
+                    throw ExceptionUtils.newIOError(context.runtime, ioException);
                 }
                 throw ExceptionUtils.newRuntimeError(context.runtime, target);
             }

@@ -108,7 +108,7 @@ public class RaiseLogger extends RackLogger.Base {
             }
         }
         if ( isRaise(level) ) {
-            if ( ex instanceof RuntimeException ) throw (RuntimeException) ex;
+            if (ex instanceof RuntimeException runtimeException) throw runtimeException;
             throw new RuntimeException(message.toString(), ex);
         }
     }

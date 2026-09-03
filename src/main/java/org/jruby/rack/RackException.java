@@ -44,7 +44,7 @@ public class RackException extends RuntimeException {
     }
     
     static RackException wrap(final Exception e) {
-        if (e instanceof RackException) return (RackException) e;
+        if (e instanceof RackException rackException) return rackException;
         return new RackException(e);
     }
 

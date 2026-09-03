@@ -39,8 +39,8 @@ public class Dispatcher extends AbstractRackDispatcher {
     private void initialize() {
         final Ruby runtime = application.getRuntime();
         // initialize embedded config (set stdout/stderr etc) :
-        if (context instanceof Context) {
-            ((Context) context).getConfig().doInitialize(runtime);
+        if (context instanceof Context ctx) {
+            ctx.getConfig().doInitialize(runtime);
         }
         ThreadContext currentContext = runtime.getCurrentContext();
         // `JRuby::Rack.context = context`

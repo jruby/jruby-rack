@@ -22,7 +22,6 @@ import org.jruby.rack.servlet.ServletRackResponseEnvironment;
  *
  * @author nicksieger
  */
-@SuppressWarnings("serial")
 public abstract class AbstractServlet extends HttpServlet {
 
     @Override

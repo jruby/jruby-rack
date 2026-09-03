@@ -77,8 +77,8 @@ public class DefaultRackDispatcher extends AbstractRackDispatcher {
     }
 
     protected RackApplicationFactory getRackFactory() {
-        if (context instanceof ServletRackContext) {
-            return ((ServletRackContext) context).getRackFactory();
+        if (context instanceof ServletRackContext servletRackContext) {
+            return servletRackContext.getRackFactory();
         }
         throw new IllegalStateException("not a servlet rack context");
     }

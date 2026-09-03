@@ -9,7 +9,6 @@ package org.jruby.rack;
 
 import org.jruby.exceptions.RaiseException;
 
-@SuppressWarnings("serial")
 public class RackInitializationException extends RackException {
     
     public RackInitializationException(String msg) {
@@ -25,9 +24,9 @@ public class RackInitializationException extends RackException {
     }
 
     static RackException wrap(final Exception e) {
-        if (e instanceof RackException) return (RackException) e;
-        if (e instanceof RaiseException) {
-            return new RackInitializationException((RaiseException) e);
+        if (e instanceof RackException rackException) return rackException;
+        if (e instanceof RaiseException raiseException) {
+            return new RackInitializationException(raiseException);
         }
         return new RackInitializationException(e.toString(), e);
     }

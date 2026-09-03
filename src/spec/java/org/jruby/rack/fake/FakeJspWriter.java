@@ -7,7 +7,6 @@
 
 package org.jruby.rack.fake;
 
-import java.io.IOException;
 import javax.servlet.jsp.JspWriter;
 
 /**

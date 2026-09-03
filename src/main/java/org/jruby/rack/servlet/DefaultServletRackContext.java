@@ -52,8 +52,8 @@ public class DefaultServletRackContext implements ServletRackContext, RackLogger
     ServletContext getRealContext() { return getContext(); }
 
     public static ServletContext getRealContext(final ServletContext context) {
-        if ( context instanceof DefaultServletRackContext ) {
-            return ((DefaultServletRackContext) context).getRealContext();
+        if (context instanceof DefaultServletRackContext defaultServletRackContext) {
+            return defaultServletRackContext.getRealContext();
         }
         return context;
     }

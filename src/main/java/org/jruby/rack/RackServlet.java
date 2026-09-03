@@ -9,7 +9,6 @@ package org.jruby.rack;
 
 import javax.servlet.ServletConfig;
 
-@SuppressWarnings("serial")
 public class RackServlet extends AbstractServlet {
 
     private RackDispatcher dispatcher;

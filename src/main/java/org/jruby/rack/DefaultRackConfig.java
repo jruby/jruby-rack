@@ -43,8 +43,8 @@ public class DefaultRackConfig implements RackConfig {
     public void setOut(OutputStream o) {
         if (o == null) {
             out = System.out;
-        } else if (o instanceof PrintStream) {
-            out = (PrintStream) o;
+        } else if (o instanceof PrintStream printStream) {
+            out = printStream;
         } else {
             out = new PrintStream(o);
         }
@@ -58,8 +58,8 @@ public class DefaultRackConfig implements RackConfig {
     public void setErr(OutputStream o) {
         if (o == null) {
             err = System.err;
-        } else if (o instanceof PrintStream) {
-            err = (PrintStream) o;
+        } else if (o instanceof PrintStream printStream) {
+            err = printStream;
         } else {
             err = new PrintStream(o);
         }

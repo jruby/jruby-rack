@@ -415,8 +415,8 @@ public class Response extends RubyObject implements RackResponse {
                         response.addIntHeader(name, (int) value); return;
                     } // else will do addHeader
                 }
-                else if ( val instanceof RubyTime ) {
-                    final long millis = ((RubyTime) val).getDateTime().getMillis();
+                else if (val instanceof RubyTime rubyTime) {
+                    final long millis = rubyTime.getDateTime().getMillis();
                     response.addDateHeader(name, millis); return;
                 }
 
@@ -454,16 +454,16 @@ public class Response extends RubyObject implements RackResponse {
             }
 
             if ( body.respondsTo("to_channel") ) { // (body or body.body_parts).to_channel
-                if ( body instanceof RubyIO ) {
-                    bodyChannel = ((RubyIO) body).getChannel();
+                if (body instanceof RubyIO rubyIO) {
+                    bodyChannel = rubyIO.getChannel();
                 }
                 else {
 
                     final IRubyObject channel = body.callMethod(context, "to_channel");
                     bodyChannel = channel.toJava(Channel.class);
                 }
-                if ( bodyChannel instanceof FileChannel ) {
-                    transferChannel( (FileChannel) bodyChannel, response.getOutputStream() );
+                if (bodyChannel instanceof FileChannel fileChannel) {
+                    transferChannel(fileChannel, response.getOutputStream() );
                 }
                 else {
                     transferChannel( (ReadableByteChannel) bodyChannel, response.getOutputStream() );
@@ -572,8 +572,8 @@ public class Response extends RubyObject implements RackResponse {
         if ( this.headers != null ) {
             final RubyString key = RubyString.newString(getRuntime(), TRANSFER_ENCODING);
             final IRubyObject value = this.headers.callMethod("[]", key);
-            if ( value instanceof RubyString ) {
-                return chunked = ( (RubyString) value ).getByteList().equal(CHUNKED);
+            if (value instanceof RubyString rubyString) {
+                return chunked = rubyString.getByteList().equal(CHUNKED);
             }
         }
         return chunked = Boolean.FALSE;
@@ -641,8 +641,8 @@ public class Response extends RubyObject implements RackResponse {
 
     private boolean skipEncodingHeader(final IRubyObject value) {
         if ( dechunk == Boolean.FALSE ) return false;
-        if ( value instanceof RubyString ) {
-            return ( (RubyString) value ).getByteList().equal(CHUNKED);
+        if (value instanceof RubyString rubyString) {
+            return rubyString.getByteList().equal(CHUNKED);
         }
         return false;
     }
