@@ -1,4 +1,7 @@
-## 1.3.0 (UNRELEASED) 
+## 1.3.1 (UNRELEASED)
+- TBC
+
+## 1.3.0 
 
 - Officially support Javax Servlet API 4.0 (JEE 8)
 - Refactor logging for more sane defaults

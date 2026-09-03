@@ -3,6 +3,7 @@
 [![Gem Version](https://img.shields.io/gem/v/jruby-rack)](https://rubygems.org/gems/jruby-rack)
 [![Jar Version](https://img.shields.io/maven-central/v/org.jruby.rack/jruby-rack)](https://central.sonatype.com/artifact/org.jruby.rack/jruby-rack)
 [![master Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3Amaster) (master)
+[![1.3.x Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg?branch=1.3-stable)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3A1.3-stable) (1.3.x)
 [![1.2.x Build Status](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml/badge.svg?branch=1.2-stable)](https://github.com/jruby/jruby-rack/actions/workflows/maven.yml?query=branch%3A1.2-stable) (1.2.x)
  
 JRuby-Rack is a lightweight adapter for the Java Servlet environment that allows
