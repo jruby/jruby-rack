@@ -29,7 +29,6 @@ public interface RackEnvironment {
      * failed with. Useful when dispatching call to an {@link ErrorApplication}.
      */
     String EXCEPTION = "jruby.rack.exception";
-    String DYNAMIC_REQS_ONLY = "jruby.rack.dynamic.requests.only";
 
     /**
      * @return the associated {@link RackContext} for this environment

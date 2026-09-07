@@ -152,7 +152,6 @@ public class UnmappedRackFilter extends AbstractFilter {
             else if ( isResetUnhandledResponseBuffer() ) {
                 response.resetBuffer();
             }
-            request.setAttribute(RackEnvironment.DYNAMIC_REQS_ONLY, Boolean.TRUE);
             return true; // dispatch (rails) - nobody handled the request
         }
         // do not dispatch if a filter set a 2xx/3xx response already ... or

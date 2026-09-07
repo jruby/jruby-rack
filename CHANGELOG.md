@@ -1,6 +1,7 @@
 ## 1.2.9 (UNRELEASED)
 
 - fix: ensure `rack.` internal headers are stripped in responses
+- chore: remove ancient dead Rails 2-era adapter code
 
 ## 1.2.8
 

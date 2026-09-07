@@ -59,7 +59,6 @@ describe org.jruby.rack.RackFilter do
       resp.sendError(404)
     end
     expect(@response).to receive(:reset).ordered
-    expect(@request).to receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
     expect(dispatcher).to receive(:process).ordered
     filter.doFilter(@request, @response, chain)
   end
@@ -202,7 +201,6 @@ describe org.jruby.rack.RackFilter do
       resp.sendError(404) # 404 status is irrelevant here !
     end
     expect(@response).to receive(:reset).ordered
-    expect(@request).to receive(:setAttribute).ordered.with(org.jruby.rack.RackEnvironment::DYNAMIC_REQS_ONLY, true)
     expect(dispatcher).to receive(:process).ordered do |_, resp|
       resp.setStatus(404)
     end
