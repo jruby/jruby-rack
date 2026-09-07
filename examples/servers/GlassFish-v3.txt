@@ -224,7 +224,6 @@ SERVER_SOFTWARE = GlassFish v3
 java.servlet_context = org.jruby.rack.servlet.DefaultServletRackContext@15031ecd
 java.servlet_request = org.apache.catalina.connector.RequestFacade@7756b388
 java.servlet_response = org.apache.catalina.connector.ResponseFacade@3be57272
-jruby.rack.dynamic.requests.only = true
 jruby.rack.version = 1.1.0.dev-SNAPSHOT
 rack.errors = #<JRuby::Rack::ErrorLog:0x446b852>
 rack.input = #<JRuby::RackInput:0x3eef11af>
