@@ -169,24 +169,16 @@ describe "integration" do
         # production.rb: config.log_level = 'info'
         should_eval_as_eql_to "Rails.logger.level", Logger::INFO
 
-        # Rails 7.1+ wraps the default in a ActiveSupport::BroadcastLogger
-        if Rails::VERSION::STRING < '7.1'
-          should_eval_as_eql_to "Rails.logger.is_a? JRuby::Rack::Logger", true
-          should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::TaggedLogging", true
-          unwrap_logger = "logger = Rails.logger;"
-        else
-          should_eval_as_not_nil "defined?(ActiveSupport::BroadcastLogger)"
-          should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::BroadcastLogger", true
-          should_eval_as_eql_to "Rails.logger.broadcasts.size", 1
-          should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? JRuby::Rack::Logger", true
-          # NOTE: TaggedLogging is a module that extends the logger instance:
-          should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? ActiveSupport::TaggedLogging", true
+        should_eval_as_not_nil "defined?(ActiveSupport::BroadcastLogger)"
+        should_eval_as_eql_to "Rails.logger.is_a? ActiveSupport::BroadcastLogger", true
+        should_eval_as_eql_to "Rails.logger.broadcasts.size", 1
+        should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? JRuby::Rack::Logger", true
+        # NOTE: TaggedLogging is a module that extends the logger instance:
+        should_eval_as_eql_to "Rails.logger.broadcasts.first.is_a? ActiveSupport::TaggedLogging", true
 
-          should_eval_as_eql_to "Rails.logger.broadcasts.first.level", Logger::INFO
+        should_eval_as_eql_to "Rails.logger.broadcasts.first.level", Logger::INFO
 
-          unwrap_logger = "logger = Rails.logger.broadcasts.first;"
-        end
-
+        unwrap_logger = "logger = Rails.logger.broadcasts.first;"
         # sanity check logger-silence works:
         should_eval_as_not_nil "#{unwrap_logger} defined?(logger.silence)"
         should_eval_as_eql_to "#{unwrap_logger} logger.silence { logger.warn('from-integration-spec') }", true
