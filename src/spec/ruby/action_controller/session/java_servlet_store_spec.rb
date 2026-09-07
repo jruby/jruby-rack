@@ -273,7 +273,6 @@ describe "ActionController::Session::JavaServletStore" do
   end
 
   it "propagates rails csrf token to session during commit" do
-    skip "Only runs on Rails 7.1+" unless defined? ::ActionController::RequestForgeryProtection::CSRF_TOKEN
     session = double_http_session
     expect(@request).to receive(:getSession).and_return(session)
 
