@@ -156,7 +156,6 @@ SERVER_SOFTWARE = Apache Tomcat/6.0.14
 java.servlet_context = org.jruby.rack.servlet.DefaultServletRackContext@6e61a414
 java.servlet_request = org.apache.catalina.connector.RequestFacade@322ba3e4
 java.servlet_response = org.apache.catalina.connector.ResponseFacade@35afe17b
-jruby.rack.dynamic.requests.only = true
 jruby.rack.version = 1.1.0.dev-SNAPSHOT
 rack.errors = #<JRuby::Rack::ErrorLog:0x1d1d2b8>
 rack.input = #<JRuby::RackInput:0x76612ef6>
