@@ -26,8 +26,7 @@ GEM
     thor (1.5.0)
 
 PLATFORMS
-  universal-java-21
-  universal-java-25
+  universal-java
 
 DEPENDENCIES
   appraisal
