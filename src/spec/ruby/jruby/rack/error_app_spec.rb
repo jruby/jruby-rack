@@ -82,6 +82,16 @@ describe 'JRuby::Rack::ErrorApp' do
     end
   end
 
+  it "returns a fresh headers hash for each response" do
+    init_exception
+    response1 = error_app.call(@env)
+    response1[1]['X-Polluted'] = 'leaked'
+
+    response2 = error_app.call(@env)
+    expect(response2[1]).to_not include 'X-Polluted'
+    expect(JRuby::Rack::ErrorApp::DEFAULT_HEADERS).to be_empty
+  end
+
   it spec = "still serves when retrieving exception's message fails" do
     @env['HTTP_ACCEPT'] = '*/*'
     @env[JRuby::Rack::ErrorApp::EXCEPTION] = InitException.new spec

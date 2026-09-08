@@ -2,6 +2,7 @@
 
 - fix: ensure `rack.` internal headers are stripped in responses
 - chore: remove ancient dead Rails 2-era adapter code
+- fix: ensure ErrorApp does not mutate shared headers constant
 
 ## 1.2.8
 

@@ -105,7 +105,7 @@ module JRuby
         end
       end
 
-      def respond(status = nil, body = nil, headers = DEFAULT_HEADERS)
+      def respond(status = nil, body = nil, headers = DEFAULT_HEADERS.dup)
         status ||= DEFAULT_RESPONSE_CODE
         body += "\n" if body
         headers['Content-Type'] = "text/plain" unless headers.key?('Content-Type')
