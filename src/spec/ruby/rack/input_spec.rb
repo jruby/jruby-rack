@@ -39,6 +39,17 @@ module InputSpec
         expect(input.read(16)).to eq "hello\r\ngoodbye"
       end
 
+      it "should return an empty string for read(0) without consuming input" do
+        expect(input.read(0)).to eq ""
+        expect(input.read).to eq "hello\r\ngoodbye"
+      end
+
+      it "should replace buffer contents with an empty string for read(0, buffer)" do
+        buf = "cruft"
+        expect(input.read(0, buf)).to eq ""
+        expect(buf).to eq ""
+      end
+
       it "should read into a provided buffer" do
         buf = ""
         input.read(nil, buf)

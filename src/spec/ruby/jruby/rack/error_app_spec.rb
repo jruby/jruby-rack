@@ -82,6 +82,16 @@ describe 'JRuby::Rack::ErrorApp' do
     end
   end
 
+  it "returns a fresh headers hash for each response" do
+    init_exception
+    response1 = error_app.call(@env)
+    response1[1]['X-Polluted'] = 'leaked'
+
+    response2 = error_app.call(@env)
+    expect(response2[1]).to_not include 'X-Polluted'
+    expect(JRuby::Rack::ErrorApp::DEFAULT_HEADERS).to be_empty
+  end
+
   it spec = "still serves when retrieving exception's message fails" do
     @env['HTTP_ACCEPT'] = '*/*'
     @env[JRuby::Rack::ErrorApp::EXCEPTION] = InitException.new spec
@@ -131,6 +141,18 @@ describe 'JRuby::Rack::ErrorApp' do
       expect(response[0]).to eql 500
       expect(response[2][0]).to match /<div id="info">\s*?<\/div>/m
       expect(@env['rack.showstatus.detail']).to be false
+    end
+
+    it "closes the original body when replacing it with the rendered template" do
+      body = double('body', :each => nil)
+      expect(body).to receive(:close)
+
+      app = lambda { |env| [ 500, {}, body ] }
+      show_status = JRuby::Rack::ErrorApp::ShowStatus.new(app)
+      @env['HTTP_ACCEPT'] = '*/*'
+
+      response = show_status.call(@env)
+      expect(response[2][0]).to include 'Internal Server Error'
     end
 
     it "with response < 400 and 'rack.showstatus.detail' set to false does not render exception" do

@@ -362,7 +362,7 @@ public class Response extends RubyObject implements RackResponse {
         return context.nil;
     }
 
-    private static final ByteList NEW_LINE = new ByteList(new byte[] { '\n' }, false);
+    private static final ByteList NEW_LINE = ByteList.create("\n");
 
     protected void writeHeaders(final RackResponseEnvironment response) {
         this.headers.visitAll(currentContext(), new RubyHash.Visitor() { // headers.each { |key, val| }
@@ -386,7 +386,7 @@ public class Response extends RubyObject implements RackResponse {
                     } // else will do addHeader
                 }
 
-                if ( name.equals("Transfer-Encoding") ) {
+                if ( name.equalsIgnoreCase("Transfer-Encoding") ) {
                     if ( skipEncodingHeader(val) ) return;
                 }
 
@@ -566,9 +566,8 @@ public class Response extends RubyObject implements RackResponse {
         return context.runtime.newBoolean( isChunked() );
     }
 
-    private static final ByteList TRANSFER_ENCODING = new ByteList(
-        new byte[] { 'T','r','a','n','s','f','e','r','-','E','n','c','o','d','i','n','g' },
-    false);
+    private static final ByteList TRANSFER_ENCODING = ByteList.create("Transfer-Encoding");
+    private static final ByteList TRANSFER_ENCODING_LOWER = ByteList.create("transfer-encoding");
 
     private Boolean chunked;
 
@@ -578,13 +577,24 @@ public class Response extends RubyObject implements RackResponse {
     public boolean isChunked() {
         if ( chunked != null ) return chunked;
         if ( this.headers != null ) {
-            final RubyString key = RubyString.newString(getRuntime(), TRANSFER_ENCODING);
-            final IRubyObject value = this.headers.callMethod("[]", key);
+            final IRubyObject value = getHeaderValue(TRANSFER_ENCODING, TRANSFER_ENCODING_LOWER);
             if ( value instanceof RubyString ) {
                 return chunked = ( (RubyString) value ).getByteList().equal(CHUNKED);
             }
         }
         return chunked = Boolean.FALSE;
+    }
+
+    /**
+     * Rack does not mandate response header name casing - apps might use the
+     * conventional Capitalized-Names or (Rack 3.x style) lower-case names.
+     */
+    private IRubyObject getHeaderValue(final ByteList canonicalName, final ByteList lowerCaseName) {
+        IRubyObject value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), canonicalName));
+        if ( value.isNil() ) {
+            value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), lowerCaseName));
+        }
+        return value;
     }
 
     /**
@@ -599,9 +609,8 @@ public class Response extends RubyObject implements RackResponse {
         return context.runtime.newBoolean( doFlush() );
     }
 
-    private static final ByteList CONTENT_LENGTH = new ByteList(
-        new byte[] { 'C','o','n','t','e','n','t','-','L','e','n','g','t','h' },
-    false);
+    private static final ByteList CONTENT_LENGTH = ByteList.create("Content-Length");
+    private static final ByteList CONTENT_LENGTH_LOWER = ByteList.create("content-length");
 
     /**
      * @return whether output (body) should be flushed after each written line
@@ -609,9 +618,8 @@ public class Response extends RubyObject implements RackResponse {
     protected boolean doFlush() {
         if ( isChunked() ) return true;
         if ( this.headers != null ) {
-            final RubyString key = RubyString.newString(getRuntime(), CONTENT_LENGTH);
-            final IRubyObject value = this.headers.callMethod("[]", key);
-            return value.isNil(); // does not have a Content-Length header
+            // does not have a Content-Length header :
+            return getHeaderValue(CONTENT_LENGTH, CONTENT_LENGTH_LOWER).isNil();
         }
         return false;
     }
@@ -645,7 +653,7 @@ public class Response extends RubyObject implements RackResponse {
         return false;
     }
 
-    private static final ByteList CHUNKED = new ByteList(new byte[] { 'c','h','u','n','k','e','d' }, false);
+    private static final ByteList CHUNKED = ByteList.create("chunked");
 
     private boolean skipEncodingHeader(final IRubyObject value) {
         if ( dechunk == Boolean.FALSE ) return false;

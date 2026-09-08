@@ -2,6 +2,10 @@
 
 - fix: ensure `rack.` internal headers are stripped in responses
 - chore: remove ancient dead Rails 2-era adapter code
+- fix: ensure ErrorApp does not mutate shared headers constant
+- fix: JRuby::Rack::Input#read(0) should return an empty string
+- fix: close the original body when ShowStatus replaces it
+- fix: detect Transfer-Encoding/Content-Length headers case-insensitively
 
 ## 1.2.8
 

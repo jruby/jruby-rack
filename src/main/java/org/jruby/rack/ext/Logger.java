@@ -448,18 +448,12 @@ public class Logger extends RubyObject { // implements RackLogger
         return RubyString.newStringShared(context.runtime, formatSeverity(severity));
     }
 
-    private static final ByteList FORMATTED_DEBUG =
-            new ByteList(new byte[] { 'D','E','B','U','G' }, false);
-    private static final ByteList FORMATTED_INFO =
-            new ByteList(new byte[] { 'I','N','F','O' }, false);
-    private static final ByteList FORMATTED_WARN =
-            new ByteList(new byte[] { 'W','A','R','N' }, false);
-    private static final ByteList FORMATTED_ERROR =
-            new ByteList(new byte[] { 'E','R','R','O','R' }, false);
-    private static final ByteList FORMATTED_FATAL =
-            new ByteList(new byte[] { 'F','A','T','A','L' }, false);
-    private static final ByteList FORMATTED_ANY =
-            new ByteList(new byte[] { 'A','N','Y' }, false);
+    private static final ByteList FORMATTED_DEBUG = ByteList.create("DEBUG");
+    private static final ByteList FORMATTED_INFO = ByteList.create("INFO");
+    private static final ByteList FORMATTED_WARN = ByteList.create("WARN");
+    private static final ByteList FORMATTED_ERROR = ByteList.create("ERROR");
+    private static final ByteList FORMATTED_FATAL = ByteList.create("FATAL");
+    private static final ByteList FORMATTED_ANY = ByteList.create("ANY");
 
     private static ByteList formatSeverity(final int severity) {
         switch ( severity) {

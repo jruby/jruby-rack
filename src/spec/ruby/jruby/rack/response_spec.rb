@@ -137,6 +137,15 @@ describe JRuby::Rack::Response do
     expect(response.chunked?).to be true
   end
 
+  it "detects a chunked response with a lower-case transfer-encoding header" do
+    headers = { "transfer-encoding" => "chunked" }
+    response = JRuby::Rack::Response.new [200, headers, ['body']]
+    # NOTE: servlet container auto handle chunking when flushed no need to set :
+    expect(servlet_response).not_to receive(:addHeader).with("transfer-encoding", "chunked")
+    response.write_headers(response_environment)
+    expect(response.chunked?).to be true
+  end
+
   describe "#write_body" do
 
     let(:stream) do
@@ -300,6 +309,16 @@ describe JRuby::Rack::Response do
       response.write_headers(response_environment)
 
       # expect(stream).to receive(:write).twice
+      expect(stream).to receive(:flush).never
+      response.write_body(response_environment)
+    end
+
+    it "does not flush the body when lower-case content-length set" do
+      headers = { "content-length" => 10 }
+      response = JRuby::Rack::Response.new [200, headers, ['hello', 'there']]
+
+      response.write_headers(response_environment)
+
       expect(stream).to receive(:flush).never
       response.write_body(response_environment)
     end
