@@ -242,7 +242,7 @@ public class Response extends RubyObject implements RackResponse {
             this.body = arg.callMethod(context, "[]", context.runtime.newFixnum(2));
         }
         // HACK: deal with objects that don't comply with Rack specification
-        if ( ! this.body.respondsTo("each_line") && ! this.body.respondsTo("each") ) {
+        if ( ! this.body.respondsTo("each_line") && ! this.body.respondsTo("each") && ! this.body.respondsTo("call") ) {
             this.body = this.body.asString(); // previously @body = [ @body.to_s ]
         }
         return this;
@@ -447,10 +447,9 @@ public class Response extends RubyObject implements RackResponse {
         final ThreadContext context = currentContext();
         Channel bodyChannel = null; IRubyObject body = this.body;
         try {
-            if ( body.respondsTo("call") && ! body.respondsTo("each") ) {
-                final IRubyObject outputStream =
-                    JavaUtil.convertJavaToRuby(context.runtime, response.getOutputStream());
-                this.body.callMethod(context, "call", outputStream);
+            if ( body.respondsTo("call") && ! body.respondsTo("each") ) { // Rack 3 streaming body
+                final IRubyObject outputStream = JavaUtil.convertJavaToRuby(context.runtime, response.getOutputStream());
+                callMethod(context, "write_streaming_body", outputStream);
                 return;
             }
 
@@ -493,20 +492,21 @@ public class Response extends RubyObject implements RackResponse {
                 try {
                     invoke(context, body, method,
                         new JavaInternalBlockBody(context.runtime, Signature.ONE_REQUIRED) {
-                        @Override
-                        public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
-                            return this.yield(context, args[0]);
-                        }
-
-                        @Override
-                        public IRubyObject yield(ThreadContext context, IRubyObject line) {
-                            try {
-                                output.write( line.asString().getBytes() );
-                                if ( doFlush() ) output.flush();
+                            @Override
+                            public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
+                                return this.yield(context, args[0]);
                             }
-                            catch (IOException e) { throw new WrappedException(e); }
-                            return context.nil;
-                        }
+
+                            @Override
+                            public IRubyObject yield(ThreadContext context, IRubyObject line) {
+                                try {
+                                    output.write(line.asString().getBytes());
+                                    if (doFlush()) output.flush();
+                                } catch (IOException e) {
+                                    throw new WrappedException(e);
+                                }
+                                return context.nil;
+                            }
                     });
                 }
                 catch (WrappedException e) { throw e.getIOCause(); }
