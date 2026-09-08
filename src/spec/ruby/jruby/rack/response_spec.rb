@@ -112,6 +112,14 @@ describe JRuby::Rack::Response do
     response.to_java.respond(response_environment)
   end
 
+  it "does not send rack. headers to the client" do
+    headers = { "rack.hijack" => Object.new, "Server" => "Trinidad" }
+    response = JRuby::Rack::Response.new [200, headers, ['body']]
+    expect(servlet_response).to receive(:addHeader).with("Server", "Trinidad")
+    expect(servlet_response).not_to receive(:addHeader).with("rack.hijack", anything)
+    response.write_headers(response_environment)
+  end
+
   it "calls close on the body if the body responds to close" do
     body = double('body')
     expect(body).to receive(:each).ordered.and_yield "hello"
