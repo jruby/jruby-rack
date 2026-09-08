@@ -86,6 +86,13 @@ describe JRuby::Rack::Response do
     response.write_headers(response_environment)
   end
 
+  it "writes frozen header values containing newlines without raising" do
+    response.to_java.getHeaders.update({ "Set-Cookie" => "cookie1\ncookie2".freeze })
+    expect(servlet_response).to receive(:addHeader).with("Set-Cookie", "cookie1")
+    expect(servlet_response).to receive(:addHeader).with("Set-Cookie", "cookie2")
+    response.write_headers(response_environment)
+  end
+
   it "adds an int header when values is a fixnum" do
     update_response_headers "Expires" => 0
     expect(response_environment).to receive(:addIntHeader).with("Expires", 0)
@@ -135,6 +142,22 @@ describe JRuby::Rack::Response do
     expect(servlet_response).not_to receive(:addHeader).with("Transfer-Encoding", "chunked")
     response.write_headers(response_environment)
     expect(response.chunked?).to be true
+  end
+
+  it "handles (single value) Array header values for special-cased headers (Rack 3.x)" do
+    headers = { "content-type" => [ "text/html" ], "content-length" => [ "5" ] }
+    response = JRuby::Rack::Response.new [200, headers, ['hello']]
+    expect(servlet_response).to receive(:setContentType).with("text/html")
+    expect(servlet_response).to receive(:setContentLength).with(5)
+    response.write_headers(response_environment)
+  end
+
+  it "adds multi value Array special-cased headers without raising (Rack 3.x)" do
+    headers = { "content-type" => [ "text/html", "text/plain" ] }
+    response = JRuby::Rack::Response.new [200, headers, ['hello']]
+    expect(servlet_response).to receive(:addHeader).with("content-type", "text/html")
+    expect(servlet_response).to receive(:addHeader).with("content-type", "text/plain")
+    response.write_headers(response_environment)
   end
 
   it "detects a chunked response with a lower-case transfer-encoding header" do
@@ -418,6 +441,53 @@ describe JRuby::Rack::Response do
 
       response = JRuby::Rack::Response.new [200, body.headers, body]
       expect(body).to receive(:close)
+
+      response.write_body(response_environment)
+    end
+
+    it "writes a streaming (#call) body via a stream wrapping the output" do
+      body = lambda do |out|
+        out.write "hello "
+        out << "there"
+        out.close
+      end
+      response = JRuby::Rack::Response.new [200, {}, body]
+      response.write_body(response_environment)
+      expect(stream.to_s).to eq "hello there"
+    end
+
+    it "does not stringify a streaming (#call) body" do
+      body = lambda { |out| out.close }
+      response = JRuby::Rack::Response.new [200, {}, body]
+      expect(response.body).to be body # not coerced to a String
+    end
+
+    it "hands the streaming body a Rack SPEC compliant stream and closes it" do
+      seen = nil
+      body = lambda { |out| seen = out }
+      response = JRuby::Rack::Response.new [200, {}, body]
+      response.write_body(response_environment)
+
+      %i[read write << flush close close_read close_write closed?].each do |method|
+        expect(seen).to respond_to(method)
+      end
+      expect(seen.closed?).to be true # stream always closed after the body returns
+    end
+
+    it "flushes the output after each streamed write, then closes it" do
+      body = lambda do |out|
+        out.write "a"
+        out << "b"
+      end
+      response = JRuby::Rack::Response.new [200, {}, body]
+
+      # streaming means each write reaches the client promptly (write then flush)
+      # and the underlying output is closed once the body returns
+      expect(stream).to receive(:write).ordered
+      expect(stream).to receive(:flush).ordered
+      expect(stream).to receive(:write).ordered
+      expect(stream).to receive(:flush).ordered
+      expect(stream).to receive(:close).ordered
 
       response.write_body(response_environment)
     end

@@ -2,8 +2,10 @@ source 'https://rubygems.org'
 
 ruby RUBY_VERSION
 
-gem 'rails', '~> 7.2.0'
+gem 'rails', '~> 8.1.0'
+gem 'rack', '~> 3.2.0'
 gem 'sprockets-rails'
+gem 'json', '< 3' # ActiveSupport 8.1 not compatible with json 3 yet.
 
 group :development do
   gem 'jruby-jars', JRUBY_VERSION

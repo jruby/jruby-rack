@@ -53,6 +53,7 @@ describe 'Rack::Handler::Servlet ServletEnv vs DefaultEnv (parsing parity)' do
     [ 'hash [k] key',            'a%5Bb%5D=1',              [ [ 'a[b]', '1' ] ] ],
     [ 'deep [k][j] nesting',     'a%5Bb%5D%5Bc%5D=x',       [ [ 'a[b][c]', 'x' ] ] ],
     [ 'hash-in-array a[][b]',    'a%5B%5D%5Bb%5D=1',        [ [ 'a[][b]', '1' ] ] ],
+    [ 'nested hash-in-array',    'book%5Bchapters%5D%5B%5D%5Btitle%5D=first&book%5Bchapters%5D%5B%5D%5Btitle%5D=second', [ [ 'book[chapters][][title]', 'first' ], [ 'book[chapters][][title]', 'second' ] ] ],
     [ 'numeric-index hash',      'huh%5B1%5D=b&huh%5B0%5D=a', [ [ 'huh[1]', 'b' ], [ 'huh[0]', 'a' ] ] ],
     [ 'bracket-in-bracket meh[]','foo%5Bmeh%5B%5D%5D=x&foo%5Bmeh%5B%5D%5D=42', [ [ 'foo[meh[]]', 'x' ], [ 'foo[meh[]]', '42' ] ] ],
     [ 'unbalanced brackets',     'foo]=0&bar[=1&baz_=2&[meh=3', [ [ 'foo]', '0' ], [ 'bar[', '1' ], [ 'baz_', '2' ], [ '[meh', '3' ] ] ],

@@ -7,6 +7,8 @@
 #++
 
 require 'rack/handler/servlet'
+require 'rack' # Rack.release is needed at class definition time - this file
+# is auto-loaded on first use, which is after the application boot loads rack
 
 module Rack
   module Handler
@@ -47,6 +49,8 @@ module Rack
         FORM_INPUT = "rack.request.form_input".freeze
         # @private
         FORM_HASH = "rack.request.form_hash".freeze
+        # @private
+        FORM_PAIRS = "rack.request.form_pairs".freeze # Rack 3.2+
 
         # @private
         POST_PARAM_METHODS = [ 'POST', 'PUT', 'DELETE' ].freeze
@@ -57,6 +61,7 @@ module Rack
           get_only = ! POST_PARAM_METHODS.include?( @servlet_env.getMethod )
           # we only need to really do this for POSTs but we'll handle all
           query_params, form_params = query_parser.make_params, query_parser.make_params
+          form_pairs = [] # raw (un-nested) POST name/value pairs for Rack 3.2+
           # NOTE: HttpServletRequest#getParameterMap merges query-string and
           # (POST) body parameters and exposes *every* raw value per name -
           # including repeated names that do not end with '[]' and names that
@@ -82,11 +87,13 @@ module Rack
                 end
                 store_parameter(query_params, key, get_vals)
                 store_parameter(form_params, key, post_vals)
+                post_vals.each { |v| form_pairs << [ key, v ] }
               else
                 store_parameter(query_params, key, val)
               end
             else # POST param :
               store_parameter(form_params, key, val)
+              val.each { |v| form_pairs << [ key, v ] }
             end
           end
           # Rack::Request#GET
@@ -96,6 +103,8 @@ module Rack
           # TODO should recreate the input e.g. multipart/form-data ...
           @env[ FORM_INPUT ] = @env['rack.input']
           @env[ FORM_HASH ] = form_params.to_h
+          # Rack::Request#form_pairs (Rack 3.2+, ignored by older Rack)
+          @env[ FORM_PAIRS ] = form_pairs
         end
 
         def [](key)

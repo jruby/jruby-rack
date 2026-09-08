@@ -143,7 +143,7 @@ task :gem => [:clean, target_jar, target_jruby_rack, target_jruby_rack_version] 
       gem.files = FileList["./**/*"].exclude("*.gem").map{ |f| f.sub(/^\.\//, '') }
       gem.homepage = %q{http://jruby.org}
       gem.required_ruby_version = '>= 3.4.0' # JRuby >= 10.0
-      gem.add_dependency 'rack', '~> 2.2.0'
+      gem.add_dependency 'rack', '>= 2.2.0', '< 4'
     end
 
     require 'rubygems/package'

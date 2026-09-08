@@ -7,6 +7,8 @@
 #++
 
 require 'rack/handler/servlet'
+require 'rack' # Rack.release is needed at class definition time - this file
+# is auto-loaded on first use, which is after the application boot loads rack
 
 module Rack
   module Handler
@@ -19,15 +21,20 @@ module Rack
       # ServletRequest input stream to be not read (e.g. for POSTs).
       class DefaultEnv < Hash # The environment must be an instance of Hash !
 
-        BUILTINS = %w(rack.version rack.input rack.errors rack.url_scheme
-          rack.multithread rack.multiprocess rack.run_once rack.hijack?
-          java.servlet_request java.servlet_response java.servlet_context
-          jruby.rack.version).
-          map!(&:freeze)
+        BUILTINS = Rack.release < '3' ?
+                     # rack 2.2.x
+                     Set.new(%w(rack.version rack.multithread rack.multiprocess rack.run_once
+                        rack.input rack.errors rack.url_scheme rack.hijack?
+                        java.servlet_request java.servlet_response java.servlet_context
+                        jruby.rack.context jruby.rack.version).map!(&:freeze)) :
+                     # rack 3.0 and later
+                     Set.new(%w(rack.input rack.errors rack.url_scheme rack.hijack?
+                        java.servlet_request java.servlet_response java.servlet_context
+                        jruby.rack.context jruby.rack.version).map!(&:freeze))
 
         VARIABLES = %w(CONTENT_TYPE CONTENT_LENGTH PATH_INFO QUERY_STRING
           REMOTE_ADDR REMOTE_HOST REMOTE_USER REQUEST_METHOD REQUEST_URI
-          SCRIPT_NAME SERVER_NAME SERVER_PORT SERVER_SOFTWARE).
+          SCRIPT_NAME SERVER_NAME SERVER_PORT SERVER_SOFTWARE SERVER_PROTOCOL).
           map!(&:freeze)
 
         attr_reader :env
@@ -172,9 +179,26 @@ module Rack
           for name in header_names
             next if name =~ @@content_header_names
             key = "HTTP_#{name.upcase.gsub(/-/, '_')}".freeze
-            @env[key] = @servlet_env.getHeader(name) unless @env.key?(key)
+            @env[key] = header_value(name) unless @env.key?(key)
           end
         end
+
+        # Joins all values of a (repeated) request header into the single value
+        # Rack expects - getHeader would only return the first one. Cookie
+        # headers are re-combined using '; ' as of RFC 6265 / RFC 7540.
+        def header_value(name)
+          headers = @servlet_env.getHeaders(name)
+          # might return null if the container does not allow header access :
+          return @servlet_env.getHeader(name) if headers.nil?
+          value = nil
+          separator = name.to_s.casecmp('Cookie') == 0 ? '; ' : ', '
+          while headers.hasMoreElements
+            header = headers.nextElement
+            value = value.nil? ? header : "#{value}#{separator}#{header}"
+          end
+          value
+        end
+        private :header_value
 
         def load_env_key(env, key)
           return unless @servlet_env
@@ -192,7 +216,7 @@ module Rack
           name = key.sub('HTTP_', '').
             split('_').each { |w| w.downcase!; w.capitalize! }.join('-')
           return if name =~ @@content_header_names
-          if header = @servlet_env.getHeader(name)
+          if header = header_value(name)
             env[key] = header # null if it does not have a header of that name
           end
         end
@@ -216,6 +240,7 @@ module Rack
             when 'SCRIPT_NAME'     then env[key] = @servlet_env.getScriptName
             when 'SERVER_NAME'     then env[key] = @servlet_env.getServerName || ''
             when 'SERVER_PORT'     then env[key] = @servlet_env.getServerPort.to_s
+            when 'SERVER_PROTOCOL' then env[key] = @servlet_env.getProtocol
             when 'SERVER_SOFTWARE' then env[key] = rack_context.getServerInfo
             else
               # NOTE: even though we allowed for overrides and loaded all attributes
@@ -230,6 +255,8 @@ module Rack
         end
 
         def load_builtin(env, key)
+          return nil unless BUILTINS.include?(key)
+
           case key
           when 'rack.version'         then env[key] = ::Rack::VERSION
           when 'rack.multithread'     then env[key] = true

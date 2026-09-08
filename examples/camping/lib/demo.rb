@@ -55,3 +55,5 @@ module Demo::Views
     div { dl_hash(@snoop) }
   end
 end
+
+Camping.make_camp

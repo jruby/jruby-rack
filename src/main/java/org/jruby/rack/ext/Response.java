@@ -242,7 +242,7 @@ public class Response extends RubyObject implements RackResponse {
             this.body = arg.callMethod(context, "[]", context.runtime.newFixnum(2));
         }
         // HACK: deal with objects that don't comply with Rack specification
-        if ( ! this.body.respondsTo("each_line") && ! this.body.respondsTo("each") ) {
+        if ( ! this.body.respondsTo("each_line") && ! this.body.respondsTo("each") && ! this.body.respondsTo("call") ) {
             this.body = this.body.asString(); // previously @body = [ @body.to_s ]
         }
         return this;
@@ -355,8 +355,7 @@ public class Response extends RubyObject implements RackResponse {
     }
 
     @JRubyMethod(name = "write_headers")
-    public IRubyObject write_headers(final ThreadContext context, final IRubyObject response)
-        throws IOException {
+    public IRubyObject write_headers(final ThreadContext context, final IRubyObject response) {
         writeHeaders(response.toJava(RackResponseEnvironment.class));
         return context.nil;
     }
@@ -366,27 +365,35 @@ public class Response extends RubyObject implements RackResponse {
     protected void writeHeaders(final RackResponseEnvironment response) {
         this.headers.visitAll(currentContext(), new RubyHash.Visitor() { // headers.each { |key, val| }
             @Override
-            public void visit(final IRubyObject key, final IRubyObject val) {
+            public void visit(final IRubyObject key, IRubyObject val) {
                 final String name = key.toString();
 
                 // SPEC: special headers starting "rack." are for communicating
                 // with the server and must not be sent back to the client
                 if ( name.startsWith("rack.") ) return;
 
-                if ( name.equalsIgnoreCase("Content-Type") ) {
-                    response.setContentType( val.asJavaString() ); return;
+                // SPEC (Rack 3.x): a header value might be an Array of Strings,
+                // unwrap single values - multi values do plain addHeader below
+                if ( val instanceof RubyArray<?> valArr && valArr.size() == 1 ) {
+                    val = valArr.eltOk(0);
                 }
 
-                if ( name.equalsIgnoreCase("Content-Length") ) {
-                    if ( isChunked() ) return;
-                    final long length = val.convertToInteger("to_i").asLong(currentContext());
-                    if ( length < Integer.MAX_VALUE ) {
-                        response.setContentLength( (int) length ); return;
-                    } // else will do addHeader
-                }
+                if ( ! (val instanceof RubyArray) ) {
+                    if ( name.equalsIgnoreCase("Content-Type") ) {
+                        response.setContentType( val.asJavaString() ); return;
+                    }
 
-                if ( name.equalsIgnoreCase("Transfer-Encoding") ) {
-                    if ( skipEncodingHeader(val) ) return;
+                    if ( name.equalsIgnoreCase("Content-Length") ) {
+                        if ( isChunked() ) return;
+                        final long length = val.convertToInteger("to_i").asLong(currentContext());
+                        if ( length < Integer.MAX_VALUE ) {
+                            response.setContentLength( (int) length ); return;
+                        } // else will do addHeader
+                    }
+
+                    if ( name.equalsIgnoreCase("Transfer-Encoding") ) {
+                        if ( skipEncodingHeader(val) ) return;
+                    }
                 }
 
                 // NOTE: effectively the same as `v.split("\n").each` which is what
@@ -404,7 +411,7 @@ public class Response extends RubyObject implements RackResponse {
 
                             @Override
                             public IRubyObject yield(ThreadContext context, IRubyObject value) {
-                                value.callMethod(context, "chomp!", newLine);
+                                value = value.callMethod(context, "chomp", newLine);
                                 response.addHeader(name, value.toString());
                                 return value;
                             }
@@ -440,10 +447,9 @@ public class Response extends RubyObject implements RackResponse {
         final ThreadContext context = currentContext();
         Channel bodyChannel = null; IRubyObject body = this.body;
         try {
-            if ( body.respondsTo("call") && ! body.respondsTo("each") ) {
-                final IRubyObject outputStream =
-                    JavaUtil.convertJavaToRuby(context.runtime, response.getOutputStream());
-                this.body.callMethod(context, "call", outputStream);
+            if ( body.respondsTo("call") && ! body.respondsTo("each") ) { // Rack 3 streaming body
+                final IRubyObject outputStream = JavaUtil.convertJavaToRuby(context.runtime, response.getOutputStream());
+                callMethod(context, "write_streaming_body", outputStream);
                 return;
             }
 
@@ -477,7 +483,6 @@ public class Response extends RubyObject implements RackResponse {
             // NOTE: we no longer handle "to_inputstream" since in 1.7 "to_channel" covers those ...
 
             final OutputStream output = response.getOutputStream();
-            IOException error = null;
             if ( doDechunk() ) {
                 final IRubyObject output_stream = JavaUtil.convertJavaToRuby(context.runtime, output);
                 callMethod(context, "write_body_dechunked", output_stream);
@@ -487,20 +492,21 @@ public class Response extends RubyObject implements RackResponse {
                 try {
                     invoke(context, body, method,
                         new JavaInternalBlockBody(context.runtime, Signature.ONE_REQUIRED) {
-                        @Override
-                        public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
-                            return this.yield(context, args[0]);
-                        }
-
-                        @Override
-                        public IRubyObject yield(ThreadContext context, IRubyObject line) {
-                            try {
-                                output.write( line.asString().getBytes() );
-                                if ( doFlush() ) output.flush();
+                            @Override
+                            public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
+                                return this.yield(context, args[0]);
                             }
-                            catch (IOException e) { throw new WrappedException(e); }
-                            return context.nil;
-                        }
+
+                            @Override
+                            public IRubyObject yield(ThreadContext context, IRubyObject line) {
+                                try {
+                                    output.write(line.asString().getBytes());
+                                    if (doFlush()) output.flush();
+                                } catch (IOException e) {
+                                    throw new WrappedException(e);
+                                }
+                                return context.nil;
+                            }
                     });
                 }
                 catch (WrappedException e) { throw e.getIOCause(); }
@@ -573,7 +579,7 @@ public class Response extends RubyObject implements RackResponse {
     public boolean isChunked() {
         if ( chunked != null ) return chunked;
         if ( this.headers != null ) {
-            final IRubyObject value = getHeaderValue(TRANSFER_ENCODING, TRANSFER_ENCODING_LOWER);
+            final IRubyObject value = getHeaderValue(TRANSFER_ENCODING_LOWER, TRANSFER_ENCODING);
             if ( value instanceof RubyString rubyString) {
                 return chunked = rubyString.getByteList().equal(CHUNKED);
             }
@@ -582,13 +588,13 @@ public class Response extends RubyObject implements RackResponse {
     }
 
     /**
-     * Rack does not mandate response header name casing - apps might use the
-     * conventional Capitalized-Names or (Rack 3.x style) lower-case names.
+     * Rack 3.x response header names are lower-case while Rack 2.x used
+     * Capitalized-Names, thus the (Rack 3) lower-case name is tried first.
      */
-    private IRubyObject getHeaderValue(final ByteList canonicalName, final ByteList lowerCaseName) {
-        IRubyObject value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), canonicalName));
+    private IRubyObject getHeaderValue(final ByteList lowerCaseName, final ByteList canonicalName) {
+        IRubyObject value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), lowerCaseName));
         if ( value.isNil() ) {
-            value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), lowerCaseName));
+            value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), canonicalName));
         }
         return value;
     }
@@ -615,7 +621,7 @@ public class Response extends RubyObject implements RackResponse {
         if ( isChunked() ) return true;
         if ( this.headers != null ) {
             // does not have a Content-Length header :
-            return getHeaderValue(CONTENT_LENGTH, CONTENT_LENGTH_LOWER).isNil();
+            return getHeaderValue(CONTENT_LENGTH_LOWER, CONTENT_LENGTH).isNil();
         }
         return false;
     }
@@ -702,6 +708,7 @@ public class Response extends RubyObject implements RackResponse {
 
     private ThreadContext currentContext() { return getRuntime().getCurrentContext(); }
 
+    @SuppressWarnings("UnusedReturnValue")
     static IRubyObject invoke(
         final ThreadContext context, final IRubyObject self,
         final String method, final BlockBody body) {
