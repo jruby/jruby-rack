@@ -11,6 +11,7 @@ version_spec = ->(prefix, desc) { "~> #{major_minor.call(prefix, desc)}.0" }
   "rails71" => {racks: %w[rack22]},
   "rails72" => {racks: %w[rack22]},
   "rails80" => {racks: %w[rack22]},
+  "rails81" => {racks: %w[rack22]}
 }.each do |rails_desc, c|
   c[:racks].each do |rack_desc|
 
