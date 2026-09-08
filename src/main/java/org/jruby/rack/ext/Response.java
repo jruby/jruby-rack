@@ -366,27 +366,35 @@ public class Response extends RubyObject implements RackResponse {
     protected void writeHeaders(final RackResponseEnvironment response) {
         this.headers.visitAll(currentContext(), new RubyHash.Visitor() { // headers.each { |key, val| }
             @Override
-            public void visit(final IRubyObject key, final IRubyObject val) {
+            public void visit(final IRubyObject key, IRubyObject val) {
                 final String name = key.toString();
 
                 // SPEC: special headers starting "rack." are for communicating
                 // with the server and must not be sent back to the client
                 if ( name.startsWith("rack.") ) return;
 
-                if ( name.equalsIgnoreCase("Content-Type") ) {
-                    response.setContentType( val.asJavaString() ); return;
+                // SPEC (Rack 3.x): a header value might be an Array of Strings,
+                // unwrap single values - multi values do plain addHeader below
+                if ( val instanceof RubyArray<?> valArr && valArr.size() == 1 ) {
+                    val = valArr.eltOk(0);
                 }
 
-                if ( name.equalsIgnoreCase("Content-Length") ) {
-                    if ( isChunked() ) return;
-                    final long length = val.convertToInteger("to_i").asLong(currentContext());
-                    if ( length < Integer.MAX_VALUE ) {
-                        response.setContentLength( (int) length ); return;
-                    } // else will do addHeader
-                }
+                if ( ! (val instanceof RubyArray) ) {
+                    if ( name.equalsIgnoreCase("Content-Type") ) {
+                        response.setContentType( val.asJavaString() ); return;
+                    }
 
-                if ( name.equalsIgnoreCase("Transfer-Encoding") ) {
-                    if ( skipEncodingHeader(val) ) return;
+                    if ( name.equalsIgnoreCase("Content-Length") ) {
+                        if ( isChunked() ) return;
+                        final long length = val.convertToInteger("to_i").asLong(currentContext());
+                        if ( length < Integer.MAX_VALUE ) {
+                            response.setContentLength( (int) length ); return;
+                        } // else will do addHeader
+                    }
+
+                    if ( name.equalsIgnoreCase("Transfer-Encoding") ) {
+                        if ( skipEncodingHeader(val) ) return;
+                    }
                 }
 
                 // NOTE: effectively the same as `v.split("\n").each` which is what

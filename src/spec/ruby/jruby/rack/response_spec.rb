@@ -137,6 +137,22 @@ describe JRuby::Rack::Response do
     expect(response.chunked?).to be true
   end
 
+  it "handles (single value) Array header values for special-cased headers (Rack 3.x)" do
+    headers = { "content-type" => [ "text/html" ], "content-length" => [ "5" ] }
+    response = JRuby::Rack::Response.new [200, headers, ['hello']]
+    expect(servlet_response).to receive(:setContentType).with("text/html")
+    expect(servlet_response).to receive(:setContentLength).with(5)
+    response.write_headers(response_environment)
+  end
+
+  it "adds multi value Array special-cased headers without raising (Rack 3.x)" do
+    headers = { "content-type" => [ "text/html", "text/plain" ] }
+    response = JRuby::Rack::Response.new [200, headers, ['hello']]
+    expect(servlet_response).to receive(:addHeader).with("content-type", "text/html")
+    expect(servlet_response).to receive(:addHeader).with("content-type", "text/plain")
+    response.write_headers(response_environment)
+  end
+
   it "detects a chunked response with a lower-case transfer-encoding header" do
     headers = { "transfer-encoding" => "chunked" }
     response = JRuby::Rack::Response.new [200, headers, ['body']]
