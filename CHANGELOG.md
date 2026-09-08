@@ -1,5 +1,8 @@
 ## 2.0.1 (UNRELEASED)
 
+- feat: support Rack 3.0 -> 3.2
+  - `org.jruby.rack.RackEnvironment` gained a `getProtocol()` method (backing the Rack 3.x required `SERVER_PROTOCOL`
+    Rack env key); custom implementations not extending the servlet request wrapper need to implement it
 - fix: correct opt-in `ServletEnv` charset mismapping when parsing query strings
 - fix: ensure `rack.` internal headers are stripped in responses
 - chore: remove ancient dead Rails 2-era adapter code
@@ -8,6 +11,9 @@
 - fix: close the original body when ShowStatus replaces it
 - fix: detect Transfer-Encoding/Content-Length headers case-insensitively
 - chore: revert `rack.version` value to be Rack 2.2 spec conformant
+- fix: handle Array response header values (Rack 3.x) for special-cased headers
+- fix: join repeated request header values instead of only passing the first
+- fix: do not mutate (potentially frozen) response header values when writing
 
 ## 2.0.0
 
@@ -15,6 +21,9 @@
 
 ## 1.3.1 (UNRELEASED)
 
+- feat: support Rack 3.0 -> 3.2
+  - `org.jruby.rack.RackEnvironment` gained a `getProtocol()` method (backing the Rack 3.x required `SERVER_PROTOCOL`
+    Rack env key); custom implementations not extending the servlet request wrapper need to implement it 
 - fix: correct opt-in `ServletEnv` charset mismapping when parsing query strings
 - fix: ensure `rack.` internal headers are stripped in responses
 - chore: remove ancient dead Rails 2-era adapter code
@@ -23,6 +32,9 @@
 - fix: close the original body when ShowStatus replaces it
 - fix: detect Transfer-Encoding/Content-Length headers case-insensitively
 - chore: revert `rack.version` value to be Rack 2.2 spec conformant
+- fix: handle Array response header values (Rack 3.x) for special-cased headers
+- fix: join repeated request header values instead of only passing the first
+- fix: do not mutate (potentially frozen) response header values when writing
 
 ## 1.3.0
 
@@ -32,7 +44,6 @@
 
 For most users this should be a minor upgrade; as long as you do not depend on functionality deprecated within
 JRuby-Rack 1.2.x, EOL JRuby or EOL Rails versions.
-
 Breaking compatibility changes
 - Drop support for JRuby 9.x (and thus Java < 21)
 - Drop support for Rails < 7.2

@@ -154,7 +154,7 @@ Warbler::Config.new do |config|
   # config.pathmaps.public_html = ["%{public/,}p"]
 
   # Value of RAILS_ENV for the webapp -- default as shown below
-  # config.webxml.rails.env = ENV['RAILS_ENV'] || 'production'
+  config.webxml.rails.env = 'development'
 
   # Public ROOT mapping, by default assets are copied into .war ROOT directory.
   # config.public.root = ''

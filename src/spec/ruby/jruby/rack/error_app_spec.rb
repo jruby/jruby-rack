@@ -55,9 +55,9 @@ describe 'JRuby::Rack::ErrorApp' do
 
       response = error_app.call(@env)
       expect(response[0]).to eql 503
-      expect(response[1]).to include 'Last-Modified'
-      expect(response[1]).to include 'Content-Length'
-      expect(response[1]['Content-Type']).to eql 'text/html'
+      expect(response[1]).to include header('Last-Modified')
+      expect(response[1]).to include header('Content-Length')
+      expect(response[1][header('Content-Type')]).to eql 'text/html'
       expect(body = response[2]).to be_a JRuby::Rack::ErrorApp::FileBody
       content = ''; body.each { |chunk| content << chunk }
       expect(content).to eql '-503-'
@@ -74,21 +74,31 @@ describe 'JRuby::Rack::ErrorApp' do
 
       response = error_app.call(@env)
       expect(response[0]).to eql 500 # 503
-      expect(response[1]).to include 'Content-Length'
-      expect(response[1]['Content-Type']).to eql 'text/html'
+      expect(response[1]).to include header('Content-Length')
+      expect(response[1][header('Content-Type')]).to eql 'text/html'
       expect(body = response[2]).to be_a JRuby::Rack::ErrorApp::FileBody
       content = ''; body.each { |chunk| content << chunk }
       expect(content).to eql _500_html
     end
   end
 
+  it "uses header casing matching the Rack version" do
+    init_exception
+    response = error_app.call(@env)
+    if Rack.release >= '3'
+      expect(response[1].keys).to include 'content-type', 'x-cascade'
+    else
+      expect(response[1].keys).to include 'Content-Type', 'X-Cascade'
+    end
+  end
+
   it "returns a fresh headers hash for each response" do
     init_exception
     response1 = error_app.call(@env)
-    response1[1]['X-Polluted'] = 'leaked'
+    response1[1]['x-polluted'] = 'leaked'
 
     response2 = error_app.call(@env)
-    expect(response2[1]).to_not include 'X-Polluted'
+    expect(response2[1]).to_not include 'x-polluted'
     expect(JRuby::Rack::ErrorApp::DEFAULT_HEADERS).to be_empty
   end
 
@@ -131,6 +141,19 @@ describe 'JRuby::Rack::ErrorApp' do
       body = response[2][0]
       expect(body).to include 'Internal Server Error'
       expect(body).to match /<div id="info">\n\s{4}<p>something went wrong<\/p>\n\s{2}<\/div>/m
+
+      expect(response[1][header('Content-Type')]).to eql 'text/html'
+      expect(response[1][header('Content-Length')]).to eql body.bytesize.to_s
+    end
+
+    it "detects a non-empty response regardless of content-length header casing" do
+      [ 'Content-Length', 'content-length' ].each do |content_length|
+        app = lambda { |env| [ 500, { content_length => '5' }, [ '12345' ] ] }
+        show_status = JRuby::Rack::ErrorApp::ShowStatus.new app
+
+        response = show_status.call(@env)
+        expect(response[2]).to eql [ '12345' ] # body not replaced by template
+      end
     end
 
     it "does not render detail info when 'rack.showstatus.detail' set to false" do
@@ -172,6 +195,10 @@ describe 'JRuby::Rack::ErrorApp' do
   end
 
   private
+
+  def header(name)
+    Rack.release >= '3' ? name.downcase : name
+  end
 
   def init_exception(cause = nil)
     exception = org.jruby.rack.RackInitializationException.new("something went wrong", cause)
