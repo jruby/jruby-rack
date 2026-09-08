@@ -143,6 +143,18 @@ describe 'JRuby::Rack::ErrorApp' do
       expect(@env['rack.showstatus.detail']).to be false
     end
 
+    it "closes the original body when replacing it with the rendered template" do
+      body = double('body', :each => nil)
+      expect(body).to receive(:close)
+
+      app = lambda { |env| [ 500, {}, body ] }
+      show_status = JRuby::Rack::ErrorApp::ShowStatus.new(app)
+      @env['HTTP_ACCEPT'] = '*/*'
+
+      response = show_status.call(@env)
+      expect(response[2][0]).to include 'Internal Server Error'
+    end
+
     it "with response < 400 and 'rack.showstatus.detail' set to false does not render exception" do
       @env['HTTP_ACCEPT'] = '*/*'; init_exception
       @env['rack.showstatus.detail'] = false
