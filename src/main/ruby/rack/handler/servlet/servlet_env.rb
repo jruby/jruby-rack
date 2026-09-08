@@ -56,13 +56,17 @@ module Rack
         def load_parameters
           get_only = ! POST_PARAM_METHODS.include?( @servlet_env.getMethod )
           # we only need to really do this for POSTs but we'll handle all
-          query_hash, form_hash = {}, {}
-          # NOTE: HttpServletRequest#getParameterMap behaves differently than
-          # Rack - preserves all parameters (at least on Tomcat 6/7) - nothing
-          # gets "lost" (like with Rack), most notable differences :
-          # - multi values are kept even when they do not end with '[]'
-          # - if there's a query param and the same param name is in the (POST)
-          #   body, both are kept and present as a multi-value
+          query_params, form_params = query_parser.make_params, query_parser.make_params
+          # NOTE: HttpServletRequest#getParameterMap merges query-string and
+          # (POST) body parameters and exposes *every* raw value per name -
+          # including repeated names that do not end with '[]' and names that
+          # appear in both the query string and the body. We rely on that
+          # completeness only to reconstruct which values came from the query
+          # string vs the body (see the length comparison below), so GET and
+          # POST each end up matching what Rack would have parsed. The values
+          # themselves are still normalized by Rack (#normalize_params) - i.e.
+          # repeated non-'[]' names collapse to the last value, '[]' yields an
+          # Array, etc. - so the resulting params are not "multi-valued" here.
           @servlet_env.getParameterMap.each do |key, val| # String, String[]
             val = [''] if val.nil? # e.g. buggy Jetty 6
             val = [''] if val.length == 1 && val[0].nil?
@@ -76,22 +80,22 @@ module Rack
                     get_vals << v; true
                   end
                 end
-                store_parameter(key, get_vals, query_hash)
-                store_parameter(key, post_vals, form_hash)
+                store_parameter(query_params, key, get_vals)
+                store_parameter(form_params, key, post_vals)
               else
-                store_parameter(key, val, query_hash)
+                store_parameter(query_params, key, val)
               end
             else # POST param :
-              store_parameter(key, val, form_hash)
+              store_parameter(form_params, key, val)
             end
           end
           # Rack::Request#GET
           @env[ QUERY_STRING ] = query_string
-          @env[ QUERY_HASH ] = query_hash
+          @env[ QUERY_HASH ] = query_params.to_h
           # Rack::Request#POST
           # TODO should recreate the input e.g. multipart/form-data ...
           @env[ FORM_INPUT ] = @env['rack.input']
-          @env[ FORM_HASH ] = form_hash
+          @env[ FORM_HASH ] = form_params.to_h
         end
 
         def [](key)
@@ -102,45 +106,21 @@ module Rack
         end
         public :[]
 
-        # @private
-        KEY_SEP = /([^\[\]]+)(?:\[(.*)\])?/
-
-        # Store the parameter into the given Hash.
-        # By default this is performed in a Rack compatible way and thus
-        # some parameter values might get "lost" - it only accepts multiple
-        # values for a paramater if it ends with '[]'.
+        # Store the servlet parameter values under the given (raw) name into the
+        # Rack params, reusing Rack's own QueryParser#normalize_params
         #
-        # @param key the param name
-        # @param val the value(s) in a array-like structure
-        # @param hash the Hash to store the name, value pair
-        def store_parameter(key, val, hash)
-          # emulating Rack::Utils.parse_nested_query behavior
-
-          if match = key.match(KEY_SEP)
-            n_key = match[1]; sub = match[2]
-          else
-            n_key = key; sub = nil # normalized-key[ sub-key ]
-          end
-
-          if sub
-            if sub.empty? # e.g. foo[]=1&foo[]=2
-              if arr = hash[ n_key ]
-                return mark_parameter_error "expected Array (got #{arr.class}) for param `#{n_key}'" unless arr.is_a?(Array)
-                hash[ n_key ] = arr + val.to_a; return
-              end
-              hash[ n_key ] = val.to_a # String[]
-            else # foo[bar]=rrr&foo[baz]=zzz
-              if hsh = hash[ n_key ]
-                return mark_parameter_error "expected Hash (got #{hsh.class}) for param `#{n_key}'" unless hsh.is_a?(Hash)
-                store_parameter(sub, val, hsh)
-              else
-                hash[ n_key ] = { sub => val[ val.length - 1 ] }
-              end
-            end
-          else
-            # for 'foo=bad&foo=bar' does { 'foo' => 'bar' }
-            hash[ n_key ] = val[ val.length - 1 ] # last
-          end
+        # Servlet parameter values arrive already split into an Array (unlike
+        # Rack which sees each name=value pair separately) so the values are
+        # replayed one by one; a ParameterTypeError aborts the offending name
+        # and is re-raised lazily on QUERY_HASH access (see #[]).
+        #
+        # @param params the (Rack::QueryParser::Params) accumulator
+        # @param key the (raw) param name, possibly with `[]`/`[nested]` syntax
+        # @param val the value(s) in an array-like structure
+        def store_parameter(params, key, val)
+          val.each { |v| query_parser.normalize_params(params, key, v, query_parser.param_depth_limit) }
+        rescue ::Rack::Utils::ParameterTypeError => e
+          @parameter_error = e
         end
 
         COOKIE_STRING = "rack.request.cookie_string".freeze
@@ -166,25 +146,29 @@ module Rack
 
         private
 
+        # The Rack query parser used for both building the params accumulators
+        # (#make_params) and nesting each value (#normalize_params). Rack's
+        # default parser is a memoized singleton, so this is cheap to call.
+        def query_parser
+          ::Rack::Utils.default_query_parser
+        end
+
         def query_string
           @query_string ||= @servlet_env.getQueryString.to_s
         end
 
         def query_values(key)
-          # Rack::Utils.parse_nested_query does not return all values for a multi-key
-          # HttpUtils.parseQueryString although deprecated does what we need here :
-          # handles multiple values sent by the query string as a string array ...
+          # returns all query-string values for a (possibly repeated) param
+          # name as an Array, or nil when the name is not in the query string
           ( @query_string_table ||= parse_query_string )[key]
         end
 
         def parse_query_string
-          Java::OrgJrubyRackServlet::HttpUtils.parseQueryString(query_string)
-        end
-
-        def mark_parameter_error(msg)
-          raise Rack::Utils::ParameterTypeError, msg
-        rescue Rack::Utils::ParameterTypeError => e
-          @parameter_error = e
+          # Rack::Utils.parse_query yields a String for single and an Array for
+          # repeated names - normalize to always-Array for query_values' callers
+          ::Rack::Utils.parse_query(query_string, '&').each_with_object({}) do |(key, value), table|
+            table[key] = value.is_a?(Array) ? value : [ value ]
+          end
         end
 
       end
