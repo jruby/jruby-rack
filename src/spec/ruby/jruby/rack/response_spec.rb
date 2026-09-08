@@ -86,6 +86,13 @@ describe JRuby::Rack::Response do
     response.write_headers(response_environment)
   end
 
+  it "writes frozen header values containing newlines without raising" do
+    response.to_java.getHeaders.update({ "Set-Cookie" => "cookie1\ncookie2".freeze })
+    expect(servlet_response).to receive(:addHeader).with("Set-Cookie", "cookie1")
+    expect(servlet_response).to receive(:addHeader).with("Set-Cookie", "cookie2")
+    response.write_headers(response_environment)
+  end
+
   it "adds an int header when values is a fixnum" do
     update_response_headers "Expires" => 0
     expect(response_environment).to receive(:addIntHeader).with("Expires", 0)

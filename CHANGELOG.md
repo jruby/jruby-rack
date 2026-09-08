@@ -13,6 +13,7 @@
 - chore: revert `rack.version` value to be Rack 2.2 spec conformant
 - fix: handle Array response header values (Rack 3.x) for special-cased headers
 - fix: join repeated request header values instead of only passing the first
+- fix: do not mutate (potentially frozen) response header values when writing
 
 ## 1.3.0 
 
