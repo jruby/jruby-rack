@@ -370,6 +370,10 @@ public class Response extends RubyObject implements RackResponse {
             public void visit(final IRubyObject key, final IRubyObject val) {
                 final String name = key.toString();
 
+                // SPEC: special headers starting "rack." are for communicating
+                // with the server and must not be sent back to the client
+                if ( name.startsWith("rack.") ) return;
+
                 if ( name.equalsIgnoreCase("Content-Type") ) {
                     response.setContentType( val.asJavaString() ); return;
                 }

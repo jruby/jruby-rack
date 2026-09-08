@@ -1,6 +1,6 @@
 ## 1.2.9 (UNRELEASED)
 
-- TBC
+- fix: ensure `rack.` internal headers are stripped in responses
 
 ## 1.2.8
 
