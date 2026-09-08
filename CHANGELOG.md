@@ -7,6 +7,7 @@
 - fix: close the original body when ShowStatus replaces it
 - fix: detect Transfer-Encoding/Content-Length headers case-insensitively
 - chore: revert `rack.version` value to be Rack 2.2 spec conformant
+- fix: do not mutate (potentially frozen) response header values when writing
 
 ## 1.2.8
 
