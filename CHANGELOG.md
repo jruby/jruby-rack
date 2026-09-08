@@ -1,5 +1,6 @@
 ## 1.3.1 (UNRELEASED)
 
+- fix: correct opt-in `ServletEnv` charset mismapping when parsing query strings
 - fix: ensure `rack.` internal headers are stripped in responses
 - chore: remove ancient dead Rails 2-era adapter code
 - fix: ensure ErrorApp does not mutate shared headers constant
