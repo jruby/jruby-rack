@@ -945,6 +945,15 @@ describe Rack::Handler::Servlet do
                                           "name" => ["Ferko Suska", "Jozko Hruska"], "formula" => "a + b == 42%!"
                                         })
 
+      if rack_request.respond_to?(:form_pairs) # Rack 3.2+
+        # POST name/value pairs, preserving duplicate (raw, un-nested) names,
+        # available even though the servlet input stream was already consumed
+        expect(rack_request.form_pairs).to match_array([
+          [ 'name[]', 'Ferko Suska' ], [ 'name[]', 'Jozko Hruska' ],
+          [ 'age', '30' ], [ 'formula', 'a + b == 42%!' ]
+        ])
+      end
+
       expect(rack_request.query_string).to eq 'foo=bad&foo=bar&bar=huu&age=33'
       expect(rack_request.request_method).to eq 'POST'
       expect(rack_request.path_info).to eq '/path'
