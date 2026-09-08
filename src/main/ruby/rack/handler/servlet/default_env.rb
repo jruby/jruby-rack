@@ -179,9 +179,26 @@ module Rack
           for name in header_names
             next if name =~ @@content_header_names
             key = "HTTP_#{name.upcase.gsub(/-/, '_')}".freeze
-            @env[key] = @servlet_env.getHeader(name) unless @env.key?(key)
+            @env[key] = header_value(name) unless @env.key?(key)
           end
         end
+
+        # Joins all values of a (repeated) request header into the single value
+        # Rack expects - getHeader would only return the first one. Cookie
+        # headers are re-combined using '; ' as of RFC 6265 / RFC 7540.
+        def header_value(name)
+          headers = @servlet_env.getHeaders(name)
+          # might return null if the container does not allow header access :
+          return @servlet_env.getHeader(name) if headers.nil?
+          value = nil
+          separator = name.to_s.casecmp('Cookie') == 0 ? '; ' : ', '
+          while headers.hasMoreElements
+            header = headers.nextElement
+            value = value.nil? ? header : "#{value}#{separator}#{header}"
+          end
+          value
+        end
+        private :header_value
 
         def load_env_key(env, key)
           return unless @servlet_env
@@ -199,7 +216,7 @@ module Rack
           name = key.sub('HTTP_', '').
             split('_').each { |w| w.downcase!; w.capitalize! }.join('-')
           return if name =~ @@content_header_names
-          if header = @servlet_env.getHeader(name)
+          if header = header_value(name)
             env[key] = header # null if it does not have a header of that name
           end
         end

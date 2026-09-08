@@ -410,6 +410,17 @@ describe Rack::Handler::Servlet do
       expect { env.fetch('attr4') }.to raise_error # KeyError
     end
 
+    it "joins the values of repeated request headers" do
+      @servlet_request.addHeader "X-Forwarded-For", "10.0.0.1"
+      @servlet_request.addHeader "X-Forwarded-For", "10.0.0.2"
+      @servlet_request.addHeader "Cookie", "foo=1"
+      @servlet_request.addHeader "Cookie", "bar=2"
+
+      env = servlet.create_env(@servlet_env)
+      expect(env['HTTP_X_FORWARDED_FOR']).to eq "10.0.0.1, 10.0.0.2"
+      expect(env['HTTP_COOKIE']).to eq "foo=1; bar=2" # RFC 6265 cookie separator
+    end
+
   end
 
   shared_examples "(eager)rack-env" do
