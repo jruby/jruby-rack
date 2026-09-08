@@ -126,8 +126,7 @@ public class Input extends RubyObject {
     @JRubyMethod()
     public IRubyObject gets(final ThreadContext context) {
         try {
-            final int NEWLINE = 10;
-            final byte[] bytes = readUntil(NEWLINE, 0);
+            final byte[] bytes = readUntil('\n', 0);
             if ( bytes != null ) {
                 return context.runtime.newString(new ByteList(bytes, false));
             }
