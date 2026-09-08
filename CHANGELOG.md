@@ -1,8 +1,26 @@
-## 2.0.0 (UNRELEASED)
+## 2.0.1 (UNRELEASED)
+
+- fix: ensure `rack.` internal headers are stripped in responses
+- chore: remove ancient dead Rails 2-era adapter code
+- fix: ensure ErrorApp does not mutate shared headers constant
+- fix: JRuby::Rack::Input#read(0) should return an empty string
+- fix: close the original body when ShowStatus replaces it
+- fix: detect Transfer-Encoding/Content-Length headers case-insensitively
+
+## 2.0.0
 
 - Support Jakarta Servlet API 5.0 → 6.1 (Jakarta EE 9 → 11)
 
-## 1.3.0 (UNRELEASED)
+## 1.3.1 (UNRELEASED)
+
+- fix: ensure `rack.` internal headers are stripped in responses
+- chore: remove ancient dead Rails 2-era adapter code
+- fix: ensure ErrorApp does not mutate shared headers constant
+- fix: JRuby::Rack::Input#read(0) should return an empty string
+- fix: close the original body when ShowStatus replaces it
+- fix: detect Transfer-Encoding/Content-Length headers case-insensitively
+
+## 1.3.0
 
 - Officially support Javax Servlet API 4.0 (JEE 8)
 - Refactor logging for more sane defaults and improved performance

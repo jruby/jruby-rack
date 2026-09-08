@@ -21,6 +21,8 @@ class JRuby::Rack::ErrorApp
       detail = env['rack.showstatus.detail']
       # client or server error, or explicit message
       if (status.to_i >= 400 && empty) || detail
+        # SPEC: when replacing the body the original one needs to be closed :
+        body.close if body.respond_to?(:close)
         # required erb template variables (captured with binding) :
         request = req = ::Rack::Request.new(env); request && req # avoid un-used warning
         message = ::Rack::Utils::HTTP_STATUS_CODES[status.to_i] || status.to_s
