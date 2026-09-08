@@ -15,7 +15,8 @@ class JRuby::Rack::ErrorApp
 
     def call(env)
       status, headers, body = @app.call(env)
-      empty = headers['Content-Length'].to_i <= 0
+      # a custom error app might use either header name casing convention :
+      empty = (headers['Content-Length'] || headers['content-length']).to_i <= 0
 
       detail = env['rack.showstatus.detail']
       # client or server error, or explicit message
@@ -29,7 +30,7 @@ class JRuby::Rack::ErrorApp
 
         body = @template.result(binding)
         size = body.bytesize
-        [status, headers.merge('Content-Type' => "text/html", 'Content-Length' => size.to_s), [body]]
+        [status, headers.merge(CONTENT_TYPE => "text/html", CONTENT_LENGTH => size.to_s), [body]]
       else
         [status, headers, body]
       end

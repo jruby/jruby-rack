@@ -4,10 +4,28 @@
 #++
 
 require 'jruby/rack'
+require 'rack'
 
 module JRuby
   module Rack
     class ErrorApp
+
+      # Response header names matching the loaded Rack version's conventions:
+      # Rack 3.x requires lower-case header names, Rack 2.x used Capitalized
+      # names (e.g. its Rack::Cascade only recognizes 'X-Cascade').
+      if ::Rack.release >= '3'
+        CONTENT_TYPE = 'content-type'
+        CONTENT_LENGTH = 'content-length'
+        LAST_MODIFIED = 'last-modified'
+        ALLOW = 'allow'
+        X_CASCADE = 'x-cascade'
+      else
+        CONTENT_TYPE = 'Content-Type'
+        CONTENT_LENGTH = 'Content-Length'
+        LAST_MODIFIED = 'Last-Modified'
+        ALLOW = 'Allow'
+        X_CASCADE = 'X-Cascade'
+      end
 
       autoload :ShowStatus, 'jruby/rack/error_app/show_status'
 
@@ -41,7 +59,7 @@ module JRuby
 
       def call(env)
         if env['REQUEST_METHOD'] == 'OPTIONS'
-          return [ 200, {'Allow' => ALLOW_METHODS, 'Content-Length' => '0'}, [] ]
+          return [ 200, { ALLOW => ALLOW_METHODS, CONTENT_LENGTH => '0' }, [] ]
         end
 
         code = response_code(env)
@@ -79,17 +97,17 @@ module JRuby
         last_modified = File.mtime(path).httpdate
         return [ 304, {}, [] ] if env['HTTP_IF_MODIFIED_SINCE'] == last_modified
 
-        headers = { 'Last-Modified' => last_modified }
+        headers = { LAST_MODIFIED => last_modified }
         DEFAULT_HEADERS.each { |field, content| headers[field] = content }
         ext = File.extname(path)
         size = File.size?(path)
         mime = ::Rack::Mime.mime_type(ext, DEFAULT_MIME)
-        headers['Content-Type'] = mime
+        headers[CONTENT_TYPE] = mime
 
         body = env['REQUEST_METHOD'] == 'HEAD' ? [] : FileBody.new(path, size)
         response = [ code, headers, body ]
 
-        response[1]['Content-Length'] = size.to_s if size
+        response[1][CONTENT_LENGTH] = size.to_s if size
         response
       end
 
@@ -108,9 +126,9 @@ module JRuby
       def respond(status = nil, body = nil, headers = DEFAULT_HEADERS.dup)
         status ||= DEFAULT_RESPONSE_CODE
         body += "\n" if body
-        headers['Content-Type'] = "text/plain" unless headers.key?('Content-Type')
-        headers['Content-Length'] = body.size.to_s if ! headers.key?('Content-Length') && body
-        headers['X-Cascade'] = "pass" unless headers.key?('X-Cascade')
+        headers[CONTENT_TYPE] = "text/plain" unless headers.key?(CONTENT_TYPE)
+        headers[CONTENT_LENGTH] = body.size.to_s if ! headers.key?(CONTENT_LENGTH) && body
+        headers[X_CASCADE] = "pass" unless headers.key?(X_CASCADE)
         [ status, headers, body ? [ body ] : [] ]
       end
 

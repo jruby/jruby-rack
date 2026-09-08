@@ -573,7 +573,7 @@ public class Response extends RubyObject implements RackResponse {
     public boolean isChunked() {
         if ( chunked != null ) return chunked;
         if ( this.headers != null ) {
-            final IRubyObject value = getHeaderValue(TRANSFER_ENCODING, TRANSFER_ENCODING_LOWER);
+            final IRubyObject value = getHeaderValue(TRANSFER_ENCODING_LOWER, TRANSFER_ENCODING);
             if ( value instanceof RubyString rubyString) {
                 return chunked = rubyString.getByteList().equal(CHUNKED);
             }
@@ -582,13 +582,13 @@ public class Response extends RubyObject implements RackResponse {
     }
 
     /**
-     * Rack does not mandate response header name casing - apps might use the
-     * conventional Capitalized-Names or (Rack 3.x style) lower-case names.
+     * Rack 3.x response header names are lower-case while Rack 2.x used
+     * Capitalized-Names, thus the (Rack 3) lower-case name is tried first.
      */
-    private IRubyObject getHeaderValue(final ByteList canonicalName, final ByteList lowerCaseName) {
-        IRubyObject value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), canonicalName));
+    private IRubyObject getHeaderValue(final ByteList lowerCaseName, final ByteList canonicalName) {
+        IRubyObject value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), lowerCaseName));
         if ( value.isNil() ) {
-            value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), lowerCaseName));
+            value = this.headers.callMethod("[]", RubyString.newString(getRuntime(), canonicalName));
         }
         return value;
     }
@@ -615,7 +615,7 @@ public class Response extends RubyObject implements RackResponse {
         if ( isChunked() ) return true;
         if ( this.headers != null ) {
             // does not have a Content-Length header :
-            return getHeaderValue(CONTENT_LENGTH, CONTENT_LENGTH_LOWER).isNil();
+            return getHeaderValue(CONTENT_LENGTH_LOWER, CONTENT_LENGTH).isNil();
         }
         return false;
     }
