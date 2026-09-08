@@ -130,14 +130,19 @@ public class Input extends RubyObject {
      */
     @JRubyMethod(optional = 2)
     public IRubyObject read(final ThreadContext context, final IRubyObject[] args) {
-        int readLen = 0;
-        if ( args.length > 0 ) {
+        int readLen = 0; boolean readAll = true;
+        if ( args.length > 0 && ! args[0].isNil() ) {
             long len = args[0].convertToInteger("to_i").asLong(context);
             readLen = (int) Math.min(len, Integer.MAX_VALUE);
+            readAll = false;
         }
         final RubyString buffer = args.length > 1 ? args[1].asString() : null;
+        if ( ! readAll && readLen <= 0 ) { // like IO#read - read(0) returns "" (not all data)
+            if ( buffer != null ) { buffer.clear(context); return buffer; }
+            return RubyString.newEmptyString(context.runtime);
+        }
         try {
-            final byte[] bytes = readUntil(MATCH_NONE, readLen);
+            final byte[] bytes = readUntil(MATCH_NONE, readAll ? 0 : readLen);
             if ( bytes != null ) {
                 if ( buffer != null ) {
                     buffer.clear(context);
@@ -146,7 +151,7 @@ public class Input extends RubyObject {
                 }
                 return context.runtime.newString(new ByteList(bytes, false));
             }
-            return readLen > 0 ? context.nil : RubyString.newEmptyString(context.runtime);
+            return readAll ? RubyString.newEmptyString(context.runtime) : context.nil;
         }
         catch (IOException e) {
             throw ExceptionUtils.newIOError(context.runtime, e);
