@@ -5,11 +5,11 @@ source "https://rubygems.org"
 group :default do
   gem "rack", "~> 2.2.0"
   gem "rails", "~> 7.0.0"
-  gem "rdoc", "!= 8.0.0"
 end
 
 group :development do
   gem "appraisal", require: nil
+  gem "rexml"
 end
 
 group :test do
