@@ -356,8 +356,7 @@ public class Response extends RubyObject implements RackResponse {
     }
 
     @JRubyMethod(name = "write_headers")
-    public IRubyObject write_headers(final ThreadContext context, final IRubyObject response)
-        throws IOException {
+    public IRubyObject write_headers(final ThreadContext context, final IRubyObject response) {
         writeHeaders(response.toJava(RackResponseEnvironment.class));
         return context.nil;
     }
@@ -406,7 +405,7 @@ public class Response extends RubyObject implements RackResponse {
 
                             @Override
                             public IRubyObject yield(ThreadContext context, IRubyObject value) {
-                                value.callMethod(context, "chomp!", newLine);
+                                value = value.callMethod(context, "chomp", newLine);
                                 response.addHeader(name, value.toString());
                                 return value;
                             }
@@ -439,10 +438,10 @@ public class Response extends RubyObject implements RackResponse {
     }
 
     protected void writeBody(final RackResponseEnvironment response) throws IOException {
+        final ThreadContext context = currentContext();
         Channel bodyChannel = null; IRubyObject body = this.body;
         try {
             if ( body.respondsTo("call") && ! body.respondsTo("each") ) {
-                final ThreadContext context = currentContext();
                 final IRubyObject outputStream =
                     JavaUtil.convertJavaToRuby(context.runtime, response.getOutputStream());
                 this.body.callMethod(context, "call", outputStream);
@@ -450,7 +449,6 @@ public class Response extends RubyObject implements RackResponse {
             }
 
             if ( body.respondsTo("to_path") ) { // send_file
-                final ThreadContext context = currentContext();
                 final IRubyObject path = body.callMethod(context, "to_path");
                 callMethod("send_file", path, JavaUtil.convertJavaToRuby(context.runtime, response));
                 return;
@@ -465,7 +463,6 @@ public class Response extends RubyObject implements RackResponse {
                     bodyChannel = ((RubyIO) body).getChannel();
                 }
                 else {
-                    final ThreadContext context = currentContext();
                     final IRubyObject channel = body.callMethod(context, "to_channel");
                     bodyChannel = channel.toJava(Channel.class);
                 }
@@ -480,8 +477,6 @@ public class Response extends RubyObject implements RackResponse {
             // NOTE: we no longer handle "to_inputstream" since in 1.7 "to_channel" covers those ...
 
             final OutputStream output = response.getOutputStream();
-            final ThreadContext context = currentContext();
-            IOException error = null;
             if ( doDechunk() ) {
                 final IRubyObject output_stream = JavaUtil.convertJavaToRuby(context.runtime, output);
                 callMethod(context, "write_body_dechunked", output_stream);
@@ -706,6 +701,7 @@ public class Response extends RubyObject implements RackResponse {
 
     ThreadContext currentContext() { return getRuntime().getCurrentContext(); }
 
+    @SuppressWarnings("UnusedReturnValue")
     static IRubyObject invoke(
         final ThreadContext context, final IRubyObject self,
         final String method, final BlockBody body) {

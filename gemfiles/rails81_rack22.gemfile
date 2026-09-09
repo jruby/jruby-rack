@@ -4,7 +4,7 @@ source "https://rubygems.org"
 
 group :default do
   gem "rack", "~> 2.2.0"
-  gem "rails", "~> 8.0.0"
+  gem "rails", "~> 8.1.0"
 end
 
 group :development do
