@@ -73,24 +73,6 @@ public abstract class IOHelpers {
         return str.toString();
     }
 
-    public static ByteList readURL(final Ruby runtime, final URL url)
-        throws IOException {
-        if ( url == null ) return null;
-
-        final int chunk = 256;
-
-        final InputStream stream = url.openStream();
-        final ByteList bytes = new ByteList(chunk);
-
-        try {
-            while ( true ) bytes.append(stream, chunk);
-        }
-        catch (EOFException e) { /* read whole stream */ }
-        finally { stream.close(); }
-
-        return bytes;
-    }
-
     public static String rubyMagicCommentValue(final String script, final String prefix)
         throws IOException {
         if ( script == null ) return null;
@@ -100,7 +82,7 @@ public abstract class IOHelpers {
         String line, comment = null; Pattern pattern = null;
         while ( (line = reader.readLine()) != null ) {
             // we only support (magic) comments at the beginning :
-            if ( line.length() == 0 || line.charAt(0) != '#' ) break;
+            if (line.isEmpty() || line.charAt(0) != '#' ) break;
 
             if (pattern == null) {
                 pattern = Pattern.compile(prefix + "\\s*(\\S+)");
