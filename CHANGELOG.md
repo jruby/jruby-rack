@@ -17,7 +17,18 @@
 
 ## 2.0.0
 
+Major breaking changes:
 - Support Jakarta Servlet API 5.0 → 6.1 (Jakarta EE 9 → 11)
+
+This release involves migration to the `jakarta.servlet.*` namespace. Applications using JRuby-Rack
+must ensure that they are using a compatible Jakarta EE 9+ servlet container, such as
+- Tomcat 10+
+- Jetty 11
+- Jetty 12 configured with the ee9, ee10 or ee11 profiles
+- Wildfly 27+
+- other containers supporting Servlet API 5.0+
+
+In all other respects this release is identical to 1.3.0.
 
 ## 1.3.1 (UNRELEASED)
 
