@@ -338,7 +338,7 @@ will be run with this default version.
 Run tests against a specific JRuby version:
 
 ```shell
-./mvnw test -Djruby.test.version=10.1.1.0
+./mvnw test -Djruby.test.version=10.1.2.0
 ```
 
 Or via JRuby/Rake with the local JRuby version implied by your path:

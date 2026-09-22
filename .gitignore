@@ -12,5 +12,6 @@ examples/*/nbproject
 .redcar
 nbproject
 .idea/
+*.iml
 .rvmrc
 gemfiles/*.lock
