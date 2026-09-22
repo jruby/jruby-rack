@@ -9,7 +9,7 @@ on:
 env:
   # Default versions for canonical release build
   DEFAULT_JAVA_VERSION: '21'
-  DEFAULT_JRUBY_VERSION: '10.0.6.0' # Should match pom.xml <jruby.compat.version> property (AND a version inside the test matrix)
+  DEFAULT_JRUBY_VERSION: '10.0.7.0' # Should match pom.xml <jruby.compat.version> property (AND a version inside the test matrix)
   DEFAULT_RACK_VERSION: '~> 2.2.0' # Should match Gemfile (AND a version inside the test matrix)
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        jruby_version: [ '10.0.6.0', '10.1.1.0' ]
+        jruby_version: [ '10.0.7.0', '10.1.2.0' ]
         java_version: [ '21', '25' ]
         rack_version: [ '~> 2.2.0', '~> 3.1.0', '~> 3.2.0' ]
       fail-fast: false
@@ -56,7 +56,7 @@ jobs:
           'rails80_rack22', 'rails80_rack31', 'rails80_rack32',
           'rails81_rack22', 'rails81_rack31', 'rails81_rack32',
         ]
-        jruby_version: [ '10.0.6.0', '10.1.1.0' ]
+        jruby_version: [ '10.0.7.0', '10.1.2.0' ]
         java_version: [ '21', '25' ]
       fail-fast: false
 
