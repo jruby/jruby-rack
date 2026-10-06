@@ -1,4 +1,4 @@
-## 1.2.9 (UNRELEASED)
+## 1.2.9
 
 - fix: ensure `rack.` internal headers are stripped in responses
 - chore: remove ancient dead Rails 2-era adapter code
