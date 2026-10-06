@@ -30,7 +30,7 @@ must ensure that they are using a compatible Jakarta EE 9+ servlet container, su
 
 In all other respects this release is identical to 1.3.0.
 
-## 1.3.1 (UNRELEASED)
+## 1.3.1
 
 - feat: support Rack 3.0 -> 3.2
   - `org.jruby.rack.RackEnvironment` gained a `getProtocol()` method (backing the Rack 3.x required `SERVER_PROTOCOL`
@@ -85,6 +85,17 @@ Breaking Ruby API changes (only relevant for users extending the Ruby API)
 - Drop deprecated `JRuby::Rack::Errors` alias for `JRuby::Rack::ErrorApp`
 - Drop deprecated `Rack::Handler::Servlet::Env` and `Rack::Handler::Servlet::LazyEnv` types (replaced by `DefaultEnv`)
 - Drop deprecated setting of global `$servlet_context` variable during embedded usage (replaced by `JRuby::Rack.context`)
+
+## 1.2.9
+
+- fix: ensure `rack.` internal headers are stripped in responses
+- chore: remove ancient dead Rails 2-era adapter code
+- fix: ensure ErrorApp does not mutate shared headers constant
+- fix: JRuby::Rack::Input#read(0) should return an empty string
+- fix: close the original body when ShowStatus replaces it
+- fix: detect Transfer-Encoding/Content-Length headers case-insensitively
+- chore: revert `rack.version` value to be Rack 2.2 spec conformant
+- fix: do not mutate (potentially frozen) response header values when writing
 
 ## 1.2.8
 
