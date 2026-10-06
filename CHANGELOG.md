@@ -1,4 +1,4 @@
-## 1.3.1 (UNRELEASED)
+## 1.3.1
 
 - feat: support Rack 3.0 -> 3.2
   - `org.jruby.rack.RackEnvironment` gained a `getProtocol()` method (backing the Rack 3.x required `SERVER_PROTOCOL`
