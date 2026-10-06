@@ -54,6 +54,17 @@ Breaking Ruby API changes (only relevant for users extending the Ruby API)
 - Drop deprecated `Rack::Handler::Servlet::Env` and `Rack::Handler::Servlet::LazyEnv` types (replaced by `DefaultEnv`)
 - Drop deprecated setting of global `$servlet_context` variable during embedded usage (replaced by `JRuby::Rack.context`)
 
+## 1.2.9
+
+- fix: ensure `rack.` internal headers are stripped in responses
+- chore: remove ancient dead Rails 2-era adapter code
+- fix: ensure ErrorApp does not mutate shared headers constant
+- fix: JRuby::Rack::Input#read(0) should return an empty string
+- fix: close the original body when ShowStatus replaces it
+- fix: detect Transfer-Encoding/Content-Length headers case-insensitively
+- chore: revert `rack.version` value to be Rack 2.2 spec conformant
+- fix: do not mutate (potentially frozen) response header values when writing
+
 ## 1.2.8
 
 - Improve isolation and bundler version/CLI boot issues with more opinionated boot process (#461)
