@@ -221,9 +221,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       allow(@rack_context).to receive(:getInitParameter).and_return nil
       allow(@rack_context).to receive(:getResourcePaths).and_return nil
       allow(@rack_context).to receive(:getRealPath) { |path| path }
-      # allow(@rack_context).to receive(:log) do |*args|
-      # puts args.inspect
-      # end
     end
 
     let(:app_factory) do
@@ -380,7 +377,6 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
 
       it "does a complete ENV clean including RUBYOPT" do
         set_config 'jruby.runtime.env', 'false'
-        # set_config 'jruby.runtime.env.rubyopt', 'false'
 
         app_factory = app_factory_with_RUBYOPT '-ryaml'
         @runtime = app_factory.newRuntime
@@ -390,12 +386,11 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         should_eval_as_eql_to "require 'yaml'", true # -ryaml not processed
       end
 
-      it "handles jruby.runtime.arguments == '-X+O -Ke' and start with object space enabled and KCode EUC" do
-        set_config 'jruby.runtime.arguments', '-X+O -Ke'
-        # allow(@rack_config).to receive(:getRuntimeArguments).and_return ['-X+O', '-Ke'].to_java(:String)
+      it "handles jruby.runtime.arguments == '-X+O -w' and start with object space enabled and verbose warnings" do
+        set_config 'jruby.runtime.arguments', '-X+O -w'
         @runtime = app_factory.new_runtime
         expect(@runtime.object_space_enabled).to be_truthy
-        expect(@runtime.kcode).to eq Java::OrgJrubyUtil::KCode::EUC
+        expect(@runtime.is_verbose).to be true
       end
 
       it "does not propagate ENV changes to JVM (and indirectly to other JRuby VM instances)" do
@@ -480,12 +475,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       app_factory = mocked_runtime_application_factory
       app_factory.init @rack_context
       app_object = app_factory.newApplication
-      begin
-        app_object.init
-        fail "expected to raise"
-      rescue => e
-        expect(e.message).to eql 'something went wrong'
-      end
+      expect { app_object.init }.to raise_error(RuntimeError, 'something went wrong')
     end
 
     it "swallows and logs errors during exception detail capturing" do
@@ -507,13 +497,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
         end
       end
 
-      begin
-        app_object.init
-        fail "expected to raise"
-      rescue => e
-        expect(e.message).to eql 'something went wrong' # original error
-      end
-
+      expect { app_object.init }.to raise_error(RuntimeError, 'something went wrong')
       expect(raise_info_logged).to eql 1 # logs info message for exception capture
     end
   end
@@ -523,13 +507,7 @@ describe org.jruby.rack.DefaultRackApplicationFactory do
       expect(@rack_config).to receive(:getRackup).and_return("raise 'init was called'")
       app_factory = mocked_runtime_application_factory
       app_factory.init @rack_context
-      begin
-        app_factory.getApplication
-        fail "expected to raise"
-      rescue => e
-        expect(e.message).to eql 'init was called'
-      end
-      # expect { app_factory.getApplication }.to raise_error
+      expect { app_factory.getApplication }.to raise_error(RuntimeError, 'init was called')
     end
   end
 
@@ -939,7 +917,7 @@ describe org.jruby.rack.SharedRackApplicationFactory do
     expect(@factory).to receive(:init).with(@rack_context)
     expect(@factory).to receive(:getApplication).and_raise java.lang.ArithmeticException.new('42')
 
-    expect(@rack_context).to receive(:log) do |level, msg, e|
+    expect(@rack_context).to receive(:log) do |level, _msg, e|
       if level == 'ERROR'
         expect(e).to be_a java.lang.ArithmeticException
       else
@@ -947,28 +925,17 @@ describe org.jruby.rack.SharedRackApplicationFactory do
       end
     end
 
-    begin
-      @shared_factory.init(@rack_context)
-    rescue org.jruby.rack.RackInitializationException => e
-      expect(e.message).to eql 'java.lang.ArithmeticException: 42'
-    else
-      fail "expected to rescue RackInitializationException"
-    end
-
+    expect { @shared_factory.init(@rack_context) }.to raise_error(org.jruby.rack.RackInitializationException, 'java.lang.ArithmeticException: 42')
     expect(@shared_factory.getManagedApplications).to be nil
   end
 
   it "throws initialization exception on each getApplication call if init failed" do
     expect(@factory).to receive(:init).with(@rack_context)
-    expect(@factory).to receive(:getApplication).and_raise java.lang.RuntimeException.new('42')
-    expect(@factory).not_to receive(:getErrorApplication) # dispacther invokes this ...
+    expect(@factory).to receive(:getApplication).and_raise java.lang.ArithmeticException.new('42')
+    expect(@factory).not_to receive(:getErrorApplication) # dispatcher invokes this ...
 
-    begin
-      @shared_factory.init(@rack_context)
-    rescue java.lang.RuntimeException => e
-      # NOOP
-    end
-    expect { @shared_factory.getApplication }.to raise_error(org.jruby.rack.RackInitializationException)
+    expect { @shared_factory.init(@rack_context) }.to raise_error(org.jruby.rack.RackInitializationException, 'java.lang.ArithmeticException: 42')
+    expect { @shared_factory.getApplication }.to raise_error(org.jruby.rack.RackInitializationException, 'java.lang.ArithmeticException: 42')
   end
 
   it "returns the same application for any newApplication or getApplication call" do
